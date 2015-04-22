@@ -1,0 +1,49 @@
+#include "mp4tagatomnames.h"
+
+namespace Media
+{
+
+namespace Mp4TagAtomNames
+{
+
+
+
+const char *album = "\xA9" "alb";
+const char *artist = "\xA9" "ART";
+const char *albumArtist = "aART";
+const char *comment = "\xA9" "cmt";
+const char *year = "\xA9" "day";
+const char *title = "\xA9" "nam";
+const char *genreAsByte = "gnre";
+const char *genreAsString = "\xA9" "gen";
+const char *trackNumber = "trkn";
+const char *diskNumber = "disk";
+const char *composer = "\xA9" "wrt";
+const char *encoder = "\xA9" "too";
+const char *bpm = "tmpo";
+const char *copyright = "cprt";
+const char *cover = "covr";
+const char *rating = "rtng";
+const char *grouping = "\xA9" "grp";
+const char *podcast = "pcst";
+const char *category = "catg";
+const char *keywords = "keyw";
+const char *podcastUrl = "purl";
+const char *episodeGlobalUniqueId = "egid";
+const char *description = "desc";
+const char *lyrics = "\xA9" "lyr";
+const char *tvNetworkName = "tvnn";
+const char *tvShowName = "tvsh";
+const char *tvEpisodeName = "tven";
+const char *tvSeason = "tvsn";
+const char *tvEpisode = "tves";
+const char *purchaseDate = "purd";
+const char *gaplessPlayback = "pgap";
+const char *recordLabel = "\xA9" "lab";
+const char *producer = "\xA9" "prd";
+const char *performers = "\xA9" "prf";
+const char *songWriter = "\xA9" "swf";
+
+}
+
+}

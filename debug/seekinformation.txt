@@ -1,0 +1,5 @@
+Cluster/Position
+Cues/CuePoint/CueTrackPositions/CueClusterPosition              position of cluster in segment
+Cues/CuePoint/CueTrackPositions/CueCodecState                   position of codec state corresponding to cue element
+Cues/CuePoint/CueTrackPositions/CueReference/CueRefCluster      position of cluster containing the referenced block
+Cues/CuePoint/CueTrackPositions/CueReference/CueRefCodecState   position of codec state corresponding to referenced element

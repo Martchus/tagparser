@@ -1,0 +1,106 @@
+#include "matroskaeditionentry.h"
+#include "ebmlelement.h"
+#include "matroskaid.h"
+
+#include <c++utilities/misc/memory.h>
+
+#include <string>
+
+using namespace std;
+
+namespace Media {
+
+/*!
+ * \brief Constructs a new MatroskaEditionEntry for the specified \a editionEntryElement.
+ */
+MatroskaEditionEntry::MatroskaEditionEntry(EbmlElement *editionEntryElement) :
+    m_editionEntryElement(editionEntryElement),
+    m_id(0),
+    m_hidden(false),
+    m_default(false),
+    m_ordered(false)
+{}
+
+/*!
+ * \brief Destroys the MatroskaEditionEntry.
+ */
+MatroskaEditionEntry::~MatroskaEditionEntry()
+{}
+
+/*!
+ * \brief Returns a label for the entry.
+ */
+string MatroskaEditionEntry::label() const
+{
+    stringstream ss;
+    ss << "ID: " << id();
+    return ss.str();
+}
+
+/*!
+ * \brief Parses the "EditionEntry"-element specified when constructing the object.
+ *
+ * Fetches the chapters() but does not parse them.
+ *
+ * Clears all previous parsing results.
+ */
+void MatroskaEditionEntry::parse()
+{
+    // clear previous values and status
+    static const string context("parsing \"EditionEntry\"-element");
+    invalidateStatus();
+    clear();
+    // iterate through children of "EditionEntry"-element
+    EbmlElement *entryChild = m_editionEntryElement->firstChild();
+    while(entryChild) {
+        entryChild->parse();
+        switch(entryChild->id()) {
+        case MatroskaIds::EditionUID:
+            m_id = entryChild->readUInteger();
+            break;
+        case MatroskaIds::EditionFlagHidden:
+            m_hidden = entryChild->readUInteger() == 1;
+            break;
+        case MatroskaIds::EditionFlagDefault:
+            m_default = entryChild->readUInteger() == 1;
+            break;
+        case MatroskaIds::EditionFlagOrdered:
+            m_ordered = entryChild->readUInteger() == 1;
+            break;
+        case MatroskaIds::ChapterAtom:
+            m_chapters.emplace_back(make_unique<MatroskaChapter>(entryChild));
+            break;
+        default:
+            addNotification(NotificationType::Warning, "\"EditionEntry\"-element contains unknown child element \"" + entryChild->idToString() + "\" which will be ingored.", context);
+        }
+        entryChild = entryChild->nextSibling();
+    }
+}
+
+/*!
+ * \brief Parses the "EditionEntry"-element specified when constructing the object.
+ *
+ * Parses also fetched chapters and nested chapters.
+ *
+ * Clears all previous parsing results.
+ */
+void MatroskaEditionEntry::parseNested()
+{
+    parse();
+    for(auto &chapter : chapters()) {
+        chapter->parseNested();
+    }
+}
+
+/*!
+ * \brief Resets the object to its initial state.
+ */
+void MatroskaEditionEntry::clear()
+{
+    m_id = 0;
+    m_hidden = m_default = m_ordered = false;
+    m_chapters.clear();
+}
+
+} // namespace Media
+

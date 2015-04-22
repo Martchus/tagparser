@@ -1,0 +1,438 @@
+#include "signature.h"
+
+#include <c++utilities/conversion/binaryconversion.h>
+
+using namespace ConversionUtilities;
+
+namespace Media {
+
+/*!
+ * \brief Holds 64-bit signatures.
+ */
+enum Sig64 : uint64
+{
+    Asf1 = 0x3026B2758E66CF11ul,
+    Asf2 = 0xA6D900AA0062CE6Cul,
+    Png = 0x89504E470D0A1A0Aul,
+    RiffAvi = 0x415649204C495354ul,
+};
+
+/*!
+ * \brief Holds 52-bit signatures.
+ */
+enum Sig56 : uint64
+{
+    Rar = 0x526172211A0700ul,
+};
+
+/*!
+ * \brief Holds 48-bit signatures.
+ */
+enum Sig48 : uint64
+{
+    Gif87a = 0x474946383761ul,
+    Gif89a = 0x474946383961ul,
+    SevenZ = 0x377ABCAF271Cul
+};
+
+/*!
+ * \brief Holds 32-bit signatures.
+ */
+enum Sig32 : uint32
+{
+    Elf = 0x7F454C46u,
+    JavaClassFile = 0xCAFEBABEu,
+    Ebml = 0x1A45DFA3u,
+    Mp4 = 0x66747970u,
+    Ogg = 0x4F676753u,
+    PhotoshopDocument = 0x38425053u,
+    Riff = 0x52494646u,
+    RiffWave =0x57415645u,
+    TiffBigEndian = 0x4D4D002Au,
+    TiffLittleEndian = 0x49492A00u,
+    Utf32Text = 0xFFFE0000u,
+    WindowsIcon = 0x00000100u,
+    Lzip = 0x4C5A4950u,
+    Zip1 = 0x504B0304u,
+    Zip2 = 0x504B0506u,
+    Zip3 = 0x504B0708u,
+};
+
+/*!
+ * \brief Holds 24-bit signatures.
+ */
+enum Sig24 : uint32
+{
+    Bzip2 = 0x425A68u,
+    Gzip = 0x1F8B08u,
+    Id3v2 = 0x494433u,
+    Utf8Text = 0xEFBBBFu
+};
+
+/*!
+ * \brief Holds 16-bit signatures.
+ */
+enum Sig16 : uint16
+{
+    Jpeg = 0xffd8u,
+    Lha = 0x1FA0u,
+    Lzw = 0x1F9Du,
+    MpegAudioFrames = 0xFFFBu,
+    PortableExecutable = 0x4D5Au,
+    Utf16Text = 0xFFFEu,
+    WindowsBitmap = 0x424du,
+};
+
+/*!
+ * \brief Parses the signature read from the specified \a buffer.
+ * \param buffer Specifies the buffer to read the signature from.
+ * \param bufferSize Specifies the size of \a buffer.
+ * \return Returns the container format denoted by the signature. If the
+ *         signature is unknown ContainerFormat::Unknown is returned.
+ */
+ContainerFormat parseSignature(const char *buffer, int bufferSize)
+{
+    // read signature
+    uint64 sig = 0;
+    if(bufferSize >= 8) {
+        sig = ConversionUtilities::BE::toUInt64(buffer);
+    } else if(bufferSize >= 4) {
+        sig = ConversionUtilities::BE::toUInt32(buffer);
+        sig <<= 4;
+    } else if(bufferSize >= 2) {
+        sig = ConversionUtilities::BE::toUInt16(buffer);
+        sig <<= 6;
+    } else {
+        return ContainerFormat::Unknown;
+    }
+    // return corresponding container format
+    switch(sig) { // check 64-bit signatures
+    case Asf1:
+        return ContainerFormat::Asf;
+    case Asf2:
+        return ContainerFormat::Asf;
+    case Png:
+        return ContainerFormat::Png;
+    default:
+        ;
+    }
+    switch(sig & 0x00000000FFFFFFFF) { // check 32-bit signatures @ bit 31
+    case Mp4:
+        return ContainerFormat::Mp4;
+    default:
+        ;
+    }
+    switch(sig >> 8) { // check 56-bit signatures
+    case Rar:
+        return ContainerFormat::Rar;
+    default:
+        ;
+    }
+    switch(sig >> 16) { // check 48-bit signatures
+    case Gif87a:
+        return ContainerFormat::Gif87a;
+    case Gif89a:
+        return ContainerFormat::Gif89a;
+    case SevenZ:
+        return ContainerFormat::SevenZ;
+    default:
+        ;
+    }
+    switch(sig >> 32) { // check 32-bit signatures
+    case Elf:
+        return ContainerFormat::Elf;
+    case JavaClassFile:
+        return ContainerFormat::JavaClassFile;
+    case Ebml:
+        return ContainerFormat::Ebml;
+    case Ogg:
+        return ContainerFormat::Ogg;
+    case PhotoshopDocument:
+        return ContainerFormat::PhotoshopDocument;
+    case Riff:
+        if(bufferSize >= 16 && ConversionUtilities::BE::toUInt64(buffer + 8) == Sig64::RiffAvi) {
+            return ContainerFormat::RiffAvi;
+        } else if (bufferSize >= 12 && ConversionUtilities::BE::toUInt32(buffer + 8) == RiffWave) {
+            return ContainerFormat::RiffWave;
+        } else {
+            return ContainerFormat::Riff;
+        }
+    case TiffBigEndian:
+        return ContainerFormat::TiffBigEndian;
+    case TiffLittleEndian:
+        return ContainerFormat::TiffLittleEndian;
+    case Utf32Text:
+        return ContainerFormat::Utf32Text;
+    case WindowsIcon:
+        return ContainerFormat::WindowsIcon;
+    case Lzip:
+        return ContainerFormat::Lzip;
+    case Zip1:
+    case Zip2:
+    case Zip3:
+        return ContainerFormat::Zip;
+    default:
+        ;
+    }
+    switch(sig >> 40) { // check 24-bit signatures
+    case Bzip2:
+        return ContainerFormat::Bzip2;
+    case Gzip:
+        return ContainerFormat::Gzip;
+    case Id3v2:
+        return ContainerFormat::Id2v2Tag;
+    case Utf8Text:
+        return ContainerFormat::Utf8Text;
+    }
+    switch(sig >> 48) { // check 16-bit signatures
+    case Jpeg:
+        return ContainerFormat::Jpeg;
+    case Lha:
+        return ContainerFormat::Lha;
+    case Lzw:
+        return ContainerFormat::Lzw;
+    case MpegAudioFrames:
+        return ContainerFormat::MpegAudioFrames;
+    case PortableExecutable:
+        return ContainerFormat::PortableExecutable;
+    case Utf16Text:
+        return ContainerFormat::Utf16Text;
+    case WindowsBitmap:
+        return ContainerFormat::WindowsBitmap;
+    default:
+        ;
+    }
+    return ContainerFormat::Unknown;
+}
+
+/*!
+ * \brief Returns the abbreviation of the container format as C-style string considering
+ * the specified media type and version.
+ *
+ * This abbreviation might be used as file extension.
+ *
+ * Returns an empty string if no abbreviation is available.
+ */
+const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType, unsigned int version)
+{
+    switch(containerFormat) {
+    case ContainerFormat::Asf: return "asf";
+    case ContainerFormat::Elf: return "elf";
+    case ContainerFormat::Gif87a:
+    case ContainerFormat::Gif89a: return "gif";
+    case ContainerFormat::JavaClassFile: return "class";
+    case ContainerFormat::Jpeg: return "jpeg";
+    case ContainerFormat::Lha: return "lzh";
+    case ContainerFormat::Lzw: return "lzw";
+    case ContainerFormat::Mp4:
+        switch(mediaType) {
+        case MediaType::Acoustic:
+            return "m4a";
+        default:
+            return "mp4";
+        }
+    case ContainerFormat::Ogg: return "ogg";
+        switch(mediaType) {
+        case MediaType::Visual:
+            return "ogv";
+        default:
+            return "ogg";
+        }
+    case ContainerFormat::PhotoshopDocument: return "psd";
+    case ContainerFormat::Png: return "png";
+    case ContainerFormat::PortableExecutable: return "exe";
+    case ContainerFormat::Rar: return "rar";
+    case ContainerFormat::Matroska:
+        switch(mediaType) {
+        case MediaType::Acoustic:
+            return "mka";
+        default:
+            return "mkv";
+        }
+    case ContainerFormat::MpegAudioFrames:
+        switch(version) {
+        case 1:
+            return "mp1";
+        case 2:
+            return "mp2";
+        default:
+            return "mp3";
+        }
+    case ContainerFormat::Riff: return "riff";
+    case ContainerFormat::RiffWave: return "wav";
+    case ContainerFormat::RiffAvi: return "avi";
+    case ContainerFormat::TiffBigEndian:
+    case ContainerFormat::TiffLittleEndian: return "tiff";
+    case ContainerFormat::WindowsBitmap: return "bmp";
+    case ContainerFormat::WindowsIcon: return "ico";
+    case ContainerFormat::Bzip2: return "bz";
+    case ContainerFormat::Gzip: return "gz";
+    case ContainerFormat::Lzip: return "lz";
+    case ContainerFormat::Zip: return "zip";
+    case ContainerFormat::SevenZ: return "7z";
+    default: return "";
+    }
+}
+
+/*!
+ * \brief Returns the name of the specified container format as C-style string.
+ *
+ * Returns "unknown" if no name is available.
+ */
+const char *containerFormatName(ContainerFormat containerFormat)
+{
+    switch(containerFormat) {
+    case ContainerFormat::Asf:
+        return "Advanced Systems Format";
+    case ContainerFormat::Elf:
+        return "Executable and Linkable Format";
+    case ContainerFormat::Gif87a:
+    case ContainerFormat::Gif89a:
+        return "Graphics Interchange Format";
+    case ContainerFormat::JavaClassFile:
+        return "Java class file";
+    case ContainerFormat::Jpeg:
+        return "JPEG File Interchange Format";
+    case ContainerFormat::Lha:
+        return "LHA compressed file";
+    case ContainerFormat::Lzw:
+        return "LZW compressed file";
+    case ContainerFormat::Mp4:
+        return "MPEG-4 Part 14";
+    case ContainerFormat::Ogg:
+        return "Ogg transport bitstream";
+    case ContainerFormat::PhotoshopDocument:
+        return "Photoshop document";
+    case ContainerFormat::Png:
+        return "Portable Network Graphics";
+    case ContainerFormat::PortableExecutable:
+        return "Portable Executable";
+    case ContainerFormat::Rar:
+        return "RAR Archive";
+    case ContainerFormat::Ebml:
+        return "EBML";
+    case ContainerFormat::Matroska:
+        return "Matroska";
+    case ContainerFormat::Webm:
+        return "WebM";
+    case ContainerFormat::MpegAudioFrames:
+        return "MPEG-1 Layer 1/2/3 frames";
+    case ContainerFormat::Riff:
+        return "Resource Interchange File Format";
+    case ContainerFormat::RiffWave:
+        return "RIFF/WAVE";
+    case ContainerFormat::RiffAvi:
+        return "RIFF/Audio Video Interleave";
+    case ContainerFormat::TiffBigEndian:
+    case ContainerFormat::TiffLittleEndian:
+        return "Tagged Image File Format";
+    case ContainerFormat::Utf16Text:
+        return "UTF-16 text";
+    case ContainerFormat::Utf32Text:
+        return "UTF-32 text";
+    case ContainerFormat::Utf8Text:
+        return "UTF-8 text";
+    case ContainerFormat::WindowsBitmap:
+        return "Microsoft Windows Bitmap";
+    case ContainerFormat::WindowsIcon:
+        return "Microsoft Windows Icon";
+    case ContainerFormat::Bzip2:
+        return "bzip2 compressed file";
+    case ContainerFormat::Gzip:
+        return "gzip compressed file";
+    case ContainerFormat::Lzip:
+        return "lzip compressed file";
+    case ContainerFormat::Zip:
+        return "ZIP archive";
+    case ContainerFormat::SevenZ:
+        return "7z archive";
+    default:
+        return "unknown";
+    }
+}
+
+/*!
+ * \brief Returns the subversion of the container format as C-style string.
+ *
+ * Returns an empty string if there is no subversion available.
+ */
+const char *containerFormatSubversion(ContainerFormat containerFormat)
+{
+    switch(containerFormat) {
+    case ContainerFormat::Gif87a:
+        return "87a";
+    case ContainerFormat::Gif89a:
+        return "89a";
+    case ContainerFormat::TiffBigEndian:
+        return "big endian";
+    case ContainerFormat::TiffLittleEndian:
+        return "little endian";
+    default:
+        return "";
+    }
+}
+
+/*!
+ * \brief Returns the MIME-type of the container format as C-style string.
+ *
+ * Returns an empty string if there is no MIME-type available.
+ */
+const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType)
+{
+    switch(containerFormat) {
+    case ContainerFormat::Asf:
+        return "video/x-ms-asf";
+    case ContainerFormat::Gif87a:
+    case ContainerFormat::Gif89a:
+        return "image/gif";
+    case ContainerFormat::Jpeg:
+        return "image/jpeg";
+    case ContainerFormat::Png:
+        return "image/png";
+    case ContainerFormat::MpegAudioFrames:
+        return "audio/mpeg";
+    case ContainerFormat::Mp4:
+        switch(mediaType) {
+        case MediaType::Acoustic:
+            return "audio/mp4";
+        default:
+            return "video/mp4";
+        }
+    case ContainerFormat::Ogg:
+        switch(mediaType) {
+        case MediaType::Acoustic:
+            return "audio/ogg";
+        default:
+            return "video/ogg";
+        }
+    case ContainerFormat::Matroska:
+        switch(mediaType) {
+        case MediaType::Acoustic:
+            return "audio/x-matroska";
+        default:
+            return "video/x-matroska";
+        }
+    case ContainerFormat::Bzip2:
+        return "application/x-bzip";
+    case ContainerFormat::Gzip:
+        return "application/gzip";
+    case ContainerFormat::Lha:
+        return "application/x-lzh-compressed";
+    case ContainerFormat::Rar:
+        return "application/x-rar-compressed";
+    case ContainerFormat::Lzip:
+        return "application/x-lzip";
+    case ContainerFormat::Zip:
+        return "application/zip";
+    case ContainerFormat::SevenZ:
+        return "application/x-7z-compressed";
+    case ContainerFormat::WindowsBitmap:
+        return "image/bmp";
+    case ContainerFormat::WindowsIcon:
+        return "image/vnd.microsoft.icon";
+    default:
+        return "";
+    }
+}
+
+}

@@ -1,0 +1,138 @@
+#ifndef EBMLELEMENT_H
+#define EBMLELEMENT_H
+
+#include "ebmlid.h"
+#include "matroskaid.h"
+#include "../statusprovider.h"
+#include "../genericfileelement.h"
+
+#include <c++utilities/conversion/types.h>
+
+#include <iostream>
+#include <memory>
+#include <string>
+#include <sstream>
+
+namespace Media {
+
+class EbmlElement;
+class MatroskaContainer;
+
+/*!
+ * \brief Defines traits for the GenericFileElement implementation EbmlElement.
+ */
+template <>
+class LIB_EXPORT FileElementTraits<EbmlElement>
+{
+public:
+    /*!
+     * \brief The container type used to store such elements is MatroskaContainer.
+     */
+    typedef MatroskaContainer containerType;
+
+    /*!
+     * \brief The type used to store element IDs is an unsigned 32-bit integer.
+     */
+    typedef uint32 identifierType;
+
+    /*!
+     * \brief The implementation type is EbmlElement.
+     */
+    typedef EbmlElement implementationType;
+};
+
+class LIB_EXPORT EbmlElement : public GenericFileElement<EbmlElement>
+{
+    friend class GenericFileElement<EbmlElement>;
+
+public:
+    EbmlElement(MatroskaContainer &container, uint64 startOffset);
+
+    std::string idToString() const;
+    bool isParent() const;
+    bool isPadding() const;
+    uint64 firstChildOffset() const;
+    std::string readString();
+    uint64 readUInteger();
+    float64 readFloat();
+
+    static byte calculateIdLength(identifierType id);
+    static byte calculateSizeDenotationLength(uint64 size);
+    static byte makeId(identifierType id, char *buff);
+    static byte makeSizeDenotation(uint64 size, char *buff);
+    static byte calculateUIntegerLength(uint64 integer);
+    static byte makeUInteger(uint64 value, char *buff);
+    static void makeSimpleElement(std::ostream &stream, identifierType id, uint64 content);
+    static void makeSimpleElement(std::ostream &stream, identifierType id, const std::string &content);
+
+protected:
+    EbmlElement(EbmlElement &parent, uint64 startOffset);
+
+    void internalParse();
+
+private:
+    std::string parsingContext() const;
+};
+
+/*!
+ * \brief Converts the specified EBML \a ID to a printable string.
+ */
+inline std::string EbmlElement::idToString() const
+{
+    std::stringstream ss;
+    ss << "0x" << std::hex << id();
+    const char *name = matroskaIdName(id());
+    if(std::char_traits<char>::length(name)) {
+        ss << " \"" << name << "\"";
+    }
+    return ss.str();
+}
+
+/*!
+ * \brief Returns an indication whether the element is a parent element.
+ * \remarks This information is not read from the element header. Some
+ *          elements are simply known to be parents whereas all other
+ *          are considered as non-parents.
+ */
+inline bool EbmlElement::isParent() const
+{
+    using namespace EbmlIds;
+    using namespace MatroskaIds;
+    switch(id()) {
+    case Header:
+    case SignatureSlot: case SignatureElements: case SignatureElementList:
+    case Segment: case SeekHead: case Seek:
+    case SegmentInfo: case ChapterTranslate:
+    case Cluster: case SilentTracks: case BlockGroup: case BlockAdditions: case BlockMore: case Slices: case TimeSlice: case ReferenceFrame:
+    case Tracks: case TrackEntry: case TrackTranslate: case TrackVideo: case TrackAudio: case TrackOperation: case TrackCombinePlanes: case TrackPlane: case TrackJoinBlocks:
+    case ContentEncodings: case ContentEncoding: case ContentCompression: case ContentEncryption:
+    case Cues: case CuePoint: case CueTrackPositions: case CueReference:
+    case Attachments: case AttachedFile:
+    case Chapters: case EditionEntry: case ChapterAtom: case ChapterTrack: case ChapterDisplay: case ChapProcess: case ChapProcessCommand:
+    case Tags: case MatroskaIds::Tag: case Targets: case SimpleTag:
+        return true;
+    default:
+        return false;
+    }
+}
+
+/*!
+ * \brief Returns an indication whether the element is considered as padding.
+ */
+inline bool EbmlElement::isPadding() const
+{
+    return id() == EbmlIds::Void;
+}
+
+/*!
+ * \brief Returns the offset of the first child of the element.
+ */
+inline uint64 EbmlElement::firstChildOffset() const
+{
+    return isParent() ? (idLength() + sizeLength()) : 0;
+}
+
+}
+
+
+#endif // EBMLELEMENT_H
