@@ -9,6 +9,7 @@ depends=('mingw-w64-crt' 'mingw-w64-c++utilities')
 makedepends=('mingw-w64-gcc' 'mingw-w64-qt5-base')
 url="https://github.com/Martchus/tagparser"
 source=("tagparser-${pkgver}.tar.gz::https://github.com/Martchus/tagparser/archive/v${pkgver}.tar.gz")
+_reponame=tagparser
 sha256sums=('4e94aff9225d8873f752995c1bcc5f15')
 options=('staticlibs' '!strip')
 _architectures="i686-w64-mingw32 x86_64-w64-mingw32"
@@ -16,7 +17,7 @@ _architectures="i686-w64-mingw32 x86_64-w64-mingw32"
 # head end
 
 build() {
-    cd $srcdir/$_name
+    cd "$srcdir/${PROJECT_DIR_NAME:-$_reponame-$pkgver}"
     # build utilities for each architecture
     for _arch in ${_architectures}; do
         mkdir -p build-${_arch} && pushd build-${_arch}
@@ -27,7 +28,7 @@ build() {
 }
 
 package() {
-    cd $srcdir/$_name
+    cd "$srcdir/${PROJECT_DIR_NAME:-$_reponame-$pkgver}"
     for _arch in ${_architectures}; do
         # bin stuff
         pushd build-${_arch}
