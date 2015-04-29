@@ -6,10 +6,12 @@ pkgdesc="Library for reading and editing meta-data of several media formats."
 license=('GPL')
 depends=('c++utilities')
 makedepends=
-url="http://martchus.netai.net/"
-source=("$pkgname.tar.gz")
-md5sums=('0e2db5af62634a9484f22721040c2e20')
+url="https://github.com/Martchus/tagparser"
+source=("tagparser-${pkgver}.tar.gz::https://github.com/Martchus/tagparser/archive/v${pkgver}.tar.gz")
+sha256sums=('0e2db5af62634a9484f22721040c2e20')
+
 # head end
+
 build() {
     cd $srcdir/$pkgname
     INSTALL_ROOT=$pkgdir/usr/ qmake-qt5 "$pkgname.pro" -r -spec linux-g++

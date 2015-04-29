@@ -1,5 +1,5 @@
 _name=tagparser
-pkgname=mingw-w64-$_name
+pkgname=mingw-w64-tagparser
 pkgver=1.1.3
 pkgrel=1
 arch=('any')
@@ -7,12 +7,14 @@ pkgdesc="Library for reading and editing meta-data of several media formats (min
 license=('GPL')
 depends=('mingw-w64-crt' 'mingw-w64-c++utilities')
 makedepends=('mingw-w64-gcc' 'mingw-w64-qt5-base')
-url="http://martchus.netai.net/"
-source=("${_name}.tar.gz")
-md5sums=('4e94aff9225d8873f752995c1bcc5f15')
+url="https://github.com/Martchus/tagparser"
+source=("tagparser-${pkgver}.tar.gz::https://github.com/Martchus/tagparser/archive/v${pkgver}.tar.gz")
+sha256sums=('4e94aff9225d8873f752995c1bcc5f15')
 options=('staticlibs' '!strip')
 _architectures="i686-w64-mingw32 x86_64-w64-mingw32"
+
 # head end
+
 build() {
     cd $srcdir/$_name
     # build utilities for each architecture
