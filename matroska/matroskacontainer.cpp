@@ -173,9 +173,10 @@ void MatroskaContainer::validateIndex()
                                                 switch(referenceElement.id()) {
                                                 case MatroskaIds::SimpleBlock:
                                                 case MatroskaIds::Block:
+                                                case MatroskaIds::BlockGroup:
                                                     break;
                                                 default:
-                                                    addNotification(NotificationType::Critical, "\"CueRelativePosition\" element does not point to \"Block\"-element (points to " + numberToString(referenceElement.startOffset()) + ").", context);
+                                                    addNotification(NotificationType::Critical, "\"CueRelativePosition\" element does not point to \"Block\"-, \"BlockGroup\", or \"SimpleBlock\"-element (points to " + numberToString(referenceElement.startOffset()) + ").", context);
                                                 }
                                             } catch(Failure &) {
                                                 addNotifications(context, referenceElement);
