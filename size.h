@@ -94,7 +94,7 @@ inline constexpr bool Size::isNull() const
 inline std::string Size::toString() const
 {
     std::stringstream res;
-    res << "width: " << m_width << "; height: " << m_height;
+    res << "width: " << m_width << ", height: " << m_height;
     return std::string(res.str());
 }
 

@@ -36,6 +36,11 @@ public:
     typedef uint32 identifierType;
 
     /*!
+     * \brief The type used to store element sizes is an unsigned 64-bit integer.
+     */
+    typedef uint64 dataSizeType;
+
+    /*!
      * \brief The implementation type is Mp4Atom.
      */
     typedef Mp4Atom implementationType;
@@ -56,6 +61,7 @@ public:
     static void seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset, bool denote64BitSize = false);
 
 protected:
+    Mp4Atom(containerType& container, uint64 startOffset, uint64 maxSize);
     Mp4Atom(implementationType &parent, uint64 startOffset);
 
     void internalParse();

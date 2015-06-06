@@ -4,6 +4,7 @@
 #include "statusprovider.h"
 #include "size.h"
 #include "margin.h"
+#include "mediaformat.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
@@ -17,7 +18,7 @@
 namespace Media {
 
 enum class MediaType;
-enum class MediaFormat;
+enum class GeneralMediaFormat;
 
 /*!
  * \brief Specifies the track type.

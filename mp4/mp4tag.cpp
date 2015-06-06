@@ -213,22 +213,17 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
         addNotification(NotificationType::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if(subAtom) {
-        Mp4Atom *child = subAtom->firstChild();
         Mp4TagField tagField;
-        while(child) {
+        for(Mp4Atom *child : *subAtom) {
             try {
                 child->parse();
                 tagField.invalidateNotifications();
                 tagField.reparse(*child);
                 fields().insert(pair<fieldType::identifierType, fieldType>(child->id(), tagField));
-                addNotifications(context, *child);
-                addNotifications(context, tagField);
-                child = child->nextSibling();
             } catch(Failure &) {
-                addNotifications(context, *child);
-                addNotifications(context, tagField);
-                break;
             }
+            addNotifications(context, *child);
+            addNotifications(context, tagField);
         }
     } else {
         addNotification(NotificationType::Warning, "No ilst atom found (stores attached meta information).", context);

@@ -226,14 +226,14 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Lzw: return "lzw";
     case ContainerFormat::Mp4:
         switch(mediaType) {
-        case MediaType::Acoustic:
+        case MediaType::Audio:
             return "m4a";
         default:
             return "mp4";
         }
     case ContainerFormat::Ogg: return "ogg";
         switch(mediaType) {
-        case MediaType::Visual:
+        case MediaType::Video:
             return "ogv";
         default:
             return "ogg";
@@ -244,7 +244,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Rar: return "rar";
     case ContainerFormat::Matroska:
         switch(mediaType) {
-        case MediaType::Acoustic:
+        case MediaType::Audio:
             return "mka";
         default:
             return "mkv";
@@ -393,21 +393,21 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
         return "audio/mpeg";
     case ContainerFormat::Mp4:
         switch(mediaType) {
-        case MediaType::Acoustic:
+        case MediaType::Audio:
             return "audio/mp4";
         default:
             return "video/mp4";
         }
     case ContainerFormat::Ogg:
         switch(mediaType) {
-        case MediaType::Acoustic:
+        case MediaType::Audio:
             return "audio/ogg";
         default:
             return "video/ogg";
         }
     case ContainerFormat::Matroska:
         switch(mediaType) {
-        case MediaType::Acoustic:
+        case MediaType::Audio:
             return "audio/x-matroska";
         default:
             return "video/x-matroska";

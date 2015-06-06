@@ -29,6 +29,13 @@ Mp4Atom::Mp4Atom(GenericFileElement::containerType &container, uint64 startOffse
 {}
 
 /*!
+ * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
+ */
+Mp4Atom::Mp4Atom(GenericFileElement::containerType &container, uint64 startOffset, uint64 maxSize) :
+    GenericFileElement<Mp4Atom>(container, startOffset, maxSize)
+{}
+
+/*!
  * \brief Constructs a new sub level atom with the specified \a parent at the specified \a startOffset.
  */
 Mp4Atom::Mp4Atom(GenericFileElement::implementationType &parent, uint64 startOffset) :
@@ -98,7 +105,7 @@ void Mp4Atom::internalParse()
         if(parent()) {
             sibling = new Mp4Atom(*(parent()), startOffset() + totalSize());
         } else {
-            sibling = new Mp4Atom(container(), startOffset() + totalSize());
+            sibling = new Mp4Atom(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
         }
     }
     m_nextSibling.reset(sibling);

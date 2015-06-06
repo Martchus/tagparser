@@ -4,6 +4,15 @@
 
 namespace Media {
 
+/*!
+ * \struct Media::SpsInfo
+ * \brief The SpsInfo struct holds the sequence parameter set.
+ */
+
+/*!
+ * \brief SpsInfo::parse
+ * \param stream
+ */
 void SpsInfo::parse(std::istream &stream)
 {
     static auto highLevelProfileIds = std::unordered_map<unsigned int, bool> {

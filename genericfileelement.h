@@ -27,6 +27,72 @@ namespace Media {
 template <class ImplementationType>
 class GenericFileElement;
 
+
+/*!
+ * \class Media::FileElementIterator
+ * \brief The FileElementIterator class helps iterating through the childs of a FileElement.
+ */
+template<typename ImplementationType>
+class FileElementIterator
+{
+public:
+    FileElementIterator(ImplementationType *element = nullptr);
+
+    ImplementationType *operator *();
+    const ImplementationType *operator *() const;
+    operator bool() const;
+    FileElementIterator<ImplementationType> &operator ++();
+
+private:
+    ImplementationType *m_current;
+};
+
+/*!
+ * \brief Constructs a new iterator for the specified \a element.
+ */
+template<typename ImplementationType>
+inline FileElementIterator<ImplementationType>::FileElementIterator(ImplementationType *element) :
+    m_current(element)
+{}
+
+/*!
+ * \brief Returns a reference to the current element.
+ */
+template<typename ImplementationType>
+inline ImplementationType *FileElementIterator<ImplementationType>::operator *()
+{
+    return m_current;
+}
+
+/*!
+ * \brief Returns a reference the current element (constant).
+ */
+template<typename ImplementationType>
+inline const ImplementationType *FileElementIterator<ImplementationType>::operator *() const
+{
+    return m_current;
+}
+
+/*!
+ * \brief Moves to the next sibling.
+ */
+template<typename ImplementationType>
+inline FileElementIterator<ImplementationType> &FileElementIterator<ImplementationType>::operator ++()
+{
+    m_current->parse(); // ensure the current element has been parsed
+    m_current = m_current->nextSibling();
+    return *this;
+}
+
+/*!
+ * \brief Returns whether the iterator points to an element.
+ */
+template<typename ImplementationType>
+inline FileElementIterator<ImplementationType>::operator bool() const
+{
+    return m_current != nullptr;
+}
+
 /*!
  * \class Media::FileElementTraits
  * \brief Defines traits for the specified \a ImplementationType.
@@ -66,7 +132,7 @@ public:
     /*!
      * \brief Specifies the type used to store data sizes.
      */
-    typedef uint64 dataSizeType;
+    typedef typename FileElementTraits<ImplementationType>::dataSizeType dataSizeType;
 
     /*!
      * \brief Specifies the type of the actual implementation.
@@ -106,6 +172,10 @@ public:
     implementationType* subelementByPath(std::list<identifierType> &path);
     implementationType* childById(const identifierType &id);
     implementationType* siblingById(const identifierType &id, bool includeThis = false);
+    FileElementIterator<implementationType> begin();
+    FileElementIterator<implementationType> end();
+    const FileElementIterator<implementationType> begin() const;
+    const FileElementIterator<implementationType> end() const;
     bool isParent() const;
     bool isPadding() const;
     uint64 firstChildOffset() const;
@@ -140,6 +210,7 @@ private:
 
 /*!
  * \brief Constructs a new top level file element with the specified \a container at the specified \a startOffset.
+ * \remarks The available size is obtained using the stream of the \a container.
  */
 template <class ImplementationType>
 GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::containerType &container, uint64 startOffset) :
@@ -339,6 +410,9 @@ inline uint64 GenericFileElement<ImplementationType>::totalSize() const
 
 /*!
  * \brief Returns maximum total size.
+ *
+ * This is usually the size of the file for top-level elements and
+ * the remaining size of the parent for non-top-level elements.
  */
 template <class ImplementationType>
 inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
@@ -526,6 +600,42 @@ typename GenericFileElement<ImplementationType>::implementationType *GenericFile
         sibling = sibling->nextSibling();
     }
     return nullptr;
+}
+
+/*!
+ * \brief Returns an iterator for iterating over the element's childs.
+ */
+template <class ImplementationType>
+FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::begin()
+{
+    return FileElementIterator<implementationType>(firstChild());
+}
+
+/*!
+ * \brief Returns an iterator for iterating over the element's childs (constant).
+ */
+template <class ImplementationType>
+const FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::begin() const
+{
+    return FileElementIterator<implementationType>(firstChild());
+}
+
+/*!
+ * \brief Returns an invalid iterator.
+ */
+template <class ImplementationType>
+FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::end()
+{
+    return FileElementIterator<ImplementationType>();
+}
+
+/*!
+ * \brief Returns an invalid iterator.
+ */
+template <class ImplementationType>
+const FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::end() const
+{
+    return FileElementIterator<ImplementationType>();
 }
 
 /*!

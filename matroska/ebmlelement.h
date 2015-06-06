@@ -36,6 +36,11 @@ public:
     typedef uint32 identifierType;
 
     /*!
+     * \brief The type used to store element sizes is an unsigned 64-bit integer.
+     */
+    typedef uint64 dataSizeType;
+
+    /*!
      * \brief The implementation type is EbmlElement.
      */
     typedef EbmlElement implementationType;
@@ -67,6 +72,7 @@ public:
 
 protected:
     EbmlElement(EbmlElement &parent, uint64 startOffset);
+    EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize);
 
     void internalParse();
 

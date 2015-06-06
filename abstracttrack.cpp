@@ -32,7 +32,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64
     m_writer(BinaryWriter(&outputStream)),
     m_startOffset(startOffset),
     m_headerValid(false),
-    m_format(MediaFormat::Unknown),
+    m_format(),
     m_mediaType(MediaType::Unknown),
     m_version(0.0),
     m_size(0),
@@ -79,22 +79,13 @@ AbstractTrack::~AbstractTrack()
 /*!
  * \brief Returns the format of the track as C-style string if known; otherwise
  *        returns the format abbreviation or an empty string.
+ * \remarks
+ *  - The caller must not free the returned string.
+ *  - The string might get invalidated when the track is (re)parsed.
  */
 const char *AbstractTrack::formatName() const
 {
-    if(!m_formatName.empty()) {
-        return m_formatName.c_str();
-    }
-    const char *formatName = mediaFormatName(m_format);
-    if(*formatName == 0) {
-        if(!m_formatId.empty()) {
-            return m_formatId.c_str();
-        } else {
-            return "unknown";
-        }
-    } else {
-        return formatName;
-    }
+    return m_format || m_formatName.empty() ? m_format.name() : m_formatName.c_str();
 }
 
 /*!
@@ -103,43 +94,8 @@ const char *AbstractTrack::formatName() const
  */
 const char *AbstractTrack::formatAbbreviation() const
 {
-    if(!m_formatId.empty()) {
-        return m_formatId.c_str();
-    }
-    switch(m_format) {
-    case MediaFormat::Pcm:
-        return "PCM";
-    case MediaFormat::Mpeg1:
-        return "MPEG-1";
-    case MediaFormat::Mpeg2:
-        return "MPEG-2";
-    case MediaFormat::MpegL1:
-        return "MP1";
-    case MediaFormat::MpegL2:
-        return "MP2";
-    case MediaFormat::MpegL3:
-        return "MP3";
-    case MediaFormat::Aac:
-        return "AAC";
-    case MediaFormat::Png:
-        return "PNG";
-    case MediaFormat::Jpeg:
-        return "JPEG";
-    case MediaFormat::Mpeg4Avc:
-        return "AVC";
-    case MediaFormat::Mpeg4Asp:
-        return "ASP";
-    case MediaFormat::Mpeg4:
-        return "MPEG-4";
-    case MediaFormat::Gif:
-        return "GIF";
-    case MediaFormat::Tiff:
-        return "TIFF";
-    case MediaFormat::Ac3:
-        return "AC3";
-    default:
-        return "";
-    }
+    const char *abbr = m_format.abbreviation();
+    return *abbr || m_formatId.empty() ? m_format.abbreviation() : m_formatId.c_str();
 }
 
 /*!
@@ -148,11 +104,11 @@ const char *AbstractTrack::formatAbbreviation() const
 const char *AbstractTrack::mediaTypeName() const
 {
     switch(m_mediaType) {
-    case MediaType::Acoustic:
+    case MediaType::Audio:
         return "Audio";
-    case MediaType::Visual:
+    case MediaType::Video:
         return "Video";
-    case MediaType::Textual:
+    case MediaType::Text:
         return "Subititle";
     case MediaType::Hint:
         return "Hint";

@@ -61,12 +61,12 @@ void OggStream::internalParseHeader()
             if((sig & 0x00ffffffffffff00u) == 0x00766F7262697300u) {
                 // Vorbis header detected
                 // set Vorbis as format
-                switch(m_format) {
-                case MediaFormat::Unknown:
-                    m_format = MediaFormat::Vorbis;
-                    m_mediaType = MediaType::Acoustic;
+                switch(m_format.general) {
+                case GeneralMediaFormat::Unknown:
+                    m_format = GeneralMediaFormat::Vorbis;
+                    m_mediaType = MediaType::Audio;
                     break;
-                case MediaFormat::Vorbis:
+                case GeneralMediaFormat::Vorbis:
                     break;
                 default:
                     addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);

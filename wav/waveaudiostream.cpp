@@ -19,7 +19,7 @@ namespace Media {
 WaveAudioStream::WaveAudioStream(iostream &stream, uint64 startOffset) :
     AbstractTrack(stream, startOffset)
 {
-    m_mediaType = MediaType::Acoustic;
+    m_mediaType = MediaType::Audio;
 }
 
 /*!
@@ -46,16 +46,16 @@ void WaveAudioStream::internalParseHeader()
             if(restHeaderLen >= 16u) {
                 switch(m_reader.readUInt16LE()) {
                 case 0x0001u:
-                    m_format = MediaFormat::Pcm;
+                    m_format = GeneralMediaFormat::Pcm;
                     break;
                 case 0x0050u:
-                    m_format = MediaFormat::MpegL2;
+                    m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer2);
                     break;
                 case 0x0055u:
-                    m_format = MediaFormat::MpegL3;
+                    m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
                     break;
                 default:
-                    m_format = MediaFormat::Unknown;
+                    m_format = GeneralMediaFormat::Unknown;
                 }
                 m_channelCount = m_reader.readUInt16LE();
                 m_samplesPerSecond = m_reader.readUInt32LE();
@@ -64,7 +64,7 @@ void WaveAudioStream::internalParseHeader()
                 m_bitsPerSample = m_reader.readUInt16LE();
                 m_bitrate = m_bitsPerSample * m_samplesPerSecond * m_channelCount;
             } else {
-                m_format = MediaFormat::Unknown;
+                m_format = GeneralMediaFormat::Unknown;
             }
             if(restHeaderLen > 16u) {
                 m_istream->seekg(m_dataOffset, ios_base::beg);

@@ -6,6 +6,8 @@
 namespace Media
 {
 
+class MediaFormat;
+
 namespace Mp4AtomIds {
 enum KnownValue : uint32 {
     AvcConfiguration = 0x61766343,
@@ -66,8 +68,8 @@ enum KnownValue : uint32 {
     TrackExtends = 0x74726578,
     TrackFragmentRun = 0x7472756E,
     UserData = 0x75647461,
-    DataEntryUrl  = 0x75726C20,
-    DataEntryUrn  = 0x75726E20,
+    DataEntryUrl = 0x75726C20,
+    DataEntryUrn = 0x75726E20,
     VideoMediaHeader = 0x766D6864,
     Wide = 0x77696465
 };
@@ -125,39 +127,228 @@ extern const char *cdec;
 
 namespace Mp4MediaTypeIds {
 enum KnownValue : uint32 {
-    Sound = 0x736f756e,
-    Video = 0x76696465,
-    Hint = 0x68696e74,
-    Meta = 0x6d657461
+    Sound = 0x736f756e, /**< Sound/Audio */
+    Video = 0x76696465, /**< Video */
+    Hint = 0x68696e74, /**< Hint */
+    Meta = 0x6d657461 /**< Meta */
 };
 }
 
 namespace Mp4FormatIds {
 enum KnownValue : uint32 {
-    Mpeg4Visual = 0x6d703476,
-    Avc1 = 0x61766331,
-    Avc2 = 0x61766332,
-    Avc3 = 0x61766333,
-    Avc4 = 0x61766334,
-    H263 = 0x68323633,
-    Tiff = 0x74696666,
-    Jpeg = 0x6a706567,
-    Raw = 0x72617720,
-    Gif = 0x67696620,
-    Mp3 = 0x2e6d7033,
-    Mpeg4Audio = 0x6d703461,
-    Alac = 0x616C6163,
-    Ac3 = 0x61632d33,
-    Ac4 = 0x61632d34,
-    AdpcmAcm = 0x6D730002,
-    ImaadpcmAcm = 0x6D730011,
-    Mp3CbrOnly = 0x6D730055
+    Cinepak = 0x63766964, /**< Cinepak */
+    Mpeg4Video = 0x6d703476, /**< MPEG-4 video */
+    Graphics = 0x736D6320, /**< Graphics */
+    Animation = 0x726C6520, /**< Animation */
+    AppleVideo = 0x72707A61, /**< Apple video */
+    Png = 0x706E6720, /**< Portable Network Graphics */
+    Avc1 = 0x61766331, /**< H.264/MPEG-4 AVC video */
+    Avc2 = 0x61766332, /**< H.264/MPEG-4 AVC video */
+    Avc3 = 0x61766333, /**< H.264/MPEG-4 AVC video */
+    Avc4 = 0x61766334, /**< H.264/MPEG-4 AVC video */
+    H263 = 0x68323633, /**< H.263/MPEG-4 ASP video */
+    Tiff = 0x74696666, /**< Tagged Image File Format */
+    Jpeg = 0x6a706567, /**< JPEG */
+    Raw = 0x72617720, /**< Uncompressed RGB */
+    Gif = 0x67696620, /**< CompuServe Graphics Interchange Format */
+    NtscDv25Video = 0x64766320, /**< NTSC DV-25 video */
+    PalDv25Video = 0x64766370, /**< PAL DV-25 video */
+    MotionJpegA = 0x6D6A7061, /**< Motion-JPEG (format A) */
+    MotionJpegB = 0x6D6A7062, /**< Motion-JPEG (format B) */
+    Mp3 = 0x2e6d7033, /**< MPEG-1 Layer 3 */
+    Mpeg4Audio = 0x6d703461, /**< MPEG-4 audio */
+    Mpeg4Stream = 0x6d703473, /**< MPEG-4 stream (other then video/audio) */
+    Alac = 0x616C6163, /**< Apple Losless Audio Codec */
+    Ac3 = 0x61632d33, /**< Dolby Digital */
+    Ac4 = 0x61632d34, /**< ? */
+    AdpcmAcm = 0x6D730002, /**< ? */
+    ImaadpcmAcm = 0x6D730011, /**< ? */
+    Mp3CbrOnly = 0x6D730055 /**< MPEG-1 Layer 3 (constant bitrate only) */
+};
+
+MediaFormat fourccToMediaFormat(uint32 fourccId);
+
+}
+
+namespace Mp4FormatExtensionIds {
+enum KnownValue : uint32 {
+    GammaLevel = 0x67616D61, /**< A 32-bit fixed-point number indicating the gamma level at which the image was captured. The decompressor can use this value to gamma-correct at display time. */
+    FieldHandling = 0x6669656C, /**< Two 8-bit integers that define field handling. */
+    DefaultQuantizationTable = 0x6D6A7174, /**< The default quantization table for a Motion-JPEG data stream. */
+    DefaultHuffmanTable = 0x6D6A6874, /**< The default Huffman table for a Motion-JPEG data stream. */
+    Mpeg4ElementaryStreamDescriptor = 0x65736473, /**< An MPEG-4 elementary stream descriptor atom. This extension is required for MPEG-4 video. */
+    Mpeg4ElementaryStreamDescriptor2 = 0x6D346473, /**< Alternative if encoded to AVC stanard. */
+    AvcConfiguration = 0x61766343, /**< An H.264 AVCConfigurationBox. This extension is required for H.264 video as defined in ISO/IEC 14496-15. */
+    PixelAspectRatio = 0x70617370, /**< Pixel aspect ratio. This extension is mandatory for video formats that use non-square pixels. */
+    ColorParameters = 0x636F6C72, /**< An image description extension required for all uncompressed Y´CbCr video types. */
+    CleanAperature = 0x636C6170 /**< Spatial relationship of Y´CbCr components relative to a canonical image center. */
 };
 }
 
-namespace Mp4FormatConfigurationIds {
-enum KnownValue : uint32 {
-    AvcC = 0x61766343
+namespace Mpeg4ElementaryStreamObjectIds {
+enum KnownValue : byte {
+    SystemsIso144961 = 0x01, /**< Systems */
+    SystemsIso144961v2, /**< Systems (version 2) */
+    InteractionStream, /**< Interaction Stream */
+    AfxStream = 0x05, /**< AFX Stream */
+    FontDataStream, /**< Font Data Stream */
+    SynthesizedTextureStream, /**< Synthesized Texture Stream */
+    StreamingTextStream, /**< Streaming Text Stream */
+    Mpeg4Visual = 0x20, /**< MPEG-4 Visual */
+    Avc, /**< Advanced Video Coding */
+    ParameterSetsForAvc, /**< Parameter Sets for Advanced Video Coding */
+    Als = 0x24, /**< ALS */
+    Sa0c = 0x2B, /**< SAOC */
+    Aac = 0x40, /**< Audio ISO/IEC 14496-3 (AAC) */
+    Mpeg2VideoSimpleProfile = 0x60, /**< MPEG-2 Video Simple Profile */
+    Mpeg2VideoMainProfile, /**< MPEG-2 Video Main Profile */
+    Mpeg2VideoSnrProfile, /**< MPEG-2 Video SNR Profile */
+    Mpeg2VideoSpatialProfile, /**< MPEG-2 Video Spatial Profile */
+    Mpeg2VideoHighProfile, /**< MPEG-2 Video High Profile */
+    Mpeg2Video422Profile, /**< MPEG-2 Video 422 Profile */
+    AacMainProfile, /**< Advanced Audio Coding Main Profile */
+    AacLowComplexityProfile, /**< Advanced Audio Coding Low Complexity Profile */
+    AacScaleableSamplingRateProfile, /**< Advanced Audio Coding Scaleable Sampling Rate Profile */
+    Mpeg2Audio, /**< MPEG-2 Audio */
+    Mpeg1Video, /**< MPEG-1 Video */
+    Mpeg1Audio, /**< MPEG-1 Audio */
+    Jpeg, /**< JPEG */
+    Png, /**< PNG */
+    Evrc = 0xA0, /**< EVRC */
+    Smv, /**< SMV */
+    Gpp2Cmf, /**< 3GPP2 Compact Multimedia Format (CMF) */
+    Vc1, /**< VC-1 */
+    Dirac, /**< Dirac */
+    Ac3, /**< AC-3 */
+    EAc3, /**< E-AC-3 */
+    Dts, /**< DTS */
+    DtsHdHighResolution, /**< DTS-HD High Resolution */
+    DtsHdMasterAudio, /**< DTS-HD Master Audio */
+    DtsHdExpress, /**< DTS-HD Express */
+    PrivateEvrc = 0xD1, /**< EVRC */
+    PrivateAc3 = 0xD3, /**< AC-3 */
+    PrivateDts, /**< DTS */
+    PrivateOgg = 0xDD, /**< Ogg */
+    PrivateOgg2, /**< Ogg */
+    PrivateQcelp = 0xE1 /**< QCELP */
+};
+
+MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
+
+}
+
+namespace Mpeg4ElementaryStreamTypeIds {
+enum KnownValue : byte {
+    ObjectDescriptor = 0x01,
+    ClockReference,
+    SceneDescriptor,
+    Visual,
+    Audio,
+    Mpeg7,
+    Ipmps,
+    ObjectContentInfo,
+    MpegJava,
+    Interaction,
+    Ipmp,
+    FontData,
+    StreamingText
+};
+
+const char *streamTypeName(byte streamTypeId);
+
+}
+
+namespace Mpeg4DescriptorIds {
+enum KnownValue : byte {
+    ObjectDescr = 0x01,
+    InitialObjectDescr,
+    ElementaryStreamDescr,
+    DecoderConfigDescr,
+    DecoderSpecificInfo,
+    SlConfigDescr,
+    ContentIdentDescr,
+    SupplContentIdentDescr,
+    IpiDescPointer,
+    IpmpDescPointer,
+    IpmpDescr,
+    QoSDescr,
+    RegistrationDescr,
+    EsIdInc,
+    EsIdRef,
+    Mp4I0d,
+    Mp40d,
+    IplDescrPointerRef,
+    ExtendedProfileLevelDescr,
+    ProfileLevelIndicationIndexDescr,
+    ContentClassificationDescr = 0x40,
+    KeyWordDescr,
+    RatingDescr,
+    LanguageDescr,
+    ShortTextualDescr,
+    ExpandedTextualDescr,
+    ContentCreatorNameDescr,
+    ContentCreationDateDescr,
+    IcicCreatorDateDescr,
+    SmpteCameraPositionDescr,
+    SegmentDescr,
+    MediaTimeDescr,
+    IpmpToolsListDescr = 0x60,
+    IpmpToolTag,
+    FlexMuxTimingDescr,
+    FlexMuxCodeTableDescr,
+    ExtSlConfigDescr,
+    FlexMuxIdentDescr,
+    DependencyPointer,
+    DependencyMaker,
+    FlexMuxChannelDescr,
+    UserPrivate = 0xC0
+};
+}
+
+namespace Mpeg4AudioObjectIds {
+enum KnownValue : byte {
+    Null = 0,
+    AacMain,
+    AacLc, /**< low complexity */
+    AacSsr, /**< scalable sample rate */
+    AacLtp, /**< long term prediction */
+    Sbr, /**< spectral band replication */
+    AacScalable,
+    TwinVq,
+    Celp, /**< code excited linear prediction */
+    Hxvc, /**< harmonic vector excitation coding */
+    Ttsi = 12, /**< text-to-speech interface */
+    MainSynthesis,
+    WavetableSynthesis,
+    GeneralMidi,
+    AlgorithmicSynthesisAudioEffects,
+    ErAacLc, /**< error resillent AAC LC */
+    ErAacLtp = 19,
+    ErAacScalable,
+    ErTwinVq,
+    ErBsac,
+    ErAacLd,
+    ErCelp,
+    ErHvxc,
+    ErHiln,
+    ErParametric,
+    Ssc,
+    Ps,
+    MpegSurround,
+    EscapeValue,
+    Layer1,
+    Layer2,
+    Layer3,
+    Dst,
+    Als, /**< audio lossless */
+    Sls, /**< scalable lossless */
+    ErAacEld, /**< enhanced low delay */
+    SmrSimple, /**< symbolic music representation */
+    SmrMain,
+    UsacNoSbr, /**< unified speech and audio coding */
+    Saoc, /**< spatial audio object coding (no SBR) */
+    LdMpegSurround,
+    Usac /**< unified speech and audio coding */
 };
 }
 

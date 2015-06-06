@@ -18,6 +18,8 @@ public:
 
     TrackType type() const;
 
+    static MediaFormat codecIdToMediaFormat(const std::string &codecId);
+
 protected:
     void internalParseHeader();
 

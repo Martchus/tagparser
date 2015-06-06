@@ -67,7 +67,8 @@ SOURCES += \
     abstractattachment.cpp \
     matroska/matroskaattachment.cpp \
     mediaformat.cpp \
-    avc/avcconfiguration.cpp
+    avc/avcconfiguration.cpp \
+    mp4/mpeg4descriptor.cpp
 
 HEADERS  += \
     abstractcontainer.h \
@@ -132,7 +133,8 @@ HEADERS  += \
     matroska/matroskaattachment.h \
     mediaformat.h \
     avc/avcconfiguration.h \
-    generictagfield.h
+    generictagfield.h \
+    mp4/mpeg4descriptor.h
 
 LIBS += -lz
 

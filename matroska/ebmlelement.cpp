@@ -35,6 +35,13 @@ EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset) :
 {}
 
 /*!
+ * \brief Constructs a new top level element with the specified \a container at the specified \a startOffset.
+ */
+EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize) :
+    GenericFileElement<EbmlElement>(container, startOffset, maxSize)
+{}
+
+/*!
  * \brief Constructs a new sub level element with the specified \a parent at the specified \a startOffset.
  */
 EbmlElement::EbmlElement(EbmlElement &parent, uint64 startOffset) :
@@ -129,7 +136,7 @@ void EbmlElement::internalParse()
         if(parent()) {
             m_nextSibling.reset(new EbmlElement(*(parent()), startOffset() + totalSize()));
         } else {
-            m_nextSibling = make_unique<EbmlElement>(container(), startOffset() + totalSize());
+            m_nextSibling.reset(new EbmlElement(container(), startOffset() + totalSize(), maxTotalSize() - totalSize()));
         }
     } else {
         m_nextSibling.reset();

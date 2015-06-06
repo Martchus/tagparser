@@ -24,7 +24,7 @@ namespace Media {
 MpegAudioFrameStream::MpegAudioFrameStream(iostream &stream, uint64 startOffset) :
     AbstractTrack(stream, startOffset)
 {
-    m_mediaType = MediaType::Acoustic;
+    m_mediaType = MediaType::Audio;
 }
 
 /*!
@@ -56,19 +56,7 @@ void MpegAudioFrameStream::internalParseHeader()
     MpegAudioFrame frame;
     frame.parseHeader(*m_istream);
     m_version = frame.mpegVersion();
-    switch(frame.layer()) {
-    case 1:
-        m_format = MediaFormat::MpegL1;
-        break;
-    case 2:
-        m_format = MediaFormat::MpegL2;
-        break;
-    case 3:
-        m_format = MediaFormat::MpegL3;
-        break;
-    default:
-        m_format = MediaFormat::Unknown;
-    }
+    m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, frame.layer());
     m_channelCount = frame.channelMode() == MpegChannelMode::SingleChannel ? 1 : 2;
     m_samplesPerSecond = frame.samperate();
     if(frame.isXingBytesfieldPresent()) {

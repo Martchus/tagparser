@@ -537,18 +537,11 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
     case ContainerFormat::Ogg:
     case ContainerFormat::Matroska:
     case ContainerFormat::Mp4:
-        mediaType = hasTracksOfType(MediaType::Visual) ? MediaType::Visual : MediaType::Acoustic;
+        mediaType = hasTracksOfType(MediaType::Video) ? MediaType::Video : MediaType::Audio;
         break;
     case ContainerFormat::MpegAudioFrames:
         if(m_mpegAudioFrameStream) {
-            switch(m_mpegAudioFrameStream->format()) {
-            case MediaFormat::MpegL1:
-                version = 1;
-            case MediaFormat::MpegL2:
-                version = 2;
-            default:
-                version = 3;
-            }
+            version = m_mpegAudioFrameStream->format().sub;
         }
         break;
     default:
@@ -597,17 +590,17 @@ const char *MediaFileInfo::mimeType() const
     case ContainerFormat::MpegAudioFrames:
         return "audio/mpeg";
     case ContainerFormat::Mp4:
-        if(hasTracksOfType(MediaType::Visual)) {
+        if(hasTracksOfType(MediaType::Video)) {
             return "video/mp4";
         }
         return "audio/mp4";
     case ContainerFormat::Ogg:
-        if(hasTracksOfType(MediaType::Visual)) {
+        if(hasTracksOfType(MediaType::Video)) {
             return "video/ogg";
         }
         return "audio/ogg";
     case ContainerFormat::Matroska:
-        if(hasTracksOfType(MediaType::Visual)) {
+        if(hasTracksOfType(MediaType::Video)) {
             return "video/x-matroska";
         }
         return "audio/x-matroska";
@@ -699,7 +692,7 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
     if(!areTracksParsed()) {
         return false;
     }
-    if(type == MediaType::Acoustic && (m_waveAudioStream || m_mpegAudioFrameStream)) {
+    if(type == MediaType::Audio && (m_waveAudioStream || m_mpegAudioFrameStream)) {
         return true;
     } else if(m_container) {
         for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
@@ -907,6 +900,7 @@ bool MediaFileInfo::areChaptersSupported() const
     }
     switch(m_containerFormat) {
     case ContainerFormat::Matroska:
+    case ContainerFormat::Webm:
         return true;
     default:
         return false;
@@ -923,6 +917,7 @@ bool MediaFileInfo::areAttachmentsSupported() const
     }
     switch(m_containerFormat) {
     case ContainerFormat::Matroska:
+    case ContainerFormat::Webm:
         return true;
     default:
         return false;
@@ -943,6 +938,7 @@ bool MediaFileInfo::areTracksSupported() const
     case ContainerFormat::RiffWave:
     case ContainerFormat::Ogg:
     case ContainerFormat::Matroska:
+        case ContainerFormat::Webm:
         return true;
     default:
         return false;
@@ -962,6 +958,7 @@ bool MediaFileInfo::areTagsSupported() const
     case ContainerFormat::MpegAudioFrames:
     case ContainerFormat::Ogg:
     case ContainerFormat::Matroska:
+    case ContainerFormat::Webm:
         return true;
     default:
         return false;
