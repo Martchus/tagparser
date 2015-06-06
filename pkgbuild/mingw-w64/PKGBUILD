@@ -1,6 +1,6 @@
 _name=tagparser
 pkgname=mingw-w64-tagparser
-pkgver=1.1.3
+pkgver=1.1.5
 pkgrel=1
 arch=('any')
 pkgdesc="Library for reading and editing meta-data of several media formats (mingw-w64)."
@@ -36,7 +36,7 @@ package() {
         ${_arch}-strip --strip-unneeded ./release/lib${_name}.dll.a
         install -m755 -D ./release/${_name}.dll $pkgdir/usr/${_arch}/bin/${_name}.dll
         install -m755 -D ./release/lib${_name}.dll.a $pkgdir/usr/${_arch}/lib/lib${_name}.dll.a
-        popd  
+        popd
         # include files
         for dir in ./ avc id3 matroska mp4 mpegaudio ogg vorbis wav
         do
