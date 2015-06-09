@@ -38,9 +38,20 @@ TrackType MpegAudioFrameStream::type() const
     return TrackType::MpegAudioFrameStream;
 }
 
+/*!
+ * \brief Adds the information from the specified \a frame to the specified \a track.
+ */
+void MpegAudioFrameStream::addInfo(const MpegAudioFrame &frame, AbstractTrack &track)
+{
+    track.m_version = frame.mpegVersion();
+    track.m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, frame.layer());
+    track.m_channelCount = frame.channelMode() == MpegChannelMode::SingleChannel ? 1 : 2;
+    track.m_sampleRate = frame.samperate();
+}
+
 void MpegAudioFrameStream::internalParseHeader()
 {
-    const string context("parsing MPEG audio frame header");
+    static const string context("parsing MPEG audio frame header");
     if(!m_istream) {
         throw NoDataFoundException();
     }
@@ -53,15 +64,13 @@ void MpegAudioFrameStream::internalParseHeader()
     }
     m_istream->seekg(m_startOffset, ios_base::beg);
     // parse frame header
-    MpegAudioFrame frame;
+    m_frames.emplace_back();
+    MpegAudioFrame &frame = m_frames.back();
     frame.parseHeader(*m_istream);
-    m_version = frame.mpegVersion();
-    m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, frame.layer());
-    m_channelCount = frame.channelMode() == MpegChannelMode::SingleChannel ? 1 : 2;
-    m_samplesPerSecond = frame.samperate();
+    addInfo(frame, *this);
     if(frame.isXingBytesfieldPresent()) {
         uint32 xingSize = frame.xingBytesfield();
-        if(xingSize != m_size) {
+        if(m_size && xingSize != m_size) {
             addNotification(NotificationType::Warning, "Real length MPEG of audio frames is not equal with value provided by Xing header. The Xing header value will be used.", context);
             m_size = xingSize;
         }
@@ -71,7 +80,6 @@ void MpegAudioFrameStream::internalParseHeader()
             : frame.bitrate();
     m_bytesPerSecond = m_bitrate * 125;
     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 128.0));
-    m_frames.push_back(frame);
 }
 
 }

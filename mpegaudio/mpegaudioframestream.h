@@ -16,6 +16,9 @@ public:
     ~MpegAudioFrameStream();
 
     TrackType type() const;
+
+    static void addInfo(const MpegAudioFrame &frame, AbstractTrack &track);
+
 protected:
     void internalParseHeader();
 

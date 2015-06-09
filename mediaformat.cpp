@@ -27,7 +27,12 @@ const char *MediaFormat::name() const
         case AacMpeg4LowComplexityProfile: return "Advanced Audio Coding Low Complexity Profile";
         case AacMpeg4SpectralBandReplicationProfile: return "Advanced Audio Coding Low Complexity with Spectral Band Replication Profile";
         case AacMpeg4ScalableSamplingRateProfile: return "Advanced Audio Coding Scaleable Sampling Rate Profile";
-        case AacMpeg4LongTermPredictionProfile: return "Advanced Audio Coding Scalable Sampling Rate Profile";
+        case AacMpeg4LongTermPrediction: return "Advanced Audio Coding Long Term Predicition";
+        case AacMpeg4ERLowComplecityProfile: return "Advanced Audio Coding Error Resilient Low Complexity Profile";
+        case AacMpeg4ERScalableSampingRateProfile: return "Advanced Audio Coding Error Resilient Scalable Sampling Rate Profile";
+        case AacMpeg4ERLongTermPrediction: return "Advanced Audio Coding Error Resilient Long Term Predicition";
+        case AacMpeg4ERLowDelay: return "Advanced Audio Coding Error Resilient Low Delay";
+        case AacMpeg4EREnhancedLowDelay: return "Advanced Audio Coding Error Resilient Enhanced Low Delay";
         default: return "Advanced Audio Coding";
         }
     case GeneralMediaFormat::Ac3: return "Dolby Digital";
@@ -159,9 +164,14 @@ const char *MediaFormat::abbreviation() const
         case AacMpeg2ScalableSamplingRateProfile: return "MPEG-2 AAC-SSR";
         case AacMpeg4MainProfile: return "MPEG-4 AAC Main";
         case AacMpeg4LowComplexityProfile: return "MPEG-4 AAC-LC";
-        case AacMpeg4SpectralBandReplicationProfile: return "MPEG-4 AAC-SBR";
+        case AacMpeg4SpectralBandReplicationProfile: return "MPEG-4 HE-AAC";
         case AacMpeg4ScalableSamplingRateProfile: return "MPEG-4 AAC-SSR";
-        case AacMpeg4LongTermPredictionProfile: return "MPEG-4 AAC-LTP";
+        case AacMpeg4LongTermPrediction: return "MPEG-4 AAC-LTP";
+        case AacMpeg4ERLowComplecityProfile: return "MPEG-4 ER AAC-LC";
+        case AacMpeg4ERScalableSampingRateProfile: return "MPEG-4 ER AAC-LC";
+        case AacMpeg4ERLongTermPrediction: return "MPEG-4 ER AAC-LTP";
+        case AacMpeg4ERLowDelay: return "MPEG-4 ER AAC-LD";
+        case AacMpeg4EREnhancedLowDelay: return "MPEG-4 ER AAC-ELD";
         default: return "AAC";
         }
     case GeneralMediaFormat::Ac3: return "AC-3";

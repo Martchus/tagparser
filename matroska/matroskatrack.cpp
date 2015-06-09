@@ -128,6 +128,7 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
                 fmt.sub = SubFormats::AacMpeg2LowComplexityProfile;
             } else if(part3 == "SBR") {
                 fmt.sub = SubFormats::AacMpeg2SpectralBandReplicationProfile;
+                fmt.extension = ExtensionFormats::SpectralBandReplication;
             } else if(part3 == "SSR") {
                 fmt.sub = SubFormats::AacMpeg2ScalableSamplingRateProfile;
             }
@@ -141,7 +142,7 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
             } else if(part3 == "SSR") {
                 fmt.sub = SubFormats::AacMpeg4ScalableSamplingRateProfile;
             } else if(part3 == "LTP") {
-                fmt.sub = SubFormats::AacMpeg4LongTermPredictionProfile;
+                fmt.sub = SubFormats::AacMpeg4LongTermPrediction;
             }
         }
     } else if(part1 == "A_QUICKTIME") {
@@ -279,7 +280,7 @@ void MatroskaTrack::internalParseHeader()
                     m_channelCount = subElement->readUInteger();
                     break;
                 case MatroskaIds::SamplingFrequency:
-                    m_samplesPerSecond = subElement->readFloat();
+                    m_sampleRate = subElement->readFloat();
                     break;
                 default: ;
                 }

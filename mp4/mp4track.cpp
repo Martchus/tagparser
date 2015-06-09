@@ -4,11 +4,15 @@
 #include "mp4ids.h"
 #include "mpeg4descriptor.h"
 
+#include "../mpegaudio/mpegaudioframe.h"
+#include "../mpegaudio/mpegaudioframestream.h"
+
 #include "../exceptions.h"
 #include "../mediaformat.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
+#include <c++utilities/io/bitreader.h>
 
 #include <locale>
 #include <cmath>
@@ -31,9 +35,31 @@ MediaFormat fmtTable[] = {
     MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4MainProfile),
     MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile),
     MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ScalableSamplingRateProfile),
-    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LongTermPredictionProfile),
+    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LongTermPrediction),
     MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4SpectralBandReplicationProfile)
 };
+
+Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
+    audioObjectType(0),
+    sampleFrequencyIndex(0xF),
+    sampleFrequency(0),
+    channelConfiguration(0),
+    extensionAudioObjectType(0),
+    sbrPresent(false),
+    psPresent(false),
+    extensionSampleFrequencyIndex(0xF),
+    extensionSampleFrequency(0),
+    extensionChannelConfiguration(0),
+    frameLengthFlag(false),
+    dependsOnCoreCoder(false),
+    coreCoderDelay(0),
+    extensionFlag(0),
+    layerNr(0),
+    numOfSubFrame(0),
+    layerLength(0),
+    resilienceFlags(0),
+    epConfig(0)
+{}
 
 /*!
  * \class Media::Mp4Track
@@ -59,8 +85,8 @@ Mp4Track::Mp4Track(Mp4Atom &trakAtom) :
     m_stscAtom(nullptr),
     m_stcoAtom(nullptr),
     m_stszAtom(nullptr),
-    m_codecConfigAtom(nullptr),
-    m_esDescAtom(nullptr),
+    //m_codecConfigAtom(nullptr),
+    //m_esDescAtom(nullptr),
     m_framesPerSample(1),
     m_chunkOffsetSize(4),
     m_chunkCount(0),
@@ -413,15 +439,15 @@ vector<uint64> Mp4Track::readChunkSizes()
  *  - Returns an empty configuration for non-AVC tracks.
  *  - Notifications might be added.
  */
-AvcConfiguration Mp4Track::parseAvcConfiguration()
+AvcConfiguration Mp4Track::parseAvcConfiguration(Mp4Atom *avcConfigAtom)
 {
     AvcConfiguration config;
-    if(m_codecConfigAtom) {
+    if(avcConfigAtom) {
         try {
-            auto configSize = m_codecConfigAtom->dataSize();
-            if(m_codecConfigAtom && configSize >= 5) {
+            auto configSize = avcConfigAtom->dataSize();
+            if(avcConfigAtom && configSize >= 5) {
                 // skip first byte (is always 1)
-                m_istream->seekg(m_codecConfigAtom->dataOffset() + 1);
+                m_istream->seekg(avcConfigAtom->dataOffset() + 1);
                 // read profile, IDC level, NALU size length
                 config.profileIdc = m_reader.readByte();
                 config.profileCompat = m_reader.readByte();
@@ -471,73 +497,211 @@ AvcConfiguration Mp4Track::parseAvcConfiguration()
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-void Mp4Track::parseMpeg4ElementaryStreamInfo()
+std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(Mp4Atom *esDescAtom)
 {
     static const string context("parsing MPEG-4 elementary stream descriptor");
-    if(m_esDescAtom) {
-        if(m_esDescAtom->dataSize() >= 12) {
-            m_istream->seekg(m_esDescAtom->dataOffset());
-            // read version/flags
-            if(m_reader.readUInt32BE() != 0) {
-                addNotification(NotificationType::Warning, "Unknown version/flags.", context);
+    using namespace Mpeg4ElementaryStreamObjectIds;
+    unique_ptr<Mpeg4ElementaryStreamInfo> esInfo;
+    if(esDescAtom->dataSize() >= 12) {
+        m_istream->seekg(esDescAtom->dataOffset());
+        // read version/flags
+        if(m_reader.readUInt32BE() != 0) {
+            addNotification(NotificationType::Warning, "Unknown version/flags.", context);
+        }
+        // read extended descriptor
+        Mpeg4Descriptor esDesc(esDescAtom->container(), m_istream->tellg(), esDescAtom->dataSize() - 4);
+        try {
+             esDesc.parse();
+            // check ID
+            if(esDesc.id() != Mpeg4DescriptorIds::ElementaryStreamDescr) {
+                addNotification(NotificationType::Critical, "Invalid descriptor found.", context);
+                throw Failure();
             }
-            // read extended descriptor
-            Mpeg4Descriptor esDesc(m_esDescAtom->container(), m_istream->tellg(), m_esDescAtom->dataSize() - 4);
-            try {
-                esDesc.parse();
-                // check ID
-                if(esDesc.id() != Mpeg4DescriptorIds::ElementaryStreamDescr) {
-                    addNotification(NotificationType::Critical, "Invalid descriptor found.", context);
-                    throw Failure();
+            // read stream info
+            m_istream->seekg(esDesc.dataOffset());
+            esInfo = make_unique<Mpeg4ElementaryStreamInfo>();
+            esInfo->id = m_reader.readUInt16BE();
+            esInfo->esDescFlags = m_reader.readByte();
+            if(esInfo->dependencyFlag()) {
+                esInfo->dependsOnId = m_reader.readUInt16BE();
+            }
+            if(esInfo->urlFlag()) {
+                esInfo->url = m_reader.readString(m_reader.readByte());
+            }
+            if(esInfo->ocrFlag()) {
+                esInfo->ocrId = m_reader.readUInt16BE();
+            }
+            for(Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(m_istream->tellg()) - esDesc.startOffset()); esDescChild; esDescChild = esDescChild->nextSibling()) {
+                esDescChild->parse();
+                switch(esDescChild->id()) {
+                case Mpeg4DescriptorIds::DecoderConfigDescr:
+                    // read decoder config descriptor
+                    m_istream->seekg(esDescChild->dataOffset());
+                    esInfo->objectTypeId = m_reader.readByte();
+                    esInfo->decCfgDescFlags = m_reader.readByte();
+                    esInfo->bufferSize = m_reader.readUInt24BE();
+                    esInfo->maxBitrate = m_reader.readUInt32BE();
+                    esInfo->averageBitrate = m_reader.readUInt32BE();
+                    for(Mpeg4Descriptor *decCfgDescChild = esDescChild->denoteFirstChild(esDescChild->headerSize() + 13); decCfgDescChild; decCfgDescChild = decCfgDescChild->nextSibling()) {
+                        decCfgDescChild->parse();
+                        switch(decCfgDescChild->id()) {
+                        case Mpeg4DescriptorIds::DecoderSpecificInfo:
+                            // read decoder specific info
+                            switch(esInfo->objectTypeId) {
+                            case Aac: case Mpeg2AacMainProfile: case Mpeg2AacLowComplexityProfile:
+                            case Mpeg2AacScaleableSamplingRateProfile: case Mpeg2Audio: case Mpeg1Audio:
+                                esInfo->audioSpecificConfig = parseAudioSpecificConfig(decCfgDescChild);
+                            default:
+                                ; // TODO: covering remaining object types
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                case Mpeg4DescriptorIds::SlConfigDescr:
+                    // uninteresting
+                    break;
                 }
-                // read stream info
-                m_istream->seekg(esDesc.dataOffset());
-                m_esInfo = make_unique<Mpeg4ElementaryStreamInfo>();
-                m_esInfo->id = m_reader.readUInt16BE();
-                m_esInfo->esDescFlags = m_reader.readByte();
-                if(m_esInfo->dependencyFlag()) {
-                    m_esInfo->dependsOnId = m_reader.readUInt16BE();
-                }
-                if(m_esInfo->urlFlag()) {
-                    m_esInfo->url = m_reader.readString(m_reader.readByte());
-                }
-                if(m_esInfo->ocrFlag()) {
-                    m_esInfo->ocrId = m_reader.readUInt16BE();
-                }
-                for(Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(m_istream->tellg()) - esDesc.startOffset()); esDescChild; esDescChild = esDescChild->nextSibling()) {
-                    esDescChild->parse();
-                    switch(esDescChild->id()) {
-                    case Mpeg4DescriptorIds::DecoderConfigDescr:
-                        // read decoder config descriptor
-                        m_istream->seekg(esDescChild->dataOffset());
-                        m_esInfo->objectTypeId = m_reader.readByte();
-                        m_esInfo->decCfgDescFlags = m_reader.readByte();
-                        m_esInfo->bufferSize = m_reader.readUInt24BE();
-                        m_esInfo->maxBitrate = m_reader.readUInt32BE();
-                        m_esInfo->averageBitrate = m_reader.readUInt32BE();
-                        for(Mpeg4Descriptor *decCfgDescChild = esDescChild->denoteFirstChild(13); decCfgDescChild; decCfgDescChild = decCfgDescChild->nextSibling()) {
-                            decCfgDescChild->parse();
-                            switch(esDescChild->id()) {
-                            case Mpeg4DescriptorIds::DecoderSpecificInfo:
-                                // read decoder specific info
+            }
+        } catch (Failure &) {
+            addNotification(NotificationType::Critical, "The MPEG-4 descriptor element structure is invalid.", context);
+        }
+    } else {
+        addNotification(NotificationType::Warning, "Elementary stream descriptor atom (esds) is truncated.", context);
+    }
+    return esInfo;
+}
 
-                                break;
+/*!
+ * \brief Reads the audio specific configuration for the track.
+ * \remarks
+ *  - Notifications might be added.
+ * \sa mpeg4ElementaryStreamInfo()
+ */
+unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc)
+{
+    static const string context("parsing MPEG-4 audio specific config from elementary stream descriptor");
+    using namespace Mpeg4AudioObjectIds;
+    // read config into buffer and construct BitReader for bitwise reading
+    m_istream->seekg(decSpecInfoDesc->dataOffset());
+    cout << "audio cfg @" << decSpecInfoDesc->dataOffset() << endl;
+    auto buff = make_unique<char []>(decSpecInfoDesc->dataSize());
+    m_istream->read(buff.get(), decSpecInfoDesc->dataSize());
+    BitReader bitReader(buff.get(), decSpecInfoDesc->dataSize());
+    auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
+    try {
+        // read audio object type
+        auto getAudioObjectType = [&audioCfg, &bitReader] {
+            byte objType = bitReader.readBits<byte>(5);
+            if(objType == 31) {
+                objType = 32 + bitReader.readBits<byte>(6);
+            }
+            return objType;
+        };
+        audioCfg->audioObjectType = getAudioObjectType();
+        // read sampling frequency
+        if((audioCfg->sampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+            audioCfg->sampleFrequency = bitReader.readBits<uint32>(24);
+        }
+        // read channel config
+        audioCfg->channelConfiguration = bitReader.readBits<byte>(4);
+        // read extension header
+        switch(audioCfg->audioObjectType) {
+        case Sbr:
+        case Ps:
+            audioCfg->extensionAudioObjectType = Sbr;
+            audioCfg->sbrPresent = true;
+            if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+                audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
+            }
+            if((audioCfg->audioObjectType = getAudioObjectType()) == ErBsac) {
+                audioCfg->extensionChannelConfiguration = bitReader.readBits<byte>(4);
+            }
+            break;
+        }
+        switch(audioCfg->audioObjectType) {
+        case Ps:
+            audioCfg->psPresent = true;
+            break;
+        }
+        // read GA specific config
+        switch(audioCfg->audioObjectType) {
+        case AacMain: case AacLc: case AacLtp: case AacScalable:
+        case TwinVq: case ErAacLc: case ErAacLtp: case ErAacScalable:
+        case ErTwinVq: case ErBsac: case ErAacLd:
+            audioCfg->frameLengthFlag = bitReader.readBits<byte>(1);
+            if((audioCfg->dependsOnCoreCoder = bitReader.readBits<byte>(1))) {
+                audioCfg->coreCoderDelay = bitReader.readBits<byte>(14);
+            }
+            audioCfg->extensionFlag = bitReader.readBits<byte>(1);
+            if(audioCfg->channelConfiguration == 0) {
+                throw NotImplementedException(); // TODO: parse program_config_element
+            }
+            switch(audioCfg->audioObjectType) {
+            case AacScalable: case ErAacScalable:
+                audioCfg->layerNr = bitReader.readBits<byte>(3);
+                break;
+            default:
+                ;
+            }
+            if(audioCfg->extensionFlag == 1) {
+                switch(audioCfg->audioObjectType) {
+                case ErBsac:
+                    audioCfg->numOfSubFrame = bitReader.readBits<byte>(5);
+                    audioCfg->layerLength = bitReader.readBits<uint16>(11);
+                    break;
+                case ErAacLc: case ErAacLtp: case ErAacScalable: case ErAacLd:
+                    audioCfg->resilienceFlags = bitReader.readBits<byte>(3);
+                    break;
+                default:
+                    ;
+                }
+                if(bitReader.readBits<byte>(1) == 1) { // extension flag 3
+                    throw NotImplementedException(); // TODO
+                }
+            }
+            break;
+        default:
+            throw NotImplementedException(); // TODO: cover remaining object types
+        }
+        // read error specific config
+        switch(audioCfg->audioObjectType) {
+        case ErAacLc: case ErAacLtp: case ErAacScalable: case ErTwinVq:
+        case ErBsac: case ErAacLd: case ErCelp: case ErHvxc: case ErHiln:
+        case ErParametric: case ErAacEld:
+            switch(audioCfg->epConfig = bitReader.readBits<byte>(2)) {
+            default:
+                throw NotImplementedException(); // TODO
+            }
+            break;
+        }
+        if(audioCfg->extensionAudioObjectType != 5 && bitReader.bitsAvailable() >= 16) {
+            uint16 syncExtensionType = bitReader.readBits<uint16>(11);
+            if(syncExtensionType == 0x2B7) {
+                if((audioCfg->extensionAudioObjectType = getAudioObjectType()) == Sbr) {
+                    if((audioCfg->sbrPresent = bitReader.readBits<byte>(1))) {
+                        if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+                            audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
+                        }
+                        if(bitReader.bitsAvailable() >= 12) {
+                            if((syncExtensionType = bitReader.readBits<uint16>(11)) == 0x548) {
+                                audioCfg->psPresent = bitReader.readBits<byte>(1);
                             }
                         }
-                        break;
-                    case Mpeg4DescriptorIds::SlConfigDescr:
-                        // uninteresting
-                        break;
                     }
                 }
-            } catch (Failure &) {
-                // notifications will be added in any case
             }
-            addNotifications(esDesc);
-        } else {
-            addNotification(NotificationType::Warning, "Elementary stream descriptor atom (esds) is truncated.", context);
         }
+    } catch(ios_base::failure &) {
+        if(m_istream->fail()) {
+            throw; // IO error caused by input stream
+        }
+        // IO error caused by bitReader
+        addNotification(NotificationType::Critical, "Audio specific configuration is truncated.", context);
+    } catch(NotImplementedException &) {
+        addNotification(NotificationType::Information, "Not implemented for the format of audio track.", context);
     }
+    return audioCfg;
 }
 
     /*!
@@ -563,8 +727,8 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
     if(oldMdatOffsets.size() == 0 || oldMdatOffsets.size() != newMdatOffsets.size()) {
         throw InvalidDataException();
     }
-    static const unsigned int stcoDataBegin = 16;
-    uint64 startPos = m_stcoAtom->startOffset() + stcoDataBegin;
+    static const unsigned int stcoDataBegin = 8;
+    uint64 startPos = m_stcoAtom->dataOffset() + stcoDataBegin;
     uint64 endPos = startPos + m_stcoAtom->totalSize() - stcoDataBegin;
     m_istream->seekg(startPos);
     m_ostream->seekp(startPos);
@@ -1026,6 +1190,10 @@ void Mp4Track::internalParseHeader()
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
     //name = reader.readString(hdlrAtom->size - 16 - 4 - 12);
     m_name = reader.readTerminatedString(m_hdlrAtom->totalSize() - 12 - 4 - 12, 0);
+    // read stco atom (only chunk count)
+    m_chunkOffsetSize = (m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64) ? 8 : 4;
+    m_istream->seekg(m_stcoAtom->dataOffset() + 4);
+    m_chunkCount = reader.readUInt32BE();
     // read stsd atom
     m_istream->seekg(m_stsdAtom->startOffset() + 12); // seek to beg, skip size, name, version and flags
     uint32 entryCount = reader.readUInt32BE();
@@ -1040,21 +1208,51 @@ void Mp4Track::internalParseHeader()
                 m_formatId = interpretIntegerAsString<uint32>(codecConfigContainerAtom->id());
                 m_format = Mp4FormatIds::fourccToMediaFormat(codecConfigContainerAtom->id());
                 // parse AVC configuration
-                m_codecConfigAtom = codecConfigContainerAtom->childById(Mp4AtomIds::AvcConfiguration);
+                //codecConfigContainerAtom->childById(Mp4AtomIds::AvcConfiguration);
                 // parse MPEG-4 elementary stream descriptor
-                m_esDescAtom = codecConfigContainerAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor);
-                if(!m_esDescAtom) {
-                    m_esDescAtom = codecConfigContainerAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2);
+                Mp4Atom *esDescAtom = codecConfigContainerAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor);
+                if(!esDescAtom) {
+                    esDescAtom = codecConfigContainerAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2);
                 }
-                try {
-                    parseMpeg4ElementaryStreamInfo();
-                    if(m_esInfo) {
-                        auto mediaFormat = Mpeg4ElementaryStreamObjectIds::streamObjectTypeFormat(m_esInfo->objectTypeId);
-                        if(mediaFormat) {
-                            m_format = mediaFormat;
+                if(esDescAtom) {
+                    try {
+                        if((m_esInfo = parseMpeg4ElementaryStreamInfo(esDescAtom))) {
+                            m_format += Mpeg4ElementaryStreamObjectIds::streamObjectTypeFormat(m_esInfo->objectTypeId);
+                            m_bitrate = static_cast<double>(m_esInfo->averageBitrate) / 1000;
+                            m_maxBitrate = static_cast<double>(m_esInfo->maxBitrate) / 1000;
+                            if(m_esInfo->audioSpecificConfig) {
+                                // check the audio specific config for useful information
+                                m_format += Mpeg4AudioObjectIds::idToMediaFormat(m_esInfo->audioSpecificConfig->audioObjectType, m_esInfo->audioSpecificConfig->sbrPresent, m_esInfo->audioSpecificConfig->psPresent);
+                                if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex == 0xF) {
+                                    m_sampleRate = m_esInfo->audioSpecificConfig->sampleFrequency;
+                                } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(sampleRateTable)) {
+                                    m_sampleRate = sampleRateTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
+                                } else {
+                                    addNotification(NotificationType::Warning, "Audio specific config has invalid sample frequency index.", context);
+                                }
+                                if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
+                                    m_extensionSampleRate = m_esInfo->audioSpecificConfig->extensionSampleFrequency;
+                                } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(sampleRateTable)) {
+                                    m_extensionSampleRate = sampleRateTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
+                                } else {
+                                    addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
+                                }
+                            }
+                            // check the stream data for missing information
+                            switch(m_format.general) {
+                            case GeneralMediaFormat::Mpeg1Audio: case GeneralMediaFormat::Mpeg2Audio: {
+                                MpegAudioFrame frame;
+                                m_istream->seekg(m_stcoAtom->dataOffset() + 8);
+                                m_istream->seekg(m_chunkOffsetSize == 8 ? reader.readUInt64BE() : reader.readUInt32BE());
+                                frame.parseHeader(*m_istream);
+                                MpegAudioFrameStream::addInfo(frame, *this);
+                                break;
+                            } default:
+                                ;
+                            }
                         }
+                    } catch(Failure &) {
                     }
-                } catch(Failure &) {
                 }
                 // seek to start offset of additional atom and skip reserved bytes and data reference index
                 m_istream->seekg(codecConfigContainerAtom->startOffset() + 8 + 6 + 2);
@@ -1064,7 +1262,11 @@ void Mp4Track::internalParseHeader()
                     m_channelCount = reader.readUInt16BE();
                     m_bitsPerSample = reader.readUInt16BE();
                     m_istream->seekg(4, ios_base::cur); // skip reserved bytes
-                    m_samplesPerSecond = reader.readUInt32BE() >> 16;
+                    if(!m_sampleRate) {
+                        m_sampleRate = reader.readUInt32BE() >> 16;
+                    } else {
+                        m_istream->seekg(4, ios_base::cur);
+                    }
                     break;
                 case MediaType::Video:
                     m_istream->seekg(16, ios_base::cur); // skip reserved bytes
@@ -1333,11 +1535,9 @@ void Mp4Track::internalParseHeader()
         }
     }
     // caluculate average bitrate
-    m_bitrate = (static_cast<double>(m_size) * 0.0078125) / m_duration.totalSeconds();
-    // read stco atom (only chunk count)
-    m_chunkOffsetSize = (m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64) ? 8 : 4;
-    m_istream->seekg(m_stcoAtom->dataOffset() + 4);
-    m_chunkCount = reader.readUInt32BE();
+    if(m_bitrate < 0.01 && m_bitrate > -0.01) {
+        m_bitrate = (static_cast<double>(m_size) * 0.0078125) / m_duration.totalSeconds();
+    }
     // read stsc atom (only number of entries)
     m_istream->seekg(m_stscAtom->dataOffset() + 4);
     m_sampleToChunkEntryCount = reader.readUInt32BE();

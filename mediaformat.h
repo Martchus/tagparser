@@ -106,7 +106,12 @@ enum AacProfile : unsigned char {
     AacMpeg4LowComplexityProfile,
     AacMpeg4SpectralBandReplicationProfile,
     AacMpeg4ScalableSamplingRateProfile,
-    AacMpeg4LongTermPredictionProfile
+    AacMpeg4LongTermPrediction,
+    AacMpeg4ERLowComplecityProfile,
+    AacMpeg4ERScalableSampingRateProfile,
+    AacMpeg4ERLongTermPrediction,
+    AacMpeg4ERLowDelay,
+    AacMpeg4EREnhancedLowDelay
 };
 
 enum Mpeg2VideoProfile : unsigned char {
@@ -152,26 +157,56 @@ enum ImageSubtitle : unsigned char {
 
 }
 
+/*!
+ * \brief Encapsulates extension formats.
+ */
+namespace ExtensionFormats {
+enum AudioFormatExtensions : unsigned char {
+    SpectralBandReplication = 1,
+    ParametricStereo = 2
+};
+}
+
 class LIB_EXPORT MediaFormat
 {
 public:
-    MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0);
+    MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0, unsigned char extension = 0);
 
     const char *name() const;
     const char *abbreviation() const;
     operator bool() const;
+    MediaFormat &operator+=(const MediaFormat &other);
 
     GeneralMediaFormat general;
     unsigned char sub;
+    unsigned char extension;
 };
 
 /*!
  * \brief Constructs a new media format.
  */
-inline MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub) :
+inline MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub, unsigned char extension) :
     general(general),
-    sub(sub)
+    sub(sub),
+    extension(extension)
 {}
+
+/*!
+ * \brief "Adds" information from another instance to the object.
+ */
+inline MediaFormat &MediaFormat::operator+=(const MediaFormat &other)
+{
+    if(other) {
+        general = other.general;
+        if(other.sub) {
+            sub = other.sub;
+        }
+        if(other.extension) {
+            extension = other.extension;
+        }
+    }
+    return *this;
+}
 
 /*!
  * \brief Returns whether the media format is known.

@@ -120,9 +120,9 @@ MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
     case Mpeg2VideoSpatialProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2HighProfile);
     case Mpeg2VideoHighProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2HighProfile);
     case Mpeg2Video422Profile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SimpleProfile);
-    case AacMainProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2MainProfile);
-    case AacLowComplexityProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2LowComplexityProfile);
-    case AacScaleableSamplingRateProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2ScalableSamplingRateProfile);
+    case Mpeg2AacMainProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2MainProfile);
+    case Mpeg2AacLowComplexityProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2LowComplexityProfile);
+    case Mpeg2AacScaleableSamplingRateProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2ScalableSamplingRateProfile);
     case Mpeg2Audio: return GeneralMediaFormat::Mpeg2Audio;
     case Mpeg1Video: return GeneralMediaFormat::Mpeg1Video;
     case Mpeg1Audio: return GeneralMediaFormat::Mpeg1Audio;
@@ -188,6 +188,56 @@ const char *streamTypeName(byte streamTypeId)
  * \sa http://wiki.multimedia.cx/index.php?title=MPEG-4_Audio
  */
 namespace Mpeg4AudioObjectIds {
+
+LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent, bool psPresent)
+{
+    MediaFormat fmt;
+    switch(mpeg4AudioObjectId) {
+    case AacMain:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4MainProfile);
+        break;
+    case AacLc:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, sbrPresent ? SubFormats::AacMpeg4SpectralBandReplicationProfile : SubFormats::AacMpeg4LowComplexityProfile);
+        break;
+    case AacSsr:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ScalableSamplingRateProfile);
+        break;
+    case AacLtp:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LongTermPrediction);
+        break;
+    case AacScalable:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ScalableSamplingRateProfile);
+        break;
+    case ErAacLc:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ERLowComplecityProfile);
+        break;
+    case ErAacLtp:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ERLongTermPrediction);
+        break;
+    case ErAacLd:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ERLowDelay);
+        break;
+    case Layer1:
+        fmt = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer1);
+        break;
+    case Layer2:
+        fmt = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer2);
+        break;
+    case Layer3:
+        fmt = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
+        break;
+    default:
+        ;
+    }
+    if(sbrPresent) {
+        fmt.extension |= ExtensionFormats::SpectralBandReplication;
+    }
+    if(psPresent) {
+        fmt.extension |= ExtensionFormats::ParametricStereo;
+    }
+    return fmt;
+}
+
 }
 
 }

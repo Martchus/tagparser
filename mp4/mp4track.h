@@ -12,11 +12,45 @@ namespace Media
 {
 
 class Mp4Atom;
+class Mpeg4Descriptor;
+
+class LIB_EXPORT Mpeg4AudioSpecificConfig
+{
+public:
+    Mpeg4AudioSpecificConfig();
+
+    byte audioObjectType;
+    byte sampleFrequencyIndex;
+    uint32 sampleFrequency;
+    byte channelConfiguration;
+    byte extensionAudioObjectType;
+    bool sbrPresent;
+    bool psPresent;
+    byte extensionSampleFrequencyIndex;
+    uint32 extensionSampleFrequency;
+    byte extensionChannelConfiguration;
+    bool frameLengthFlag;
+    bool dependsOnCoreCoder;
+    uint16 coreCoderDelay;
+    byte extensionFlag;
+    byte layerNr;
+    byte numOfSubFrame;
+    uint16 layerLength;
+    byte resilienceFlags;
+    byte epConfig;
+};
 
 class LIB_EXPORT Mpeg4ElementaryStreamInfo
 {
 public:
     Mpeg4ElementaryStreamInfo();
+
+    bool dependencyFlag() const;
+    bool urlFlag() const;
+    bool ocrFlag() const;
+    byte priority() const;
+    byte streamTypeId() const;
+    bool upstream() const;
 
     uint16 id;
     byte esDescFlags;
@@ -28,13 +62,7 @@ public:
     uint32 bufferSize;
     uint32 maxBitrate;
     uint32 averageBitrate;
-
-    bool dependencyFlag() const;
-    bool urlFlag() const;
-    bool ocrFlag() const;
-    byte priority() const;
-    byte streamTypeId() const;
-    bool upstream() const;
+    std::unique_ptr<Mpeg4AudioSpecificConfig> audioSpecificConfig;
 };
 
 inline Mpeg4ElementaryStreamInfo::Mpeg4ElementaryStreamInfo() :
@@ -84,33 +112,42 @@ class LIB_EXPORT Mp4Track : public AbstractTrack
 public:
     Mp4Track(Mp4Atom &trakAtom);
     ~Mp4Track();
-
     TrackType type() const;
-    Mp4Atom &trakAtom();
 
+    // getter methods specific for MP4 tracks
+    Mp4Atom &trakAtom();
     const std::vector<uint32> &sampleSizes() const;
     unsigned int chunkOffsetSize() const;
     uint32 chunkCount() const;
     uint32 sampleToChunkEntryCount() const;
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
+
+    // methods to parse configuration details from the track header
+    AvcConfiguration parseAvcConfiguration(Mp4Atom *avcConfigAtom);
+    std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(Mp4Atom *esDescAtom);
+    std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc);
+
+    // methods to read the "index" (chunk offsets and sizes)
     std::vector<uint64> readChunkOffsets();
     std::vector<std::tuple<uint32, uint32, uint32> > readSampleToChunkTable();
     std::vector<uint64> readChunkSizes();
-    AvcConfiguration parseAvcConfiguration();
-    bool hasMpeg4ElementaryStreamDesc() const;
-    void parseMpeg4ElementaryStreamInfo();
-    void updateChunkOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets);
-    void updateChunkOffset(uint32 chunkIndex, uint64 offset);
+
+    // methods to make the track header
     void makeTrack();
     void makeTrackHeader();
     void makeMedia();
     void makeMediaInfo();
     void makeSampleTable();
 
+    // methods to update chunk offsets
+    void updateChunkOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets);
+    void updateChunkOffset(uint32 chunkIndex, uint64 offset);
+
 protected:
     void internalParseHeader();
 
 private:
+    // private helper methods
     uint64 accumulateSampleSizes(size_t &sampleIndex, size_t count);
     void addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t count, size_t &sampleIndex, uint32 sampleCount);
 
@@ -125,8 +162,8 @@ private:
     Mp4Atom *m_stscAtom;
     Mp4Atom *m_stcoAtom;
     Mp4Atom *m_stszAtom;
-    Mp4Atom *m_codecConfigAtom;
-    Mp4Atom *m_esDescAtom;
+    //Mp4Atom *m_codecConfigAtom;
+    //Mp4Atom *m_esDescAtom;
     uint16 m_framesPerSample;
     std::vector<uint32> m_sampleSizes;
     unsigned int m_chunkOffsetSize;
@@ -196,14 +233,6 @@ inline uint32 Mp4Track::sampleToChunkEntryCount() const
 inline const Mpeg4ElementaryStreamInfo *Mp4Track::mpeg4ElementaryStreamInfo() const
 {
     return m_esInfo.get();
-}
-
-/*!
- * \brief Returns whether the track has an MPEG-4 elementary stream descriptor atom.
- */
-inline bool Mp4Track::hasMpeg4ElementaryStreamDesc() const
-{
-    return m_esDescAtom != nullptr;
 }
 
 }

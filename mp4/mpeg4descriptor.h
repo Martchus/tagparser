@@ -94,7 +94,11 @@ inline uint64 Mpeg4Descriptor::firstChildOffset() const
  */
 inline Mpeg4Descriptor::implementationType *Mpeg4Descriptor::denoteFirstChild(uint32 relativeFirstChildOffset)
 {
-    m_firstChild.reset(new implementationType(static_cast<implementationType &>(*this), startOffset() + relativeFirstChildOffset));
+    if(relativeFirstChildOffset + 4 < dataSize()) {
+        m_firstChild.reset(new implementationType(static_cast<implementationType &>(*this), startOffset() + relativeFirstChildOffset));
+    } else {
+        m_firstChild.reset();
+    }
     return m_firstChild.get();
 }
 

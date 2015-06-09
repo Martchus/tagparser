@@ -58,11 +58,11 @@ void WaveAudioStream::internalParseHeader()
                     m_format = GeneralMediaFormat::Unknown;
                 }
                 m_channelCount = m_reader.readUInt16LE();
-                m_samplesPerSecond = m_reader.readUInt32LE();
+                m_sampleRate = m_reader.readUInt32LE();
                 m_bytesPerSecond = m_reader.readUInt32LE();
                 m_chunkSize = m_reader.readUInt16LE();
                 m_bitsPerSample = m_reader.readUInt16LE();
-                m_bitrate = m_bitsPerSample * m_samplesPerSecond * m_channelCount;
+                m_bitrate = m_bitsPerSample * m_sampleRate * m_channelCount;
             } else {
                 m_format = GeneralMediaFormat::Unknown;
             }
@@ -72,7 +72,7 @@ void WaveAudioStream::internalParseHeader()
             if(m_reader.readUInt32BE() == 0x64617461u) {
                 m_size = m_reader.readUInt32LE();
                 m_sampleCount = m_size / m_chunkSize;
-                m_duration = ChronoUtilities::TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / static_cast<double>(m_samplesPerSecond));
+                m_duration = ChronoUtilities::TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / static_cast<double>(m_sampleRate));
             } else {
                 throw NoDataFoundException();
             }

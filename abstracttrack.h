@@ -33,8 +33,12 @@ enum class TrackType
     OggStream /**< The track is a Media::OggStream. */
 };
 
+class MpegAudioFrameStream;
+
 class LIB_EXPORT AbstractTrack : public StatusProvider
 {
+    friend class MpegAudioFrameStream; // this is a temporary solution, until I have a better design
+
 public:
     virtual ~AbstractTrack();
 
@@ -58,10 +62,12 @@ public:
     const std::string name() const;
     const ChronoUtilities::TimeSpan &duration() const;
     double bitrate() const;
+    double maxBitrate() const;
     const ChronoUtilities::DateTime &creationTime() const;
     const ChronoUtilities::DateTime &modificationTime() const;
     const std::string &language() const;
-    uint32 samplesPerSecond() const;
+    uint32 sampleRate() const;
+    uint32 extensionSampleRate() const;
     uint16 bitsPerSample() const;
     uint16 channelCount() const;
     uint64 sampleCount() const;
@@ -108,10 +114,12 @@ protected:
     std::string m_name;
     ChronoUtilities::TimeSpan m_duration;
     double m_bitrate;
+    double m_maxBitrate;
     ChronoUtilities::DateTime m_creationTime;
     ChronoUtilities::DateTime m_modificationTime;
     std::string m_language;
-    uint32 m_samplesPerSecond;
+    uint32 m_sampleRate;
+    uint32 m_extensionSampleRate;
     uint16 m_bitsPerSample;
     uint32 m_bytesPerSecond;
     uint16 m_channelCount;
@@ -288,6 +296,14 @@ inline double AbstractTrack::bitrate() const
 }
 
 /*!
+ * \brief Returns the maximum bitrate in kbit/s if known; otherwise returns zero.
+ */
+inline double AbstractTrack::maxBitrate() const
+{
+    return m_maxBitrate;
+}
+
+/*!
  * \brief Returns the creation time if known; otherwise returns a DateTime of zero ticks.
  */
 inline const ChronoUtilities::DateTime &AbstractTrack::creationTime() const
@@ -316,9 +332,18 @@ inline const std::string &AbstractTrack::language() const
 /*!
  * \brief Returns the number of samples per second if known; otherwise returns 0.
  */
-inline uint32 AbstractTrack::samplesPerSecond() const
+inline uint32 AbstractTrack::sampleRate() const
 {
-    return m_samplesPerSecond;
+    return m_sampleRate;
+}
+
+/*!
+ * \brief Returns the number of samples per second if known; otherwise returns 0.
+ * \remarks This sample rate value takes extensions like SBR into account.
+ */
+inline uint32 AbstractTrack::extensionSampleRate() const
+{
+    return m_extensionSampleRate;
 }
 
 /*!

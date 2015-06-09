@@ -1,6 +1,7 @@
 #ifndef MP4TAGATOMNAMES_H
 #define MP4TAGATOMNAMES_H
 
+#include <c++utilities/application/global.h>
 #include <c++utilities/conversion/types.h>
 
 namespace Media
@@ -166,7 +167,7 @@ enum KnownValue : uint32 {
     Mp3CbrOnly = 0x6D730055 /**< MPEG-1 Layer 3 (constant bitrate only) */
 };
 
-MediaFormat fourccToMediaFormat(uint32 fourccId);
+LIB_EXPORT MediaFormat fourccToMediaFormat(uint32 fourccId);
 
 }
 
@@ -206,9 +207,9 @@ enum KnownValue : byte {
     Mpeg2VideoSpatialProfile, /**< MPEG-2 Video Spatial Profile */
     Mpeg2VideoHighProfile, /**< MPEG-2 Video High Profile */
     Mpeg2Video422Profile, /**< MPEG-2 Video 422 Profile */
-    AacMainProfile, /**< Advanced Audio Coding Main Profile */
-    AacLowComplexityProfile, /**< Advanced Audio Coding Low Complexity Profile */
-    AacScaleableSamplingRateProfile, /**< Advanced Audio Coding Scaleable Sampling Rate Profile */
+    Mpeg2AacMainProfile, /**< Advanced Audio Coding Main Profile */
+    Mpeg2AacLowComplexityProfile, /**< Advanced Audio Coding Low Complexity Profile */
+    Mpeg2AacScaleableSamplingRateProfile, /**< Advanced Audio Coding Scaleable Sampling Rate Profile */
     Mpeg2Audio, /**< MPEG-2 Audio */
     Mpeg1Video, /**< MPEG-1 Video */
     Mpeg1Audio, /**< MPEG-1 Audio */
@@ -233,7 +234,7 @@ enum KnownValue : byte {
     PrivateQcelp = 0xE1 /**< QCELP */
 };
 
-MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
+LIB_EXPORT MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
 
 }
 
@@ -254,7 +255,7 @@ enum KnownValue : byte {
     StreamingText
 };
 
-const char *streamTypeName(byte streamTypeId);
+LIB_EXPORT const char *streamTypeName(byte streamTypeId);
 
 }
 
@@ -350,6 +351,9 @@ enum KnownValue : byte {
     LdMpegSurround,
     Usac /**< unified speech and audio coding */
 };
+
+LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
+
 }
 
 /*!
