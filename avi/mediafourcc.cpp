@@ -6,6 +6,9 @@ namespace Media {
 
 namespace Fourccs {
 
+/*!
+ * \brief Returns the media format for the specified \a fourcc.
+ */
 MediaFormat fourccToMediaFormat(uint32 fourcc) {
     switch(fourcc) {
     case XvidMpeg4:
