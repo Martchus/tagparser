@@ -3,6 +3,9 @@
 #include "matroskacontainer.h"
 #include "matroskaid.h"
 
+#include "../avi/bitmapinfoheader.h"
+#include "../avi/mediafourcc.h"
+
 #include "../mediaformat.h"
 #include "../exceptions.h"
 
@@ -60,7 +63,7 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
                 fmt.sub = SubFormats::Mpeg4Sp;
             } else if(part3 == "ASP") {
                 fmt.sub = SubFormats::Mpeg4Asp;
-            } else if(part3 == "AP") {
+            } else if(part3 == "AVC") {
                 fmt.sub = SubFormats::Mpeg4Avc;
             }
         } else if(part2 == "MS" && part3 == "V3") {
@@ -181,17 +184,15 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
 
 void MatroskaTrack::internalParseHeader()
 {
-    const string context("parsing header of Matroska track");
-
+    static const string context("parsing header of Matroska track");
     try {
     m_trackElement->parse();
     } catch(Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse track element.", context);
         throw;
     }
-
-    EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr;
-    while(trackInfoElement) {
+    // read information about the track from the childs of the track entry element
+    for(EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
         try {
             trackInfoElement->parse();
         } catch (Failure &) {
@@ -258,7 +259,8 @@ void MatroskaTrack::internalParseHeader()
                 case MatroskaIds::ColorSpace:
                     m_colorSpace = subElement->readUInteger();
                     break;
-                default: ;
+                default:
+                    ;
                 }
                 subElement = subElement->nextSibling();
             }
@@ -282,7 +284,8 @@ void MatroskaTrack::internalParseHeader()
                 case MatroskaIds::SamplingFrequency:
                     m_sampleRate = subElement->readFloat();
                     break;
-                default: ;
+                default:
+                    ;
                 }
                 subElement = subElement->nextSibling();
             }
@@ -308,6 +311,8 @@ void MatroskaTrack::internalParseHeader()
         case MatroskaIds::CodecName:
             m_formatName = trackInfoElement->readString();
             break;
+        case MatroskaIds::CodecDelay:
+            break; // TODO
         case MatroskaIds::TrackFlagEnabled:
             m_enabled = trackInfoElement->readUInteger();
             break;
@@ -323,7 +328,8 @@ void MatroskaTrack::internalParseHeader()
         case MatroskaIds::DefaultDuration:
             defaultDuration = trackInfoElement->readUInteger();
             break;
-        default: ;
+        default:
+            ;
         }
         switch(m_mediaType) {
         case MediaType::Video:
@@ -331,10 +337,33 @@ void MatroskaTrack::internalParseHeader()
                 m_fps = 1000000000.0 / static_cast<double>(defaultDuration);
             }
             break;
-        default: ;
+        default:
+            ;
         }
-
-        trackInfoElement = trackInfoElement->nextSibling();
+    }
+    // read further information from the CodecPrivate element for some codecs
+    switch(m_format.general) {
+    EbmlElement *codecPrivateElement;
+    case GeneralMediaFormat::MicrosoftVideoCodecManager:
+    case GeneralMediaFormat::MicrosoftAudioCodecManager:
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+            // parse bitmap info header to determine actual format
+            if(codecPrivateElement->dataSize() >= 0x28) {
+                m_istream->seekg(codecPrivateElement->dataOffset());
+                BitmapInfoHeader bitmapInfoHeader;
+                bitmapInfoHeader.parse(reader());
+                m_formatId.reserve(m_formatId.size() + 7);
+                m_formatId += " \"";
+                m_formatId += interpretIntegerAsString(bitmapInfoHeader.compression);
+                m_formatId += "\"";
+                m_format += Fourccs::fourccToMediaFormat(bitmapInfoHeader.compression);
+            } else {
+                addNotification(NotificationType::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
+            }
+        }
+        break;
+    default:
+        ;
     }
 }
 

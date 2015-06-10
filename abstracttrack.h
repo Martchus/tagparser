@@ -54,6 +54,7 @@ public:
     double version() const;
     const char *formatName() const;
     const char *formatAbbreviation() const;
+    const std::string &formatId() const;
     MediaType mediaType() const;
     const char *mediaTypeName() const;
     uint64 size() const;
@@ -237,6 +238,37 @@ inline MediaFormat AbstractTrack::format() const
 inline double AbstractTrack::version() const
 {
     return m_version;
+}
+
+/*!
+ * \brief Returns the format of the track as C-style string if known; otherwise
+ *        returns the format abbreviation or an empty string.
+ * \remarks
+ *  - The caller must not free the returned string.
+ *  - The string might get invalidated when the track is (re)parsed.
+ */
+inline const char *AbstractTrack::formatName() const
+{
+    return m_format || m_formatName.empty() ? m_format.name() : m_formatName.c_str();
+}
+
+/*!
+ * \brief Returns the a more or less common abbreviation for the format of the track
+ *        as C-style string if known; otherwise returns an empty string.
+ */
+inline const char *AbstractTrack::formatAbbreviation() const
+{
+    const char *abbr = m_format.abbreviation();
+    return *abbr || m_formatId.empty() ? m_format.abbreviation() : m_formatId.c_str();
+}
+
+/*!
+ * \brief Returns the format ID (raw format identifier directly extracted from
+ *        the container) if known; otherwise returns an empty string.
+ */
+inline const std::string &AbstractTrack::formatId() const
+{
+    return m_formatId;
 }
 
 /*!

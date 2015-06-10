@@ -79,28 +79,6 @@ AbstractTrack::~AbstractTrack()
 {}
 
 /*!
- * \brief Returns the format of the track as C-style string if known; otherwise
- *        returns the format abbreviation or an empty string.
- * \remarks
- *  - The caller must not free the returned string.
- *  - The string might get invalidated when the track is (re)parsed.
- */
-const char *AbstractTrack::formatName() const
-{
-    return m_format || m_formatName.empty() ? m_format.name() : m_formatName.c_str();
-}
-
-/*!
- * \brief Returns the a more or less common abbreviation for the format of the track
- *        as C-style string if known; otherwise returns an empty string.
- */
-const char *AbstractTrack::formatAbbreviation() const
-{
-    const char *abbr = m_format.abbreviation();
-    return *abbr || m_formatId.empty() ? m_format.abbreviation() : m_formatId.c_str();
-}
-
-/*!
  * \brief Returns the media type as string.
  */
 const char *AbstractTrack::mediaTypeName() const
