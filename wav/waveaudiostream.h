@@ -3,12 +3,35 @@
 
 #include "../abstracttrack.h"
 
-#include <c++utilities/io/binaryreader.h>
-
 #include <fstream>
 
 namespace Media
 {
+
+class LIB_EXPORT WaveFormatHeader
+{
+public:
+    WaveFormatHeader();
+
+    void parse(IoUtilities::BinaryReader &reader);
+    MediaFormat format() const;
+    uint32 bitrate() const;
+
+    uint16 formatTag;
+    uint16 channelCount;
+    uint16 sampleRate;
+    uint16 bytesPerSecond;
+    uint16 chunkSize;
+    uint16 bitsPerSample;
+};
+
+/*!
+ * \brief Calculates the bitrate from the header data.
+ */
+inline uint32 WaveFormatHeader::bitrate() const
+{
+    return bitsPerSample * sampleRate * channelCount;
+}
 
 class LIB_EXPORT WaveAudioStream : public AbstractTrack
 {
@@ -17,6 +40,8 @@ public:
     virtual ~WaveAudioStream();
 
     virtual TrackType type() const;
+
+    static void addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track);
 
 protected:
     virtual void internalParseHeader();

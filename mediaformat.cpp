@@ -137,12 +137,14 @@ const char *MediaFormat::name() const
         }
     case GeneralMediaFormat::Theora: return "Theora";
     case GeneralMediaFormat::Tiff: return "Tagged Image File Format";
+    case GeneralMediaFormat::TimedText: return "Timed Text";
     case GeneralMediaFormat::Tta: return "The True Audio";
     case GeneralMediaFormat::UncompressedVideoFrames: return "uncompressed video frames";
     case GeneralMediaFormat::Vc1: return "Windows Media Video";
     case GeneralMediaFormat::VobBtn: return "VobBtn Buttons";
     case GeneralMediaFormat::VobSub: return "VobSub";
     case GeneralMediaFormat::Vorbis: return "Vorbis";
+    case GeneralMediaFormat::Vp8: return "VP8";
     case GeneralMediaFormat::WavPack: return "WavPack";
     default: return "unknown";
     }
@@ -280,12 +282,14 @@ const char *MediaFormat::abbreviation() const
         }
     case GeneralMediaFormat::Theora: return "Theora";
     case GeneralMediaFormat::Tiff: return "TIFF";
+    case GeneralMediaFormat::TimedText: return "Timed Text";
     case GeneralMediaFormat::Tta: return "TTA";
     case GeneralMediaFormat::UncompressedVideoFrames: return "uncompressed video frames";
     case GeneralMediaFormat::Vc1: return "VC-1";
     case GeneralMediaFormat::VobBtn: return "VobBtn";
     case GeneralMediaFormat::VobSub: return "VobSub";
     case GeneralMediaFormat::Vorbis: return "Vorbis";
+    case GeneralMediaFormat::Vp8: return "VP8";
     case GeneralMediaFormat::WavPack: return "WavPack";
     default: return "";
     }

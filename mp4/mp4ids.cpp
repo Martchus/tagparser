@@ -40,42 +40,64 @@ namespace Mp4MediaTypeIds {
  * \brief Encapsulates all supported MP4 media format IDs (aka "FOURCCs").
  * \sa http://wiki.multimedia.cx/?title=QuickTime_container
  */
-namespace Mp4FormatIds {
+namespace FourccIds {
 
 MediaFormat fourccToMediaFormat(uint32 fourccId)
 {
     switch(fourccId) {
-    case Mp4FormatIds::Mpeg4Video:
+    case Mpeg:
+        return GeneralMediaFormat::Mpeg1Video;
+    case Mpeg2Imx30: case Mpeg2Imx50:
+        return GeneralMediaFormat::Mpeg2Video;
+    case Mpeg4Video:
         return GeneralMediaFormat::Mpeg4Video;
-    case Mp4FormatIds::Avc1:
-    case Mp4FormatIds::Avc2:
-    case Mp4FormatIds::Avc3:
-    case Mp4FormatIds::Avc4:
+    case Avc1: case Avc2: case Avc3: case Avc4: case H264Decoder1: case H264Decoder2:
+    case H264Decoder3: case H264Decoder4: case H264Decoder5: case H264Decoder6:
         return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Avc);
-    case Mp4FormatIds::H263:
+    case H263: case XvidDecoder1: case XvidDecoder2:
+    case XvidDecoder3: case XvidDecoder4: case XvidDecoder5:
+    case Divx5Decoder:
         return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Asp);
-    case Mp4FormatIds::Tiff:
+    case Divx4Decoder1: case Divx4Decoder2: case Divx4Decoder3:
+    case Divx4Decoder4: case Divx4Decoder5: case Divx4Decoder6: case Divx4Decoder7:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Sp);
+    case Tiff:
         return GeneralMediaFormat::Tiff;
-    case Mp4FormatIds::Raw:
+    case AppleTextAtsuiCodec:
+        return GeneralMediaFormat::TimedText;
+    case Raw:
         return GeneralMediaFormat::UncompressedVideoFrames;
-    case Mp4FormatIds::Jpeg:
+    case Jpeg:
         return GeneralMediaFormat::Jpeg;
-    case Mp4FormatIds::Gif:
+    case Gif:
         return GeneralMediaFormat::Gif;
-    case Mp4FormatIds::AdpcmAcm:
+    case Png:
+        return GeneralMediaFormat::Png;
+    case AdpcmAcm:
         return GeneralMediaFormat::AdpcmAcm;
-    case Mp4FormatIds::ImaadpcmAcm:
+    case ImaadpcmAcm:
         return GeneralMediaFormat::ImaadpcmAcm;
-    case Mp4FormatIds::Mp3CbrOnly:
+    case Mp3CbrOnly: case Mp3:
         return MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
-    case Mp4FormatIds::Mpeg4Audio:
+    case Mpeg4Audio:
         return GeneralMediaFormat::Aac;
-    case Mp4FormatIds::Alac:
+    case Alac:
         return GeneralMediaFormat::Alac;
-    case Mp4FormatIds::Ac3:
+    case Ac3:
         return GeneralMediaFormat::Ac3;
-    case Mp4FormatIds::Ac4:
+    case Ac4:
         return GeneralMediaFormat::Ac4;
+    case Rv20: case Rv30: case Rv40:
+        return GeneralMediaFormat::RealVideo;
+    case Int24: case Int32:
+        return MediaFormat(GeneralMediaFormat::Pcm);
+    case Int16Be:
+        return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntBe);
+    case Int16Le:
+        return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntLe);
+    case FloatingPoint32Bit: case FloatingPoint64Bit:
+        return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmFloatIeee);
+    // TODO: map more FOURCCs
     default:
         return GeneralMediaFormat::Unknown;
     }
@@ -113,7 +135,7 @@ MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
     case ParameterSetsForAvc: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4AvcParams);
     case Als: return GeneralMediaFormat::Als;
     case Sa0c: return GeneralMediaFormat::Sa0c;
-    case Aac: return GeneralMediaFormat::Aac;
+    case Aac: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile);
     case Mpeg2VideoSimpleProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SimpleProfile);
     case Mpeg2VideoMainProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SnrProfile);
     case Mpeg2VideoSnrProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SpatialProfile);

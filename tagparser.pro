@@ -69,7 +69,6 @@ SOURCES += \
     mediaformat.cpp \
     avc/avcconfiguration.cpp \
     mp4/mpeg4descriptor.cpp \
-    avi/mediafourcc.cpp \
     avi/bitmapinfoheader.cpp
 
 HEADERS  += \
@@ -137,7 +136,6 @@ HEADERS  += \
     avc/avcconfiguration.h \
     generictagfield.h \
     mp4/mpeg4descriptor.h \
-    avi/mediafourcc.h \
     avi/bitmapinfoheader.h
 
 LIBS += -lz
@@ -163,7 +161,7 @@ INCLUDEPATH += ../
 # installs
 target.path = $$(INSTALL_ROOT)/lib
 INSTALLS += target
-for(dir, $$list(./ avc id3 matroska mp4 mpegaudio ogg vorbis wav)) {
+for(dir, $$list(./ avc id3 matroska mp4 mpegaudio ogg vorbis wav avi)) {
     eval(inc_$${dir} = $${dir})
     inc_$${dir}.path = $$(INSTALL_ROOT)/include/$$projectname/$${dir}
     inc_$${dir}.files = $${dir}/*.h

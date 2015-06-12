@@ -3,9 +3,55 @@
 #include "../exceptions.h"
 #include "../mediaformat.h"
 
+#include <c++utilities/io/binaryreader.h>
+
 using namespace std;
 
 namespace Media {
+
+/*!
+ * \class Media::WaveFormatHeader
+ * \brief The WaveFormatHeader class parses the WAVEFORMATEX structure defined by MS.
+ */
+
+/*!
+ * \brief Constructs a new WaveFormatHeader.
+ */
+WaveFormatHeader::WaveFormatHeader() :
+    formatTag(0),
+    channelCount(0),
+    sampleRate(0),
+    bytesPerSecond(0),
+    chunkSize(0),
+    bitsPerSample(0)
+{}
+
+/*!
+ * \brief Parses the WAVE header using the specified \a reader.
+ * \remarks Reads 16 bytes from the associated stream.
+ */
+void WaveFormatHeader::parse(IoUtilities::BinaryReader &reader)
+{
+    formatTag = reader.readUInt16LE();
+    channelCount = reader.readUInt16LE();
+    sampleRate = reader.readUInt32LE();
+    bytesPerSecond = reader.readUInt32LE();
+    chunkSize = reader.readUInt16LE();
+    bitsPerSample = reader.readUInt16LE();
+}
+
+/*!
+ * \brief Returns the media format denoted by the format tag.
+ */
+MediaFormat WaveFormatHeader::format() const
+{
+    switch(formatTag) {
+    case 0x0001u: return GeneralMediaFormat::Pcm;
+    case 0x0050u: return MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer2);
+    case 0x0055u: return MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
+    default: return GeneralMediaFormat::Unknown;
+    }
+}
 
 /*!
  * \class Media::WaveAudioStream
@@ -33,6 +79,20 @@ TrackType WaveAudioStream::type() const
     return TrackType::WaveAudioStream;
 }
 
+/*!
+ * \brief Adds the information from the specified \a waveHeader to the specified \a track.
+ */
+void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track)
+{
+    track.m_format = waveHeader.format();
+    track.m_channelCount = waveHeader.channelCount;
+    track.m_sampleRate = waveHeader.sampleRate;
+    track.m_bytesPerSecond = waveHeader.bytesPerSecond;
+    track.m_chunkSize = waveHeader.chunkSize;
+    track.m_bitsPerSample = waveHeader.bitsPerSample;
+    track.m_bitrate = waveHeader.bitrate();
+}
+
 void WaveAudioStream::internalParseHeader()
 {
     if(!m_istream) {
@@ -44,27 +104,9 @@ void WaveAudioStream::internalParseHeader()
             uint32 restHeaderLen = m_reader.readUInt32LE();
             m_dataOffset = static_cast<uint64>(m_istream->tellg()) + static_cast<uint64>(restHeaderLen);
             if(restHeaderLen >= 16u) {
-                switch(m_reader.readUInt16LE()) {
-                case 0x0001u:
-                    m_format = GeneralMediaFormat::Pcm;
-                    break;
-                case 0x0050u:
-                    m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer2);
-                    break;
-                case 0x0055u:
-                    m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
-                    break;
-                default:
-                    m_format = GeneralMediaFormat::Unknown;
-                }
-                m_channelCount = m_reader.readUInt16LE();
-                m_sampleRate = m_reader.readUInt32LE();
-                m_bytesPerSecond = m_reader.readUInt32LE();
-                m_chunkSize = m_reader.readUInt16LE();
-                m_bitsPerSample = m_reader.readUInt16LE();
-                m_bitrate = m_bitsPerSample * m_sampleRate * m_channelCount;
-            } else {
-                m_format = GeneralMediaFormat::Unknown;
+                WaveFormatHeader waveHeader;
+                waveHeader.parse(m_reader);
+                addInfo(waveHeader, *this);
             }
             if(restHeaderLen > 16u) {
                 m_istream->seekg(m_dataOffset, ios_base::beg);

@@ -79,30 +79,28 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
     ilstChild.parse(); // ensure child has been parsed
     setId(ilstChild.id());
     context = "parsing MP4 tag field " + ilstChild.idToString();
-    Mp4Atom *dataAtom = ilstChild.firstChild();
     iostream &stream = ilstChild.stream();
     BinaryReader &reader = ilstChild.container().reader();
-    int dataAtomFound = 0;
-    int meanAtomFound = 0;
-    int nameAtomFound = 0;
-    while(dataAtom) {
+    int dataAtomFound = 0, meanAtomFound = 0, nameAtomFound = 0;
+    for(Mp4Atom *dataAtom = ilstChild.firstChild(); dataAtom; dataAtom = dataAtom->nextSibling()) {
         try {
             dataAtom->parse();
-            if((dataAtom->id() == Mp4AtomIds::Data) && (dataAtom->totalSize() > 16)) {
-                ++dataAtomFound;
-                if(dataAtomFound > 1) {
-                    if(dataAtomFound == 2) {
-                        addNotification(NotificationType::Warning, "Tag atom contains more than one data atom. The addiational data atoms will be ignored.", context);
-                    }
-                    dataAtom = dataAtom->nextSibling();
+            if(dataAtom->id() == Mp4AtomIds::Data) {
+                if(dataAtom->dataSize() < 8) {
+                    addNotification(NotificationType::Warning, "Truncated child atom \"data\" in tag atom (ilst child) found. (will be ignored)", context);
                     continue;
                 }
-                stream.seekg(dataAtom->startOffset() + 8);
-                if(reader.readByte() != 0) {
-                    addNotification(NotificationType::Warning, "The version indicator byte is not zero, the tag atom might not be parsed correctly.", context);
+                if(++dataAtomFound > 1) {
+                    if(dataAtomFound == 2) {
+                        addNotification(NotificationType::Warning, "Multiple \"data\" child atom in tag atom (ilst child) found. (will be ignored)", context);
+                    }
+                    continue;
                 }
-                m_parsedRawDataType = reader.readUInt24BE();
-                setTypeInfo(m_parsedRawDataType);
+                stream.seekg(dataAtom->dataOffset());
+                if(reader.readByte() != 0) {
+                    addNotification(NotificationType::Warning, "The version indicator byte is not zero, the tag atom might be unsupported and hence not be parsed correctly.", context);
+                }
+                setTypeInfo(m_parsedRawDataType = reader.readUInt24BE());
                 try { // try to show warning if parsed raw data type differs from expected raw data type for this atom id
                     vector<uint32> expectedRawDataTypes = this->expectedRawDataTypes();
                     if(find(expectedRawDataTypes.cbegin(), expectedRawDataTypes.cend(), m_parsedRawDataType) == expectedRawDataTypes.cend()) {
@@ -115,8 +113,8 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 m_langIndicator = reader.readUInt16BE();
                 switch(m_parsedRawDataType) {
                 case RawDataType::Utf8: case RawDataType::Utf16:
-                    stream.seekg(dataAtom->startOffset() + 16);
-                    value().assignText(reader.readString(dataAtom->totalSize() - 16), (m_parsedRawDataType == RawDataType::Utf16) ? TagTextEncoding::Utf16BigEndian : TagTextEncoding::Utf8);
+                    stream.seekg(dataAtom->dataOffset() + 8);
+                    value().assignText(reader.readString(dataAtom->dataSize() - 8), (m_parsedRawDataType == RawDataType::Utf16) ? TagTextEncoding::Utf16BigEndian : TagTextEncoding::Utf8);
                     break;
                 case RawDataType::Gif: case RawDataType::Jpeg: case RawDataType::Png: case RawDataType::Bmp: {
                     switch(m_parsedRawDataType) {
@@ -135,21 +133,21 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     default:
                         ;
                     }
-                    streamsize coverSize = dataAtom->totalSize() - 16;
+                    streamsize coverSize = dataAtom->dataSize() - 8;
                     unique_ptr<char []> coverData = make_unique<char []>(coverSize);
                     stream.read(coverData.get(), coverSize);
                     value().assignData(move(coverData), coverSize, TagDataType::Picture);
                     break;
                 } case RawDataType::BeSignedInt: {
                     int number = 0;
-                    if(dataAtom->totalSize() > (16 + 4)) {
+                    if(dataAtom->dataSize() > (8 + 4)) {
                         addNotification(NotificationType::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
                     }
-                    if(dataAtom->totalSize() >= (16 + 4)) {
+                    if(dataAtom->dataSize() >= (8 + 4)) {
                         number = reader.readInt32BE();
-                    } else if(dataAtom->totalSize() == (16 + 2)) {
+                    } else if(dataAtom->dataSize() == (8 + 2)) {
                         number = reader.readInt16BE();
-                    } else if(dataAtom->totalSize() == (16 + 1)) {
+                    } else if(dataAtom->dataSize() == (8 + 1)) {
                         number = reader.readChar();
                     }
                     switch(ilstChild.id()) {
@@ -162,14 +160,14 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     break;
                 } case RawDataType::BeUnsignedInt: {
                     int number = 0;
-                    if(dataAtom->totalSize() > (16 + 4)) {
+                    if(dataAtom->dataSize() > (8 + 4)) {
                         addNotification(NotificationType::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
                     }
-                    if(dataAtom->totalSize() >= (16 + 4)) {
+                    if(dataAtom->dataSize() >= (8 + 4)) {
                         number = static_cast<int>(reader.readUInt32BE());
-                    } else if(dataAtom->totalSize() == (16 + 2)) {
+                    } else if(dataAtom->dataSize() == (8 + 2)) {
                         number = static_cast<int>(reader.readUInt16BE());
-                    } else if(dataAtom->totalSize() == (16 + 1)) {
+                    } else if(dataAtom->dataSize() == (8 + 1)) {
                         number = static_cast<int>(reader.readByte());
                     }
                     switch(ilstChild.id()) {
@@ -185,29 +183,29 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     // track number, disk number and genre have no specific data type id
                     case TrackPosition:
                     case DiskPosition: {
-                        if(dataAtom->totalSize() < (16 + 6)) {
+                        if(dataAtom->dataSize() < (8 + 6)) {
                             addNotification(NotificationType::Warning, "Track/disk position is truncated. Trying to read data anyways.", context);
                         }
                         uint16 pos = 0, total = 0;
-                        if(dataAtom->totalSize() >= (16 + 4)) {
+                        if(dataAtom->dataSize() >= (8 + 4)) {
                             stream.seekg(2, ios_base::cur);
                             pos = reader.readUInt16BE();
                         }
-                        if(dataAtom->totalSize() >= (16 + 6)) {
+                        if(dataAtom->dataSize() >= (8 + 6)) {
                             total = reader.readUInt16BE();
                         }
                         value().assignPosition(PositionInSet(pos, total));
                         break;
                     }
                     case PreDefinedGenre:
-                        if(dataAtom->totalSize() < (16 + 2)) {
+                        if(dataAtom->dataSize() < (8 + 2)) {
                             addNotification(NotificationType::Warning, "Genre index is truncated.", context);
                         } else {
                             value().assignStandardGenreIndex(reader.readUInt16BE() - 1);
                         }
                         break;
                     default: // no supported data type, read raw data
-                        streamsize dataSize = dataAtom->totalSize() - 16;
+                        streamsize dataSize = dataAtom->dataSize() - 8;
                         unique_ptr<char []> data = make_unique<char[]>(dataSize);
                         stream.read(data.get(), dataSize);
                         if(ilstChild.id() == Mp4TagAtomIds::Cover) {
@@ -217,31 +215,35 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                         }
                     }
                 }
-            } else if((dataAtom->id() == Mp4AtomIds::Mean) && (dataAtom->totalSize() > 12)) {
-                ++meanAtomFound;
-                if(meanAtomFound > 1) {
-                    if(meanAtomFound == 2)
+            } else if(dataAtom->id() == Mp4AtomIds::Mean) {
+                if(dataAtom->dataSize() < 8) {
+                    addNotification(NotificationType::Warning, "Truncated child atom \"mean\" in tag atom (ilst child) found. (will be ignored)", context);
+                    continue;
+                }
+                if(++meanAtomFound > 1) {
+                    if(meanAtomFound == 2) {
                         addNotification(NotificationType::Warning, "Tag atom contains more than one mean atom. The addiational mean atoms will be ignored.", context);
-                    dataAtom = dataAtom->nextSibling();
+                    }
                     continue;
                 }
-                stream.seekg(dataAtom->startOffset() + 12);
-                m_mean = reader.readString(dataAtom->totalSize() - 12);
-            } else if((dataAtom->id() == Mp4AtomIds::Name) && (dataAtom->totalSize() > 12)) {
-                ++nameAtomFound;
-                if(nameAtomFound > 1) {
-                    if(nameAtomFound == 2)
+                stream.seekg(dataAtom->dataOffset() + 4);
+                m_mean = reader.readString(dataAtom->dataSize() - 4);
+            } else if(dataAtom->id() == Mp4AtomIds::Name) {
+                if(dataAtom->dataSize() < 4) {
+                    addNotification(NotificationType::Warning, "Truncated child atom \"name\" in tag atom (ilst child) found. (will be ignored)", context);
+                    continue;
+                }
+                if(++nameAtomFound > 1) {
+                    if(nameAtomFound == 2) {
                         addNotification(NotificationType::Warning, "Tag atom contains more than one name atom. The addiational name atoms will be ignored.", context);
-                    dataAtom = dataAtom->nextSibling();
+                    }
                     continue;
                 }
-                stream.seekg(dataAtom->startOffset() + 12);
-                m_name = reader.readString(dataAtom->totalSize() - 12);
+                stream.seekg(dataAtom->dataOffset() + 4);
+                m_name = reader.readString(dataAtom->dataSize() - 4);
             } else {
                 addNotification(NotificationType::Warning, "Unkown child atom \"" + dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
             }
-
-            dataAtom = dataAtom->nextSibling();
         } catch(Failure &) {
             addNotification(NotificationType::Warning, "Unable to parse all childs atom in tag atom (ilst child) found. (will be ignored)", context);
         }

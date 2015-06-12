@@ -193,7 +193,7 @@ bool Mp4Atom::isPadding() const
 uint64 Mp4Atom::firstChildOffset() const
 {
     using namespace Mp4AtomIds;
-    using namespace Mp4FormatIds;
+    using namespace FourccIds;
     if(isParent()) {
         switch(id()) {
         case Meta: return headerSize() + 0x4;

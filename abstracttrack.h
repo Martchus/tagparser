@@ -19,6 +19,8 @@ namespace Media {
 
 enum class MediaType;
 enum class GeneralMediaFormat;
+class MpegAudioFrameStream;
+class WaveAudioStream;
 
 /*!
  * \brief Specifies the track type.
@@ -33,11 +35,10 @@ enum class TrackType
     OggStream /**< The track is a Media::OggStream. */
 };
 
-class MpegAudioFrameStream;
-
 class LIB_EXPORT AbstractTrack : public StatusProvider
 {
-    friend class MpegAudioFrameStream; // this is a temporary solution, until I have a better design
+    friend class MpegAudioFrameStream;
+    friend class WaveAudioStream;
 
 public:
     virtual ~AbstractTrack();

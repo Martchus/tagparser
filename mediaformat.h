@@ -71,12 +71,14 @@ enum class GeneralMediaFormat
     TextSubtitle, /**< Text subtitle */
     Theora, /**< Theora */
     Tiff, /**< TIFF */
+    TimedText, /** < Timed Text */
     Tta, /**< The True Audio lessles audio compressor */
     UncompressedVideoFrames, /**< uncompressed RGB */
     Vc1, /**< VC-1 */
     VobBtn, /**< VobBtn */
     VobSub, /**< VobSub */
     Vorbis, /**< Vorbis */
+    Vp8, /** < VP8 */
     WavPack /**< WavPack */
 };
 

@@ -4,7 +4,8 @@
 #include "matroskaid.h"
 
 #include "../avi/bitmapinfoheader.h"
-#include "../avi/mediafourcc.h"
+#include "../wav/waveaudiostream.h"
+#include "../mp4/mp4ids.h"
 
 #include "../mediaformat.h"
 #include "../exceptions.h"
@@ -81,6 +82,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::Theora;
     } else if(part1 == "V_PRORES") {
         fmt.general = GeneralMediaFormat::ProRes;
+    } else if(part1 == "V_VP8") {
+        fmt.general = GeneralMediaFormat::Vp8;
     } else if(part1 == "A_MPEG") {
         fmt.general = GeneralMediaFormat::Mpeg1Audio;
         if(part2 == "L1") {
@@ -345,7 +348,6 @@ void MatroskaTrack::internalParseHeader()
     switch(m_format.general) {
     EbmlElement *codecPrivateElement;
     case GeneralMediaFormat::MicrosoftVideoCodecManager:
-    case GeneralMediaFormat::MicrosoftAudioCodecManager:
         if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
             // parse bitmap info header to determine actual format
             if(codecPrivateElement->dataSize() >= 0x28) {
@@ -356,7 +358,20 @@ void MatroskaTrack::internalParseHeader()
                 m_formatId += " \"";
                 m_formatId += interpretIntegerAsString(bitmapInfoHeader.compression);
                 m_formatId += "\"";
-                m_format += Fourccs::fourccToMediaFormat(bitmapInfoHeader.compression);
+                m_format += FourccIds::fourccToMediaFormat(bitmapInfoHeader.compression);
+            } else {
+                addNotification(NotificationType::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
+            }
+        }
+        break;
+    case GeneralMediaFormat::MicrosoftAudioCodecManager:
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+            // parse WAVE header to determine actual format
+            if(codecPrivateElement->dataSize() >= 16) {
+                m_istream->seekg(codecPrivateElement->dataOffset());
+                WaveFormatHeader waveFormatHeader;
+                waveFormatHeader.parse(reader());
+                WaveAudioStream::addInfo(waveFormatHeader, *this);
             } else {
                 addNotification(NotificationType::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
             }

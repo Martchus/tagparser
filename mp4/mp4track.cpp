@@ -1050,7 +1050,7 @@ void Mp4Track::makeSampleTable()
 
 void Mp4Track::internalParseHeader()
 {
-    const string context("parsing MP4 track");
+    static const string context("parsing MP4 track");
     using namespace Mp4AtomIds;
     if(!m_trakAtom) {
         addNotification(NotificationType::Critical, "Trak atom is null.", context);
@@ -1058,59 +1058,43 @@ void Mp4Track::internalParseHeader()
     }
     // get atoms
     try {
-        m_tkhdAtom = m_trakAtom->childById(TrackHeader);
-        if(!m_tkhdAtom) {
+        if(!(m_tkhdAtom = m_trakAtom->childById(TrackHeader))) {
             addNotification(NotificationType::Critical, "No tkhd atom found.", context);
             throw InvalidDataException();
         }
-        m_mdiaAtom = m_trakAtom->childById(Media);
-        if(!m_mdiaAtom) {
+        if(!(m_mdiaAtom = m_trakAtom->childById(Media))) {
             addNotification(NotificationType::Critical, "No mdia atom found.", context);
             throw InvalidDataException();
         }
-        m_mdhdAtom = m_mdiaAtom->childById(MediaHeader);
-        if(!m_mdhdAtom) {
+        if(!(m_mdhdAtom = m_mdiaAtom->childById(MediaHeader))) {
             addNotification(NotificationType::Critical, "No mdhd atom found.", context);
             throw InvalidDataException();
         }
-        m_hdlrAtom = m_mdiaAtom->childById(HandlerReference);
-        if(!m_hdlrAtom) {
+        if(!(m_hdlrAtom = m_mdiaAtom->childById(HandlerReference))) {
             addNotification(NotificationType::Critical, "No hdlr atom found.", context);
             throw InvalidDataException();
         }
-        m_minfAtom = m_mdiaAtom->childById(MediaInformation);
-        if(!m_minfAtom) {
+        if(!(m_minfAtom = m_mdiaAtom->childById(MediaInformation))) {
             addNotification(NotificationType::Critical, "No minf atom found.", context);
             throw InvalidDataException();
         }
-        m_stblAtom = m_minfAtom->childById(SampleTable);
-        if(!m_stblAtom) {
+        if(!(m_stblAtom = m_minfAtom->childById(SampleTable))) {
             addNotification(NotificationType::Critical, "No stbl atom found.", context);
             throw InvalidDataException();
         }
-        m_stsdAtom = m_stblAtom->childById(SampleDescription);
-        if(!m_stsdAtom) {
+        if(!(m_stsdAtom = m_stblAtom->childById(SampleDescription))) {
             addNotification(NotificationType::Critical, "No stsd atom found.", context);
             throw InvalidDataException();
         }
-        m_stcoAtom = m_stblAtom->childById(ChunkOffset);
-        if(!m_stcoAtom) {
-            m_stblAtom->childById(ChunkOffset64);
-        }
-        if(!m_stcoAtom) {
+        if(!(m_stcoAtom = m_stblAtom->childById(ChunkOffset)) && !(m_stcoAtom = m_stblAtom->childById(ChunkOffset64))) {
             addNotification(NotificationType::Critical, "No stco/co64 atom found.", context);
             throw InvalidDataException();
         }
-        m_stscAtom = m_stblAtom->childById(SampleToChunk);
-        if(!m_stscAtom) {
+        if(!(m_stscAtom = m_stblAtom->childById(SampleToChunk))) {
             addNotification(NotificationType::Critical, "No stsc atom found.", context);
             throw InvalidDataException();
         }
-        m_stszAtom = m_stblAtom->childById(SampleSize);
-        if(!m_stszAtom) {
-            m_stszAtom = m_stblAtom->childById(CompactSampleSize);
-        }
-        if(!m_stszAtom) {
+        if(!(m_stszAtom = m_stblAtom->childById(SampleSize)) && !(m_stszAtom = m_stblAtom->childById(CompactSampleSize))) {
             addNotification(NotificationType::Critical, "No stsz/stz2 atom found.", context);
             throw InvalidDataException();
         }
@@ -1206,7 +1190,7 @@ void Mp4Track::internalParseHeader()
                 codecConfigContainerAtom->parse();
                 // parse FOURCC
                 m_formatId = interpretIntegerAsString<uint32>(codecConfigContainerAtom->id());
-                m_format = Mp4FormatIds::fourccToMediaFormat(codecConfigContainerAtom->id());
+                m_format = FourccIds::fourccToMediaFormat(codecConfigContainerAtom->id());
                 // parse AVC configuration
                 //codecConfigContainerAtom->childById(Mp4AtomIds::AvcConfiguration);
                 // parse MPEG-4 elementary stream descriptor

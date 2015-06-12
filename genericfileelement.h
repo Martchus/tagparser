@@ -562,13 +562,11 @@ template <class ImplementationType>
 typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::childById(const GenericFileElement<ImplementationType>::identifierType &id)
 {
     parse(); // ensure element is parsed
-    implementationType *child = firstChild();
-    while(child) {
+    for(implementationType *child = firstChild(); child; child = child->nextSibling()) {
         child->parse();
         if(child->id() == id) {
             return child;
         }
-        child = child->nextSibling();
     }
     return nullptr;
 }
@@ -591,13 +589,11 @@ template <class ImplementationType>
 typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::siblingById(const GenericFileElement<ImplementationType>::identifierType &id, bool includeThis)
 {
     parse(); // ensure element is parsed
-    implementationType *sibling = includeThis ? static_cast<implementationType*>(this) : nextSibling();
-    while(sibling) {
+    for(implementationType *sibling = includeThis ? static_cast<implementationType*>(this) : nextSibling(); sibling; sibling = sibling->nextSibling()) {
         sibling->parse();
         if(sibling->id() == id) {
             return sibling;
         }
-        sibling = sibling->nextSibling();
     }
     return nullptr;
 }
