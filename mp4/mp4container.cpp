@@ -231,15 +231,13 @@ void Mp4Container::internalMakeFile()
             pdinAtom->copyEntirely(outputStream);
         }
         ostream::pos_type newMoovOffset = outputStream.tellp();
-        Mp4Atom *moovChildAtom = moovAtom->firstChild();
-        Mp4Atom *udtaAtom = nullptr;
+        Mp4Atom *udtaAtom = nullptr, *udtaChildAtom = nullptr;
         uint64 newUdtaOffset = 0u;
-        Mp4Atom *udtaChildAtom = nullptr;
         if(isAborted()) {
             throw OperationAbortedException();
         }
         moovAtom->copyWithoutChilds(outputStream);
-        while(moovChildAtom) { // write child atoms manually, because the child udta has to be altered/ignored
+        for(Mp4Atom *moovChildAtom = moovAtom->firstChild(); moovChildAtom; moovChildAtom->nextSibling()) { // write child atoms manually, because the child udta has to be altered/ignored
             try {
                 moovChildAtom->parse();
             } catch(Failure &) {
@@ -281,14 +279,12 @@ void Mp4Container::internalMakeFile()
                             addNotifications(*m_tags.front());
                         }
                          // write rest of the child atoms of udta atom
-                        udtaChildAtom = udtaAtom->firstChild();
                         try {
-                            while(udtaChildAtom) {
+                            for(udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
                                 udtaChildAtom->parse();
                                 if(udtaChildAtom->id() != Mp4AtomIds::Meta) { // skip meta atoms here of course
                                     udtaChildAtom->copyEntirely(outputStream);
                                 }
-                                udtaChildAtom = udtaChildAtom->nextSibling();
                             }
                         } catch(Failure &) {
                             addNotification(NotificationType::Warning,
@@ -304,7 +300,6 @@ void Mp4Container::internalMakeFile()
                 // copy trak atoms only when not writing the data chunk-by-chunk
                 moovChildAtom->copyEntirely(outputStream);
             }
-            moovChildAtom = moovChildAtom->nextSibling();
         }
         // the original file has no udta atom but there is tag information to be written
         if(!udtaAtom && !m_tags.empty()) {
@@ -341,8 +336,7 @@ void Mp4Container::internalMakeFile()
         vector<int64> newMdatOffsets; // used when simply copying mdat
         // write other atoms
         Mp4Atom *firstOtherTopLevelAtom = firstElement()->nextSibling();
-        Mp4Atom *otherTopLevelAtom = firstOtherTopLevelAtom;
-        while(otherTopLevelAtom) {
+        for(Mp4Atom *otherTopLevelAtom = firstOtherTopLevelAtom; otherTopLevelAtom; otherTopLevelAtom = otherTopLevelAtom->nextSibling()) {
             if(isAborted()) {
                 throw OperationAbortedException();
             }
@@ -369,7 +363,6 @@ void Mp4Container::internalMakeFile()
                 otherTopLevelAtom->forwardStatusUpdateCalls(this);
                 otherTopLevelAtom->copyEntirely(outputStream);
             }
-            otherTopLevelAtom = otherTopLevelAtom->nextSibling();
         }
         // when writing chunk by chunk the actual data needs to be written separately
         if(writeChunkByChunk) {
@@ -514,16 +507,16 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
     }
     // update "base-data-offset-present" of tfhd atom (NOT tested properly)
     try {
-        Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, false);
-        while(moofAtom) {
+        for(Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, false);
+            moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, false)) {
             moofAtom->parse();
             try {
-                Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment);
-                while(trafAtom) {
+                for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment); trafAtom;
+                    trafAtom->siblingById(Mp4AtomIds::TrackFragment, false)) {
                     trafAtom->parse();
-                    Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader);
                     int tfhdAtomCount = 0;
-                    while(tfhdAtom) {
+                    for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader); tfhdAtom;
+                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, false)) {
                         tfhdAtom->parse();
                         ++tfhdAtomCount;
                         if(tfhdAtom->dataSize() >= 8) {
@@ -549,7 +542,6 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                         } else {
                             addNotification(NotificationType::Warning, "tfhd atom is truncated.", context);
                         }
-                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, false);
                     }
                     switch(tfhdAtomCount) {
                     case 0:
@@ -560,12 +552,10 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                     default:
                         addNotification(NotificationType::Warning, "traf atom stores multiple tfhd atoms but it should only contain exactly one tfhd atom.", context);
                     }
-                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, false);
                 }
             } catch(Failure &) {
                 addNotification(NotificationType::Critical, "Unable to parse childs of top-level atom moof.", context);
             }
-            moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, false);
         }
     } catch(Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse top-level atom moof.", context);

@@ -1410,7 +1410,7 @@ void Mp4Track::internalParseHeader()
                         //uint32 defaultSampleDescriptionIndex = 0;
                         uint32 defaultSampleDuration = 0;
                         uint32 defaultSampleSize = 0;
-                        uint32 defaultSampleFlags = 0;
+                        //uint32 defaultSampleFlags = 0;
                         if(tfhdAtom->dataSize() < calculatedDataSize) {
                             addNotification(NotificationType::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
                         } else {
@@ -1424,14 +1424,14 @@ void Mp4Track::internalParseHeader()
                             }
                             if(flags & 0x000008) { // default-sample-duration present
                                 defaultSampleDuration = reader.readUInt32BE();
-                                //m_stream->seekg(4, ios_base::cur);
+                                //m_istream->seekg(4, ios_base::cur);
                             }
                             if(flags & 0x000010) { // default-sample-size present
                                 defaultSampleSize = reader.readUInt32BE();
                             }
                             if(flags & 0x000020) { // default-sample-flags present
-                                defaultSampleFlags = reader.readUInt32BE();
-                                //m_stream->seekg(4, ios_base::cur);
+                                //defaultSampleFlags = reader.readUInt32BE();
+                                m_istream->seekg(4, ios_base::cur);
                             }
                         }
                         Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun);

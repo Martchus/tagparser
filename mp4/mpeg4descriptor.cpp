@@ -83,6 +83,7 @@ void Mpeg4Descriptor::internalParse()
             sibling = new implementationType(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
         }
     }
+    m_nextSibling.reset(sibling);
 }
 
 }

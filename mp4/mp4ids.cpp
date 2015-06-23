@@ -199,7 +199,7 @@ const char *streamTypeName(byte streamTypeId)
     case Ipmp: return "IPMP";
     case FontData: return "font data";
     case StreamingText: return "streaming text";
-    default: "";
+    default: return "";
     }
 }
 
