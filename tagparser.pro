@@ -1,4 +1,5 @@
 projectname = tagparser
+VERSION = 1.1.5
 
 # include ../../common.pri when building as part of a subdirs project; otherwise include general.pri
 !include(../../common.pri) {
