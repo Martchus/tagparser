@@ -153,9 +153,7 @@ forcefullparsedefault {
 
 OTHER_FILES += \
     README.md \
-    LICENSE \
-    pkgbuild/default/PKGBUILD \
-    pkgbuild/mingw-w64/PKGBUILD
+    LICENSE
 
 INCLUDEPATH += ../
 
