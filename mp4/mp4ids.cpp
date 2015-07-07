@@ -51,16 +51,21 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return GeneralMediaFormat::Mpeg2Video;
     case Mpeg4Video:
         return GeneralMediaFormat::Mpeg4Video;
+    case Hevc1: case Hevc2:
+        return MediaFormat(GeneralMediaFormat::Hevc);
     case Avc1: case Avc2: case Avc3: case Avc4: case H264Decoder1: case H264Decoder2:
     case H264Decoder3: case H264Decoder4: case H264Decoder5: case H264Decoder6:
-        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Avc);
-    case H263: case XvidDecoder1: case XvidDecoder2:
-    case XvidDecoder3: case XvidDecoder4: case XvidDecoder5:
-    case Divx5Decoder:
-        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Asp);
+        return MediaFormat(GeneralMediaFormat::Avc);
     case Divx4Decoder1: case Divx4Decoder2: case Divx4Decoder3:
     case Divx4Decoder4: case Divx4Decoder5: case Divx4Decoder6: case Divx4Decoder7:
-        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Sp);
+    case H263Quicktime: case H2633GPP: case XvidDecoder1: case XvidDecoder2:
+    case XvidDecoder3: case XvidDecoder4: case XvidDecoder5: case Divx5Decoder:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4AdvancedSimpleProfile0);
+    case Divx3Decoder1: case Divx3Decoder2: case Divx3Decoder3: case Divx3Decoder4: case Divx3Decoder5:
+    case Divx3Decoder6: case Divx3Decoder7: case Divx3Decoder8: case Divx3Decoder9: case Divx3Decoder10:
+    case Divx3Decoder11: case Divx3Decoder12: case Divx3Decoder13: case Divx3Decoder14: case Divx3Decoder15:
+    case Divx3Decoder16: case Divx3Decoder17:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4SimpleProfile0);
     case Tiff:
         return GeneralMediaFormat::Tiff;
     case AppleTextAtsuiCodec:
@@ -85,6 +90,10 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return GeneralMediaFormat::Alac;
     case Ac3:
         return GeneralMediaFormat::Ac3;
+    case EAc3:
+        return GeneralMediaFormat::EAc3;
+    case DolbyMpl:
+        return GeneralMediaFormat::DolbyMlp;
     case Ac4:
         return GeneralMediaFormat::Ac4;
     case Rv20: case Rv30: case Rv40:
@@ -97,6 +106,15 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntLe);
     case FloatingPoint32Bit: case FloatingPoint64Bit:
         return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmFloatIeee);
+    case Amr: case AmrNarrowband:
+        return MediaFormat(GeneralMediaFormat::Amr);
+    case Dts: case DtsH:
+        return MediaFormat(GeneralMediaFormat::Dts);
+    case DtsE:
+        return MediaFormat(GeneralMediaFormat::Dts, SubFormats::DtsExpress);
+    case WindowsMediaAudio: case WindowsMediaAudio7:
+    case WindowsMediaAudio9Professional: case WindowsMediaAudio9Standard:
+        return MediaFormat(GeneralMediaFormat::WindowsMediaAudio);
     // TODO: map more FOURCCs
     default:
         return GeneralMediaFormat::Unknown;
@@ -131,8 +149,8 @@ MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
     case SynthesizedTextureStream: return GeneralMediaFormat::SynthesizedTextureStream;
     case StreamingTextStream: return GeneralMediaFormat::StreamingTextStream;
     case Mpeg4Visual: return GeneralMediaFormat::Mpeg4Video;
-    case Avc: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4Avc);
-    case ParameterSetsForAvc: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4AvcParams);
+    case Avc: return GeneralMediaFormat::Avc;
+    case ParameterSetsForAvc: return GeneralMediaFormat::Avc;
     case Als: return GeneralMediaFormat::Als;
     case Sa0c: return GeneralMediaFormat::Sa0c;
     case Aac: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile);
@@ -260,6 +278,18 @@ LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent,
     return fmt;
 }
 
+}
+
+/*!
+ * \brief Encapsulates MPEG-4 video (14496-2) codes.
+ */
+namespace Mpeg4VideoCodes {
+}
+
+/*!
+ * \brief Encapsulates MPEG-2 video codes.
+ */
+namespace Mpeg2VideoCodes {
 }
 
 }

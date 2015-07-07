@@ -40,6 +40,15 @@ public:
     byte epConfig;
 };
 
+class LIB_EXPORT Mpeg4VideoSpecificConfig
+{
+public:
+    Mpeg4VideoSpecificConfig();
+
+    byte profile;
+    std::string userData;
+};
+
 class LIB_EXPORT Mpeg4ElementaryStreamInfo
 {
 public:
@@ -63,6 +72,7 @@ public:
     uint32 maxBitrate;
     uint32 averageBitrate;
     std::unique_ptr<Mpeg4AudioSpecificConfig> audioSpecificConfig;
+    std::unique_ptr<Mpeg4VideoSpecificConfig> videoSpecificConfig;
 };
 
 inline Mpeg4ElementaryStreamInfo::Mpeg4ElementaryStreamInfo() :
@@ -126,6 +136,7 @@ public:
     AvcConfiguration parseAvcConfiguration(Mp4Atom *avcConfigAtom);
     std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(Mp4Atom *esDescAtom);
     std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc);
+    std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc);
 
     // methods to read the "index" (chunk offsets and sizes)
     std::vector<uint64> readChunkOffsets();

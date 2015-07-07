@@ -146,6 +146,7 @@ enum KnownValue : uint32 {
     Alaw21 = 0x616C6177,
     AlphaCompositor = 0x626C6E64,
     AlphaGain = 0x6761696E,
+    Amr = 0x73617762,
     AmrNarrowband = 0x73616D72,
     Animation = 0x726C6520, /**< Animation */
     Appl1 = 0x6476690,
@@ -252,11 +253,16 @@ enum KnownValue : uint32 {
     Divx4Decoder6 = 0x6D347332,
     Divx4Decoder7 = 0x6D703473,
     Divx5Decoder = 0x44583530,
-    Drm = 0x64726D73,
+    Drms = 0x64726D73,
+    Drmi = 0x64726D69,
+    Dts = 0x6474736C,
+    DtsH = 0x64747368,
+    DtsE = 0x64747365,
     Dvca = 0x64766361,
     DvcPro501 = 0x64763570,
     DvcPro502 = 0x6476356E,
     DvcProPal = 0x64767070,
+    EAc3 = 0x65632D33,
     EdgeDetection = 0x65646765,
     Emboss = 0x656D6273,
     Explode = 0x78706C6F,
@@ -271,7 +277,8 @@ enum KnownValue : uint32 {
     Glass = 0x676C6173,
     GradientWipe = 0x6D617474,
     Graphics = 0x736D6320, /**< Graphics */
-    H263 = 0x68323633, /**< H.263/MPEG-4 ASP video */
+    H263Quicktime = 0x68323633, /**< H.263/MPEG-4 ASP video (Quicktime) */
+    H2633GPP = 0x73323633, /**< H.263 (3GPP format) */
     H264Decoder1 = 0x44415643,
     H264Decoder2 = 0x48323634,
     H264Decoder3 = 0x56535348,
@@ -279,6 +286,8 @@ enum KnownValue : uint32 {
     H264Decoder5 = 0x68323634,
     H264Decoder6 = 0x78323634,
     Hdv3 = 0x68647633,
+    Hevc1 = 0x68766331, /**< H.265/High Efficiency Video Coding  */
+    Hevc2 = 0x68657631, /**< H.265/High Efficiency Video Coding */
     HslBalance = 0x68736C62,
     Ima4 = 0x696D6134,
     Ima41 = 0x696D6134,
@@ -303,6 +312,7 @@ enum KnownValue : uint32 {
     Mace31 = 0x4D414333,
     Mace61 = 0x4D414336,
     MatrixWipe = 0x736D7034,
+    DolbyMpl = 0x6D6C7061,
     MotionJpegA = 0x6D6A7061, /**< Motion-JPEG (format A) */
     MotionJpegB = 0x6D6A7062, /**< Motion-JPEG (format B) */
     Mp3 = 0x2e6d7033, /**< MPEG-1 Layer 3 */
@@ -366,6 +376,7 @@ enum KnownValue : uint32 {
     Ulaw21 = 0x756C6177,
     VcmImageCodec = 0x4D6A7067,
     Vdva = 0x76647661,
+    WindowsMediaAudio = 0x6F776D61, /**< ? */
     WindowsMediaAudio7 = 0x574D4131,
     WindowsMediaAudio9Professional = 0x574D4133,
     WindowsMediaAudio9Standard = 0x574D4132,
@@ -577,6 +588,39 @@ enum KnownValue : byte {
 
 LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
 
+}
+
+namespace Mpeg4VideoCodes {
+enum KnownValue : byte {
+    VideoObjectStart = 0x00,
+    VideoObjectLayerStart = 0x20,
+    VisualObjectSequenceStart = 0xB0,
+    VisualObjectSequendeEnd = 0xB1,
+    UserDataStart = 0xB2,
+    GroupOfVopStart = 0xB3,
+    VideoSessionError = 0xB4,
+    VisualObjectStart = 0xB5,
+    VopStart = 0xB6,
+    FbaObjectStart = 0xBA,
+    FbaObjectPlaneStart = 0xBB,
+    MeshObjectStart = 0xBC,
+    MeshObjectPlaneStart = 0xBD,
+    StillTextureObjectStart = 0xBE,
+    TextureSpatialLayerStart = 0xBF,
+    TextureSnrLayerStart = 0xC0,
+    TextureTitleStart = 0xC1,
+    TextureShapeLayerStart = 0xC2,
+    StuffingStart = 0xC3
+};
+}
+
+namespace Mpeg2VideoCodes {
+enum KnownValue : byte {
+    Pic = 0x00,
+    Seq = 0xB3,
+    Ext = 0xB5,
+    Gop = 0xB8
+};
 }
 
 /*!

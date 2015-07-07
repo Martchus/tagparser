@@ -61,14 +61,14 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::Mpeg4Video;
         if(part2 == "ISO") {
             if(part3 == "SP") {
-                fmt.sub = SubFormats::Mpeg4Sp;
+                fmt.sub = SubFormats::Mpeg4SimpleProfile1;
             } else if(part3 == "ASP") {
-                fmt.sub = SubFormats::Mpeg4Asp;
+                fmt.sub = SubFormats::Mpeg4AdvancedSimpleProfile1;
             } else if(part3 == "AVC") {
-                fmt.sub = SubFormats::Mpeg4Avc;
+                fmt.general = GeneralMediaFormat::Avc;
             }
         } else if(part2 == "MS" && part3 == "V3") {
-            fmt.sub = SubFormats::Mpeg4MsV3;
+            fmt.sub = SubFormats::Mpeg4SimpleProfile1;
         }
     } else if(part1 == "V_MPEG1") {
         fmt.general = GeneralMediaFormat::Mpeg1Video;

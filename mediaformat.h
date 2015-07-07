@@ -32,6 +32,8 @@ enum class GeneralMediaFormat
     AfxStream, /**< AFX Stream */
     Alac, /**< Apple Lossless Audio Codec */
     Als, /**< ALS */
+    Amr, /** < AMR */
+    Avc, /** < Advanced Video Coding */
     Bitmap, /**< Windows Bitmap */
     Dirac, /**< Dirac */
     Dts, /**< DTS */
@@ -42,6 +44,7 @@ enum class GeneralMediaFormat
     FontDataStream, /**< Font Data Stream */
     Gif, /**< GIF */
     Gpp2Cmf, /**< 3GPP2 Compact Multimedia Format (CMF) */
+    Hevc, /**< H.265/High Efficiency Video Coding */
     ImaadpcmAcm, /**< IMAADPCM ACM */
     ImageSubtitle, /**< Image subtitle */
     InteractionStream, /**< Interaction Stream */
@@ -49,6 +52,7 @@ enum class GeneralMediaFormat
     OggKate, /**< Karaoke And Text Encapsulation */
     MicrosoftAudioCodecManager, /**< Microsoft Audio Codec Manager (ACM) */
     MicrosoftVideoCodecManager, /**< Microsoft Video Codec Manager (VCM) */
+    DolbyMlp, /** < Dolby MLP */
     Mpeg1Audio, /**< MPEG-1 Audio */
     Mpeg1Video, /**< MPEG-1 Vudio */
     Mpeg2Audio, /**< MPEG-2 Audio */
@@ -79,7 +83,8 @@ enum class GeneralMediaFormat
     VobSub, /**< VobSub */
     Vorbis, /**< Vorbis */
     Vp8, /** < VP8 */
-    WavPack /**< WavPack */
+    WavPack, /**< WavPack */
+    WindowsMediaAudio /**< Windows Media Audio */
 };
 
 /*!
@@ -126,11 +131,77 @@ enum Mpeg2VideoProfile : unsigned char {
 };
 
 enum Mpeg4VideoProfile : unsigned char {
-    Mpeg4Sp = 1,
-    Mpeg4Asp,
-    Mpeg4Avc,
-    Mpeg4AvcParams,
-    Mpeg4MsV3
+    Mpeg4SimpleProfile1 = 0x01,
+    Mpeg4SimpleProfile2 = 0x02,
+    Mpeg4SimpleProfile3 = 0x03,
+    Mpeg4SimpleProfile0 = 0x08,
+    Mpeg4SimpleScalableProfile0 = 0x10,
+    Mpeg4SimpleScalableProfile1 = 0x11,
+    Mpeg4SimpleScalableProfile2 = 0x12,
+    Mpeg4CoreProfile1 = 0x21,
+    Mpeg4CoreProfiel2 = 0x22,
+    Mpeg4MainProfile2 = 0x32,
+    Mpeg4MainProfile3 = 0x33,
+    Mpeg4MainProfile4 = 0x34,
+    Mpeg4NBitPrifle2 = 0x42,
+    Mpeg4ScalableTextureProfile1 = 0x51,
+    Mpeg4SimpleFaceAnimationProfile1 = 0x61,
+    Mpeg4SimpleFaceAnimationProfile2 = 0x62,
+    Mpeg4SimpleFbaProfile1 = 0x63,
+    Mpeg4SimpleFbaProfile2 = 0x64,
+    Mpeg4BasicAnimatedTextureProfiel1 = 0x71,
+    Mpeg4BasicAnimatedTextureProfiel2 = 0x72,
+    Mpeg4AvcProfile = 0x7F,
+    Mpeg4HybridProfile1 = 0x81,
+    Mpeg4HybridProfile2 = 0x82,
+    Mpeg4AdvancedRealTimeSimpleProfile1 = 0x91,
+    Mpeg4AdvancedRealTimeSimpleProfile2 = 0x92,
+    Mpeg4AdvancedRealTimeSimpleProfile3 = 0x93,
+    Mpeg4AdvancedRealTimeSimpleProfile4 = 0x94,
+    Mpeg4CoreScalableProfile1 = 0xA1,
+    Mpeg4CoreScalableProfile2 = 0xA2,
+    Mpeg4CoreScalableProfile3 = 0xA3,
+    Mpeg4AdvancedCodingEfficiencyProfile1 = 0xB1,
+    Mpeg4AdvancedCodingEfficiencyProfile2 = 0xB2,
+    Mpeg4AdvancedCodingEfficiencyProfile3 = 0xB3,
+    Mpeg4AdvancedCodingEfficiencyProfile4 = 0xB4,
+    Mpeg4AdvancedCoreProfile1 = 0xC1,
+    Mpeg4AdvancedCoreProfile2 = 0xC2,
+    Mpeg4AdvancedScalableTexture1 = 0xD1,
+    Mpeg4AdvancedScalableTexture2 = 0xD2,
+    Mpeg4SimpleStudioProfile1 = 0xE1,
+    Mpeg4SimpleStudioProfile2 = 0xE2,
+    Mpeg4SimpleStudioProfile3 = 0xE3,
+    Mpeg4SimpleStudioProfile4 = 0xE4,
+    Mpeg4CoreStudioProfile1 = 0xE5,
+    Mpeg4CoreStudioProfile2 = 0xE6,
+    Mpeg4CoreStudioProfile3 = 0xE7,
+    Mpeg4CoreStudioProfile4 = 0xE8,
+    Mpeg4AdvancedSimpleProfile0 = 0xF0,
+    Mpeg4AdvancedSimpleProfile1 = 0xF1,
+    Mpeg4AdvancedSimpleProfile2 = 0xF2,
+    Mpeg4AdvancedSimpleProfile3 = 0xF3,
+    Mpeg4AdvancedSimpleProfile4 = 0xF4,
+    Mpeg4AdvancedSimpleProfile5 = 0xF5,
+    Mpeg4AdvancedSimpleProfile3b = 0xF7,
+    Mpeg4FineGranularityScalableProfile0 = 0xF8,
+    Mpeg4FineGranularityScalableProfile1 = 0xF9,
+    Mpeg4FineGranularityScalableProfile2 = 0xFA,
+    Mpeg4FineGranularityScalableProfile3 = 0xFB,
+    Mpeg4FineGranularityScalableProfile4 = 0xFC,
+    Mpeg4FineGranularityScalableProfile5 = 0xFD
+};
+
+enum AvcProfile : unsigned char {
+    AvcBaselineProfile = 0x42,
+    AvcMainProfile = 0x4D,
+    AvcScalableBaselineProfile = 0x53,
+    AvcScalableHighProfile = 0x56,
+    AvcExtendedProfile = 0x58,
+    AvcHighProfile = 0x64,
+    AvcHigh10Profile = 0x6E,
+    AvcHigh422Profile = 0x7A,
+    AvcHigh444Profile = 0x90
 };
 
 enum DtsSpecifier : unsigned char {
@@ -221,3 +292,4 @@ inline MediaFormat::operator bool() const
 }
 
 #endif // MEDIAFORMAT_H
+

@@ -41,6 +41,20 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::AfxStream: return "AFX Stream";
     case GeneralMediaFormat::Alac: return "Apple Lossless Audio Codec";
     case GeneralMediaFormat::Als: return "ALS";
+    case GeneralMediaFormat::Amr: return "Adaptive Multi-Rate audio codec";
+    case GeneralMediaFormat::Avc:
+        switch(sub) {
+        case AvcBaselineProfile: return "Advanced Video Coding Basline Profile";
+        case AvcMainProfile: return "Advanced Video Coding Main Profile";
+        case AvcScalableBaselineProfile: return "Advanced Video Coding Scalable Basline Profile";
+        case AvcScalableHighProfile: return "Advanced Video Coding Scalable High Profile";
+        case AvcExtendedProfile: return "Advanced Video Coding Extended Profile";
+        case AvcHighProfile: return "Advanced Video Coding High Profile";
+        case AvcHigh10Profile: return "Advanced Video Coding High 10 Profile";
+        case AvcHigh422Profile: return "Advanced Video Coding High 4:2:2 Profile";
+        case AvcHigh444Profile: return "Advanced Video Coding High 4:4:4 Profile";
+        default: return "Advanced Video Coding";
+        }
     case GeneralMediaFormat::Bitmap: return "Windows Bitmap";
     case GeneralMediaFormat::Dirac: return "Dirac";
     case GeneralMediaFormat::Dts: return "DTS";
@@ -62,6 +76,7 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::FontDataStream: return "Font Data Stream";
     case GeneralMediaFormat::Gif: return "GIF";
     case GeneralMediaFormat::Gpp2Cmf: return "3GPP2 Compact Multimedia Format (CMF)";
+    case GeneralMediaFormat::Hevc: return "High Efficiency Video Coding";
     case GeneralMediaFormat::ImaadpcmAcm: return "IMAADPCM ACM";
     case GeneralMediaFormat::ImageSubtitle:
         switch(sub) {
@@ -73,6 +88,7 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::OggKate: return "Karaoke And Text Encapsulation";
     case GeneralMediaFormat::MicrosoftAudioCodecManager: return "Microsoft Audio Codec Manager";
     case GeneralMediaFormat::MicrosoftVideoCodecManager: return "Microsoft Video Codec Manager";
+    case GeneralMediaFormat::DolbyMlp: return "Dolby TrueHD";
     case GeneralMediaFormat::Mpeg1Audio:
         switch(sub) {
         case Mpeg1Layer1: return "MPEG-1 Layer 1";
@@ -100,11 +116,65 @@ const char *MediaFormat::name() const
         }
     case GeneralMediaFormat::Mpeg4Video:
         switch(sub) {
-        case Mpeg4Sp: return "MPEG-4 Simple Profile";
-        case Mpeg4Asp: return "MPEG-4 Advanced Simple Profile";
-        case Mpeg4Avc: return "MPEG-4 Advanced Video Coding";
-        case Mpeg4AvcParams: return "Parameter for MPEG-4 Advanced Video Coding";
-        case Mpeg4MsV3: return "MPEG-4 Microsoft V3";
+        case Mpeg4SimpleProfile1: return "MPEG-4 Simple Profile L1";
+        case Mpeg4SimpleProfile2: return "MPEG-4 Simple Profile L2";
+        case Mpeg4SimpleProfile3: return "MPEG-4 Simple Profile L2";
+        case Mpeg4SimpleProfile0: return "MPEG-4 Simple Profile";
+        case Mpeg4SimpleScalableProfile0: return "MPEG-4 Simple Scalable Profile";
+        case Mpeg4SimpleScalableProfile1: return "MPEG-4 Simple Scalable Profile L1";
+        case Mpeg4SimpleScalableProfile2: return "MPEG-4 Simple Scalable Profile L2";
+        case Mpeg4CoreProfile1: return "MPEG-4 Core Profile L1";
+        case Mpeg4CoreProfiel2: return "MPEG-4 Core Profile L2";
+        case Mpeg4MainProfile2: return "MPEG-4 Main Profile L2";
+        case Mpeg4MainProfile3: return "MPEG-4 Main Profile L3";
+        case Mpeg4MainProfile4: return "MPEG-4 Main Profile L4";
+        case Mpeg4NBitPrifle2: return "MPEG-4 N-Bit Profile L2";
+        case Mpeg4ScalableTextureProfile1: return "MPEG-4 Scalable Texture Profile L1";
+        case Mpeg4SimpleFaceAnimationProfile1: return "MPEG-4 Simple Face Animation Profile L1";
+        case Mpeg4SimpleFaceAnimationProfile2: return "MPEG-4 Simple Face Animation Profile L2";
+        case Mpeg4SimpleFbaProfile1: return "MPEG-4 Simple FBA Profile L1";
+        case Mpeg4SimpleFbaProfile2: return "MPEG-4 Simple FBA Profile L2";
+        case Mpeg4BasicAnimatedTextureProfiel1: return "MPEG-4 Basic Animated Texture Profile L1";
+        case Mpeg4BasicAnimatedTextureProfiel2: return "MPEG-4 Basic Animated Texture Profile L2";
+        case Mpeg4AvcProfile: return "MPEG-4 Advanced Audio Coding Profile";
+        case Mpeg4HybridProfile1: return "MPEG-4 Hybrid Profile L1";
+        case Mpeg4HybridProfile2: return "MPEG-4 Hybrid Profile L2";
+        case Mpeg4AdvancedRealTimeSimpleProfile1: return "MPEG-4 Basic Animated Texture Profile L1";
+        case Mpeg4AdvancedRealTimeSimpleProfile2: return "MPEG-4 Basic Animated Texture Profile L2";
+        case Mpeg4AdvancedRealTimeSimpleProfile3: return "MPEG-4 Basic Animated Texture Profile L3";
+        case Mpeg4AdvancedRealTimeSimpleProfile4: return "MPEG-4 Basic Animated Texture Profile L4";
+        case Mpeg4CoreScalableProfile1: return "MPEG-4 Core Scalable Profile L1";
+        case Mpeg4CoreScalableProfile2: return "MPEG-4 Core Scalable Profile L2";
+        case Mpeg4CoreScalableProfile3: return "MPEG-4 Core Scalable Profile L3";
+        case Mpeg4AdvancedCodingEfficiencyProfile1: return "MPEG-4 Advanced Coding Efficiency Profile L1";
+        case Mpeg4AdvancedCodingEfficiencyProfile2: return "MPEG-4 Advanced Coding Efficiency Profile L2";
+        case Mpeg4AdvancedCodingEfficiencyProfile3: return "MPEG-4 Advanced Coding Efficiency Profile L3";
+        case Mpeg4AdvancedCodingEfficiencyProfile4: return "MPEG-4 Advanced Coding Efficiency Profile L4";
+        case Mpeg4AdvancedCoreProfile1: return "MPEG-4 Advanced Core Profile L1";
+        case Mpeg4AdvancedCoreProfile2: return "MPEG-4 Advanced Core Profile L2";
+        case Mpeg4AdvancedScalableTexture1: return "MPEG-4 Advanced Scalable Texture L1";
+        case Mpeg4AdvancedScalableTexture2: return "MPEG-4 Advanced Scalable Texture L2";
+        case Mpeg4SimpleStudioProfile1: return "MPEG-4 Simple Studio Profile L1";
+        case Mpeg4SimpleStudioProfile2: return "MPEG-4 Simple Studio Profile L2";
+        case Mpeg4SimpleStudioProfile3: return "MPEG-4 Simple Studio Profile L3";
+        case Mpeg4SimpleStudioProfile4: return "MPEG-4 Simple Studio Profile L4";
+        case Mpeg4CoreStudioProfile1: return "MPEG-4 Core Studio Profile L1";
+        case Mpeg4CoreStudioProfile2: return "MPEG-4 Core Studio Profile L2";
+        case Mpeg4CoreStudioProfile3: return "MPEG-4 Core Studio Profile L3";
+        case Mpeg4CoreStudioProfile4: return "MPEG-4 Core Studio Profile L4";
+        case Mpeg4AdvancedSimpleProfile0: return "MPEG-4 Advanced Simple Profile";
+        case Mpeg4AdvancedSimpleProfile1: return "MPEG-4 Advanced Simple Profile L1";
+        case Mpeg4AdvancedSimpleProfile2: return "MPEG-4 Advanced Simple Profile L2";
+        case Mpeg4AdvancedSimpleProfile3: return "MPEG-4 Advanced Simple Profile L3";
+        case Mpeg4AdvancedSimpleProfile4: return "MPEG-4 Advanced Simple Profile L4";
+        case Mpeg4AdvancedSimpleProfile5: return "MPEG-4 Advanced Simple Profile L5";
+        case Mpeg4AdvancedSimpleProfile3b: return "MPEG-4 Advanced Simple Profile L3b";
+        case Mpeg4FineGranularityScalableProfile0: return "MPEG-4 Fine Granularity Scalable Profile";
+        case Mpeg4FineGranularityScalableProfile1: return "MPEG-4 Fine Granularity Scalable Profile L1";
+        case Mpeg4FineGranularityScalableProfile2: return "MPEG-4 Fine Granularity Scalable Profile L2";
+        case Mpeg4FineGranularityScalableProfile3: return "MPEG-4 Fine Granularity Scalable Profile L3";
+        case Mpeg4FineGranularityScalableProfile4: return "MPEG-4 Fine Granularity Scalable Profile L4";
+        case Mpeg4FineGranularityScalableProfile5: return "MPEG-4 Fine Granularity Scalable Profile L5";
         default: return "MPEG-4 Visual";
         }
     case GeneralMediaFormat::Mpc: return "Musepack SV8";
@@ -146,6 +216,7 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::Vorbis: return "Vorbis";
     case GeneralMediaFormat::Vp8: return "VP8";
     case GeneralMediaFormat::WavPack: return "WavPack";
+    case GeneralMediaFormat::WindowsMediaAudio: return "Windows Media Audio";
     default: return "unknown";
     }
 }
@@ -182,6 +253,8 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::AfxStream: return "AFX";
     case GeneralMediaFormat::Alac: return "ALAC";
     case GeneralMediaFormat::Als: return "ALS";
+    case GeneralMediaFormat::Amr: return "AMR";
+    case GeneralMediaFormat::Avc: return "H.264";
     case GeneralMediaFormat::Bitmap: return "BMP";
     case GeneralMediaFormat::Dirac: return "Dirac";
     case GeneralMediaFormat::Dts: return "DTS";
@@ -203,6 +276,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::FontDataStream: return "FDS";
     case GeneralMediaFormat::Gif: return "GIF";
     case GeneralMediaFormat::Gpp2Cmf: return "3GPP2 CMF";
+    case GeneralMediaFormat::Hevc: return "H.265";
     case GeneralMediaFormat::ImaadpcmAcm: return "IMAADPCM ACM";
     case GeneralMediaFormat::ImageSubtitle:
         switch(sub) {
@@ -214,6 +288,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::OggKate: return "OggKate";
     case GeneralMediaFormat::MicrosoftAudioCodecManager: return "MS ACM";
     case GeneralMediaFormat::MicrosoftVideoCodecManager: return "MS VCM";
+    case GeneralMediaFormat::DolbyMlp: return "Dolby TrueHD";
     case GeneralMediaFormat::Mpeg1Audio:
         switch(sub) {
         case Mpeg1Layer1: return "MP1";
@@ -241,11 +316,21 @@ const char *MediaFormat::abbreviation() const
         }
     case GeneralMediaFormat::Mpeg4Video:
         switch(sub) {
-        case Mpeg4Sp: return "MPEG-4 SP";
-        case Mpeg4Asp: return "H.263";
-        case Mpeg4Avc: return "H.264";
-        case Mpeg4AvcParams: return "H.264 params";
-        case Mpeg4MsV3: return "MPEG-4 MS V3";
+        case Mpeg4SimpleProfile1:
+        case Mpeg4SimpleProfile2:
+        case Mpeg4SimpleProfile3:
+        case Mpeg4SimpleProfile0:
+            return "MPEG-4 SP";
+        case Mpeg4AdvancedSimpleProfile0:
+        case Mpeg4AdvancedSimpleProfile1:
+        case Mpeg4AdvancedSimpleProfile2:
+        case Mpeg4AdvancedSimpleProfile3:
+        case Mpeg4AdvancedSimpleProfile4:
+        case Mpeg4AdvancedSimpleProfile5:
+        case Mpeg4AdvancedSimpleProfile3b:
+            return "H.263";
+        case Mpeg4AvcProfile:
+            return "H.264";
         default: return "MPEG-4 Visual";
         }
     case GeneralMediaFormat::Mpc: return "MPC";
@@ -291,6 +376,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::Vorbis: return "Vorbis";
     case GeneralMediaFormat::Vp8: return "VP8";
     case GeneralMediaFormat::WavPack: return "WavPack";
+    case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
     default: return "";
     }
 }

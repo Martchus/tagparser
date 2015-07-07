@@ -151,7 +151,11 @@ bool Mp4Atom::isParent() const
     switch(id()) {
     case Movie: case Track: case Media: case MediaInformation: case DataInformation:
     case SampleTable: case UserData: case Meta: case ItunesList: case MovieFragment:
-    case TrackFragment: case MovieExtends: case DataReference:
+    case TrackFragment: case MovieExtends: case DataReference: case Mp4AtomIds::AvcConfiguration:
+    case FourccIds::Mpeg4Audio: case FourccIds::AmrNarrowband: case FourccIds::Amr:
+    case FourccIds::Drms: case FourccIds::Alac: case FourccIds::WindowsMediaAudio:
+    case FourccIds::Ac3: case FourccIds::EAc3: case FourccIds::DolbyMpl:
+    case FourccIds::Dts: case FourccIds::DtsH: case FourccIds::DtsE:
         return true;
     default:
         if(parent()) {
@@ -188,7 +192,8 @@ bool Mp4Atom::isPadding() const
  *
  * \remarks This information is not read from the atom header. The offsets are known
  *          for specific atoms.
- * \remarks This method returns zero for non-parent atoms which have no childs. *
+ * \remarks This method returns zero for non-parent atoms which have no childs.
+ * \remarks Childs with variable offset such as the "esds"-atom must be denoted!
  */
 uint64 Mp4Atom::firstChildOffset() const
 {
@@ -196,15 +201,13 @@ uint64 Mp4Atom::firstChildOffset() const
     using namespace FourccIds;
     if(isParent()) {
         switch(id()) {
-        case Meta: return headerSize() + 0x4;
-        case DataReference: return headerSize() + 0x8;
+        case Meta: return headerSize() + 0x4u;
+        case DataReference: return headerSize() + 0x8u;
         default: return headerSize();
         }
     } else {
         switch(id()) {
         case SampleDescription: return headerSize() + 0x08u;
-        case Avc1: return headerSize() + 0x4eu;
-        case Mpeg4Audio: return headerSize() + 0x1cu;
         default: return 0x00u;
         }
     }

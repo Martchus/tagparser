@@ -61,6 +61,9 @@ Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
     epConfig(0)
 {}
 
+Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig()
+{}
+
 /*!
  * \class Media::Mp4Track
  * \brief Implementation of Media::AbstractTrack for the MP4 container.
@@ -160,140 +163,140 @@ vector<uint64> Mp4Track::readChunkOffsets()
         }
     }
     // read sample offsets of fragments
-//    Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(moof, true);
-//    uint64 totalDuration = 0;
-//    while(moofAtom) {
-//        moofAtom->parse();
-//        Mp4Atom *trafAtom = moofAtom->childById(traf);
-//        while(trafAtom) {
-//            trafAtom->parse();
-//            Mp4Atom *tfhdAtom = trafAtom->childById(tfhd);
-//            while(tfhdAtom) {
-//                tfhdAtom->parse();
-//                uint32 calculatedDataSize = 0;
-//                if(tfhdAtom->dataSize() < calculatedDataSize) {
-//                    addNotification(NotificationType::Critical, "tfhd atom is truncated.", context);
-//                } else {
-//                    m_stream->seekg(tfhdAtom->dataOffset() + 1);
-//                    uint32 flags = reader.readUInt24();
-//                    if(m_id == reader.readUInt32()) { // check track ID
-//                        if(flags & 0x000001) { // base-data-offset present
-//                            calculatedDataSize += 8;
-//                        }
-//                        if(flags & 0x000002) { // sample-description-index present
-//                            calculatedDataSize += 4;
-//                        }
-//                        if(flags & 0x000008) { // default-sample-duration present
-//                            calculatedDataSize += 4;
-//                        }
-//                        if(flags & 0x000010) { // default-sample-size present
-//                            calculatedDataSize += 4;
-//                        }
-//                        if(flags & 0x000020) { // default-sample-flags present
-//                            calculatedDataSize += 4;
-//                        }
-//                        //uint64 baseDataOffset = moofAtom->startOffset();
-//                        //uint32 defaultSampleDescriptionIndex = 0;
-//                        uint32 defaultSampleDuration = 0;
-//                        uint32 defaultSampleSize = 0;
-//                        uint32 defaultSampleFlags = 0;
-//                        if(tfhdAtom->dataSize() < calculatedDataSize) {
-//                            addNotification(NotificationType::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
-//                        } else {
-//                            if(flags & 0x000001) { // base-data-offset present
-//                                //baseDataOffset = reader.readUInt64();
-//                                m_stream->seekg(8, ios_base::cur);
-//                            }
-//                            if(flags & 0x000002) { // sample-description-index present
-//                                //defaultSampleDescriptionIndex = reader.readUInt32();
-//                                m_stream->seekg(4, ios_base::cur);
-//                            }
-//                            if(flags & 0x000008) { // default-sample-duration present
-//                                defaultSampleDuration = reader.readUInt32();
-//                                //m_stream->seekg(4, ios_base::cur);
-//                            }
-//                            if(flags & 0x000010) { // default-sample-size present
-//                                defaultSampleSize = reader.readUInt32();
-//                            }
-//                            if(flags & 0x000020) { // default-sample-flags present
-//                                defaultSampleFlags = reader.readUInt32();
-//                                //m_stream->seekg(4, ios_base::cur);
-//                            }
-//                        }
-//                        Mp4Atom *trunAtom = trafAtom->childById(trun);
-//                        while(trunAtom) {
-//                            uint32 calculatedDataSize = 8;
-//                            if(trunAtom->dataSize() < calculatedDataSize) {
-//                                addNotification(NotificationType::Critical, "trun atom is truncated.", context);
-//                            } else {
-//                                m_stream->seekg(trunAtom->dataOffset() + 1);
-//                                uint32 flags = reader.readUInt24();
-//                                uint32 sampleCount = reader.readUInt32();
-//                                m_sampleCount += sampleCount;
-//                                if(flags & 0x000001) { // data offset present
-//                                    calculatedDataSize += 4;
-//                                }
-//                                if(flags & 0x000004) { // first-sample-flags present
-//                                    calculatedDataSize += 4;
-//                                }
-//                                uint32 entrySize = 0;
-//                                if(flags & 0x000100) { // sample-duration present
-//                                    entrySize += 4;
-//                                }
-//                                if(flags & 0x000200) { // sample-size present
-//                                    entrySize += 4;
-//                                }
-//                                if(flags & 0x000400) { // sample-flags present
-//                                    entrySize += 4;
-//                                }
-//                                if(flags & 0x000800) { // sample-composition-time-offsets present
-//                                    entrySize += 4;
-//                                }
-//                                calculatedDataSize += entrySize * sampleCount;
-//                                if(trunAtom->dataSize() < calculatedDataSize) {
-//                                    addNotification(NotificationType::Critical, "trun atom is truncated (presence of fields denoted).", context);
-//                                } else {
-//                                    if(flags & 0x000001) { // data offset present
-//                                        m_stream->seekg(4, ios_base::cur);
-//                                        //int32 dataOffset = reader.readInt32();
-//                                    }
-//                                    if(flags & 0x000004) { // first-sample-flags present
-//                                        m_stream->seekg(4, ios_base::cur);
-//                                    }
-//                                    for(uint32 i = 0; i < sampleCount; ++i) {
-//                                        if(flags & 0x000100) { // sample-duration present
-//                                            totalDuration += reader.readUInt32();
-//                                        } else {
-//                                            totalDuration += defaultSampleDuration;
-//                                        }
-//                                        if(flags & 0x000200) { // sample-size present
-//                                            m_sampleSizes.push_back(reader.readUInt32());
-//                                            m_size += m_sampleSizes.back();
-//                                        } else {
-//                                            m_size += defaultSampleSize;
-//                                        }
-//                                        if(flags & 0x000400) { // sample-flags present
-//                                            m_stream->seekg(4, ios_base::cur);
-//                                        }
-//                                        if(flags & 0x000800) { // sample-composition-time-offsets present
-//                                            m_stream->seekg(4, ios_base::cur);
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                            trunAtom = trunAtom->siblingById(trun, false);
-//                        }
-//                        if(m_sampleSizes.empty() && defaultSampleSize) {
-//                            m_sampleSizes.push_back(defaultSampleSize);
-//                        }
-//                    }
-//                }
-//                tfhdAtom = tfhdAtom->siblingById(tfhd, false);
-//            }
-//            trafAtom = trafAtom->siblingById(traf, false);
-//        }
-//        moofAtom = moofAtom->siblingById(moof, false);
-//    }
+    //    Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(moof, true);
+    //    uint64 totalDuration = 0;
+    //    while(moofAtom) {
+    //        moofAtom->parse();
+    //        Mp4Atom *trafAtom = moofAtom->childById(traf);
+    //        while(trafAtom) {
+    //            trafAtom->parse();
+    //            Mp4Atom *tfhdAtom = trafAtom->childById(tfhd);
+    //            while(tfhdAtom) {
+    //                tfhdAtom->parse();
+    //                uint32 calculatedDataSize = 0;
+    //                if(tfhdAtom->dataSize() < calculatedDataSize) {
+    //                    addNotification(NotificationType::Critical, "tfhd atom is truncated.", context);
+    //                } else {
+    //                    m_stream->seekg(tfhdAtom->dataOffset() + 1);
+    //                    uint32 flags = reader.readUInt24();
+    //                    if(m_id == reader.readUInt32()) { // check track ID
+    //                        if(flags & 0x000001) { // base-data-offset present
+    //                            calculatedDataSize += 8;
+    //                        }
+    //                        if(flags & 0x000002) { // sample-description-index present
+    //                            calculatedDataSize += 4;
+    //                        }
+    //                        if(flags & 0x000008) { // default-sample-duration present
+    //                            calculatedDataSize += 4;
+    //                        }
+    //                        if(flags & 0x000010) { // default-sample-size present
+    //                            calculatedDataSize += 4;
+    //                        }
+    //                        if(flags & 0x000020) { // default-sample-flags present
+    //                            calculatedDataSize += 4;
+    //                        }
+    //                        //uint64 baseDataOffset = moofAtom->startOffset();
+    //                        //uint32 defaultSampleDescriptionIndex = 0;
+    //                        uint32 defaultSampleDuration = 0;
+    //                        uint32 defaultSampleSize = 0;
+    //                        uint32 defaultSampleFlags = 0;
+    //                        if(tfhdAtom->dataSize() < calculatedDataSize) {
+    //                            addNotification(NotificationType::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
+    //                        } else {
+    //                            if(flags & 0x000001) { // base-data-offset present
+    //                                //baseDataOffset = reader.readUInt64();
+    //                                m_stream->seekg(8, ios_base::cur);
+    //                            }
+    //                            if(flags & 0x000002) { // sample-description-index present
+    //                                //defaultSampleDescriptionIndex = reader.readUInt32();
+    //                                m_stream->seekg(4, ios_base::cur);
+    //                            }
+    //                            if(flags & 0x000008) { // default-sample-duration present
+    //                                defaultSampleDuration = reader.readUInt32();
+    //                                //m_stream->seekg(4, ios_base::cur);
+    //                            }
+    //                            if(flags & 0x000010) { // default-sample-size present
+    //                                defaultSampleSize = reader.readUInt32();
+    //                            }
+    //                            if(flags & 0x000020) { // default-sample-flags present
+    //                                defaultSampleFlags = reader.readUInt32();
+    //                                //m_stream->seekg(4, ios_base::cur);
+    //                            }
+    //                        }
+    //                        Mp4Atom *trunAtom = trafAtom->childById(trun);
+    //                        while(trunAtom) {
+    //                            uint32 calculatedDataSize = 8;
+    //                            if(trunAtom->dataSize() < calculatedDataSize) {
+    //                                addNotification(NotificationType::Critical, "trun atom is truncated.", context);
+    //                            } else {
+    //                                m_stream->seekg(trunAtom->dataOffset() + 1);
+    //                                uint32 flags = reader.readUInt24();
+    //                                uint32 sampleCount = reader.readUInt32();
+    //                                m_sampleCount += sampleCount;
+    //                                if(flags & 0x000001) { // data offset present
+    //                                    calculatedDataSize += 4;
+    //                                }
+    //                                if(flags & 0x000004) { // first-sample-flags present
+    //                                    calculatedDataSize += 4;
+    //                                }
+    //                                uint32 entrySize = 0;
+    //                                if(flags & 0x000100) { // sample-duration present
+    //                                    entrySize += 4;
+    //                                }
+    //                                if(flags & 0x000200) { // sample-size present
+    //                                    entrySize += 4;
+    //                                }
+    //                                if(flags & 0x000400) { // sample-flags present
+    //                                    entrySize += 4;
+    //                                }
+    //                                if(flags & 0x000800) { // sample-composition-time-offsets present
+    //                                    entrySize += 4;
+    //                                }
+    //                                calculatedDataSize += entrySize * sampleCount;
+    //                                if(trunAtom->dataSize() < calculatedDataSize) {
+    //                                    addNotification(NotificationType::Critical, "trun atom is truncated (presence of fields denoted).", context);
+    //                                } else {
+    //                                    if(flags & 0x000001) { // data offset present
+    //                                        m_stream->seekg(4, ios_base::cur);
+    //                                        //int32 dataOffset = reader.readInt32();
+    //                                    }
+    //                                    if(flags & 0x000004) { // first-sample-flags present
+    //                                        m_stream->seekg(4, ios_base::cur);
+    //                                    }
+    //                                    for(uint32 i = 0; i < sampleCount; ++i) {
+    //                                        if(flags & 0x000100) { // sample-duration present
+    //                                            totalDuration += reader.readUInt32();
+    //                                        } else {
+    //                                            totalDuration += defaultSampleDuration;
+    //                                        }
+    //                                        if(flags & 0x000200) { // sample-size present
+    //                                            m_sampleSizes.push_back(reader.readUInt32());
+    //                                            m_size += m_sampleSizes.back();
+    //                                        } else {
+    //                                            m_size += defaultSampleSize;
+    //                                        }
+    //                                        if(flags & 0x000400) { // sample-flags present
+    //                                            m_stream->seekg(4, ios_base::cur);
+    //                                        }
+    //                                        if(flags & 0x000800) { // sample-composition-time-offsets present
+    //                                            m_stream->seekg(4, ios_base::cur);
+    //                                        }
+    //                                    }
+    //                                }
+    //                            }
+    //                            trunAtom = trunAtom->siblingById(trun, false);
+    //                        }
+    //                        if(m_sampleSizes.empty() && defaultSampleSize) {
+    //                            m_sampleSizes.push_back(defaultSampleSize);
+    //                        }
+    //                    }
+    //                }
+    //                tfhdAtom = tfhdAtom->siblingById(tfhd, false);
+    //            }
+    //            trafAtom = trafAtom->siblingById(traf, false);
+    //        }
+    //        moofAtom = moofAtom->siblingById(moof, false);
+    //    }
     return offsets;
 }
 
@@ -511,7 +514,7 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
         // read extended descriptor
         Mpeg4Descriptor esDesc(esDescAtom->container(), m_istream->tellg(), esDescAtom->dataSize() - 4);
         try {
-             esDesc.parse();
+            esDesc.parse();
             // check ID
             if(esDesc.id() != Mpeg4DescriptorIds::ElementaryStreamDescr) {
                 addNotification(NotificationType::Critical, "Invalid descriptor found.", context);
@@ -551,8 +554,12 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                             case Aac: case Mpeg2AacMainProfile: case Mpeg2AacLowComplexityProfile:
                             case Mpeg2AacScaleableSamplingRateProfile: case Mpeg2Audio: case Mpeg1Audio:
                                 esInfo->audioSpecificConfig = parseAudioSpecificConfig(decCfgDescChild);
+                                break;
+                            case Mpeg4Visual:
+                                esInfo->videoSpecificConfig = parseVideoSpecificConfig(decCfgDescChild);
+                                break;
                             default:
-                                ; // TODO: covering remaining object types
+                                ; // TODO: covering more object types
                             }
                             break;
                         }
@@ -573,7 +580,7 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
 }
 
 /*!
- * \brief Reads the audio specific configuration for the track.
+ * \brief Parses the audio specific configuration for the track.
  * \remarks
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
@@ -584,7 +591,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
     using namespace Mpeg4AudioObjectIds;
     // read config into buffer and construct BitReader for bitwise reading
     m_istream->seekg(decSpecInfoDesc->dataOffset());
-    cout << "audio cfg @" << decSpecInfoDesc->dataOffset() << endl;
+    //cout << "audio cfg @" << decSpecInfoDesc->dataOffset() << endl;
     auto buff = make_unique<char []>(decSpecInfoDesc->dataSize());
     m_istream->read(buff.get(), decSpecInfoDesc->dataSize());
     BitReader bitReader(buff.get(), decSpecInfoDesc->dataSize());
@@ -670,6 +677,11 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
         case ErBsac: case ErAacLd: case ErCelp: case ErHvxc: case ErHiln:
         case ErParametric: case ErAacEld:
             switch(audioCfg->epConfig = bitReader.readBits<byte>(2)) {
+            case 2:
+                break;
+            case 3:
+                bitReader.skipBits(1);
+                break;
             default:
                 throw NotImplementedException(); // TODO
             }
@@ -690,21 +702,92 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
                         }
                     }
                 }
+            } else if (syncExtensionType == 0x548) {
+                audioCfg->psPresent = bitReader.readBits<byte>(1);
             }
         }
     } catch(ios_base::failure &) {
         if(m_istream->fail()) {
-            throw; // IO error caused by input stream
+            // IO error caused by input stream
+            throw;
+        } else {
+            // IO error caused by bitReader
+            addNotification(NotificationType::Critical, "Audio specific configuration is truncated.", context);
         }
-        // IO error caused by bitReader
-        addNotification(NotificationType::Critical, "Audio specific configuration is truncated.", context);
     } catch(NotImplementedException &) {
         addNotification(NotificationType::Information, "Not implemented for the format of audio track.", context);
     }
     return audioCfg;
 }
 
-    /*!
+/*!
+ * \brief Parses the video specific configuration for the track.
+ * \remarks
+ *  - Notifications might be added.
+ * \sa mpeg4ElementaryStreamInfo()
+ */
+std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc)
+{
+    static const string context("parsing MPEG-4 video specific config from elementary stream descriptor");
+    using namespace Mpeg4AudioObjectIds;
+    auto videoCfg = make_unique<Mpeg4VideoSpecificConfig>();
+    // seek to start
+    m_istream->seekg(decSpecInfoDesc->dataOffset());
+    uint64 bytesRemaining = decSpecInfoDesc->dataSize();
+    if(bytesRemaining > 3 && (m_reader.readUInt24BE() == 1)) {
+        bytesRemaining -= 3;
+        uint32 buff1;
+        while(bytesRemaining) {
+            --bytesRemaining;
+            switch(m_reader.readByte()) { // read start code
+            case Mpeg4VideoCodes::VisualObjectSequenceStart:
+                if(bytesRemaining) {
+                    videoCfg->profile = m_reader.readByte();
+                    --bytesRemaining;
+                }
+                break;
+            case Mpeg4VideoCodes::VideoObjectLayerStart:
+
+                break;
+            case Mpeg4VideoCodes::UserDataStart:
+                buff1 = 0;
+                while(bytesRemaining >= 3) {
+                    if((buff1 = m_reader.readUInt24BE()) != 1) {
+                        m_istream->seekg(-2, ios_base::cur);
+                        videoCfg->userData.push_back(buff1 >> 16);
+                        --bytesRemaining;
+                    } else {
+                        bytesRemaining -= 3;
+                        break;
+                    }
+                }
+                if(buff1 != 1 && bytesRemaining > 0) {
+                    videoCfg->userData += m_reader.readString(bytesRemaining);
+                    bytesRemaining = 0;
+                }
+                break;
+            default:
+                ;
+            }
+            // skip stuff we're not interested in to get the start of the
+            // next video object
+            while(bytesRemaining >= 3) {
+                if(m_reader.readUInt24BE() != 1) {
+                    m_istream->seekg(-2, ios_base::cur);
+                    --bytesRemaining;
+                } else {
+                    bytesRemaining -= 3;
+                    break;
+                }
+            }
+        }
+    } else {
+        addNotification(NotificationType::Critical, "\"Visual Object Sequence Header\" not found.", context);
+    }
+    return videoCfg;
+}
+
+/*!
  * \brief Updates the chunk offsets of the track. This is necessary when the mdat atom (which contains
  *        the actual chunk data) is moved.
  * \param oldMdatOffsets Specifies a vector holding the old offsets of the "mdat"-atoms.
@@ -796,8 +879,9 @@ void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
 }
 
 /*!
- * \brief Makes the track entry (trak atom) for the track. The data is written to the assigned output stream
+ * \brief Makes the track entry ("trak"-atom) for the track. The data is written to the assigned output stream
  *        at the current position.
+ * \remarks Currently the "trak"-atom from the source file is just copied to the output stream.
  */
 void Mp4Track::makeTrack()
 {
@@ -1053,49 +1137,49 @@ void Mp4Track::internalParseHeader()
     static const string context("parsing MP4 track");
     using namespace Mp4AtomIds;
     if(!m_trakAtom) {
-        addNotification(NotificationType::Critical, "Trak atom is null.", context);
+        addNotification(NotificationType::Critical, "\"trak\"-atom is null.", context);
         throw InvalidDataException();
     }
     // get atoms
     try {
         if(!(m_tkhdAtom = m_trakAtom->childById(TrackHeader))) {
-            addNotification(NotificationType::Critical, "No tkhd atom found.", context);
+            addNotification(NotificationType::Critical, "No \"tkhd\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_mdiaAtom = m_trakAtom->childById(Media))) {
-            addNotification(NotificationType::Critical, "No mdia atom found.", context);
+            addNotification(NotificationType::Critical, "No \"mdia\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_mdhdAtom = m_mdiaAtom->childById(MediaHeader))) {
-            addNotification(NotificationType::Critical, "No mdhd atom found.", context);
+            addNotification(NotificationType::Critical, "No \"mdhd\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_hdlrAtom = m_mdiaAtom->childById(HandlerReference))) {
-            addNotification(NotificationType::Critical, "No hdlr atom found.", context);
+            addNotification(NotificationType::Critical, "No \"hdlr\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_minfAtom = m_mdiaAtom->childById(MediaInformation))) {
-            addNotification(NotificationType::Critical, "No minf atom found.", context);
+            addNotification(NotificationType::Critical, "No \"minf\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_stblAtom = m_minfAtom->childById(SampleTable))) {
-            addNotification(NotificationType::Critical, "No stbl atom found.", context);
+            addNotification(NotificationType::Critical, "No \"stbl\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_stsdAtom = m_stblAtom->childById(SampleDescription))) {
-            addNotification(NotificationType::Critical, "No stsd atom found.", context);
+            addNotification(NotificationType::Critical, "No \"stsd\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_stcoAtom = m_stblAtom->childById(ChunkOffset)) && !(m_stcoAtom = m_stblAtom->childById(ChunkOffset64))) {
-            addNotification(NotificationType::Critical, "No stco/co64 atom found.", context);
+            addNotification(NotificationType::Critical, "No \"stco\"/\"co64\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_stscAtom = m_stblAtom->childById(SampleToChunk))) {
-            addNotification(NotificationType::Critical, "No stsc atom found.", context);
+            addNotification(NotificationType::Critical, "No \"stsc\"-atom found.", context);
             throw InvalidDataException();
         }
         if(!(m_stszAtom = m_stblAtom->childById(SampleSize)) && !(m_stszAtom = m_stblAtom->childById(CompactSampleSize))) {
-            addNotification(NotificationType::Critical, "No stsz/stz2 atom found.", context);
+            addNotification(NotificationType::Critical, "No \"stsz\"/\"stz2\"-atom found.", context);
             throw InvalidDataException();
         }
     } catch(Failure &) {
@@ -1122,7 +1206,7 @@ void Mp4Track::internalParseHeader()
         m_id = reader.readUInt32BE();
         break;
     default:
-        addNotification(NotificationType::Critical, "Version of tkhd atom not supported. It will be ignored. Track ID, creation time and modification time might not be be determined.", context);
+        addNotification(NotificationType::Critical, "Version of \"tkhd\"-atom not supported. It will be ignored. Track ID, creation time and modification time might not be be determined.", context);
         m_creationTime = DateTime();
         m_modificationTime = DateTime();
         m_id = 0;
@@ -1145,7 +1229,7 @@ void Mp4Track::internalParseHeader()
         m_duration = TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()) / static_cast<double>(m_timeScale));
         break;
     default:
-        addNotification(NotificationType::Warning, "Version of mdhd atom not supported. It will be ignored. Creation time, modification time, time scale and duration might not be determined.", context);
+        addNotification(NotificationType::Warning, "Version of \"mdhd\"-atom not supported. It will be ignored. Creation time, modification time, time scale and duration might not be determined.", context);
         m_timeScale = 0;
         m_duration = TimeSpan();
     }
@@ -1179,24 +1263,92 @@ void Mp4Track::internalParseHeader()
     m_istream->seekg(m_stcoAtom->dataOffset() + 4);
     m_chunkCount = reader.readUInt32BE();
     // read stsd atom
-    m_istream->seekg(m_stsdAtom->startOffset() + 12); // seek to beg, skip size, name, version and flags
+    m_istream->seekg(m_stsdAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
     uint32 entryCount = reader.readUInt32BE();
-    Mp4Atom *codecConfigContainerAtom;
-    string::size_type firstZeroByte;
+    Mp4Atom *esDescParentAtom = nullptr;
+    uint16 tmp;
     if(entryCount > 0) {
-        // read only first entry        
-        if((codecConfigContainerAtom = m_stsdAtom->firstChild())) {
-            try {
+        try {
+            for(Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom; codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
                 codecConfigContainerAtom->parse();
                 // parse FOURCC
                 m_formatId = interpretIntegerAsString<uint32>(codecConfigContainerAtom->id());
                 m_format = FourccIds::fourccToMediaFormat(codecConfigContainerAtom->id());
-                // parse AVC configuration
-                //codecConfigContainerAtom->childById(Mp4AtomIds::AvcConfiguration);
-                // parse MPEG-4 elementary stream descriptor
-                Mp4Atom *esDescAtom = codecConfigContainerAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor);
+                // parse codecConfigContainerAtom
+                m_istream->seekg(codecConfigContainerAtom->dataOffset());
+                switch(codecConfigContainerAtom->id()) {
+                case FourccIds::Mpeg4Audio: case FourccIds::AmrNarrowband: case FourccIds::Amr:
+                case FourccIds::Drms: case FourccIds::Alac: case FourccIds::WindowsMediaAudio:
+                case FourccIds::Ac3: case FourccIds::EAc3: case FourccIds::DolbyMpl:
+                case FourccIds::Dts: case FourccIds::DtsH: case FourccIds::DtsE:
+                    m_istream->seekg(6 + 2, ios_base::cur); // skip reserved bytes, data reference index
+                    tmp = reader.readUInt16BE(); // read sound version
+                    m_istream->seekg(6, ios_base::cur);
+                    m_channelCount = reader.readUInt16BE();
+                    m_bitsPerSample = reader.readUInt16BE();
+                    m_istream->seekg(4, ios_base::cur); // skip reserved bytes (again)
+                    if(!m_sampleRate) {
+                        m_sampleRate = reader.readUInt32BE() >> 16;
+                        if(codecConfigContainerAtom->id() != FourccIds::DolbyMpl) {
+                            m_sampleRate >>= 16;
+                        }
+                    } else {
+                        m_istream->seekg(4, ios_base::cur);
+                    }
+                    if(codecConfigContainerAtom->id() != FourccIds::WindowsMediaAudio) {
+                        switch(tmp) {
+                        case 1:
+                            codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 28 + 16);
+                            break;
+                        case 2:
+                            codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 28 + 32);
+                            break;
+                        default:
+                            codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 28);
+                        }
+                        if(!esDescParentAtom) {
+                            esDescParentAtom = codecConfigContainerAtom;
+                        }
+                    }
+                    break;
+                case FourccIds::Mpeg4Video: case FourccIds::H263Quicktime: case FourccIds::H2633GPP:
+                case FourccIds::Avc1: case FourccIds::Avc2: case FourccIds::Avc3: case FourccIds::Avc4:
+                case FourccIds::Drmi: case FourccIds::Hevc1: case FourccIds::Hevc2:
+                    m_istream->seekg(6 + 2 + 16, ios_base::cur); // skip reserved bytes, data reference index, and reserved bytes (again)
+                    m_pixelSize.setWidth(reader.readUInt16BE());
+                    m_pixelSize.setHeight(reader.readUInt16BE());
+                    m_resolution.setWidth(static_cast<uint32>(reader.readFixed16BE()));
+                    m_resolution.setHeight(static_cast<uint32>(reader.readFixed16BE()));
+                    m_istream->seekg(4, ios_base::cur); // skip reserved bytes
+                    m_framesPerSample = reader.readUInt16BE();
+                    tmp = reader.readByte();
+                    m_compressorName = reader.readString(31);
+                    if(tmp == 0) {
+                        m_compressorName.clear();
+                    } else if(tmp < 32) {
+                        m_compressorName.resize(tmp);
+                    }
+                    m_depth = reader.readUInt16BE(); // 24: color without alpha
+                    codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 78);
+                    if(!esDescParentAtom) {
+                        esDescParentAtom = codecConfigContainerAtom;
+                    }
+                    break;
+                case Mp4AtomIds::PixalAspectRatio:
+                    break; // TODO
+                case Mp4AtomIds::CleanAperature:
+                    break; // TODO
+                default:
+                    ;
+                }
+            }
+            // parse AVC configuration
+            //codecConfigContainerAtom->childById(Mp4AtomIds::AvcConfiguration);
+            // parse MPEG-4 elementary stream descriptor
+            if(esDescParentAtom) {
+                Mp4Atom *esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor);
                 if(!esDescAtom) {
-                    esDescAtom = codecConfigContainerAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2);
+                    esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2);
                 }
                 if(esDescAtom) {
                     try {
@@ -1222,6 +1374,15 @@ void Mp4Track::internalParseHeader()
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }
                             }
+                            if(m_esInfo->videoSpecificConfig) {
+                                // check the video specific config for useful information
+                                if(m_format.general == GeneralMediaFormat::Mpeg4Video && m_esInfo->videoSpecificConfig->profile) {
+                                    m_format.sub = m_esInfo->videoSpecificConfig->profile;
+                                    if(!m_esInfo->videoSpecificConfig->userData.empty()) {
+                                        m_formatId += " / " + m_esInfo->videoSpecificConfig->userData;
+                                    }
+                                }
+                            }
                             // check the stream data for missing information
                             switch(m_format.general) {
                             case GeneralMediaFormat::Mpeg1Audio: case GeneralMediaFormat::Mpeg2Audio: {
@@ -1238,73 +1399,14 @@ void Mp4Track::internalParseHeader()
                     } catch(Failure &) {
                     }
                 }
-                // seek to start offset of additional atom and skip reserved bytes and data reference index
-                m_istream->seekg(codecConfigContainerAtom->startOffset() + 8 + 6 + 2);
-                switch(m_mediaType) {
-                case MediaType::Audio:
-                    m_istream->seekg(8, ios_base::cur); // skip reserved bytes
-                    m_channelCount = reader.readUInt16BE();
-                    m_bitsPerSample = reader.readUInt16BE();
-                    m_istream->seekg(4, ios_base::cur); // skip reserved bytes
-                    if(!m_sampleRate) {
-                        m_sampleRate = reader.readUInt32BE() >> 16;
-                    } else {
-                        m_istream->seekg(4, ios_base::cur);
-                    }
-                    break;
-                case MediaType::Video:
-                    m_istream->seekg(16, ios_base::cur); // skip reserved bytes
-                    m_pixelSize.setWidth(reader.readUInt16BE());
-                    m_pixelSize.setHeight(reader.readUInt16BE());
-                    m_resolution.setWidth(reader.readUInt32BE());
-                    m_resolution.setHeight(reader.readUInt32BE());
-                    m_istream->seekg(4, ios_base::cur); // skip reserved bytes
-                    m_framesPerSample = reader.readUInt16BE();
-                    m_compressorName = reader.readString(30);
-                    firstZeroByte = m_compressorName.find('\0');
-                    if(firstZeroByte == 0) {
-                        m_compressorName.clear();
-                    } else if(firstZeroByte != string::npos) {
-                        m_compressorName.resize(firstZeroByte - 1);
-                    }
-                    m_depth = reader.readUInt16BE();
-                    if(m_depth == 0x0018) {
-                        // images are in color with no alpha
-                    } else {
-                        m_depth = 0;
-                    }
-                    codecConfigContainerAtom = codecConfigContainerAtom->nextSibling();
-                    if(codecConfigContainerAtom) {
-                        while(codecConfigContainerAtom) {
-                            codecConfigContainerAtom->parse();
-                            switch(codecConfigContainerAtom->id()) {
-                            case Mp4AtomIds::PixalAspectRatio:
-                                break; // todo
-                            case Mp4AtomIds::CleanAperature:
-                                break; // todo
-                            default:
-                                ;
-                            }
-                            codecConfigContainerAtom = codecConfigContainerAtom->nextSibling();
-                        }
-                        codecConfigContainerAtom = codecConfigContainerAtom->siblingById(Mp4AtomIds::Drms, true);
-                        if(codecConfigContainerAtom) {
-                            m_encrypted = true;
-                        }
-                    }
-                    break;
-                default:
-                    ;
-                }
-            } catch(Failure &) {
-                addNotification(NotificationType::Warning, "Unable to parse child atoms of stsd atom correctly.", context);
             }
+        } catch (Failure &) {
+            addNotification(NotificationType::Critical, "Unable to parse child atoms of \"stsd\"-atom.", context);
         }
     }
     // read stsz atom which holds the sample size table
     m_sampleSizes.clear();
-    m_size = 0;
-    m_sampleCount = 0;
+    m_size = m_sampleCount = 0;
     uint64 actualSampleSizeTableSize = m_stszAtom->dataSize();
     if(actualSampleSizeTableSize < 12) {
         addNotification(NotificationType::Critical, "The stsz atom is truncated. There are no sample sizes present. The size of the track can not be determined.", context);
@@ -1374,15 +1476,12 @@ void Mp4Track::internalParseHeader()
         }
     }
     // no sample sizes found, search for trun atoms
-    Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(MovieFragment, true);
     uint64 totalDuration = 0;
-    while(moofAtom) {
+    for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(MovieFragment, true); moofAtom; moofAtom = moofAtom->siblingById(MovieFragment, false)) {
         moofAtom->parse();
-        Mp4Atom *trafAtom = moofAtom->childById(TrackFragment);
-        while(trafAtom) {
+        for(Mp4Atom *trafAtom = moofAtom->childById(TrackFragment); trafAtom; trafAtom = trafAtom->siblingById(TrackFragment, false)) {
             trafAtom->parse();
-            Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader);
-            while(tfhdAtom) {
+            for(Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, false)) {
                 tfhdAtom->parse();
                 uint32 calculatedDataSize = 0;
                 if(tfhdAtom->dataSize() < calculatedDataSize) {
@@ -1434,8 +1533,7 @@ void Mp4Track::internalParseHeader()
                                 m_istream->seekg(4, ios_base::cur);
                             }
                         }
-                        Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun);
-                        while(trunAtom) {
+                        for(Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun); trunAtom; trunAtom = trunAtom->siblingById(TrackFragmentRun, false)) {
                             uint32 calculatedDataSize = 8;
                             if(trunAtom->dataSize() < calculatedDataSize) {
                                 addNotification(NotificationType::Critical, "trun atom is truncated.", context);
@@ -1495,18 +1593,14 @@ void Mp4Track::internalParseHeader()
                                     }
                                 }
                             }
-                            trunAtom = trunAtom->siblingById(TrackFragmentRun, false);
                         }
                         if(m_sampleSizes.empty() && defaultSampleSize) {
                             m_sampleSizes.push_back(defaultSampleSize);
                         }
                     }
                 }
-                tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, false);
             }
-            trafAtom = trafAtom->siblingById(TrackFragment, false);
         }
-        moofAtom = moofAtom->siblingById(MovieFragment, false);
     }
     // set duration from "trun-information" if the duration has not been determined yet
     if(m_duration.isNull() && totalDuration) {
@@ -1515,7 +1609,7 @@ void Mp4Track::internalParseHeader()
             timeScale = trakAtom().container().timeScale();
         }
         if(timeScale) {
-            m_duration = TimeSpan::fromSeconds(static_cast<double>(totalDuration) / static_cast<double>(m_timeScale));
+            m_duration = TimeSpan::fromSeconds(static_cast<double>(totalDuration) / static_cast<double>(timeScale));
         }
     }
     // caluculate average bitrate
