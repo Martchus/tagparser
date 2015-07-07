@@ -237,7 +237,7 @@ void Mp4Container::internalMakeFile()
             throw OperationAbortedException();
         }
         moovAtom->copyWithoutChilds(outputStream);
-        for(Mp4Atom *moovChildAtom = moovAtom->firstChild(); moovChildAtom; moovChildAtom->nextSibling()) { // write child atoms manually, because the child udta has to be altered/ignored
+        for(Mp4Atom *moovChildAtom = moovAtom->firstChild(); moovChildAtom; moovChildAtom = moovChildAtom->nextSibling()) { // write child atoms manually, because the child udta has to be altered/ignored
             try {
                 moovChildAtom->parse();
             } catch(Failure &) {
