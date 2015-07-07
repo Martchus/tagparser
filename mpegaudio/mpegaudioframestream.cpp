@@ -46,7 +46,7 @@ void MpegAudioFrameStream::addInfo(const MpegAudioFrame &frame, AbstractTrack &t
     track.m_version = frame.mpegVersion();
     track.m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, frame.layer());
     track.m_channelCount = frame.channelMode() == MpegChannelMode::SingleChannel ? 1 : 2;
-    track.m_sampleRate = frame.samperate();
+    track.m_sampleRate = frame.sampelRate();
 }
 
 void MpegAudioFrameStream::internalParseHeader()
@@ -76,7 +76,7 @@ void MpegAudioFrameStream::internalParseHeader()
         }
     }
     m_bitrate = frame.isXingFramefieldPresent()
-            ? ((static_cast<double>(m_size) * 8.0) / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samperate())) / 1024.0)
+            ? ((static_cast<double>(m_size) * 8.0) / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.sampelRate())) / 1024.0)
             : frame.bitrate();
     m_bytesPerSecond = m_bitrate * 125;
     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 128.0));

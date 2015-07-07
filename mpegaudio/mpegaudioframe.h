@@ -42,7 +42,7 @@ public:
     int layer() const;
     bool isProtectedByCrc() const;
     uint32 bitrate() const;
-    uint32 samperate() const;
+    uint32 sampelRate() const;
     uint32 paddingSize() const;
     MpegChannelMode channelMode() const;
     bool hasCopyright() const;
