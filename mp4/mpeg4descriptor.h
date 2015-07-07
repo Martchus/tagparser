@@ -49,7 +49,6 @@ public:
     bool isParent() const;
     bool isPadding() const;
     uint64 firstChildOffset() const;
-    implementationType *denoteFirstChild(uint32 offset);
 
 protected:
     Mpeg4Descriptor(implementationType &parent, uint64 startOffset);
@@ -86,20 +85,6 @@ inline bool Mpeg4Descriptor::isPadding() const
 inline uint64 Mpeg4Descriptor::firstChildOffset() const
 {
     return firstChild() ? firstChild()->startOffset() - startOffset() : 0;
-}
-
-/*!
- * \brief Denotes the first child to start at the specified \a offset (relative to the start offset of this descriptor).
- * \remarks A new first child is constructed. A possibly existing subtree is invalidated.
- */
-inline Mpeg4Descriptor::implementationType *Mpeg4Descriptor::denoteFirstChild(uint32 relativeFirstChildOffset)
-{
-    if(relativeFirstChildOffset + 4 < dataSize()) {
-        m_firstChild.reset(new implementationType(static_cast<implementationType &>(*this), startOffset() + relativeFirstChildOffset));
-    } else {
-        m_firstChild.reset();
-    }
-    return m_firstChild.get();
 }
 
 }
