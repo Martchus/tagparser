@@ -93,9 +93,9 @@ int MpegAudioFrame::layer() const
 }
 
 /*!
- * \brief Returns the samperate of the frame if known; otherwise returns 0.
+ * \brief Returns the sampel rate of the frame if known; otherwise returns 0.
  */
-uint32 MpegAudioFrame::samperate() const
+uint32 MpegAudioFrame::sampelRate() const
 {
     switch (m_header & 0xc00u) {
     case 0xc00u:
@@ -187,10 +187,10 @@ uint32 MpegAudioFrame::size() const
 {
     switch (m_header & 0x60000u) {
     case 0x60000u:
-        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samperate())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
+        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(sampelRate())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
     case 0x40000u:
     case 0x20000u:
-        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samperate())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
+        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(sampelRate())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
     default:
         return 0;
     }
