@@ -264,8 +264,8 @@ inline const char *AbstractTrack::formatAbbreviation() const
 }
 
 /*!
- * \brief Returns the format ID (raw format identifier directly extracted from
- *        the container) if known; otherwise returns an empty string.
+ * \brief Returns the format/codec ID. This is usually the raw format identifier
+ *        extracted from the container) if known; otherwise returns an empty string.
  */
 inline const std::string &AbstractTrack::formatId() const
 {
