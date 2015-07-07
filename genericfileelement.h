@@ -189,6 +189,7 @@ public:
     void copyHeader(std::ostream &targetStream);
     void copyWithoutChilds(std::ostream &targetStream);
     void copyEntirely(std::ostream &targetStream);
+    implementationType *denoteFirstChild(uint32 offset);
 
 protected:
     identifierType m_id;
@@ -823,6 +824,21 @@ void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetSt
     if(isAborted()) {
         throw OperationAbortedException();
     }
+}
+
+/*!
+ * \brief Denotes the first child to start at the specified \a offset (relative to the start offset of this descriptor).
+ * \remarks A new first child is constructed. A possibly existing subtree is invalidated.
+ */
+template <class ImplementationType>
+typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
+{
+    if(relativeFirstChildOffset + 4 < dataSize()) {
+        m_firstChild.reset(new implementationType(static_cast<implementationType &>(*this), startOffset() + relativeFirstChildOffset));
+    } else {
+        m_firstChild.reset();
+    }
+    return m_firstChild.get();
 }
 
 /*!
