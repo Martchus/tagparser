@@ -812,7 +812,7 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
     }
     static const unsigned int stcoDataBegin = 8;
     uint64 startPos = m_stcoAtom->dataOffset() + stcoDataBegin;
-    uint64 endPos = startPos + m_stcoAtom->totalSize() - stcoDataBegin;
+    uint64 endPos = startPos + m_stcoAtom->dataSize() - stcoDataBegin;
     m_istream->seekg(startPos);
     m_ostream->seekp(startPos);
     vector<int64>::size_type i;

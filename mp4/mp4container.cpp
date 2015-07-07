@@ -231,7 +231,7 @@ void Mp4Container::internalMakeFile()
             pdinAtom->copyEntirely(outputStream);
         }
         ostream::pos_type newMoovOffset = outputStream.tellp();
-        Mp4Atom *udtaAtom = nullptr, *udtaChildAtom = nullptr;
+        Mp4Atom *udtaAtom = nullptr;
         uint64 newUdtaOffset = 0u;
         if(isAborted()) {
             throw OperationAbortedException();
@@ -251,14 +251,13 @@ void Mp4Container::internalMakeFile()
                     //  check if the udta atom needs to be written
                     bool writeUdtaAtom = !m_tags.empty(); // it has to be written only when a MP4 tag is assigned
                     if(!writeUdtaAtom) { // or when there is at least one child except the meta atom in the original file
-                        udtaChildAtom = udtaAtom->firstChild();
                         try {
-                            while(!writeUdtaAtom && udtaChildAtom) {
+                            for(Mp4Atom *udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
                                 udtaChildAtom->parse();
                                 if(udtaChildAtom->id() != Mp4AtomIds::Meta) {
                                     writeUdtaAtom = true;
+                                    break;
                                 }
-                                udtaChildAtom = udtaChildAtom->nextSibling();
                             }
                         } catch(Failure &) {
                             addNotification(NotificationType::Warning,
@@ -280,7 +279,7 @@ void Mp4Container::internalMakeFile()
                         }
                          // write rest of the child atoms of udta atom
                         try {
-                            for(udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
+                            for(Mp4Atom *udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
                                 udtaChildAtom->parse();
                                 if(udtaChildAtom->id() != Mp4AtomIds::Meta) { // skip meta atoms here of course
                                     udtaChildAtom->copyEntirely(outputStream);
@@ -335,8 +334,7 @@ void Mp4Container::internalMakeFile()
         vector<int64> origMdatOffsets; // used when simply copying mdat
         vector<int64> newMdatOffsets; // used when simply copying mdat
         // write other atoms
-        Mp4Atom *firstOtherTopLevelAtom = firstElement()->nextSibling();
-        for(Mp4Atom *otherTopLevelAtom = firstOtherTopLevelAtom; otherTopLevelAtom; otherTopLevelAtom = otherTopLevelAtom->nextSibling()) {
+        for(Mp4Atom *otherTopLevelAtom = firstElement(); otherTopLevelAtom; otherTopLevelAtom = otherTopLevelAtom->nextSibling()) {
             if(isAborted()) {
                 throw OperationAbortedException();
             }
@@ -512,7 +510,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
             moofAtom->parse();
             try {
                 for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment); trafAtom;
-                    trafAtom->siblingById(Mp4AtomIds::TrackFragment, false)) {
+                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, false)) {
                     trafAtom->parse();
                     int tfhdAtomCount = 0;
                     for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader); tfhdAtom;
