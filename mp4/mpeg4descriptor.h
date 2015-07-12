@@ -36,6 +36,14 @@ public:
      * \brief The implementation type is Mp4Atom.
      */
     typedef Mpeg4Descriptor implementationType;
+
+    /*!
+     * \brief Returns the minimal descriptor size which is 2 byte.
+     */
+    static constexpr byte minimumElementSize()
+    {
+        return 2;
+    }
 };
 
 class LIB_EXPORT Mpeg4Descriptor : public GenericFileElement<Mpeg4Descriptor>

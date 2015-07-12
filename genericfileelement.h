@@ -186,6 +186,7 @@ public:
     void validateSubsequentElementStructure(NotificationList &gatheredNotifications, uint64 *paddingSize = nullptr);
     static constexpr uint32 maximumIdLengthSupported();
     static constexpr uint32 maximumSizeLengthSupported();    
+    static constexpr byte minimumElementSize();
     void copyHeader(std::ostream &targetStream);
     void copyWithoutChilds(std::ostream &targetStream);
     void copyEntirely(std::ostream &targetStream);
@@ -833,7 +834,7 @@ void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetSt
 template <class ImplementationType>
 typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
 {
-    if(relativeFirstChildOffset + 4 < dataSize()) {
+    if(relativeFirstChildOffset + minimumElementSize() <= totalSize()) {
         m_firstChild.reset(new implementationType(static_cast<implementationType &>(*this), startOffset() + relativeFirstChildOffset));
     } else {
         m_firstChild.reset();
@@ -857,6 +858,15 @@ template <class ImplementationType>
 inline constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
 {
     return sizeof(dataSizeType);
+}
+
+/*!
+ * \brief Returns the mimimum element size.
+ */
+template <class ImplementationType>
+inline constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
+{
+    return FileElementTraits<ImplementationType>::minimumElementSize();
 }
 
 /*!

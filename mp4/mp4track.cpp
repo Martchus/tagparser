@@ -595,6 +595,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
     auto buff = make_unique<char []>(decSpecInfoDesc->dataSize());
     m_istream->read(buff.get(), decSpecInfoDesc->dataSize());
     BitReader bitReader(buff.get(), decSpecInfoDesc->dataSize());
+    cout << "buff: " << reinterpret_cast<uint64>(buff.get()) << ", " << decSpecInfoDesc->dataSize() << endl;
     auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
     try {
         // read audio object type
@@ -1330,6 +1331,13 @@ void Mp4Track::internalParseHeader()
                     }
                     m_depth = reader.readUInt16BE(); // 24: color without alpha
                     codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 78);
+                    if(!esDescParentAtom) {
+                        esDescParentAtom = codecConfigContainerAtom;
+                    }
+                    break;
+                case FourccIds::Mpeg4Sample:
+                    //m_istream->seekg(6 + 2, ios_base::cur); // skip reserved bytes and data reference index
+                    codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 8);
                     if(!esDescParentAtom) {
                         esDescParentAtom = codecConfigContainerAtom;
                     }

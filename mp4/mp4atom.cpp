@@ -57,7 +57,7 @@ void Mp4Atom::internalParse()
 {
     invalidateStatus();
     static const string context("parsing MP4 atom");
-    if(maxTotalSize() < 8) {
+    if(maxTotalSize() < minimumElementSize()) {
         addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid. The maximum size within the parent atom is " + numberToString(maxTotalSize()) + ".", context);
         throw TruncatedDataException();
     }
@@ -95,7 +95,7 @@ void Mp4Atom::internalParse()
     m_dataSize -= headerSize();
     Mp4Atom *child = nullptr;
     if(uint64 firstChildOffset = this->firstChildOffset()) {
-        if(firstChildOffset + 8 <= totalSize()) {
+        if(firstChildOffset + minimumElementSize() <= totalSize()) {
             child = new Mp4Atom(static_cast<Mp4Atom &>(*this), startOffset() + firstChildOffset);
         }
     }

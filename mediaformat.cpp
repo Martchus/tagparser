@@ -196,7 +196,11 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::Smv: return "SMV";
     case GeneralMediaFormat::StreamingTextStream: return "Streaming Text Stream";
     case GeneralMediaFormat::SynthesizedTextureStream: return "Synthesized Texture Stream";
-    case GeneralMediaFormat::Systems: return "Systems";
+    case GeneralMediaFormat::Systems:
+        switch(sub) {
+        case 2: return "Systems v2";
+        default: return "Systems";
+        }
     case GeneralMediaFormat::TextSubtitle:
         switch(sub) {
         case SubFormats::TextSubBasicUtf8: return "UTF-8 Plain Text subtitles";

@@ -54,8 +54,8 @@ std::string Mpeg4Descriptor::idToString() const
 void Mpeg4Descriptor::internalParse()
 {
     invalidateStatus();
-    if(maxTotalSize() < 4) {
-        addNotification(NotificationType::Critical, "Descriptor is smaller then 4 byte and hence invalid. The maximum size within the encloding element is " + numberToString(maxTotalSize()) + ".", "parsing MPEG-4 descriptor");
+    if(maxTotalSize() < minimumElementSize()) {
+        addNotification(NotificationType::Critical, "Descriptor is smaller then 2 byte and hence invalid. The maximum size within the encloding element is " + numberToString(maxTotalSize()) + ".", "parsing MPEG-4 descriptor");
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());
@@ -63,7 +63,7 @@ void Mpeg4Descriptor::internalParse()
     m_idLength = m_sizeLength = 1;
     m_id = reader().readByte();
     // read data size
-    byte tmp = reader().readByte() & 0x80;
+    byte tmp = reader().readByte();
     m_dataSize = tmp & 0x7F;
     while(tmp & 0x80) {
         m_dataSize = (m_dataSize << 7) | ((tmp = reader().readByte()) & 0x7F);

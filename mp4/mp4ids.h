@@ -246,12 +246,7 @@ enum KnownValue : uint32 {
     Divx3Decoder8 = 0x4D503433,
     Divx3Decoder9 = 0x4D504733,
     Divx4Decoder1 = 0x44495658,
-    Divx4Decoder2 = 0x4D345332,
-    Divx4Decoder3 = 0x4D503453,
-    Divx4Decoder4 = 0x554D5034,
-    Divx4Decoder5 = 0x64697678,
-    Divx4Decoder6 = 0x6D347332,
-    Divx4Decoder7 = 0x6D703473,
+    Divx4Decoder2 = 0x64697678,
     Divx5Decoder = 0x44583530,
     Drms = 0x64726D73,
     Drmi = 0x64726D69,
@@ -324,7 +319,7 @@ enum KnownValue : uint32 {
     Mpeg4Decoder1 = 0x464D5034,
     Mpeg4Decoder2 = 0x53454447,
     Mpeg4Decoder3 = 0x57563146,
-    Mpeg4Stream = 0x6d703473, /**< MPEG-4 stream (other then video/audio) */
+    Mpeg4Sample = 0x6d703473, /**< MPEG-4 stream (other then video/audio) */
     Mpeg4Video = 0x6d703476, /**< MPEG-4 video */
     MsMpeg4V1Decoder1 = 0x44495631,
     MsMpeg4V1Decoder2 = 0x4D504734,

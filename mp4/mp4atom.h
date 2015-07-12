@@ -44,6 +44,14 @@ public:
      * \brief The implementation type is Mp4Atom.
      */
     typedef Mp4Atom implementationType;
+
+    /*!
+     * \brief Returns the minimal atom size which is 8 byte.
+     */
+    static constexpr byte minimumElementSize()
+    {
+        return 8;
+    }
 };
 
 class LIB_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom>

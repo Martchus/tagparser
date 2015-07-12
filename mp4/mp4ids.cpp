@@ -56,8 +56,7 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     case Avc1: case Avc2: case Avc3: case Avc4: case H264Decoder1: case H264Decoder2:
     case H264Decoder3: case H264Decoder4: case H264Decoder5: case H264Decoder6:
         return MediaFormat(GeneralMediaFormat::Avc);
-    case Divx4Decoder1: case Divx4Decoder2: case Divx4Decoder3:
-    case Divx4Decoder4: case Divx4Decoder5: case Divx4Decoder6: case Divx4Decoder7:
+    case Divx4Decoder1: case Divx4Decoder2:
     case H263Quicktime: case H2633GPP: case XvidDecoder1: case XvidDecoder2:
     case XvidDecoder3: case XvidDecoder4: case XvidDecoder5: case Divx5Decoder:
         return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4AdvancedSimpleProfile0);
