@@ -1,6 +1,7 @@
 #ifndef MEDIAINFO_H
 #define MEDIAINFO_H
 
+#include "signature.h"
 #include "statusprovider.h"
 #include "basicfileinfo.h"
 #include "abstractcontainer.h"
@@ -28,7 +29,6 @@ class WaveAudioStream;
 class MpegAudioFrameStream;
 
 enum class MediaType;
-enum class ContainerFormat;
 enum class TagType : unsigned int;
 
 /*!
@@ -168,6 +168,36 @@ inline bool MediaFileInfo::isContainerParsed() const
 inline ContainerFormat MediaFileInfo::containerFormat() const
 {
     return m_containerFormat;
+}
+
+/*!
+ * \brief Returns the name of the container format as C-style string.
+ *
+ * parseContainerFormat() needs to be called before. Otherwise
+ * always the name "Unknown" will be returned.
+ *
+ * \sa containerFormat()
+ * \sa containerFormatAbbreviation()
+ * \sa parseContainerFormat()
+ */
+inline const char *MediaFileInfo::containerFormatName() const
+{
+    return Media::containerFormatName(m_containerFormat);
+}
+
+/*!
+ * \brief Returns the subversion of the container format as C-style string.
+ *
+ * parseContainerFormat() needs to be called before. Otherwise
+ * always an empty string will be returned.
+ *
+ * \sa containerFormat()
+ * \sa containerFormatName()
+ * \sa parseContainerFormat()
+ */
+inline const char *MediaFileInfo::containerFormatSubversion() const
+{
+    return Media::containerFormatSubversion(m_containerFormat);
 }
 
 /*!

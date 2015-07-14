@@ -414,8 +414,12 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
     if(m_container) { // container object takes care of tag management
         m_container->createTag();
     } else { // no container object present; creation of ID3 tag is possible
-        if(!hasAnyTag() && containerFormat() != ContainerFormat::MpegAudioFrames) {
-            if(!treatUnknownFilesAsMp3Files) {
+        if(!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
+            switch(containerFormat()) {
+            case ContainerFormat::MpegAudioFrames:
+            case ContainerFormat::Adts:
+                break;
+            default:
                 return false;
             }
         }
@@ -508,21 +512,6 @@ void MediaFileInfo::applyChanges()
 }
 
 /*!
- * \brief Returns the name of the container format as C-style string.
- *
- * parseContainerFormat() needs to be called before. Otherwise
- * always the name "Unknown" will be returned.
- *
- * \sa containerFormat()
- * \sa containerFormatAbbreviation()
- * \sa parseContainerFormat()
- */
-const char *MediaFileInfo::containerFormatName() const
-{
-    return Media::containerFormatName(m_containerFormat);
-}
-
-/*!
  * \brief Returns the abbreviation of the container format as C-style string.
  *
  * This abbreviation might be used as file extension.
@@ -553,21 +542,6 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
         ;
     }
     return Media::containerFormatAbbreviation(m_containerFormat, mediaType, version);
-}
-
-/*!
- * \brief Returns the subversion of the container format as C-style string.
- *
- * parseContainerFormat() needs to be called before. Otherwise
- * always an empty string will be returned.
- *
- * \sa containerFormat()
- * \sa containerFormatName()
- * \sa parseContainerFormat()
- */
-const char *MediaFileInfo::containerFormatSubversion() const
-{
-    return Media::containerFormatSubversion(m_containerFormat);
 }
 
 /*!
@@ -938,6 +912,7 @@ bool MediaFileInfo::areTagsSupported() const
     case ContainerFormat::Ogg:
     case ContainerFormat::Matroska:
     case ContainerFormat::Webm:
+    case ContainerFormat::Adts:
         return true;
     default:
         return false;
