@@ -26,10 +26,6 @@ namespace Media {
 
 DateTime startDate = DateTime::fromDate(1904, 1, 1);
 
-uint32 sampleRateTable[] = {
-    96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000
-};
-
 MediaFormat fmtTable[] = {
     GeneralMediaFormat::Unknown,
     MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4MainProfile),
@@ -1369,15 +1365,15 @@ void Mp4Track::internalParseHeader()
                                 m_format += Mpeg4AudioObjectIds::idToMediaFormat(m_esInfo->audioSpecificConfig->audioObjectType, m_esInfo->audioSpecificConfig->sbrPresent, m_esInfo->audioSpecificConfig->psPresent);
                                 if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex == 0xF) {
                                     m_sampleRate = m_esInfo->audioSpecificConfig->sampleFrequency;
-                                } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(sampleRateTable)) {
-                                    m_sampleRate = sampleRateTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
+                                } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SampleRateTable)) {
+                                    m_sampleRate = mpeg4SampleRateTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid sample frequency index.", context);
                                 }
                                 if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
                                     m_extensionSampleRate = m_esInfo->audioSpecificConfig->extensionSampleFrequency;
-                                } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(sampleRateTable)) {
-                                    m_extensionSampleRate = sampleRateTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
+                                } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SampleRateTable)) {
+                                    m_extensionSampleRate = mpeg4SampleRateTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }
@@ -1397,7 +1393,7 @@ void Mp4Track::internalParseHeader()
                                 MpegAudioFrame frame;
                                 m_istream->seekg(m_stcoAtom->dataOffset() + 8);
                                 m_istream->seekg(m_chunkOffsetSize == 8 ? reader.readUInt64BE() : reader.readUInt32BE());
-                                frame.parseHeader(*m_istream);
+                                frame.parseHeader(reader);
                                 MpegAudioFrameStream::addInfo(frame, *this);
                                 break;
                             } default:

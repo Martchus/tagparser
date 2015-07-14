@@ -14,29 +14,8 @@ namespace Media {
 
 /*!
  * \class Media::MpegAudioFrameStream
- * \brief Implementation of Media::AbstractTrack for a stream of
- *        MPEG audio frames (run-of-the-mill MP3 file).
+ * \brief Implementation of Media::AbstractTrack MPEG audio streams.
  */
-
-/*!
- * \brief Constructs a new track for the \a stream at the specified \a startOffset.
- */
-MpegAudioFrameStream::MpegAudioFrameStream(iostream &stream, uint64 startOffset) :
-    AbstractTrack(stream, startOffset)
-{
-    m_mediaType = MediaType::Audio;
-}
-
-/*!
- * \brief Destroys the track.
- */
-MpegAudioFrameStream::~MpegAudioFrameStream()
-{}
-
-TrackType MpegAudioFrameStream::type() const
-{
-    return TrackType::MpegAudioFrameStream;
-}
 
 /*!
  * \brief Adds the information from the specified \a frame to the specified \a track.
@@ -66,7 +45,7 @@ void MpegAudioFrameStream::internalParseHeader()
     // parse frame header
     m_frames.emplace_back();
     MpegAudioFrame &frame = m_frames.back();
-    frame.parseHeader(*m_istream);
+    frame.parseHeader(m_reader);
     addInfo(frame, *this);
     if(frame.isXingBytesfieldPresent()) {
         uint32 xingSize = frame.xingBytesfield();

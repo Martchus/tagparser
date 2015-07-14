@@ -585,6 +585,26 @@ LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent 
 
 }
 
+extern uint32 mpeg4SampleRateTable[13];
+
+namespace Mpeg4ChannelConfigs {
+enum Mpeg4ChannelConfig : byte
+{
+    AotSpecificConfig = 0,
+    FrontCenter,
+    FrontLeftFrontRight,
+    FrontCenterFrontLeftFrontRight,
+    FrontCenterFrontLeftFrontRightBackCenter,
+    FrontCenterFrontLeftFrontRightBackLeftBackRight,
+    FrontCenterFrontLeftFrontRightBackLeftBackRightLFEChannel,
+    FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel
+};
+
+LIB_EXPORT const char *channelConfigString(byte config);
+LIB_EXPORT byte channelCount(byte config);
+
+}
+
 namespace Mpeg4VideoCodes {
 enum KnownValue : byte {
     VideoObjectStart = 0x00,

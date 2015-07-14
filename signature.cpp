@@ -66,7 +66,7 @@ enum Sig24 : uint32
     Bzip2 = 0x425A68u,
     Gzip = 0x1F8B08u,
     Id3v2 = 0x494433u,
-    Utf8Text = 0xEFBBBFu
+    Utf8Text = 0xEFBBBFu,
 };
 
 /*!
@@ -74,6 +74,8 @@ enum Sig24 : uint32
  */
 enum Sig16 : uint16
 {
+    Adts = 0xFFF0u,
+    AdtsMask = 0xFFF6u,
     Jpeg = 0xffd8u,
     Lha = 0x1FA0u,
     Lzw = 0x1F9Du,
@@ -202,6 +204,9 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     default:
         ;
     }
+    if(((sig >> 48) & AdtsMask) == Adts) {
+        return ContainerFormat::Adts;
+    }
     return ContainerFormat::Unknown;
 }
 
@@ -282,6 +287,8 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
 const char *containerFormatName(ContainerFormat containerFormat)
 {
     switch(containerFormat) {
+    case ContainerFormat::Adts:
+        return "Audio Data Transport Stream";
     case ContainerFormat::Asf:
         return "Advanced Systems Format";
     case ContainerFormat::Elf:

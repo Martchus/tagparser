@@ -28,15 +28,14 @@ const int MpegAudioFrame::m_bitrateTable[0x2][0x3][0xF] =
 const uint32 MpegAudioFrame::m_sync = 0xFFE00000u;
 
 /*!
- * \brief Parses the header read from the specified \a stream at the current position.
+ * \brief Parses the header read using the specified \a reader.
  * \throws Throws InvalidDataException if the data read from the stream is
  *         no valid frame header.
  */
-void MpegAudioFrame::parseHeader(istream &stream)
+void MpegAudioFrame::parseHeader(BinaryReader &reader)
 {
-    BinaryReader reader(&stream);
     m_header = reader.readUInt32BE();
-    stream.seekg(m_xingHeaderOffset - 4, ios_base::cur);
+    reader.stream()->seekg(m_xingHeaderOffset - 4, ios_base::cur);
     m_xingHeader = reader.readUInt64BE();
     m_xingHeaderFlags = static_cast<XingHeaderFlags>(m_xingHeader & 0xffffffffuL);
     if(isXingHeaderAvailable()) {
@@ -47,7 +46,7 @@ void MpegAudioFrame::parseHeader(istream &stream)
             m_xingBytesfield = reader.readUInt32BE();
         }
         if(isXingTocFieldPresent()) {
-            stream.seekg(64, ios_base::cur);
+            reader.stream()->seekg(64, ios_base::cur);
         }
         if(isXingQualityIndicatorFieldPresent()) {
             m_xingQualityIndicator = reader.readUInt32BE();

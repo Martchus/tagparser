@@ -14,6 +14,7 @@ namespace Media {
 enum class ContainerFormat
 {
     Unknown, /**< unknown container format */
+    Adts, /** < Audio Data Transport Stream */
     Asf, /**< Advanced Systems Format */
     Bzip2, /** bzip2 compressed file */
     Elf, /**< Executable and Linkable Format */

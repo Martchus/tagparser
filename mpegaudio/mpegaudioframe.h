@@ -6,6 +6,10 @@
 
 #include <iostream>
 
+namespace IoUtilities {
+class BinaryReader;
+}
+
 namespace Media
 {
 
@@ -35,7 +39,7 @@ class LIB_EXPORT MpegAudioFrame
 public:
     MpegAudioFrame();
 
-    void parseHeader(std::istream &stream);
+    void parseHeader(IoUtilities::BinaryReader &reader);
 
     bool isValid() const;
     double mpegVersion() const;

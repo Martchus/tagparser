@@ -223,7 +223,7 @@ const char *streamTypeName(byte streamTypeId)
 }
 
 /*!
- * \brief Encapsulates all supported MPEG-4 audio object format IDs.
+ * \brief Encapsulates all supported MPEG-4 audio object type IDs.
  * \sa http://wiki.multimedia.cx/index.php?title=MPEG-4_Audio
  */
 namespace Mpeg4AudioObjectIds {
@@ -275,6 +275,61 @@ LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent,
         fmt.extension |= ExtensionFormats::ParametricStereo;
     }
     return fmt;
+}
+
+}
+
+uint32 mpeg4SampleRateTable[] = {
+    96000, 88200, 64000, 48000, 44100, 32000,
+    24000, 22050, 16000, 12000, 11025, 8000, 7350
+};
+
+namespace Mpeg4ChannelConfigs {
+
+const char *channelConfigString(byte config)
+{
+    switch(config) {
+    case AotSpecificConfig:
+        return "defined in AOT Specific Config";
+    case FrontCenter:
+        return "1 channel: front-center";
+    case FrontLeftFrontRight:
+        return "2 channels: front-left, front-right";
+    case FrontCenterFrontLeftFrontRight:
+        return "3 channels: front-center, front-left, front-right";
+    case FrontCenterFrontLeftFrontRightBackCenter:
+        return "4 channels: front-center, front-left, front-right, back-center";
+    case FrontCenterFrontLeftFrontRightBackLeftBackRight:
+        return "5 channels: front-center, front-left, front-right, back-left, back-right";
+    case FrontCenterFrontLeftFrontRightBackLeftBackRightLFEChannel:
+        return "6 channels: front-center, front-left, front-right, back-left, back-right, LFE-channel";
+    case FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel:
+        return "8 channels: front-center, front-left, front-right, side-left, side-right, back-left, back-right, LFE-channel";
+    default:
+        return "unknown";
+    }
+}
+
+byte channelCount(byte config)
+{
+    switch(config) {
+    case FrontCenter:
+        return 1;
+    case FrontLeftFrontRight:
+        return 2;
+    case FrontCenterFrontLeftFrontRight:
+        return 3;
+    case FrontCenterFrontLeftFrontRightBackCenter:
+        return 4;
+    case FrontCenterFrontLeftFrontRightBackLeftBackRight:
+        return 5;
+    case FrontCenterFrontLeftFrontRightBackLeftBackRightLFEChannel:
+        return 6;
+    case FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel:
+        return 8;
+    default:
+        return 0;
+    }
 }
 
 }

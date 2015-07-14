@@ -142,8 +142,7 @@ private:
     std::unique_ptr<AbstractContainer> m_container;
     // fields related to the tracks
     bool m_tracksParsed;
-    std::unique_ptr<WaveAudioStream> m_waveAudioStream;
-    std::unique_ptr<MpegAudioFrameStream> m_mpegAudioFrameStream;
+    std::unique_ptr<AbstractTrack> m_singleTrack;
     // fields related to the tag
     bool m_tagParsed;
     std::unique_ptr<Id3v1Tag> m_id3v1Tag;
@@ -201,6 +200,19 @@ inline bool MediaFileInfo::areTagsParsed() const
 inline bool MediaFileInfo::areTracksParsed() const
 {
     return m_tracksParsed;
+}
+
+/*!
+ * \brief Returns the number of tracks that could be parsed.
+ *
+ * parseTracks() needs to be called before. Otherwise this
+ * method always returns zero.
+ *
+ * \sa parseTracks()
+ */
+inline size_t MediaFileInfo::trackCount() const
+{
+    return m_singleTrack ? 1 : 0 + m_container->trackCount();
 }
 
 /*!

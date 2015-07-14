@@ -32,7 +32,8 @@ enum class TrackType
     MpegAudioFrameStream, /**< The track is a Media::MpegAudioFrameStream. */
     Mp4Track, /**< The track is a Media::Mp4Track. */
     WaveAudioStream, /**< The track is a Media::WaveAudioStream. */
-    OggStream /**< The track is a Media::OggStream. */
+    OggStream, /**< The track is a Media::OggStream. */
+    AdtsStream /**< The track is a Media::AdtsStream. */
 };
 
 class LIB_EXPORT AbstractTrack : public StatusProvider

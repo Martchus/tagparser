@@ -5,8 +5,8 @@
 #include "id3/id3v1tag.h"
 #include "id3/id3v2tag.h"
 #include "wav/waveaudiostream.h"
-#include "mpegaudio/mpegaudioframe.h"
 #include "mpegaudio/mpegaudioframestream.h"
+#include "adts/adtsstream.h"
 #include "mp4/mp4container.h"
 #include "mp4/mp4atom.h"
 #include "mp4/mp4tag.h"
@@ -131,7 +131,7 @@ startParsingSignature:
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
         // skip zero bytes/padding
-        if(buff[0] == 0 && buff[1] == 0 && buff[2] == 0 && buff[3] == 0) {
+        if(!(*reinterpret_cast<uint32 *>(buff))) {
             // give up after 0x100 bytes
             if(m_paddingSize >= 0x100u) {
                 m_containerParsed = true;
@@ -143,11 +143,10 @@ startParsingSignature:
             goto startParsingSignature; // read signature again
         }
         if(m_paddingSize) {
-            addNotification(NotificationType::Warning, ConversionUtilities::numberToString(m_paddingSize) + " empty bytes skipped.", context);
+            addNotification(NotificationType::Warning, ConversionUtilities::numberToString(m_paddingSize) + " zero-bytes skipped at the beginning of the file.", context);
         }
         // parse signature
-        m_containerFormat = parseSignature(buff, sizeof(buff));
-        switch(m_containerFormat) {
+        switch(m_containerFormat = parseSignature(buff, sizeof(buff))) {
         case ContainerFormat::Id2v2Tag:
             m_actualId3v2TagOffsets.push_back(m_containerOffset);
             if(m_actualId3v2TagOffsets.size() == 2) {
@@ -233,16 +232,18 @@ void MediaFileInfo::parseTracks()
         } else {
             switch(m_containerFormat) {
             case ContainerFormat::RiffWave:
-                m_waveAudioStream = make_unique<WaveAudioStream>(stream(), m_containerOffset);
-                m_waveAudioStream->parseHeader();
+                m_singleTrack = make_unique<WaveAudioStream>(stream(), m_containerOffset);
                 break;
             case ContainerFormat::MpegAudioFrames:
-                m_mpegAudioFrameStream = make_unique<MpegAudioFrameStream>(stream(), m_containerOffset);
-                m_mpegAudioFrameStream->parseHeader();
+                m_singleTrack = make_unique<MpegAudioFrameStream>(stream(), m_containerOffset);
+                break;
+            case ContainerFormat::Adts:
+                m_singleTrack = make_unique<AdtsStream>(stream(), m_containerOffset);
                 break;
             default:
                 throw NotImplementedException();
             }
+            m_singleTrack->parseHeader();
         }
     } catch (NotImplementedException &) {
         addNotification(NotificationType::Information, "Parsing tracks is not implemented for the container format of the file.", context);
@@ -339,28 +340,32 @@ void MediaFileInfo::parseTags()
 void MediaFileInfo::parseChapters()
 {
     static const string context("parsing chapters");
-    if(m_container) {
-        try {
+    try {
+        if(m_container) {
             m_container->parseChapters();
-        } catch (NotImplementedException &) {
-            addNotification(NotificationType::Information, "Parsing chapters is not implemented for the container format of the file.", context);
-        } catch (Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse chapters.", context);
+        } else {
+            throw NotImplementedException();
         }
+    } catch (NotImplementedException &) {
+        addNotification(NotificationType::Information, "Parsing chapters is not implemented for the container format of the file.", context);
+    } catch (Failure &) {
+        addNotification(NotificationType::Critical, "Unable to parse chapters.", context);
     }
 }
 
 void MediaFileInfo::parseAttachments()
 {
     static const string context("parsing attachments");
-    if(m_container) {
-        try {
+    try {
+        if(m_container) {
             m_container->parseAttachments();
-        } catch (NotImplementedException &) {
-            addNotification(NotificationType::Information, "Parsing attachments is not implemented for the container format of the file.", context);
-        } catch (Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse attachments.", context);
+        } else {
+            throw NotImplementedException();
         }
+    } catch (NotImplementedException &) {
+        addNotification(NotificationType::Information, "Parsing attachments is not implemented for the container format of the file.", context);
+    } catch (Failure &) {
+        addNotification(NotificationType::Critical, "Unable to parse attachments.", context);
     }
 }
 
@@ -540,8 +545,8 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
         mediaType = hasTracksOfType(MediaType::Video) ? MediaType::Video : MediaType::Audio;
         break;
     case ContainerFormat::MpegAudioFrames:
-        if(m_mpegAudioFrameStream) {
-            version = m_mpegAudioFrameStream->format().sub;
+        if(m_singleTrack) {
+            version = m_singleTrack->format().sub;
         }
         break;
     default:
@@ -628,29 +633,6 @@ const char *MediaFileInfo::mimeType() const
 }
 
 /*!
- * \brief Returns the number of tracks that could be parsed.
- *
- * parseTracks() needs to be called before. Otherwise this
- * method always returns zero.
- *
- * \sa parseTracks()
- */
-size_t MediaFileInfo::trackCount() const
-{
-    size_t c = 0;
-    if(m_waveAudioStream) {
-        ++c;
-    }
-    if(m_mpegAudioFrameStream) {
-        ++c;
-    }
-    if(m_container) {
-        c += m_container->trackCount();
-    }
-    return c;
-}
-
-/*!
  * \brief Returns the tracks for the current file.
  *
  * parseTracks() needs to be called before. Otherwise this
@@ -665,11 +647,8 @@ size_t MediaFileInfo::trackCount() const
 vector<AbstractTrack *> MediaFileInfo::tracks() const
 {
     vector<AbstractTrack *> res;
-    if(m_waveAudioStream) {
-        res.push_back(m_waveAudioStream.get());
-    }
-    if(m_mpegAudioFrameStream) {
-        res.push_back(m_mpegAudioFrameStream.get());
+    if(m_singleTrack) {
+        res.push_back(m_singleTrack.get());
     }
     if(m_container) {
         for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
@@ -692,7 +671,7 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
     if(!areTracksParsed()) {
         return false;
     }
-    if(type == MediaType::Audio && (m_waveAudioStream || m_mpegAudioFrameStream)) {
+    if(type == MediaType::Audio && m_singleTrack) {
         return true;
     } else if(m_container) {
         for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
@@ -1142,8 +1121,7 @@ void MediaFileInfo::clearParsingResults()
     m_actualId3v2TagOffsets.clear();
     m_actualExistingId3v1Tag = false;
     m_container.reset();
-    m_waveAudioStream.reset();
-    m_mpegAudioFrameStream.reset();
+    m_singleTrack.reset();
 }
 
 /*!
