@@ -70,7 +70,9 @@ SOURCES += \
     mediaformat.cpp \
     avc/avcconfiguration.cpp \
     mp4/mpeg4descriptor.cpp \
-    avi/bitmapinfoheader.cpp
+    avi/bitmapinfoheader.cpp \
+    adts/adtsframe.cpp \
+    adts/adtsstream.cpp
 
 HEADERS  += \
     abstractcontainer.h \
@@ -137,7 +139,9 @@ HEADERS  += \
     avc/avcconfiguration.h \
     generictagfield.h \
     mp4/mpeg4descriptor.h \
-    avi/bitmapinfoheader.h
+    avi/bitmapinfoheader.h \
+    adts/adtsframe.h \
+    adts/adtsstream.h
 
 LIBS += -lz
 
@@ -158,9 +162,18 @@ OTHER_FILES += \
 INCLUDEPATH += ../
 
 # installs
-target.path = $$(INSTALL_ROOT)/lib
-INSTALLS += target
-for(dir, $$list(./ avc id3 matroska mp4 mpegaudio ogg vorbis wav avi)) {
+mingw-w64-install {
+    target.path = $$(INSTALL_ROOT)
+    target.extra = install -m755 -D $${OUT_PWD}/release/lib$(TARGET).a $$(INSTALL_ROOT)/lib/lib$(TARGET).a
+    INSTALLS += target
+    dlltarget.path = $$(INSTALL_ROOT)
+    dlltarget.extra = install -m755 -D $${OUT_PWD}/release/$(TARGET) $$(INSTALL_ROOT)/bin/$(TARGET)
+    INSTALLS += dlltarget
+} else {
+    target.path = $$(INSTALL_ROOT)/lib
+    INSTALLS += target
+}
+for(dir, $$list(./ avc adts id3 matroska mp4 mpegaudio ogg vorbis wav avi)) {
     eval(inc_$${dir} = $${dir})
     inc_$${dir}.path = $$(INSTALL_ROOT)/include/$$projectname/$${dir}
     inc_$${dir}.files = $${dir}/*.h
