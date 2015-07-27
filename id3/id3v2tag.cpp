@@ -331,28 +331,37 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
 /*!
  * \brief Returns true if \a lhs goes before \a rhs; otherwise returns false.
  */
-bool FrameComparer::operator ()(const uint32 &lhs, const uint32 &rhs) const
+bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
 {
-    if(lhs == rhs)
+    if(lhs == rhs) {
         return false;
-    if(lhs == Id3v2FrameIds::lUniqueFileId || lhs == Id3v2FrameIds::sUniqueFileId)
+    }
+    if(lhs == Id3v2FrameIds::lUniqueFileId || lhs == Id3v2FrameIds::sUniqueFileId) {
         return true;
-    if(rhs == Id3v2FrameIds::lUniqueFileId || rhs == Id3v2FrameIds::sUniqueFileId)
+    }
+    if(rhs == Id3v2FrameIds::lUniqueFileId || rhs == Id3v2FrameIds::sUniqueFileId) {
         return false;
-    if(lhs == Id3v2FrameIds::lTitle || lhs == Id3v2FrameIds::sTitle)
+    }
+    if(lhs == Id3v2FrameIds::lTitle || lhs == Id3v2FrameIds::sTitle) {
         return true;
-    if(rhs == Id3v2FrameIds::lTitle || rhs == Id3v2FrameIds::sTitle)
+    }
+    if(rhs == Id3v2FrameIds::lTitle || rhs == Id3v2FrameIds::sTitle) {
         return false;
+    }
     bool lhstextfield = Id3v2FrameIds::isTextfield(lhs);
     bool rhstextfield = Id3v2FrameIds::isTextfield(rhs);
-    if(lhstextfield && !rhstextfield)
+    if(lhstextfield && !rhstextfield) {
         return true;
-    if(!lhstextfield && rhstextfield)
+    }
+    if(!lhstextfield && rhstextfield) {
         return false;
-    if(lhs == Id3v2FrameIds::lCover || lhs == Id3v2FrameIds::sCover)
+    }
+    if(lhs == Id3v2FrameIds::lCover || lhs == Id3v2FrameIds::sCover) {
         return false;
-    if(rhs == Id3v2FrameIds::lCover || rhs == Id3v2FrameIds::sCover)
+    }
+    if(rhs == Id3v2FrameIds::lCover || rhs == Id3v2FrameIds::sCover) {
         return true;
+    }
     return lhs < rhs;
 }
 

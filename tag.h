@@ -69,7 +69,8 @@ enum class KnownField : unsigned int
     Cover, /**< cover */
     Composer, /**< composer */
     Rating, /**< rating */
-    Description /**< description */
+    Description, /**< description */
+    Vendor /**< vendor */
 };
 
 /*!
@@ -80,7 +81,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the Media::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::Description;
+constexpr KnownField lastKnownField = KnownField::Vendor;
 
 /*!
  * \brief The number of valid entries in the Media::KnownField enum.

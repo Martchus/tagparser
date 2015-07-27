@@ -77,7 +77,7 @@ void Mp4Atom::internalParse()
     }
     m_id = reader().readUInt32BE();
     m_idLength = 4;
-    if(dataSize() == 1) { // mp4 atom denotes 64 bit size
+    if(dataSize() == 1) { // atom denotes 64-bit size
         m_dataSize = reader().readUInt64BE();
         m_sizeLength = 12; // 4 bytes indicate long size denotation + 8 bytes for actual size denotation
         if(dataSize() < 16 && m_dataSize != 1) {

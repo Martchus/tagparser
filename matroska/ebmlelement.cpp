@@ -70,9 +70,7 @@ void EbmlElement::internalParse()
     }
     stream().seekg(startOffset());
     // read ID
-    char buf[GenericFileElement<implementationType>::maximumIdLengthSupported() > GenericFileElement<implementationType>::maximumSizeLengthSupported()
-            ? GenericFileElement<implementationType>::maximumIdLengthSupported()
-            : GenericFileElement<implementationType>::maximumSizeLengthSupported()] = {0};
+    char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
     byte beg, mask = 0x80;
     beg = stream().peek();
     m_idLength = 1;
@@ -107,7 +105,7 @@ void EbmlElement::internalParse()
         throw InvalidDataException();
     }
     // read size into buffer
-    memset(buf, 0, sizeof(buf));
+    *reinterpret_cast<dataSizeType *>(buf) = 0; // reset buffer
     reader().read(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
     *(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength)) ^= mask; // xor the first byte in buffer which has been read from the file with mask
     m_dataSize = ConversionUtilities::BE::toUInt64(buf);

@@ -202,16 +202,15 @@ int32 TagValue::toInteger() const
             return ConversionUtilities::stringToNumber<int32>(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
         case TagDataType::StandardGenreIndex:
-            if(m_size == sizeof(int)) {
-                char *test = m_ptr.get();
-                int res = *reinterpret_cast<int *>(test);
+            if(m_size == sizeof(int32)) {
+                auto res = *reinterpret_cast<int32 *>(m_ptr.get());
                 return res;
             } else {
-                throw ConversionException("The assigned data is of unappropriate size.");
+                throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
             }
             break;
         default:
-            throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
+            throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
         }
     }
     return 0;
@@ -268,15 +267,16 @@ PositionInSet TagValue::toPositionIntSet() const
             return PositionInSet(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
-            if(m_size == sizeof(int32)) {
+            switch(m_size) {
+            case sizeof(int32):
                 return PositionInSet(*(reinterpret_cast<int *>(m_ptr.get())));
-            } else if(m_size == 2 * sizeof(int32)) {
+            case 2 * sizeof(int32):
                 return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())), *(reinterpret_cast<int32 *>(m_ptr.get() + sizeof(int32))));
-            } else {
-                throw ConversionException("The assigned data is of unappropriate size.");
+            default:
+                throw ConversionException("The size of the assigned data is not appropriate.");
             }
         default:
-            throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
+            throw ConversionException("Can not convert binary data/genre index/picture to \"position in set\".");
         }
     }
     return PositionInSet();
@@ -295,15 +295,16 @@ TimeSpan TagValue::toTimeSpan() const
             return TimeSpan::fromSeconds(ConversionUtilities::stringToNumber<int64>(string(m_ptr.get(), m_size)));
         case TagDataType::Integer:
         case TagDataType::TimeSpan:
-            if(m_size == sizeof(int32)) {
+            switch(m_size) {
+            case sizeof(int32):
                 return TimeSpan(*(reinterpret_cast<int32 *>(m_ptr.get())));
-            } else if(m_size == sizeof(int64)) {
+            case sizeof(int64):
                 return TimeSpan(*(reinterpret_cast<int64 *>(m_ptr.get())));
-            } else {
-                throw ConversionException("The assigned data is of unappropriate size.");
+            default:
+                throw ConversionException("The size of the assigned data is not appropriate.");
             }
         default:
-            throw ConversionException("No conversion from assigned data to time span known.");
+            throw ConversionException("Can not convert binary data/genre index/position in set/picture to time span.");
         }
     }
     return TimeSpan();
@@ -330,7 +331,7 @@ DateTime TagValue::toDateTime() const
                 throw ConversionException("The assigned data is of unappropriate size.");
             }
         default:
-            throw ConversionException("No conversion from assigned data to date known.");
+            throw ConversionException("Can not convert binary data/genre index/position in set/picture to date time.");
         }
     }
     return DateTime();
@@ -351,14 +352,14 @@ string TagValue::toString() const
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::string representation.
- * \throws Throws ConversionException an failure.
+ * \throws Throws ConversionException on failure.
  */
 void TagValue::toString(string &result) const
 {
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            result = string(m_ptr.get(), m_size);
+            result.assign(m_ptr.get(), m_size);
             return;
         case TagDataType::Integer:
             result = ConversionUtilities::numberToString(toInteger());
@@ -368,15 +369,17 @@ void TagValue::toString(string &result) const
             return;
         case TagDataType::StandardGenreIndex:
             if(const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
-                result = string(genreName);
+                result.assign(genreName);
                 return;
+            } else {
+                throw ConversionException("No string representation for the assigned standard genre index available.");
             }
             break;
         case TagDataType::TimeSpan:
             result = toTimeSpan().toString();
             return;
         default:
-            throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
+            throw ConversionException("Can not convert binary data/picture to string.");
         }
     }
     result.clear();

@@ -555,7 +555,7 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                                 esInfo->videoSpecificConfig = parseVideoSpecificConfig(decCfgDescChild);
                                 break;
                             default:
-                                ; // TODO: covering more object types
+                                ; // TODO: cover more object types
                             }
                             break;
                         }
@@ -591,7 +591,6 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
     auto buff = make_unique<char []>(decSpecInfoDesc->dataSize());
     m_istream->read(buff.get(), decSpecInfoDesc->dataSize());
     BitReader bitReader(buff.get(), decSpecInfoDesc->dataSize());
-    cout << "buff: " << reinterpret_cast<uint64>(buff.get()) << ", " << decSpecInfoDesc->dataSize() << endl;
     auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
     try {
         // read audio object type
@@ -798,6 +797,8 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Mpe
  *          - the ID of the atom holding these offsets is not "stco" or "co64"
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
+ *
+ * \remarks This method needs to be fixed.
  */
 void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vector<int64> &newMdatOffsets)
 {

@@ -12,7 +12,7 @@ namespace Media
 
 struct LIB_EXPORT FrameComparer
 {
-    bool operator() (const uint32& lhs, const uint32& rhs) const;
+    bool operator()(const uint32& lhs, const uint32& rhs) const;
 };
 
 class LIB_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComparer>

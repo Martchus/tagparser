@@ -29,7 +29,7 @@ public:
     FieldMapBasedTag();
     virtual ~FieldMapBasedTag();
 
-    virtual const TagValue &value(KnownField value) const;
+    virtual const TagValue &value(KnownField field) const;
     virtual const TagValue &value(const typename FieldType::identifierType &id) const;
     virtual std::list<const TagValue *> values(const typename FieldType::identifierType &id) const;
     virtual bool setValue(KnownField field, const TagValue &value);
@@ -82,9 +82,9 @@ FieldMapBasedTag<FieldType, Compare>::~FieldMapBasedTag()
 {}
 
 template <class FieldType, class Compare>
-inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField value) const
+inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField field) const
 {
-    return this->value(fieldId(value));
+    return value(fieldId(field));
 }
 
 /*!
@@ -163,7 +163,7 @@ inline void FieldMapBasedTag<FieldType, Compare>::removeAllFields()
  *
  * This method provides direct access to the fields of the tag. It might
  * be usefull when the convenience methods value(), setValue(), hasField(), ...
- * to not offer the required functionality.
+ * do not offer the required functionality.
  */
 template <class FieldType, class Compare>
 inline const std::multimap<typename FieldType::identifierType, FieldType, Compare> &FieldMapBasedTag<FieldType, Compare>::fields() const
@@ -176,7 +176,7 @@ inline const std::multimap<typename FieldType::identifierType, FieldType, Compar
  *
  * This method provides direct access to the fields of the tag. It might
  * be usefull when the convenience methods value(), setValue(), hasField(), ...
- * to not offer the required functionality.
+ * do not offer the required functionality.
  */
 template <class FieldType, class Compare>
 inline std::multimap<typename FieldType::identifierType, FieldType, Compare> &FieldMapBasedTag<FieldType, Compare>::fields()
