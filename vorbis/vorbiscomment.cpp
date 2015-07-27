@@ -23,6 +23,27 @@ namespace Media {
  * \brief Implementation of Media::Tag for the Vorbis comment.
  */
 
+const TagValue &VorbisComment::value(KnownField field) const
+{
+    switch(field) {
+    case KnownField::Vendor:
+        return vendor();
+    default:
+        return FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>::value(field);
+    }
+}
+
+bool VorbisComment::setValue(KnownField field, const TagValue &value)
+{
+    switch(field) {
+    case KnownField::Vendor:
+        setVendor(value);
+        return true;
+    default:
+        return FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>::setValue(field, value);
+    }
+}
+
 string VorbisComment::fieldId(KnownField field) const
 {
     using namespace VorbisCommentIds;
@@ -147,13 +168,19 @@ void VorbisComment::make(std::ostream &stream)
     // prepare making
     invalidateStatus();
     static const string context("making Vorbis comment");
+    string vendor;
+    try {
+        m_vendor.toString(vendor);
+    } catch(ConversionException &) {
+        addNotification(NotificationType::Warning, "Can not convert the assigned vendor to string.", context);
+    }
     BinaryWriter writer(&stream);
     // write signature
     static const char sig[7] = {0x03, 0x76, 0x6F, 0x72, 0x62, 0x69, 0x73};
     stream.write(sig, sizeof(sig));
     // write vendor
-    writer.writeUInt32LE(m_vendor.size());
-    writer.writeString(m_vendor);
+    writer.writeUInt32LE(vendor.size());
+    writer.writeString(vendor);
     // write field count
     writer.writeUInt32LE(fieldCount());
     // write fields

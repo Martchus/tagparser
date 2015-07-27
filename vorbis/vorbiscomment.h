@@ -3,13 +3,14 @@
 
 #include "vorbiscommentfield.h"
 
+#include "../caseinsensitivecomparer.h"
 #include "../fieldbasedtag.h"
 
 namespace Media {
 
 class OggIterator;
 
-class LIB_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField>
+class LIB_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>
 {
 public:
     VorbisComment();
@@ -20,18 +21,19 @@ public:
     TagTextEncoding proposedTextEncoding() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
 
+    const TagValue &value(KnownField field) const;
+    bool setValue(KnownField field, const TagValue &value);
     std::string fieldId(KnownField field) const;
     KnownField knownField(const std::string &id) const;
 
     void parse(OggIterator &iterator);
     void make(std::ostream &stream);
 
-    const std::string &vendor() const;
-    void setVendor(const std::string &vendor);
+    const TagValue &vendor() const;
+    void setVendor(const TagValue &vendor);
 
 private:
-    std::string m_vendor;
-
+    TagValue m_vendor;
 };
 
 /*!
@@ -66,12 +68,12 @@ inline bool VorbisComment::canEncodingBeUsed(TagTextEncoding encoding) const
     return encoding == TagTextEncoding::Utf8;
 }
 
-inline const std::string &VorbisComment::vendor() const
+inline const TagValue &VorbisComment::vendor() const
 {
     return m_vendor;
 }
 
-inline void VorbisComment::setVendor(const std::string &vendor)
+inline void VorbisComment::setVendor(const TagValue &vendor)
 {
     m_vendor = vendor;
 }
