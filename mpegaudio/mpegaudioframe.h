@@ -25,6 +25,8 @@ enum class MpegChannelMode
     Unspecifed /**< used to indicate that the channel mode is unknown */
 };
 
+LIB_EXPORT const char *mpegChannelModeString(MpegChannelMode channelMode);
+
 enum class XingHeaderFlags
 {
     None = 0x0u, /**< No Xing frames are present  */
@@ -46,7 +48,7 @@ public:
     int layer() const;
     bool isProtectedByCrc() const;
     uint32 bitrate() const;
-    uint32 sampelRate() const;
+    uint32 samplingFrequency() const;
     uint32 paddingSize() const;
     MpegChannelMode channelMode() const;
     bool hasCopyright() const;

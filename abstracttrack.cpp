@@ -1,3 +1,6 @@
+#include "mp4/mp4ids.h"
+#include "mpegaudio/mpegaudioframe.h"
+
 #include "abstracttrack.h"
 #include "exceptions.h"
 #include "mediaformat.h"
@@ -45,6 +48,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64
     m_bitsPerSample(0),
     m_bytesPerSecond(0),
     m_channelCount(0),
+    m_channelConfig(0),
     m_sampleCount(0),
     m_quality(0),
     m_depth(0),
@@ -96,6 +100,21 @@ const char *AbstractTrack::mediaTypeName() const
         return "Other";
     default:
         return "";
+    }
+}
+
+/*!
+ * \brief Returns a string with the channel configuration if available; otherwise returns nullptr.
+ */
+const char *AbstractTrack::channelConfigString() const
+{
+    switch(m_format.general) {
+    case GeneralMediaFormat::Aac:
+        return Mpeg4ChannelConfigs::channelConfigString(m_channelConfig);
+    case GeneralMediaFormat::Mpeg1Audio: case GeneralMediaFormat::Mpeg2Audio:
+        return mpegChannelModeString(static_cast<MpegChannelMode>(m_channelConfig));
+    default:
+        return nullptr;
     }
 }
 

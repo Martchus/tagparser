@@ -21,9 +21,11 @@ public:
     bool isMpeg4() const;
     bool hasCrc() const;
     byte mpeg4AudioObjectId() const;
-    byte mpeg4SampleRateIndex() const;
+    byte mpeg4SamplingFrequencyIndex() const;
     byte mpeg4ChannelConfig() const;
-    uint16 length() const;
+    uint16 totalSize() const;
+    byte headerSize() const;
+    uint16 dataSize() const;
     uint16 bufferFullness() const;
     byte frameCount() const;
     uint16 crc() const;
@@ -45,7 +47,7 @@ inline AdtsFrame::AdtsFrame() :
  */
 inline bool AdtsFrame::isValid() const
 {
-    return (m_header1 & 0xFFF6u) == 0xFFF0u;
+    return ((m_header1 & 0xFFF6u) == 0xFFF0u) && (totalSize() >= headerSize());
 }
 
 /*!
@@ -57,11 +59,11 @@ inline bool AdtsFrame::isMpeg4() const
 }
 
 /*!
- * \brief Returns whether a CRC-16 checksum is present.
+ * \brief Returns whether a CRC-16 checksum is present ("protection absent" bit is NOT set).
  */
 inline bool AdtsFrame::hasCrc() const
 {
-    return m_header1 & 0x1u;
+    return (m_header1 & 0x1u) == 0;
 }
 
 /*!
@@ -78,7 +80,7 @@ inline byte AdtsFrame::mpeg4AudioObjectId() const
  * \brief Returns the MPEG-4 sample rate index.
  * \sa Media::mpeg4SampleRateTable
  */
-inline byte AdtsFrame::mpeg4SampleRateIndex() const
+inline byte AdtsFrame::mpeg4SamplingFrequencyIndex() const
 {
     return (m_header2 >> 0x32) & 0xFu;
 }
@@ -94,11 +96,27 @@ inline byte AdtsFrame::mpeg4ChannelConfig() const
 }
 
 /*!
- * \brief Returns the length of the frame (including the header) in bytes.
+ * \brief Returns the size of the frame (including the header) in bytes.
  */
-inline uint16 AdtsFrame::length() const
+inline uint16 AdtsFrame::totalSize() const
 {
     return (m_header2 >> 0x1D) & 0x1FFFu;
+}
+
+/*!
+ * \brief Retruns the header size in bytes (9 if CRC is present; otherwise 7).
+ */
+inline byte AdtsFrame::headerSize() const
+{
+    return hasCrc() ? 9 : 7;
+}
+
+/*!
+ * \brief Returns the data size (total size minus header size) in bytes.
+ */
+inline uint16 AdtsFrame::dataSize() const
+{
+    return totalSize() - headerSize();
 }
 
 /*!

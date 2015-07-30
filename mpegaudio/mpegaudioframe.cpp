@@ -8,6 +8,20 @@ using namespace IoUtilities;
 
 namespace Media {
 
+/*!
+ * \brief Returns the string representation for the specified \a channelMode.
+ */
+const char *mpegChannelModeString(MpegChannelMode channelMode)
+{
+    switch(channelMode) {
+    case MpegChannelMode::Stereo: return "2 channels: stereo";
+    case MpegChannelMode::JointStereo: return "2 channels: joint stereo";
+    case MpegChannelMode::DualChannel: return "2 channels: dual channel";
+    case MpegChannelMode::SingleChannel: return "1 channel: single channel";
+    case MpegChannelMode::Unspecifed: return nullptr;
+    }
+}
+
 const uint64 MpegAudioFrame::m_xingHeaderOffset = 0x24;
 
 /*!
@@ -35,6 +49,9 @@ const uint32 MpegAudioFrame::m_sync = 0xFFE00000u;
 void MpegAudioFrame::parseHeader(BinaryReader &reader)
 {
     m_header = reader.readUInt32BE();
+    if(!isValid()) {
+        throw InvalidDataException();
+    }
     reader.stream()->seekg(m_xingHeaderOffset - 4, ios_base::cur);
     m_xingHeader = reader.readUInt64BE();
     m_xingHeaderFlags = static_cast<XingHeaderFlags>(m_xingHeader & 0xffffffffuL);
@@ -51,9 +68,6 @@ void MpegAudioFrame::parseHeader(BinaryReader &reader)
         if(isXingQualityIndicatorFieldPresent()) {
             m_xingQualityIndicator = reader.readUInt32BE();
         }
-    }
-    if(!isValid()) {
-        throw InvalidDataException();
     }
 }
 
@@ -92,9 +106,9 @@ int MpegAudioFrame::layer() const
 }
 
 /*!
- * \brief Returns the sampel rate of the frame if known; otherwise returns 0.
+ * \brief Returns the sampeling frequency of the frame if known; otherwise returns 0.
  */
-uint32 MpegAudioFrame::sampelRate() const
+uint32 MpegAudioFrame::samplingFrequency() const
 {
     switch (m_header & 0xc00u) {
     case 0xc00u:
@@ -186,10 +200,10 @@ uint32 MpegAudioFrame::size() const
 {
     switch (m_header & 0x60000u) {
     case 0x60000u:
-        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(sampelRate())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
+        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
     case 0x40000u:
     case 0x20000u:
-        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(sampelRate())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
+        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
     default:
         return 0;
     }

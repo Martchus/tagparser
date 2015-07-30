@@ -286,6 +286,9 @@ uint32 mpeg4SampleRateTable[] = {
 
 namespace Mpeg4ChannelConfigs {
 
+/*!
+ * \brief Returns the string representation for the specified MPEG-4 channel config.
+ */
 const char *channelConfigString(byte config)
 {
     switch(config) {
@@ -306,10 +309,13 @@ const char *channelConfigString(byte config)
     case FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel:
         return "8 channels: front-center, front-left, front-right, side-left, side-right, back-left, back-right, LFE-channel";
     default:
-        return "unknown";
+        return nullptr;
     }
 }
 
+/*!
+ * \brief Returns the channel count for the specified MPEG-4 channel config.
+ */
 byte channelCount(byte config)
 {
     switch(config) {

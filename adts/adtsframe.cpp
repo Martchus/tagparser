@@ -21,10 +21,15 @@ namespace Media {
 void AdtsFrame::parseHeader(IoUtilities::BinaryReader &reader)
 {
     m_header1 = reader.readUInt16BE();
-    if(!isValid()) {
+    // check whether syncword is present
+    if((m_header1 & 0xFFF6u) != 0xFFF0u) {
         throw InvalidDataException();
     }
     m_header2 = hasCrc() ? reader.readUInt56BE() : (reader.readUInt40BE() << 2);
+    // check whether frame length is ok
+    if(totalSize() < headerSize()) {
+        throw InvalidDataException();
+    }
 }
 
 } // namespace Media

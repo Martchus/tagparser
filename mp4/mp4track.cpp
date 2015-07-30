@@ -1378,6 +1378,7 @@ void Mp4Track::internalParseHeader()
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }
+                                m_channelConfig = m_esInfo->audioSpecificConfig->channelConfiguration;
                             }
                             if(m_esInfo->videoSpecificConfig) {
                                 // check the video specific config for useful information

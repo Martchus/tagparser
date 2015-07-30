@@ -69,10 +69,12 @@ public:
     const ChronoUtilities::DateTime &creationTime() const;
     const ChronoUtilities::DateTime &modificationTime() const;
     const std::string &language() const;
-    uint32 sampleRate() const;
-    uint32 extensionSampleRate() const;
+    uint32 samplingFrequency() const;
+    uint32 extensionSamplingFrequency() const;
     uint16 bitsPerSample() const;
     uint16 channelCount() const;
+    byte channelConfig() const;
+    const char *channelConfigString() const;
     uint64 sampleCount() const;
     int quality() const;
     const Size &pixelSize() const;
@@ -126,6 +128,7 @@ protected:
     uint16 m_bitsPerSample;
     uint32 m_bytesPerSecond;
     uint16 m_channelCount;
+    byte m_channelConfig;
     uint16 m_chunkSize;
     uint64 m_sampleCount;
     int m_quality;
@@ -366,7 +369,7 @@ inline const std::string &AbstractTrack::language() const
 /*!
  * \brief Returns the number of samples per second if known; otherwise returns 0.
  */
-inline uint32 AbstractTrack::sampleRate() const
+inline uint32 AbstractTrack::samplingFrequency() const
 {
     return m_sampleRate;
 }
@@ -375,7 +378,7 @@ inline uint32 AbstractTrack::sampleRate() const
  * \brief Returns the number of samples per second if known; otherwise returns 0.
  * \remarks This sample rate value takes extensions like SBR into account.
  */
-inline uint32 AbstractTrack::extensionSampleRate() const
+inline uint32 AbstractTrack::extensionSamplingFrequency() const
 {
     return m_extensionSampleRate;
 }
@@ -396,6 +399,17 @@ inline uint16 AbstractTrack::bitsPerSample() const
 inline uint16 AbstractTrack::channelCount() const
 {
     return m_channelCount;
+}
+
+/*!
+ * \brief Returns the channel configuration.
+ *
+ * This is the MPEG-4 channel config for MPEG-4 audio.
+ * \sa Mpeg4ChannelConfigs::channelConfigString()
+ */
+inline byte AbstractTrack::channelConfig() const
+{
+    return m_channelConfig;
 }
 
 /*!
