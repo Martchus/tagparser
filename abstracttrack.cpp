@@ -110,7 +110,7 @@ const char *AbstractTrack::channelConfigString() const
 {
     switch(m_format.general) {
     case GeneralMediaFormat::Aac:
-        return Mpeg4ChannelConfigs::channelConfigString(m_channelConfig);
+        return m_channelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_channelConfig) : nullptr;
     case GeneralMediaFormat::Mpeg1Audio: case GeneralMediaFormat::Mpeg2Audio:
         return mpegChannelModeString(static_cast<MpegChannelMode>(m_channelConfig));
     default:
