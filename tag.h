@@ -135,9 +135,8 @@ protected:
     std::string m_version;
     uint32 m_size;
     TagTarget m_target;
-    Tag *m_parent;
-    std::vector<Tag *> m_nestedTags;
-
+//    Tag *m_parent;
+//    std::vector<Tag *> m_nestedTags;
 };
 
 /*!

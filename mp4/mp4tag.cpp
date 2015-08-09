@@ -122,14 +122,10 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
     case KnownField::Genre:
         switch(value.type()) {
         case TagDataType::StandardGenreIndex:
-            if(fields().count(Mp4TagAtomIds::Genre)) {
-                fields().erase(Mp4TagAtomIds::Genre);
-            }
+            fields().erase(Mp4TagAtomIds::Genre);
             return FieldMapBasedTag<fieldType>::setValue(Mp4TagAtomIds::PreDefinedGenre, value);
         default:
-            if(fields().count(Mp4TagAtomIds::PreDefinedGenre)) {
-                fields().erase(Mp4TagAtomIds::PreDefinedGenre);
-            }
+            fields().erase(Mp4TagAtomIds::PreDefinedGenre);
             return FieldMapBasedTag<fieldType>::setValue(Mp4TagAtomIds::Genre, value);
         }
     case KnownField::EncoderSettings:

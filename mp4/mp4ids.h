@@ -585,7 +585,7 @@ LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent 
 
 }
 
-extern uint32 mpeg4SampleRateTable[13];
+extern uint32 mpeg4SamplingFrequencyTable[13];
 
 namespace Mpeg4ChannelConfigs {
 enum Mpeg4ChannelConfig : byte

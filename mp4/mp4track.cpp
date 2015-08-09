@@ -1366,15 +1366,15 @@ void Mp4Track::internalParseHeader()
                                 m_format += Mpeg4AudioObjectIds::idToMediaFormat(m_esInfo->audioSpecificConfig->audioObjectType, m_esInfo->audioSpecificConfig->sbrPresent, m_esInfo->audioSpecificConfig->psPresent);
                                 if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex == 0xF) {
                                     m_sampleRate = m_esInfo->audioSpecificConfig->sampleFrequency;
-                                } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SampleRateTable)) {
-                                    m_sampleRate = mpeg4SampleRateTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
+                                } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+                                    m_sampleRate = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid sample frequency index.", context);
                                 }
                                 if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
                                     m_extensionSampleRate = m_esInfo->audioSpecificConfig->extensionSampleFrequency;
-                                } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SampleRateTable)) {
-                                    m_extensionSampleRate = mpeg4SampleRateTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
+                                } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+                                    m_extensionSampleRate = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }
