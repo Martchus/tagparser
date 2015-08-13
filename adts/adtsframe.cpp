@@ -25,7 +25,7 @@ void AdtsFrame::parseHeader(IoUtilities::BinaryReader &reader)
     if((m_header1 & 0xFFF6u) != 0xFFF0u) {
         throw InvalidDataException();
     }
-    m_header2 = hasCrc() ? reader.readUInt56BE() : (reader.readUInt40BE() << 2);
+    m_header2 = hasCrc() ? reader.readUInt56BE() : (reader.readUInt40BE() << 16);
     // check whether frame length is ok
     if(totalSize() < headerSize()) {
         throw InvalidDataException();
