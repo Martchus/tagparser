@@ -438,54 +438,51 @@ vector<uint64> Mp4Track::readChunkSizes()
  *  - Returns an empty configuration for non-AVC tracks.
  *  - Notifications might be added.
  */
-AvcConfiguration Mp4Track::parseAvcConfiguration(Mp4Atom *avcConfigAtom)
+AvcConfiguration Mp4Track::parseAvcConfiguration(StatusProvider &statusProvider, BinaryReader &reader, uint64 startOffset, uint64 size)
 {
     AvcConfiguration config;
-    if(avcConfigAtom) {
-        try {
-            auto configSize = avcConfigAtom->dataSize();
-            if(avcConfigAtom && configSize >= 5) {
-                // skip first byte (is always 1)
-                m_istream->seekg(avcConfigAtom->dataOffset() + 1);
-                // read profile, IDC level, NALU size length
-                config.profileIdc = m_reader.readByte();
-                config.profileCompat = m_reader.readByte();
-                config.levelIdc = m_reader.readByte();
-                config.naluSizeLength = m_reader.readByte() & 0x03;
-                // read SPS infos
-                if((configSize -= 5) >= 3) {
-                    byte entryCount = m_reader.readByte() & 0x0f;
-                    uint16 entrySize;
-                    while(entryCount && configSize) {
-                        if((entrySize = m_reader.readUInt16BE()) <= configSize) {
+    try {
+        if(size >= 5) {
+            // skip first byte (is always 1)
+            reader.stream()->seekg(startOffset + 1);
+            // read profile, IDC level, NALU size length
+            config.profileIdc = reader.readByte();
+            config.profileCompat = reader.readByte();
+            config.levelIdc = reader.readByte();
+            config.naluSizeLength = reader.readByte() & 0x03;
+            // read SPS infos
+            if((size -= 5) >= 3) {
+                byte entryCount = reader.readByte() & 0x0f;
+                uint16 entrySize;
+                while(entryCount && size) {
+                    if((entrySize = reader.readUInt16BE()) <= size) {
+                        // TODO: read entry
+                        size -= entrySize;
+                    } else {
+                        throw TruncatedDataException();
+                    }
+                    --entryCount;
+                }
+                // read PPS infos
+                if((size -= 5) >= 3) {
+                    entryCount = reader.readByte();
+                    while(entryCount && size) {
+                        if((entrySize = reader.readUInt16BE()) <= size) {
                             // TODO: read entry
-                            configSize -= entrySize;
+                            size -= entrySize;
                         } else {
                             throw TruncatedDataException();
                         }
                         --entryCount;
                     }
-                    // read PPS infos
-                    if((configSize -= 5) >= 3) {
-                        entryCount = m_reader.readByte();
-                        while(entryCount && configSize) {
-                            if((entrySize = m_reader.readUInt16BE()) <= configSize) {
-                                // TODO: read entry
-                                configSize -= entrySize;
-                            } else {
-                                throw TruncatedDataException();
-                            }
-                            --entryCount;
-                        }
-                        // TODO: read trailer
-                        return config;
-                    }
+                    // TODO: read trailer
+                    return config;
                 }
             }
-            throw TruncatedDataException();
-        } catch (TruncatedDataException &) {
-            addNotification(NotificationType::Critical, "AVC configuration is truncated.", "parsing AVC configuration");
         }
+        throw TruncatedDataException();
+    } catch (TruncatedDataException &) {
+        statusProvider.addNotification(NotificationType::Critical, "AVC configuration is truncated.", "parsing AVC configuration");
     }
     return config;
 }
@@ -496,51 +493,51 @@ AvcConfiguration Mp4Track::parseAvcConfiguration(Mp4Atom *avcConfigAtom)
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(Mp4Atom *esDescAtom)
+std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom)
 {
     static const string context("parsing MPEG-4 elementary stream descriptor");
     using namespace Mpeg4ElementaryStreamObjectIds;
     unique_ptr<Mpeg4ElementaryStreamInfo> esInfo;
     if(esDescAtom->dataSize() >= 12) {
-        m_istream->seekg(esDescAtom->dataOffset());
+        reader.stream()->seekg(esDescAtom->dataOffset());
         // read version/flags
-        if(m_reader.readUInt32BE() != 0) {
-            addNotification(NotificationType::Warning, "Unknown version/flags.", context);
+        if(reader.readUInt32BE() != 0) {
+            statusProvider.addNotification(NotificationType::Warning, "Unknown version/flags.", context);
         }
         // read extended descriptor
-        Mpeg4Descriptor esDesc(esDescAtom->container(), m_istream->tellg(), esDescAtom->dataSize() - 4);
+        Mpeg4Descriptor esDesc(esDescAtom->container(), reader.stream()->tellg(), esDescAtom->dataSize() - 4);
         try {
             esDesc.parse();
             // check ID
             if(esDesc.id() != Mpeg4DescriptorIds::ElementaryStreamDescr) {
-                addNotification(NotificationType::Critical, "Invalid descriptor found.", context);
+                statusProvider.addNotification(NotificationType::Critical, "Invalid descriptor found.", context);
                 throw Failure();
             }
             // read stream info
-            m_istream->seekg(esDesc.dataOffset());
+            reader.stream()->seekg(esDesc.dataOffset());
             esInfo = make_unique<Mpeg4ElementaryStreamInfo>();
-            esInfo->id = m_reader.readUInt16BE();
-            esInfo->esDescFlags = m_reader.readByte();
+            esInfo->id = reader.readUInt16BE();
+            esInfo->esDescFlags = reader.readByte();
             if(esInfo->dependencyFlag()) {
-                esInfo->dependsOnId = m_reader.readUInt16BE();
+                esInfo->dependsOnId = reader.readUInt16BE();
             }
             if(esInfo->urlFlag()) {
-                esInfo->url = m_reader.readString(m_reader.readByte());
+                esInfo->url = reader.readString(reader.readByte());
             }
             if(esInfo->ocrFlag()) {
-                esInfo->ocrId = m_reader.readUInt16BE();
+                esInfo->ocrId = reader.readUInt16BE();
             }
-            for(Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(m_istream->tellg()) - esDesc.startOffset()); esDescChild; esDescChild = esDescChild->nextSibling()) {
+            for(Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(reader.stream()->tellg()) - esDesc.startOffset()); esDescChild; esDescChild = esDescChild->nextSibling()) {
                 esDescChild->parse();
                 switch(esDescChild->id()) {
                 case Mpeg4DescriptorIds::DecoderConfigDescr:
                     // read decoder config descriptor
-                    m_istream->seekg(esDescChild->dataOffset());
-                    esInfo->objectTypeId = m_reader.readByte();
-                    esInfo->decCfgDescFlags = m_reader.readByte();
-                    esInfo->bufferSize = m_reader.readUInt24BE();
-                    esInfo->maxBitrate = m_reader.readUInt32BE();
-                    esInfo->averageBitrate = m_reader.readUInt32BE();
+                    reader.stream()->seekg(esDescChild->dataOffset());
+                    esInfo->objectTypeId = reader.readByte();
+                    esInfo->decCfgDescFlags = reader.readByte();
+                    esInfo->bufferSize = reader.readUInt24BE();
+                    esInfo->maxBitrate = reader.readUInt32BE();
+                    esInfo->averageBitrate = reader.readUInt32BE();
                     for(Mpeg4Descriptor *decCfgDescChild = esDescChild->denoteFirstChild(esDescChild->headerSize() + 13); decCfgDescChild; decCfgDescChild = decCfgDescChild->nextSibling()) {
                         decCfgDescChild->parse();
                         switch(decCfgDescChild->id()) {
@@ -549,10 +546,10 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                             switch(esInfo->objectTypeId) {
                             case Aac: case Mpeg2AacMainProfile: case Mpeg2AacLowComplexityProfile:
                             case Mpeg2AacScaleableSamplingRateProfile: case Mpeg2Audio: case Mpeg1Audio:
-                                esInfo->audioSpecificConfig = parseAudioSpecificConfig(decCfgDescChild);
+                                esInfo->audioSpecificConfig = parseAudioSpecificConfig(statusProvider, *reader.stream(), decCfgDescChild->dataOffset(), decCfgDescChild->dataSize());
                                 break;
                             case Mpeg4Visual:
-                                esInfo->videoSpecificConfig = parseVideoSpecificConfig(decCfgDescChild);
+                                esInfo->videoSpecificConfig = parseVideoSpecificConfig(statusProvider, reader, decCfgDescChild->dataOffset(), decCfgDescChild->dataSize());
                                 break;
                             default:
                                 ; // TODO: cover more object types
@@ -567,10 +564,10 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                 }
             }
         } catch (Failure &) {
-            addNotification(NotificationType::Critical, "The MPEG-4 descriptor element structure is invalid.", context);
+            statusProvider.addNotification(NotificationType::Critical, "The MPEG-4 descriptor element structure is invalid.", context);
         }
     } else {
-        addNotification(NotificationType::Warning, "Elementary stream descriptor atom (esds) is truncated.", context);
+        statusProvider.addNotification(NotificationType::Warning, "Elementary stream descriptor atom (esds) is truncated.", context);
     }
     return esInfo;
 }
@@ -581,16 +578,15 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc)
+unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusProvider &statusProvider, istream &stream, uint64 startOffset, uint64 size)
 {
     static const string context("parsing MPEG-4 audio specific config from elementary stream descriptor");
     using namespace Mpeg4AudioObjectIds;
     // read config into buffer and construct BitReader for bitwise reading
-    m_istream->seekg(decSpecInfoDesc->dataOffset());
-    //cout << "audio cfg @" << decSpecInfoDesc->dataOffset() << endl;
-    auto buff = make_unique<char []>(decSpecInfoDesc->dataSize());
-    m_istream->read(buff.get(), decSpecInfoDesc->dataSize());
-    BitReader bitReader(buff.get(), decSpecInfoDesc->dataSize());
+    stream.seekg(startOffset);
+    auto buff = make_unique<char []>(size);
+    stream.read(buff.get(), size);
+    BitReader bitReader(buff.get(), size);
     auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
     try {
         // read audio object type
@@ -703,15 +699,15 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
             }
         }
     } catch(ios_base::failure &) {
-        if(m_istream->fail()) {
+        if(stream.fail()) {
             // IO error caused by input stream
             throw;
         } else {
             // IO error caused by bitReader
-            addNotification(NotificationType::Critical, "Audio specific configuration is truncated.", context);
+            statusProvider.addNotification(NotificationType::Critical, "Audio specific configuration is truncated.", context);
         }
     } catch(NotImplementedException &) {
-        addNotification(NotificationType::Information, "Not implemented for the format of audio track.", context);
+        statusProvider.addNotification(NotificationType::Information, "Not implemented for the format of audio track.", context);
     }
     return audioCfg;
 }
@@ -722,24 +718,23 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(Mpeg4Des
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc)
+std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(StatusProvider &statusProvider, BinaryReader &reader, uint64 startOffset, uint64 size)
 {
     static const string context("parsing MPEG-4 video specific config from elementary stream descriptor");
     using namespace Mpeg4AudioObjectIds;
     auto videoCfg = make_unique<Mpeg4VideoSpecificConfig>();
     // seek to start
-    m_istream->seekg(decSpecInfoDesc->dataOffset());
-    uint64 bytesRemaining = decSpecInfoDesc->dataSize();
-    if(bytesRemaining > 3 && (m_reader.readUInt24BE() == 1)) {
-        bytesRemaining -= 3;
+    reader.stream()->seekg(startOffset);
+    if(size > 3 && (reader.readUInt24BE() == 1)) {
+        size -= 3;
         uint32 buff1;
-        while(bytesRemaining) {
-            --bytesRemaining;
-            switch(m_reader.readByte()) { // read start code
+        while(size) {
+            --size;
+            switch(reader.readByte()) { // read start code
             case Mpeg4VideoCodes::VisualObjectSequenceStart:
-                if(bytesRemaining) {
-                    videoCfg->profile = m_reader.readByte();
-                    --bytesRemaining;
+                if(size) {
+                    videoCfg->profile = reader.readByte();
+                    --size;
                 }
                 break;
             case Mpeg4VideoCodes::VideoObjectLayerStart:
@@ -747,19 +742,19 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Mpe
                 break;
             case Mpeg4VideoCodes::UserDataStart:
                 buff1 = 0;
-                while(bytesRemaining >= 3) {
-                    if((buff1 = m_reader.readUInt24BE()) != 1) {
-                        m_istream->seekg(-2, ios_base::cur);
+                while(size >= 3) {
+                    if((buff1 = reader.readUInt24BE()) != 1) {
+                        reader.stream()->seekg(-2, ios_base::cur);
                         videoCfg->userData.push_back(buff1 >> 16);
-                        --bytesRemaining;
+                        --size;
                     } else {
-                        bytesRemaining -= 3;
+                        size -= 3;
                         break;
                     }
                 }
-                if(buff1 != 1 && bytesRemaining > 0) {
-                    videoCfg->userData += m_reader.readString(bytesRemaining);
-                    bytesRemaining = 0;
+                if(buff1 != 1 && size > 0) {
+                    videoCfg->userData += reader.readString(size);
+                    size = 0;
                 }
                 break;
             default:
@@ -767,18 +762,18 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Mpe
             }
             // skip stuff we're not interested in to get the start of the
             // next video object
-            while(bytesRemaining >= 3) {
-                if(m_reader.readUInt24BE() != 1) {
-                    m_istream->seekg(-2, ios_base::cur);
-                    --bytesRemaining;
+            while(size >= 3) {
+                if(reader.readUInt24BE() != 1) {
+                    reader.stream()->seekg(-2, ios_base::cur);
+                    --size;
                 } else {
-                    bytesRemaining -= 3;
+                    size -= 3;
                     break;
                 }
             }
         }
     } else {
-        addNotification(NotificationType::Critical, "\"Visual Object Sequence Header\" not found.", context);
+        statusProvider.addNotification(NotificationType::Critical, "\"Visual Object Sequence Header\" not found.", context);
     }
     return videoCfg;
 }
@@ -1285,10 +1280,10 @@ void Mp4Track::internalParseHeader()
                     m_channelCount = reader.readUInt16BE();
                     m_bitsPerSample = reader.readUInt16BE();
                     m_istream->seekg(4, ios_base::cur); // skip reserved bytes (again)
-                    if(!m_sampleRate) {
-                        m_sampleRate = reader.readUInt32BE() >> 16;
+                    if(!m_samplingFrequency) {
+                        m_samplingFrequency = reader.readUInt32BE() >> 16;
                         if(codecConfigContainerAtom->id() != FourccIds::DolbyMpl) {
-                            m_sampleRate >>= 16;
+                            m_samplingFrequency >>= 16;
                         }
                     } else {
                         m_istream->seekg(4, ios_base::cur);
@@ -1357,7 +1352,7 @@ void Mp4Track::internalParseHeader()
                 }
                 if(esDescAtom) {
                     try {
-                        if((m_esInfo = parseMpeg4ElementaryStreamInfo(esDescAtom))) {
+                        if((m_esInfo = parseMpeg4ElementaryStreamInfo(*this, m_reader, esDescAtom))) {
                             m_format += Mpeg4ElementaryStreamObjectIds::streamObjectTypeFormat(m_esInfo->objectTypeId);
                             m_bitrate = static_cast<double>(m_esInfo->averageBitrate) / 1000;
                             m_maxBitrate = static_cast<double>(m_esInfo->maxBitrate) / 1000;
@@ -1365,16 +1360,16 @@ void Mp4Track::internalParseHeader()
                                 // check the audio specific config for useful information
                                 m_format += Mpeg4AudioObjectIds::idToMediaFormat(m_esInfo->audioSpecificConfig->audioObjectType, m_esInfo->audioSpecificConfig->sbrPresent, m_esInfo->audioSpecificConfig->psPresent);
                                 if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex == 0xF) {
-                                    m_sampleRate = m_esInfo->audioSpecificConfig->sampleFrequency;
+                                    m_samplingFrequency = m_esInfo->audioSpecificConfig->sampleFrequency;
                                 } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
-                                    m_sampleRate = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
+                                    m_samplingFrequency = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid sample frequency index.", context);
                                 }
                                 if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
-                                    m_extensionSampleRate = m_esInfo->audioSpecificConfig->extensionSampleFrequency;
+                                    m_extensionSamplingFrequency = m_esInfo->audioSpecificConfig->extensionSampleFrequency;
                                 } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
-                                    m_extensionSampleRate = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
+                                    m_extensionSamplingFrequency = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
                                 } else {
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }

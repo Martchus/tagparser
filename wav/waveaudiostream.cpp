@@ -86,7 +86,7 @@ void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack 
 {
     track.m_format = waveHeader.format();
     track.m_channelCount = waveHeader.channelCount;
-    track.m_sampleRate = waveHeader.sampleRate;
+    track.m_samplingFrequency = waveHeader.sampleRate;
     track.m_bytesPerSecond = waveHeader.bytesPerSecond;
     track.m_chunkSize = waveHeader.chunkSize;
     track.m_bitsPerSample = waveHeader.bitsPerSample;
@@ -114,7 +114,7 @@ void WaveAudioStream::internalParseHeader()
             if(m_reader.readUInt32BE() == 0x64617461u) {
                 m_size = m_reader.readUInt32LE();
                 m_sampleCount = m_size / m_chunkSize;
-                m_duration = ChronoUtilities::TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / static_cast<double>(m_sampleRate));
+                m_duration = ChronoUtilities::TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / static_cast<double>(m_samplingFrequency));
             } else {
                 throw NoDataFoundException();
             }

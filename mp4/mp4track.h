@@ -133,10 +133,10 @@ public:
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
 
     // methods to parse configuration details from the track header
-    AvcConfiguration parseAvcConfiguration(Mp4Atom *avcConfigAtom);
-    std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(Mp4Atom *esDescAtom);
-    std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc);
-    std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(Mpeg4Descriptor *decSpecInfoDesc);
+    static AvcConfiguration parseAvcConfiguration(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);
+    static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom);
+    static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(StatusProvider &statusProvider, std::istream &stream, uint64 startOffset, uint64 size);
+    static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);
 
     // methods to read the "index" (chunk offsets and sizes)
     std::vector<uint64> readChunkOffsets();

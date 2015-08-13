@@ -33,7 +33,7 @@ void AdtsStream::internalParseHeader()
     m_format = Mpeg4AudioObjectIds::idToMediaFormat(m_firstFrame.mpeg4AudioObjectId());
     m_channelCount = Mpeg4ChannelConfigs::channelCount(m_channelConfig = m_firstFrame.mpeg4ChannelConfig());
     byte sampleRateIndex = m_firstFrame.mpeg4SamplingFrequencyIndex();
-    m_sampleRate = sampleRateIndex < sizeof(mpeg4SamplingFrequencyTable) ? mpeg4SamplingFrequencyTable[sampleRateIndex] : 0;
+    m_samplingFrequency = sampleRateIndex < sizeof(mpeg4SamplingFrequencyTable) ? mpeg4SamplingFrequencyTable[sampleRateIndex] : 0;
 }
 
 } // namespace Media

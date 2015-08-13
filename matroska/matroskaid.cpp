@@ -86,8 +86,8 @@ const char *matroskaIdName(uint32 matroskaId)
     case TrackAudio: return "audio track";
     case TrackVideo: return "video track";
     case ContentEncodings: return "content encodings";
-    case CodecID: return "content id";
-    case CodecPrivate: return "code private";
+    case CodecID: return "codec id";
+    case CodecPrivate: return "codec private";
     case CodecName: return "codec name";
     case TrackName: return "track name";
     case TrackLanguage: return "track language";

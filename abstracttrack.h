@@ -123,8 +123,8 @@ protected:
     ChronoUtilities::DateTime m_creationTime;
     ChronoUtilities::DateTime m_modificationTime;
     std::string m_language;
-    uint32 m_sampleRate;
-    uint32 m_extensionSampleRate;
+    uint32 m_samplingFrequency;
+    uint32 m_extensionSamplingFrequency;
     uint16 m_bitsPerSample;
     uint32 m_bytesPerSecond;
     uint16 m_channelCount;
@@ -371,7 +371,7 @@ inline const std::string &AbstractTrack::language() const
  */
 inline uint32 AbstractTrack::samplingFrequency() const
 {
-    return m_sampleRate;
+    return m_samplingFrequency;
 }
 
 /*!
@@ -380,7 +380,7 @@ inline uint32 AbstractTrack::samplingFrequency() const
  */
 inline uint32 AbstractTrack::extensionSamplingFrequency() const
 {
-    return m_extensionSampleRate;
+    return m_extensionSamplingFrequency;
 }
 
 /*!

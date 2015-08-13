@@ -26,7 +26,7 @@ void MpegAudioFrameStream::addInfo(const MpegAudioFrame &frame, AbstractTrack &t
     track.m_format = MediaFormat(GeneralMediaFormat::Mpeg1Audio, frame.layer());
     track.m_channelCount = frame.channelMode() == MpegChannelMode::SingleChannel ? 1 : 2;
     track.m_channelConfig = static_cast<byte>(frame.channelMode());
-    track.m_sampleRate = frame.samplingFrequency();
+    track.m_samplingFrequency = frame.samplingFrequency();
 }
 
 void MpegAudioFrameStream::internalParseHeader()

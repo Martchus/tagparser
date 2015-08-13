@@ -78,7 +78,7 @@ void OggStream::internalParseHeader()
                         VorbisIdentificationHeader ind;
                         ind.parseHeader(iterator);
                         m_channelCount = ind.channels();
-                        m_sampleRate = ind.sampleRate();
+                        m_samplingFrequency = ind.sampleRate();
                         if(ind.nominalBitrate()) {
                             m_bitrate = ind.nominalBitrate();
                         } else if(ind.maxBitrate() == ind.minBitrate()) {
@@ -96,7 +96,7 @@ void OggStream::internalParseHeader()
                             auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);
                             if(firstPage != pages.cend() && lastPage != pages.crend()) {
                                 m_sampleCount = lastPage->absoluteGranulePosition() - firstPage->absoluteGranulePosition();
-                                m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_sampleRate);
+                                m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
                             }
                         }
                         hasIdentificationHeader = true;

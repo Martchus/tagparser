@@ -6,6 +6,7 @@
 #include "../avi/bitmapinfoheader.h"
 #include "../wav/waveaudiostream.h"
 #include "../mp4/mp4ids.h"
+#include "../mp4/mp4track.h"
 
 #include "../mediaformat.h"
 #include "../exceptions.h"
@@ -285,7 +286,14 @@ void MatroskaTrack::internalParseHeader()
                     m_channelCount = subElement->readUInteger();
                     break;
                 case MatroskaIds::SamplingFrequency:
-                    m_sampleRate = subElement->readFloat();
+                    if(!m_samplingFrequency) {
+                        m_samplingFrequency = subElement->readFloat();
+                    }
+                    break;
+                case MatroskaIds::OutputSamplingFrequency:
+                    if(!m_extensionSamplingFrequency) {
+                        m_extensionSamplingFrequency = subElement->readFloat();
+                    }
                     break;
                 default:
                     ;
@@ -307,9 +315,6 @@ void MatroskaTrack::internalParseHeader()
             break;
         case MatroskaIds::CodecID:
             m_format = codecIdToMediaFormat(m_formatId = trackInfoElement->readString());
-            if(m_formatName.empty()) {
-                m_formatName = m_format ? string(m_format.name()) : m_formatId;
-            }
             break;
         case MatroskaIds::CodecName:
             m_formatName = trackInfoElement->readString();
@@ -375,6 +380,27 @@ void MatroskaTrack::internalParseHeader()
             } else {
                 addNotification(NotificationType::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
             }
+        }
+        break;
+    case GeneralMediaFormat::Aac:
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+            auto audioSpecificConfig = Mp4Track::parseAudioSpecificConfig(*this, *m_istream, codecPrivateElement->dataOffset(), codecPrivateElement->dataSize());
+            m_format += Mpeg4AudioObjectIds::idToMediaFormat(audioSpecificConfig->audioObjectType, audioSpecificConfig->sbrPresent, audioSpecificConfig->psPresent);
+            if(audioSpecificConfig->sampleFrequencyIndex == 0xF) {
+                //m_samplingFrequency = audioSpecificConfig->sampleFrequency;
+            } else if(audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+                //m_samplingFrequency = mpeg4SamplingFrequencyTable[audioSpecificConfig->sampleFrequencyIndex];
+            } else {
+                addNotification(NotificationType::Warning, "Audio specific config has invalid sample frequency index.", context);
+            }
+            if(audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
+                //m_extensionSamplingFrequency = audioSpecificConfig->extensionSampleFrequency;
+            } else if(audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+                //m_extensionSamplingFrequency = mpeg4SamplingFrequencyTable[audioSpecificConfig->extensionSampleFrequencyIndex];
+            } else {
+                addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
+            }
+            m_channelConfig = audioSpecificConfig->channelConfiguration;
         }
         break;
     default:
