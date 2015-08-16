@@ -115,12 +115,12 @@ public:
     virtual bool supportsTarget() const;
     const TagTarget &target() const;
     void setTarget(const TagTarget &target);
-    virtual int fieldCount() const = 0;
+    virtual unsigned int fieldCount() const = 0;
     virtual bool supportsField(KnownField field) const = 0;
     virtual TagDataType proposedDataType(KnownField field) const;
     virtual bool supportsDescription(KnownField field) const;
     virtual bool supportsMimeType(KnownField field) const;
-    virtual int insertValues(const Tag &from, bool overwrite);
+    virtual unsigned int insertValues(const Tag &from, bool overwrite);
 //    Tag *parent() const;
 //    bool setParent(Tag *tag);
 //    Tag *nestedTag(size_t index) const;

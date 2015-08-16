@@ -232,13 +232,14 @@ void Id3v1Tag::removeAllFields()
     m_genre.clearDataAndMetadata();
 }
 
-int Id3v1Tag::fieldCount() const
+unsigned int Id3v1Tag::fieldCount() const
 {
     int count = 0;
-    for(const TagValue &value : {m_title, m_artist, m_album,
+    for(const auto &value : {m_title, m_artist, m_album,
             m_year, m_comment, m_trackPos, m_genre}) {
-        if(!value.isEmpty())
+        if(!value.isEmpty()) {
             ++count;
+        }
     }
     return count;
 }

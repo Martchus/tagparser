@@ -77,28 +77,28 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
     stream.seekg(startOffset);
     uint32 crc = 0x0;
     uint32 *crc32Table = BinaryReader::crc32Table();
-    byte val;
-    for(uint32 i = 0, len = 27, si = 0, sc = 0; i < len; ++i) {
+    byte value, segmentTableSize = 0, segmentTableIndex = 0;
+    for(uint32 i = 0, segmentLength = 27; i < segmentLength; ++i) {
         switch(i) {
         case 22:
             // bytes 22, 23, 24, 25 hold denoted checksum and must be set to zero
             stream.seekg(4, ios_base::cur);
         case 23: case 24: case 25:
-            val = 0;
+            value = 0;
             break;
         case 26:
             // byte 26 holds the number of segment sizes
-            len += (sc = (val = stream.get()));
+            segmentLength += (segmentTableSize = (value = stream.get()));
             break;
         default:
-            val = stream.get();
-            if(i > 26 && si < sc) {
+            value = stream.get();
+            if(i > 26 && segmentTableIndex < segmentTableSize) {
                 // bytes 27 to (27 + segment size count) hold page size
-                len += val;
-                ++si;
+                segmentLength += value;
+                ++segmentTableIndex;
             }
         }
-        crc = (crc << 8) ^ crc32Table[((crc >> 24) & 0xff) ^ val];
+        crc = (crc << 8) ^ crc32Table[((crc >> 24) & 0xFF) ^ value];
     }
     return crc;
 }

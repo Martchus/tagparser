@@ -51,7 +51,7 @@ void MpegAudioFrameStream::internalParseHeader()
     if(frame.isXingBytesfieldPresent()) {
         uint32 xingSize = frame.xingBytesfield();
         if(m_size && xingSize != m_size) {
-            addNotification(NotificationType::Warning, "Real length MPEG of audio frames is not equal with value provided by Xing header. The Xing header value will be used.", context);
+            addNotification(NotificationType::Warning, "Real length of MPEG audio frames is not equal with value provided by Xing header. The Xing header value will be used.", context);
             m_size = xingSize;
         }
     }

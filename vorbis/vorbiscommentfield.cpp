@@ -13,6 +13,8 @@
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace IoUtilities;
 using namespace ConversionUtilities;
@@ -52,13 +54,12 @@ void VorbisCommentField::parse(OggIterator &iterator)
     static const string context("parsing Vorbis comment  field");
     char buff[4];
     iterator.read(buff, 4);
-    if(uint32 size = LE::toUInt32(buff)) { // read size
+    if(auto size = LE::toUInt32(buff)) { // read size
         // read data
-        unique_ptr<char[]> data = make_unique<char []>(size);
+        auto data = make_unique<char []>(size);
         iterator.read(data.get(), size);
         uint32 idSize = 0;
-        for(const char *i = data.get(), *end = data.get() + size; i != end && (*i) != '='; ++i, ++idSize)
-            ;
+        for(const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize);
         // extract id
         setId(string(data.get(), idSize));
         if(!idSize) {
@@ -67,11 +68,30 @@ void VorbisCommentField::parse(OggIterator &iterator)
             throw InvalidDataException();
         } else if(id() == VorbisCommentIds::cover()) {
             // extract cover value
-            vector<char> buffer = decodeBase64(string(data.get() + idSize + 1, size - idSize - 1));
-            Id3v2FrameHelper helper(id(), *this);
-            byte type;
-            helper.parsePicture(buffer.data(), buffer.size(), value(), type);
-            setTypeInfo(type);
+            try {
+                auto decoded = decodeBase64(data.get() + idSize + 1, size - idSize - 1);
+                stringstream ss(ios_base::in | ios_base::out | ios_base::binary);
+                ss.exceptions(ios_base::failbit | ios_base::badbit);
+                ss.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
+                BinaryReader reader(&ss);
+                setTypeInfo(reader.readUInt32BE());
+                auto size = reader.readUInt32BE();
+                value().setMimeType(reader.readString(size));
+                size = reader.readUInt32BE();
+                value().setDescription(reader.readString(size));
+                // skip width, height, color depth, number of colors used
+                ss.seekg(4 * 4, ios_base::cur);
+                size = reader.readUInt32BE();
+                auto data = make_unique<char[]>(size);
+                ss.read(data.get(), size);
+                value().assignData(move(data), size, TagDataType::Picture);
+            } catch (const ios_base::failure &) {
+                addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
+                throw Failure();
+            } catch (const ConversionException &) {
+                addNotification(NotificationType::Critical, "Base64 data from METADATA_BLOCK_PICTURE is invalid.", context);
+                throw InvalidDataException();
+            }
         } else if(id().size() + 1 < size) {
             // extract other values (as string)
             setValue(string(data.get() + idSize + 1, size - idSize - 1));
@@ -92,20 +112,42 @@ void VorbisCommentField::make(BinaryWriter &writer)
     if(id().empty()) {
         addNotification(NotificationType::Critical, "The field ID is empty.", context);
     }
-    // try to convert value to string
     try {
+        // try to convert value to string
         string valueString;
         if(id() == VorbisCommentIds::cover()) {
             // make cover
-            Id3v2FrameHelper helper(id(), *this);
-            vector<char> buffer;
-            helper.makePicture(buffer, value(), isTypeInfoAssigned() ? typeInfo() : 0);
-            valueString = encodeBase64(buffer);
+            if(value().type() != TagDataType::Picture) {
+                addNotification(NotificationType::Critical, "Assigned value of cover field is not picture data.", context);
+                throw InvalidDataException();
+            }
+            try {
+                uint32 dataSize = 32 + value().mimeType().size() + value().description().size() + value().dataSize();
+                auto buffer = make_unique<char[]>(dataSize);
+                stringstream ss(ios_base::in | ios_base::out | ios_base::binary);
+                ss.exceptions(ios_base::failbit | ios_base::badbit);
+                ss.rdbuf()->pubsetbuf(buffer.get(), dataSize);
+                BinaryWriter writer(&ss);
+                writer.writeUInt32BE(typeInfo());
+                writer.writeUInt32BE(value().mimeType().size());
+                writer.writeString(value().mimeType());
+                writer.writeUInt32BE(value().description().size());
+                writer.writeString(value().description());
+                writer.writeUInt32BE(0); // skip width
+                writer.writeUInt32BE(0); // skip height
+                writer.writeUInt32BE(0); // skip color depth
+                writer.writeUInt32BE(0); // skip number of colors used
+                writer.writeUInt32BE(value().dataSize());
+                writer.write(value().dataPointer(), value().dataSize());
+                valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), dataSize);
+            } catch (const ios_base::failure &) {
+                addNotification(NotificationType::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
+                throw Failure();
+            }
         } else {
             // make normal string value
             valueString = value().toString();
         }
-        // write size
         writer.writeUInt32LE(id().size() + 1 + valueString.size());
         writer.writeString(id());
         writer.writeChar('=');

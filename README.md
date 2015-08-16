@@ -1,4 +1,4 @@
-# tagparser
+# Tag Parser
 C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags.
 
 ## Supported formats
@@ -18,3 +18,7 @@ For examples check out the CLI interface of my Tag Editor (which is also on Git)
 ## Build instructions
 The tagparser library depends on c++utilities and is built in the same way.
 It also depends on zlib.
+
+## TODO
+- Use padding to prevent rewriting the entire file to save tags.
+- Support more tag formats (EXIF, PDF metadata, ...).

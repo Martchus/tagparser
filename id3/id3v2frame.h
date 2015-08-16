@@ -32,10 +32,10 @@ public:
     void parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
     void parseComment(const char *buffer, size_t maxSize, TagValue &tagValue);
     void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding);
-    void makeString(std::vector<char> &buffer, const std::string &value, TagTextEncoding encoding);
-    void makeEncodingAndData(std::vector<char> &buffer, TagTextEncoding encoding, const char *data, size_t m_dataSize);
-    void makePicture(std::vector<char> &buffer, const TagValue &picture, byte typeInfo);
-    void makeComment(std::vector<char> &buffer, const TagValue &comment);
+    void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
+    void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t m_dataSize);
+    void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
+    void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
 
 private:
     std::string m_id;

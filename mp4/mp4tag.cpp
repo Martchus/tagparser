@@ -266,9 +266,7 @@ void Mp4Tag::make(ostream &stream)
     int tagFieldsWritten = 0;
     for(auto i = fields().begin(), end = fields().end(); i != end; ++i) {
         Mp4TagField &field = i->second;
-        if(field.value().isEmpty()) {
-            continue;
-        } else {
+        if(!field.value().isEmpty()) {
             field.invalidateNotifications();
             try {
                 field.make(stream);
