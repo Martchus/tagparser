@@ -39,14 +39,14 @@ public:
     virtual void removeAllFields();
     const std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields() const;
     std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields();
-    virtual int fieldCount() const;
+    virtual unsigned int fieldCount() const;
     virtual typename FieldType::identifierType fieldId(KnownField value) const = 0;
     virtual KnownField knownField(const typename FieldType::identifierType &id) const = 0;
     virtual bool supportsField(KnownField field) const;
     using Tag::proposedDataType;
     virtual TagDataType proposedDataType(const typename FieldType::identifierType &id) const;
     virtual int insertFields(const FieldMapBasedTag<FieldType, Compare> &from, bool overwrite);
-    virtual int insertValues(const Tag &from, bool overwrite);
+    virtual unsigned int insertValues(const Tag &from, bool overwrite);
     typedef FieldType fieldType;
 
 private:
@@ -185,9 +185,15 @@ inline std::multimap<typename FieldType::identifierType, FieldType, Compare> &Fi
 }
 
 template <class FieldType, class Compare>
-inline int FieldMapBasedTag<FieldType, Compare>::fieldCount() const
+unsigned int FieldMapBasedTag<FieldType, Compare>::fieldCount() const
 {
-    return m_fields.size();
+    int count = 0;
+    for(const auto &field : m_fields) {
+        if(!field.second.value().isEmpty()) {
+            ++count;
+        }
+    }
+    return count;
 }
 
 template <class FieldType, class Compare>
@@ -244,7 +250,7 @@ int FieldMapBasedTag<FieldType, Compare>::insertFields(const FieldMapBasedTag<Fi
 }
 
 template <class FieldType, class Compare>
-int FieldMapBasedTag<FieldType, Compare>::insertValues(const Tag &from, bool overwrite)
+unsigned int FieldMapBasedTag<FieldType, Compare>::insertValues(const Tag &from, bool overwrite)
 {
     if(type() == from.type()) {
         // the tags are of the same type, we can insert the fields directly

@@ -92,9 +92,9 @@ string Tag::toString() const
  * \param overwrite Indicates whether existing values should be overwritten.
  * \return Returns the number of values that have been inserted.
  */
-int Tag::insertValues(const Tag &from, bool overwrite)
+unsigned int Tag::insertValues(const Tag &from, bool overwrite)
 {
-    int count = 0;
+    unsigned int count = 0;
     for(int i = static_cast<int>(KnownField::Invalid) + 1, last = static_cast<int>(KnownField::Description);
         i <= last; ++i) {
         KnownField field = static_cast<KnownField>(i);

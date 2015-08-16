@@ -20,7 +20,7 @@ public:
     virtual bool setValueConsideringTypeInfo(KnownField field, const TagValue &value, const std::string &typeInfo);
     virtual bool hasField(KnownField field) const;
     virtual void removeAllFields();
-    virtual int fieldCount() const;
+    virtual unsigned int fieldCount() const;
     virtual bool supportsField(KnownField field) const;
 
     void parse(std::istream &sourceStream, bool autoSeek);

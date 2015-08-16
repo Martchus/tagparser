@@ -27,7 +27,7 @@ public:
     /*!
      * \brief The type info is stored using 32-bit unsigned integers.
      */
-    typedef byte typeInfoType;
+    typedef uint32 typeInfoType;
     /*!
      * \brief The implementation type is VorbisCommentField.
      */

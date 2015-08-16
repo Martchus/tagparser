@@ -191,6 +191,7 @@ startParsingSignature:
             break;
         } case ContainerFormat::Ogg:
             m_container = make_unique<OggContainer>(*this, m_containerOffset);
+            static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
             break;
         default:
             ;

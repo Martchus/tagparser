@@ -4,6 +4,7 @@
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/misc/memory.h>
 
 #include <zlib.h>
 
@@ -268,53 +269,53 @@ void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
         addNotification(NotificationType::Warning, "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
     }
     // create actual data, depending on the frame type
-    vector<char> buffer;
+    unique_ptr<char[]> buffer;
+    uint32 decompressedSize;
     // check if the frame to be written is a text frame
     try {
         if(Id3v2FrameIds::isTextfield(frameId)) {
             if((version >= 3 && (frameId == Id3v2FrameIds::lTrackPosition || frameId == Id3v2FrameIds::lDiskPosition))
                     || (version < 3 && frameId == Id3v2FrameIds::sTrackPosition)) {
                 // the track number or the disk number frame
-                helper.makeString(buffer, value().toString(), TagTextEncoding::Latin1);
+                helper.makeString(buffer, decompressedSize, value().toString(), TagTextEncoding::Latin1);
             } else if((version >= 3 && frameId == Id3v2FrameIds::lLength)
                       || (version < 3 && frameId == Id3v2FrameIds::sLength)) {
                 // the length
-                    helper.makeString(buffer, ConversionUtilities::numberToString(value().toTimeSpan().totalMilliseconds()), TagTextEncoding::Latin1);
+                    helper.makeString(buffer, decompressedSize, ConversionUtilities::numberToString(value().toTimeSpan().totalMilliseconds()), TagTextEncoding::Latin1);
             } else if(value().type() == TagDataType::StandardGenreIndex && ((version >= 3 && frameId == Id3v2FrameIds::lGenre)
                       || (version < 3 && frameId == Id3v2FrameIds::sGenre))) {
                 // genre/content type as standard genre index
-                helper.makeString(buffer, ConversionUtilities::numberToString(value().toStandardGenreIndex()), TagTextEncoding::Latin1);
+                helper.makeString(buffer, decompressedSize, ConversionUtilities::numberToString(value().toStandardGenreIndex()), TagTextEncoding::Latin1);
             } else {
                 // any other text frame
-                helper.makeString(buffer, value().toString(), value().dataEncoding()); // the same as a normal text frame
+                helper.makeString(buffer, decompressedSize, value().toString(), value().dataEncoding()); // the same as a normal text frame
             }
         } else if((version >= 3 && frameId == Id3v2FrameIds::lCover)
                   || (version < 3 && frameId == Id3v2FrameIds::sCover)) {
             // picture frame
-            helper.makePicture(buffer, value(), isTypeInfoAssigned() ? typeInfo() : 0);
+            helper.makePicture(buffer, decompressedSize, value(), isTypeInfoAssigned() ? typeInfo() : 0);
         } else if(((version >= 3 && id() == Id3v2FrameIds::lComment)
                    || (version < 3 && id() == Id3v2FrameIds::sComment))
                   || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics)
                       || (version < 3 && id() == Id3v2FrameIds::sUnsynchronizedLyrics))) {
             // the comment frame or the unsynchronized lyrics frame
-            helper.makeComment(buffer, value());
+            helper.makeComment(buffer, decompressedSize, value());
         } else  {
             // an unknown frame
             // create buffer
-            buffer.resize(value().dataSize());
+            buffer = make_unique<char[]>(decompressedSize = value().dataSize());
             // just write the data
-            copy(value().dataPointer(), value().dataPointer() + value().dataSize(), buffer.data());
+            copy(value().dataPointer(), value().dataPointer() + value().dataSize(), buffer.get());
         }
     } catch(ConversionException &) {
         addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
         throw InvalidDataException();
     }
-    uint32 decompressedSize = buffer.size();
+    unsigned long actualSize;
     if(version >= 3 && isCompressed()) {
-        uLongf destLen = compressBound(buffer.size());
-        vector<char> compressedBuffer;
-        compressedBuffer.resize(destLen);
-        switch(compress(reinterpret_cast<Bytef *>(compressedBuffer.data()), &destLen, reinterpret_cast<Bytef *>(buffer.data()), buffer.size())) {
+        actualSize = compressBound(decompressedSize);
+        auto compressedBuffer = make_unique<char[]>(actualSize);
+        switch(compress(reinterpret_cast<Bytef *>(compressedBuffer.get()), &actualSize, reinterpret_cast<Bytef *>(buffer.get()), decompressedSize)) {
         case Z_MEM_ERROR:
             addNotification(NotificationType::Critical, "Decompressing failed. The source buffer was too small.", context);
             throw InvalidDataException();
@@ -325,17 +326,18 @@ void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
             ;
         }
         buffer.swap(compressedBuffer);
-        buffer.resize(destLen);
+    } else {
+        actualSize = decompressedSize;
     }
     if(version < 3) {
         writer.writeUInt24BE(frameId);
-        writer.writeUInt24BE(buffer.size());
+        writer.writeUInt24BE(actualSize);
     } else {
         writer.writeUInt32BE(frameId);
         if(version >= 4) {
-            writer.writeSynchsafeUInt32BE(buffer.size());
+            writer.writeSynchsafeUInt32BE(actualSize);
         } else {
-            writer.writeUInt32BE(buffer.size());
+            writer.writeUInt32BE(actualSize);
         }
         writer.writeUInt16BE(m_flag);
         if(hasGroupInformation()) {
@@ -349,7 +351,7 @@ void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
             }
         }
     }
-    writer.write(buffer.data(), buffer.size());
+    writer.write(buffer.get(), actualSize);
 }
 
 /*!
@@ -605,9 +607,9 @@ void Id3v2FrameHelper::parseComment(const char *buffer, size_t dataSize, TagValu
  * \param value Specifies the string to make.
  * \param encoding Specifies the encoding of the string to make.
  */
-void Id3v2FrameHelper::makeString(vector<char> &buffer, const string &value, TagTextEncoding encoding)
+void Id3v2FrameHelper::makeString(unique_ptr<char[]> &buffer, uint32 &bufferSize, const string &value, TagTextEncoding encoding)
 {
-    makeEncodingAndData(buffer, encoding, value.c_str(), value.length());
+    makeEncodingAndData(buffer, bufferSize, encoding, value.c_str(), value.length());
 }
 
 /*!
@@ -617,7 +619,7 @@ void Id3v2FrameHelper::makeString(vector<char> &buffer, const string &value, Tag
  * \param data Specifies the data.
  * \param dataSize Specifies the data size.
  */
-void Id3v2FrameHelper::makeEncodingAndData(vector<char> &buffer, TagTextEncoding encoding, const char *data, size_t dataSize)
+void Id3v2FrameHelper::makeEncodingAndData(unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t dataSize)
 {
     // calculate buffer size
     if(!data) {
@@ -627,23 +629,25 @@ void Id3v2FrameHelper::makeEncodingAndData(vector<char> &buffer, TagTextEncoding
     case TagTextEncoding::Latin1:
     case TagTextEncoding::Utf8:
     case TagTextEncoding::Unspecified: // assumption
-        buffer.resize(1 + dataSize + 1); // allocate buffer
+         // allocate buffer
+        buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 1);
         break;
     case TagTextEncoding::Utf16LittleEndian:
     case TagTextEncoding::Utf16BigEndian:
-        buffer.resize(1 + dataSize + 2); // allocate buffer
+        // allocate buffer
+        buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 2);
         break;
     }
     buffer[0] = makeTextEncodingByte(encoding); // set text encoding byte
     if(dataSize > 0) {
-        copy(data, data + dataSize, buffer.data() + 1); // write string data
+        copy(data, data + dataSize, buffer.get() + 1); // write string data
     }
 }
 
 /*!
  * \brief Writes the specified picture to the specified buffer.
  */
-void Id3v2FrameHelper::makePicture(std::vector<char> &buffer, const TagValue &picture, byte typeInfo)
+void Id3v2FrameHelper::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
     // calculate needed buffer size and create buffer
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
@@ -656,9 +660,9 @@ void Id3v2FrameHelper::makePicture(std::vector<char> &buffer, const TagValue &pi
     if(descriptionLength == string::npos) {
         descriptionLength = picture.description().length();
     }
-    buffer.resize(1             + mimeTypeLength   + 1      + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
-    // note:      encoding byte + mime type length + 0 byte + picture type byte + description length + 1 or 2 null bytes (depends on encoding)                          + data size
-    char *offset = buffer.data();
+    buffer = make_unique<char[]>(bufferSize = 1             + mimeTypeLength   + 1      + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
+    // note:                                  encoding byte + mime type length + 0 byte + picture type byte + description length + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
+    char *offset = buffer.get();
     // write encoding byte
     *offset = makeTextEncodingByte(descriptionEncoding);
     // write mime type
@@ -681,7 +685,7 @@ void Id3v2FrameHelper::makePicture(std::vector<char> &buffer, const TagValue &pi
 /*!
  * \brief Writes the specified comment to the specified buffer.
  */
-void Id3v2FrameHelper::makeComment(std::vector<char> &buffer, const TagValue &comment)
+void Id3v2FrameHelper::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment)
 {
     static const string context("making comment frame");
     // check type and other values are valid
@@ -700,9 +704,9 @@ void Id3v2FrameHelper::makeComment(std::vector<char> &buffer, const TagValue &co
     if(descriptionLength == string::npos)
         descriptionLength = comment.description().length();
     uint32 dataSize = comment.dataSize();
-    buffer.resize(1             + 3        + descriptionLength  + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
-    // note:      encoding byte + language + description length + 1 or 2 null bytes                                     + data size
-    char *offset = buffer.data();
+    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionLength  + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
+    // note:                     encoding byte + language + description length + 1 or 2 null bytes                                                                                       + data size
+    char *offset = buffer.get();
     // write encoding
     *offset = makeTextEncodingByte(encoding);
     // write language
@@ -717,7 +721,7 @@ void Id3v2FrameHelper::makeComment(std::vector<char> &buffer, const TagValue &co
         *(++offset) = 0x00;
     }
     // write actual data
-    string data = comment.toString();
+    const auto data = comment.toString();
     data.copy(++offset, data.length());
 }
 

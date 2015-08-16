@@ -36,6 +36,7 @@ void OggContainer::internalParseHeader()
     static const string context("parsing OGG bitstream header");
     // iterate through pages using OggIterator helper class
     try {
+        uint32 pageSequenceNumber = 0;
         // ensure iterator is setup properly
         for(m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const OggPage &page = m_iterator.currentPage();
@@ -48,6 +49,14 @@ void OggContainer::internalParseHeader()
                 // new stream serial number recognized -> add new stream
                 m_streamsBySerialNo[page.streamSerialNumber()] = m_tracks.size();
                 m_tracks.emplace_back(new OggStream(*this, m_iterator.currentPageIndex()));
+            }
+            if(pageSequenceNumber != page.sequenceNumber()) {
+                if(pageSequenceNumber != 0) {
+                    addNotification(NotificationType::Warning, "Page is missing (page sequence number omitted).", context);
+                    pageSequenceNumber = page.sequenceNumber();
+                }
+            } else {
+                ++pageSequenceNumber;
             }
         }
     } catch(TruncatedDataException &) {
@@ -64,11 +73,13 @@ void OggContainer::internalParseHeader()
 void OggContainer::internalParseTags()
 {
     parseTracks(); // tracks needs to be parsed because tags are stored at stream level
-    for(auto i : m_commentTable) {
+    for(auto &i : m_commentTable) {
         //fileInfo().stream().seekg(get<1>(i));
-        m_iterator.setPageIndex(get<0>(i));
-        m_iterator.setSegmentIndex(get<1>(i));
-        m_tags[get<2>(i)]->parse(m_iterator);
+        m_iterator.setPageIndex(i.firstPageIndex);
+        m_iterator.setSegmentIndex(i.firstSegmentIndex);
+        m_tags[i.tagIndex]->parse(m_iterator);
+        i.lastPageIndex = m_iterator.currentPageIndex();
+        i.lastSegmentIndex = m_iterator.currentSegmentIndex();
     }
 }
 
@@ -100,6 +111,7 @@ void OggContainer::internalMakeFile()
 {
     const string context("making OGG file");
     updateStatus("Prepare for rewriting OGG file ...");
+    parseTags(); // tags need to be parsed before the file can be rewritten
     fileInfo().close();
     string backupPath;
     fstream backupStream;
@@ -110,10 +122,16 @@ void OggContainer::internalMakeFile()
         CopyHelper<65307> copy;
         auto commentTableIterator = m_commentTable.cbegin(), commentTableEnd = m_commentTable.cend();
         vector<uint64> updatedPageOffsets;
+        uint32 pageSequenceNumber = 0;
         for(m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const auto &currentPage = m_iterator.currentPage();
             auto pageSize = currentPage.totalSize();
-            if(commentTableIterator != commentTableEnd && m_iterator.currentPageIndex() == get<0>(*commentTableIterator) && !currentPage.segmentSizes().empty()) {
+            // check whether the Vorbis Comment is present in this Ogg page
+            // -> then the page needs to be rewritten
+            if(commentTableIterator != commentTableEnd
+                    && m_iterator.currentPageIndex() >= commentTableIterator->firstPageIndex
+                    && m_iterator.currentPageIndex() <= commentTableIterator->lastPageIndex
+                    && !currentPage.segmentSizes().empty()) {
                 // page needs to be rewritten (not just copied)
                 // -> write segments to a buffer first
                 stringstream buffer(ios_base::in | ios_base::out | ios_base::binary);
@@ -121,67 +139,109 @@ void OggContainer::internalMakeFile()
                 newSegmentSizes.reserve(currentPage.segmentSizes().size());
                 uint64 segmentOffset = m_iterator.currentSegmentOffset();
                 vector<uint32>::size_type segmentIndex = 0;
-                for(auto segmentSize : currentPage.segmentSizes()) {
-                    if(segmentIndex == get<1>(*commentTableIterator)) {
-                        // make vorbis comment segment
-                        auto offset = buffer.tellp();
-                        m_tags[get<2>(*commentTableIterator)]->make(buffer);
-                        newSegmentSizes.push_back(buffer.tellp() - offset);
-                    } else {
-                        // copy other segments unchanged
-                        backupStream.seekg(segmentOffset);
-                        copy.copy(backupStream, buffer, segmentSize);
-                        newSegmentSizes.push_back(segmentSize);
+                for(const auto segmentSize : currentPage.segmentSizes()) {
+                    if(segmentSize) {
+                        // check whether this segment contains the Vorbis Comment
+                        if((m_iterator.currentPageIndex() > commentTableIterator->firstPageIndex || segmentIndex >= commentTableIterator->firstSegmentIndex)
+                                && (m_iterator.currentPageIndex() < commentTableIterator->lastPageIndex || segmentIndex <= commentTableIterator->lastSegmentIndex)) {
+                            // prevent making the comment twice if it spreads over multiple pages
+                            if(m_iterator.currentPageIndex() == commentTableIterator->firstPageIndex) {
+                                // make Vorbis Comment segment
+                                auto offset = buffer.tellp();
+                                m_tags[commentTableIterator->tagIndex]->make(buffer);
+                                newSegmentSizes.push_back(buffer.tellp() - offset);
+                            }
+                            if(m_iterator.currentPageIndex() > commentTableIterator->lastPageIndex
+                                    || (m_iterator.currentPageIndex() == commentTableIterator->lastPageIndex && segmentIndex > commentTableIterator->lastSegmentIndex)) {
+                                ++commentTableIterator;
+                            }
+                        } else {
+                            // copy other segments unchanged
+                            backupStream.seekg(segmentOffset);
+                            copy.copy(backupStream, buffer, segmentSize);
+                            newSegmentSizes.push_back(segmentSize);
+                        }
+                        segmentOffset += segmentSize;
                     }
-                    segmentOffset += segmentSize;
                     ++segmentIndex;
                 }
                 // write buffered data to actual stream
                 auto newSegmentSizesIterator = newSegmentSizes.cbegin(), newSegmentSizesEnd = newSegmentSizes.cend();
-                uint32 bytesLeft, currentSize;
-                // write pages until all data in the buffer is written
-                while(newSegmentSizesIterator != newSegmentSizesEnd) {
-                    // write header
-                    backupStream.seekg(currentPage.startOffset());
-                    copy.copy(backupStream, stream(), 27); // just copy from original file
-                    updatedPageOffsets.push_back(currentPage.startOffset()); // memorize offset to update checksum later
-                    int16 segmentSizesWritten = 0; // in the current page header only
-                    // write segment sizes as long as there are segment sizes to be written and
-                    // the max number of segment sizes is not exceeded
-                    bytesLeft = *newSegmentSizesIterator;
-                    currentSize = 0;
-                    while(bytesLeft > 0 && segmentSizesWritten < 0xFF) {
-                        while(bytesLeft >= 0xFF && segmentSizesWritten < 0xFF) {
-                            stream().put(0xFF);
-                            bytesLeft -= 0xFF;
-                            ++segmentSizesWritten;
+                bool continuePreviousSegment = false;
+                if(newSegmentSizesIterator != newSegmentSizesEnd) {
+                    uint32 bytesLeft = *newSegmentSizesIterator;
+                    // write pages until all data in the buffer is written
+                    while(newSegmentSizesIterator != newSegmentSizesEnd) {
+                        // write header
+                        backupStream.seekg(currentPage.startOffset());
+                        updatedPageOffsets.push_back(stream().tellp()); // memorize offset to update checksum later
+                        copy.copy(backupStream, stream(), 27); // just copy header from original file
+                        // set continue flag
+                        stream().seekp(-22, ios_base::cur);
+                        stream().put(currentPage.headerTypeFlag() & (continuePreviousSegment ? 0xFF : 0xFE));
+                        continuePreviousSegment = true;
+                        // adjust page sequence number
+                        stream().seekp(12, ios_base::cur);
+                        writer().writeUInt32LE(pageSequenceNumber);
+                        stream().seekp(5, ios_base::cur);
+                        int16 segmentSizesWritten = 0; // in the current page header only
+                        // write segment sizes as long as there are segment sizes to be written and
+                        // the max number of segment sizes (255) is not exceeded
+                        uint32 currentSize = 0;
+                        while(bytesLeft > 0 && segmentSizesWritten < 0xFF) {
+                            while(bytesLeft >= 0xFF && segmentSizesWritten < 0xFF) {
+                                stream().put(0xFF);
+                                currentSize += 0xFF;
+                                bytesLeft -= 0xFF;
+                                ++segmentSizesWritten;
+                            }
+                            if(bytesLeft > 0 && segmentSizesWritten < 0xFF) {
+                                // bytes left is here < 0xFF
+                                stream().put(bytesLeft);
+                                currentSize += bytesLeft;
+                                bytesLeft = 0;
+                                ++segmentSizesWritten;
+                            }
+                            if(bytesLeft == 0) {
+                                // sizes for the segment have been written
+                                // -> continue with next segment
+                                if(++newSegmentSizesIterator != newSegmentSizesEnd) {
+                                    bytesLeft = *newSegmentSizesIterator;
+                                    continuePreviousSegment = false;
+                                }
+                            }
                         }
-                        if(bytesLeft > 0 && segmentSizesWritten < 0xFF) {
-                            stream().put(bytesLeft);
-                            bytesLeft = 0;
-                            ++segmentSizesWritten;
-                        }
-                        currentSize += *newSegmentSizesIterator - bytesLeft;
+                        // there are no bytes left in the current segment; remove continue flag
                         if(bytesLeft == 0) {
-                            // sizes for the current segemnt have been written -> continue with next segment
-                            ++newSegmentSizesIterator;
-                            bytesLeft = newSegmentSizesIterator != newSegmentSizesEnd ? *newSegmentSizesIterator : 0;
+                            continuePreviousSegment = false;
                         }
-                    }
-                    // page is full or all segment data has already been written -> write data
-                    if(bytesLeft == 0 || newSegmentSizesIterator != newSegmentSizesEnd) {
-                        // seek back and write updated page segment number
+                        // page is full or all segment data has been covered
+                        // -> write segment table size (segmentSizesWritten) and segment data
+                        // -> seek back and write updated page segment number
                         stream().seekp(-1 - segmentSizesWritten, ios_base::cur);
                         stream().put(segmentSizesWritten);
                         stream().seekp(segmentSizesWritten, ios_base::cur);
-                        // write actual page data
+                        // -> write actual page data
                         copy.copy(buffer, stream(), currentSize);
+                        ++pageSequenceNumber;
                     }
                 }
             } else {
-                // copy page unchanged
-                backupStream.seekg(currentPage.startOffset());
-                copy.copy(backupStream, stream(), pageSize);
+                if(pageSequenceNumber != m_iterator.currentPageIndex()) {
+                    // just update page sequence number
+                    backupStream.seekg(currentPage.startOffset());
+                    updatedPageOffsets.push_back(stream().tellp()); // memorize offset to update checksum later
+                    copy.copy(backupStream, stream(), 27);
+                    stream().seekp(-9, ios_base::cur);
+                    writer().writeUInt32LE(pageSequenceNumber);
+                    stream().seekp(5, ios_base::cur);
+                    copy.copy(backupStream, stream(), pageSize - 27);
+                } else {
+                    // copy page unchanged
+                    backupStream.seekg(currentPage.startOffset());
+                    copy.copy(backupStream, stream(), pageSize);
+                }
+                ++pageSequenceNumber;
             }
         }
         // close backups stream; reopen new file as readable stream

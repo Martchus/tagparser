@@ -111,7 +111,7 @@ void VorbisComment::parse(OggIterator &iterator)
     invalidateStatus();
     static const string context("parsing Vorbis comment");
     iterator.stream().seekg(iterator.currentSegmentOffset());
-    uint64 startOffset = iterator.currentSegmentOffset();
+    auto startOffset = iterator.currentSegmentOffset();
     try {
         // read signature: 0x3 + "vorbis"
         char sig[8];
@@ -120,8 +120,8 @@ void VorbisComment::parse(OggIterator &iterator)
             // read vendor (length prefixed string)
             {
                 iterator.read(sig, 4);
-                uint32 vendorSize = LE::toUInt32(sig);
-                unique_ptr<char []> buff = make_unique<char []>(vendorSize);
+                auto vendorSize = LE::toUInt32(sig);
+                auto buff = make_unique<char []>(vendorSize);
                 iterator.read(buff.get(), vendorSize);
                 m_vendor = string(buff.get(), vendorSize);
             }
@@ -151,6 +151,7 @@ void VorbisComment::parse(OggIterator &iterator)
             throw InvalidDataException();
         }
     } catch(TruncatedDataException &) {
+        m_size = static_cast<uint32>(static_cast<uint64>(iterator.currentCharacterOffset()) - startOffset);
         addNotification(NotificationType::Critical, "Vorbis comment is truncated.", context);
         throw;
     }
@@ -186,14 +187,16 @@ void VorbisComment::make(std::ostream &stream)
     // write fields
     for(auto i : fields()) {
         VorbisCommentField &field = i.second;
-        try {
-            field.make(writer);
-        } catch(Failure &) {
-            // nothing to do here since notifications will be added anyways
+        if(!field.value().isEmpty()) {
+            try {
+                field.make(writer);
+            } catch(Failure &) {
+                // nothing to do here since notifications will be added anyways
+            }
+            // add making notifications
+            addNotifications(context, field);
+            field.invalidateNotifications();
         }
-        // add making notifications
-        addNotifications(context, field);
-        field.invalidateNotifications();
     }
     // write framing byte
     stream.put(0x01);
