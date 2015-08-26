@@ -154,9 +154,9 @@ HEADERS += \
 LIBS += -lz
 
 CONFIG(debug, debug|release) {
-       LIBS += -L../../ -lc++utilitiesd
+       LIBS += -lc++utilitiesd
 } else {
-       LIBS += -L../../ -lc++utilities
+       LIBS += -lc++utilities
 }
 
 forcefullparsedefault {
@@ -166,8 +166,6 @@ forcefullparsedefault {
 OTHER_FILES += \
     README.md \
     LICENSE
-
-INCLUDEPATH += ../
 
 # installs
 mingw-w64-install {
