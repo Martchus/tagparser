@@ -1,5 +1,5 @@
 projectname = tagparser
-VERSION = 1.1.5
+VERSION = 2.0.0
 
 # include ../../common.pri when building as part of a subdirs project; otherwise include general.pri
 !include(../../common.pri) {
@@ -11,10 +11,7 @@ VERSION = 1.1.5
 TEMPLATE = lib
 
 CONFIG -= qt
-
-win32 {
-    CONFIG += dll
-}
+CONFIG += shared
 
 SOURCES += \
     abstractcontainer.cpp \
@@ -53,7 +50,6 @@ SOURCES += \
     tagtarget.cpp \
     tagvalue.cpp \
     wav/waveaudiostream.cpp \
-    avc/avcinfo.cpp \
     ogg/oggpage.cpp \
     vorbis/vorbiscomment.cpp \
     vorbis/vorbiscommentfield.cpp \
@@ -68,7 +64,6 @@ SOURCES += \
     abstractattachment.cpp \
     matroska/matroskaattachment.cpp \
     mediaformat.cpp \
-    avc/avcconfiguration.cpp \
     mp4/mpeg4descriptor.cpp \
     avi/bitmapinfoheader.cpp \
     adts/adtsframe.cpp \
@@ -119,7 +114,6 @@ HEADERS  += \
     tagtarget.h \
     tagvalue.h \
     wav/waveaudiostream.h \
-    avc/avcinfo.h \
     ogg/oggpage.h \
     vorbis/vorbiscomment.h \
     vorbis/vorbiscommentfield.h \
@@ -136,12 +130,26 @@ HEADERS  += \
     abstractattachment.h \
     matroska/matroskaattachment.h \
     mediaformat.h \
-    avc/avcconfiguration.h \
     generictagfield.h \
     mp4/mpeg4descriptor.h \
     avi/bitmapinfoheader.h \
     adts/adtsframe.h \
-    adts/adtsstream.h
+    adts/adtsstream.h \
+    caseinsensitivecomparer.h
+
+underconstruction {
+SOURCES += \
+    aac/aacframe.cpp \
+    aac/aaccodebook.cpp \
+    avc/avcinfo.cpp \
+    avc/avcconfiguration.cpp
+
+HEADERS += \
+    aac/aacframe.h \
+    aac/aaccodebook.h \
+    avc/avcinfo.h \
+    avc/avcconfiguration.h
+}
 
 LIBS += -lz
 
