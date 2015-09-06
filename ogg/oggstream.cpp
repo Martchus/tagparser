@@ -1,12 +1,12 @@
-#include "oggstream.h"
-#include "oggcontainer.h"
+#include "./oggstream.h"
+#include "./oggcontainer.h"
 
-#include "tagparser/vorbis/vorbispackagetypes.h"
-#include "tagparser/vorbis/vorbisidentificationheader.h"
+#include "../vorbis/vorbispackagetypes.h"
+#include "../vorbis/vorbisidentificationheader.h"
 
-#include "tagparser/mediafileinfo.h"
-#include "tagparser/exceptions.h"
-#include "tagparser/mediaformat.h"
+#include "../mediafileinfo.h"
+#include "../exceptions.h"
+#include "../mediaformat.h"
 
 #include <c++utilities/chrono/timespan.h>
 

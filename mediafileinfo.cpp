@@ -1,31 +1,31 @@
-#include "mediafileinfo.h"
-#include "exceptions.h"
-#include "tag.h"
-#include "signature.h"
-#include "abstracttrack.h"
-#include "backuphelper.h"
+#include "./mediafileinfo.h"
+#include "./exceptions.h"
+#include "./tag.h"
+#include "./signature.h"
+#include "./abstracttrack.h"
+#include "./backuphelper.h"
 
-#include "id3/id3v1tag.h"
-#include "id3/id3v2tag.h"
+#include "./id3/id3v1tag.h"
+#include "./id3/id3v2tag.h"
 
-#include "wav/waveaudiostream.h"
+#include "./wav/waveaudiostream.h"
 
-#include "mpegaudio/mpegaudioframestream.h"
+#include "./mpegaudio/mpegaudioframestream.h"
 
-#include "adts/adtsstream.h"
+#include "./adts/adtsstream.h"
 
-#include "mp4/mp4container.h"
-#include "mp4/mp4atom.h"
-#include "mp4/mp4tag.h"
-#include "mp4/mp4ids.h"
-#include "mp4/mp4track.h"
+#include "./mp4/mp4container.h"
+#include "./mp4/mp4atom.h"
+#include "./mp4/mp4tag.h"
+#include "./mp4/mp4ids.h"
+#include "./mp4/mp4track.h"
 
-#include "matroska/ebmlelement.h"
-#include "matroska/matroskacontainer.h"
-#include "matroska/matroskatag.h"
-#include "matroska/matroskatrack.h"
+#include "./matroska/ebmlelement.h"
+#include "./matroska/matroskacontainer.h"
+#include "./matroska/matroskatag.h"
+#include "./matroska/matroskatrack.h"
 
-#include "ogg/oggcontainer.h"
+#include "./ogg/oggcontainer.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/chrono/timespan.h>

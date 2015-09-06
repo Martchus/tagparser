@@ -1,13 +1,13 @@
 #ifndef MEDIA_OGGCONTAINER_H
 #define MEDIA_OGGCONTAINER_H
 
-#include "oggpage.h"
-#include "oggstream.h"
-#include "oggiterator.h"
+#include "./oggpage.h"
+#include "./oggstream.h"
+#include "./oggiterator.h"
 
-#include "tagparser/vorbis/vorbiscomment.h"
+#include "../vorbis/vorbiscomment.h"
 
-#include "tagparser/genericcontainer.h"
+#include "../genericcontainer.h"
 
 #include <unordered_map>
 #include <tuple>

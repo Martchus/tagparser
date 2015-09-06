@@ -1,7 +1,7 @@
-#include "abstractattachment.h"
+#include "./abstractattachment.h"
 
-#include "mediafileinfo.h"
-#include "exceptions.h"
+#include "./mediafileinfo.h"
+#include "./exceptions.h"
 
 #include <sstream>
 

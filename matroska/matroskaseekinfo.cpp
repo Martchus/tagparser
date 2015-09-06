@@ -1,7 +1,7 @@
-#include "matroskaseekinfo.h"
-#include "matroskaid.h"
+#include "./matroskaseekinfo.h"
+#include "./matroskaid.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
 

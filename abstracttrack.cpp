@@ -1,8 +1,8 @@
-#include "abstracttrack.h"
-#include "exceptions.h"
-#include "mediaformat.h"
+#include "./abstracttrack.h"
+#include "./exceptions.h"
+#include "./mediaformat.h"
 
-#include "mp4/mp4ids.h"
+#include "./mp4/mp4ids.h"
 
 #include "mpegaudio/mpegaudioframe.h"
 

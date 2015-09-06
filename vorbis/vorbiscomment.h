@@ -1,10 +1,10 @@
 #ifndef MEDIA_VORBISCOMMENT_H
 #define MEDIA_VORBISCOMMENT_H
 
-#include "vorbiscommentfield.h"
+#include "./vorbiscommentfield.h"
 
-#include "tagparser/caseinsensitivecomparer.h"
-#include "tagparser/fieldbasedtag.h"
+#include "../caseinsensitivecomparer.h"
+#include "../fieldbasedtag.h"
 
 namespace Media {
 

@@ -1,7 +1,7 @@
 #ifndef MEDIA_OGGITERATOR_H
 #define MEDIA_OGGITERATOR_H
 
-#include "oggpage.h"
+#include "./oggpage.h"
 
 #include <istream>
 #include <vector>

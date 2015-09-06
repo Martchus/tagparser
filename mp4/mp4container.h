@@ -1,11 +1,11 @@
 #ifndef MEDIA_MP4CONTAINER_H
 #define MEDIA_MP4CONTAINER_H
 
-#include "mp4atom.h"
-#include "mp4tag.h"
-#include "mp4track.h"
+#include "./mp4atom.h"
+#include "./mp4tag.h"
+#include "./mp4track.h"
 
-#include "tagparser/genericcontainer.h"
+#include "../genericcontainer.h"
 
 #include <c++utilities/conversion/types.h>
 

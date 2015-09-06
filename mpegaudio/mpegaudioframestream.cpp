@@ -1,7 +1,7 @@
-#include "mpegaudioframestream.h"
+#include "./mpegaudioframestream.h"
 
-#include "tagparser/exceptions.h"
-#include "tagparser/mediaformat.h"
+#include "../exceptions.h"
+#include "../mediaformat.h"
 
 #include <sstream>
 

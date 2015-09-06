@@ -1,7 +1,7 @@
 #ifndef TAGVALUE_H
 #define TAGVALUE_H
 
-#include "positioninset.h"
+#include "./positioninset.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/chrono/timespan.h>

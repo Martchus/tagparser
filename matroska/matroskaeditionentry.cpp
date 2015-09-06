@@ -1,6 +1,6 @@
-#include "matroskaeditionentry.h"
-#include "ebmlelement.h"
-#include "matroskaid.h"
+#include "./matroskaeditionentry.h"
+#include "./ebmlelement.h"
+#include "./matroskaid.h"
 
 #include <c++utilities/misc/memory.h>
 

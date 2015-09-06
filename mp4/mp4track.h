@@ -2,10 +2,10 @@
 #define MP4TRACK_H
 
 #ifdef UNDER_CONSTRUCTION
-#include "tagparser/avc/avcconfiguration.h"
+#include "../avc/avcconfiguration.h"
 #endif
 
-#include "tagparser/abstracttrack.h"
+#include "../abstracttrack.h"
 
 #include <vector>
 #include <memory>

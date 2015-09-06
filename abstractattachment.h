@@ -1,7 +1,7 @@
 #ifndef MEDIA_ABSTRACTATTACHMENT_H
 #define MEDIA_ABSTRACTATTACHMENT_H
 
-#include "statusprovider.h"
+#include "./statusprovider.h"
 
 #include <string>
 #include <iostream>

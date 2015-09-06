@@ -1,5 +1,5 @@
-#include "ebmlid.h"
-#include "matroskaid.h"
+#include "./ebmlid.h"
+#include "./matroskaid.h"
 
 namespace Media {
 

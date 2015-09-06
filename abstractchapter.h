@@ -1,8 +1,8 @@
 #ifndef MEDIA_ABSTRACTCHAPTER_H
 #define MEDIA_ABSTRACTCHAPTER_H
 
-#include "statusprovider.h"
-#include "localeawarestring.h"
+#include "./statusprovider.h"
+#include "./localeawarestring.h"
 
 #include <c++utilities/chrono/timespan.h>
 

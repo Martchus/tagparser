@@ -1,8 +1,8 @@
 #ifndef AVCINFO_H
 #define AVCINFO_H
 
-#include "tagparser/margin.h"
-#include "tagparser/size.h"
+#include "../margin.h"
+#include "../size.h"
 
 namespace Media {
 

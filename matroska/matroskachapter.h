@@ -1,7 +1,7 @@
 #ifndef MEDIA_MATROSKACHAPTER_H
 #define MEDIA_MATROSKACHAPTER_H
 
-#include "tagparser/abstractchapter.h"
+#include "../abstractchapter.h"
 
 #include <memory>
 

@@ -1,4 +1,4 @@
-#include "abstractchapter.h"
+#include "./abstractchapter.h"
 
 #include <sstream>
 

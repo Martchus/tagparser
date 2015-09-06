@@ -1,6 +1,6 @@
-#include "matroskatag.h"
-#include "ebmlelement.h"
-#include "matroskatagid.h"
+#include "./matroskatag.h"
+#include "./ebmlelement.h"
+#include "./matroskatagid.h"
 
 #include <map>
 #include <initializer_list>

@@ -1,9 +1,9 @@
 #ifndef MEDIA_MATROSKASEEKINFO_H
 #define MEDIA_MATROSKASEEKINFO_H
 
-#include "ebmlelement.h"
+#include "./ebmlelement.h"
 
-#include "tagparser/statusprovider.h"
+#include "../statusprovider.h"
 
 #include <utility>
 

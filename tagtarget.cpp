@@ -1,6 +1,6 @@
-#include "tagtarget.h"
+#include "./tagtarget.h"
 
-#include "matroska/matroskatagid.h"
+#include "./matroska/matroskatagid.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 

@@ -1,8 +1,8 @@
 #ifndef MEDIA_VORBISCOMMENTFIELD_H
 #define MEDIA_VORBISCOMMENTFIELD_H
 
-#include "tagparser/generictagfield.h"
-#include "tagparser/statusprovider.h"
+#include "../generictagfield.h"
+#include "../statusprovider.h"
 
 namespace IoUtilities {
 class BinaryReader;

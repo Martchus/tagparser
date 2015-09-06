@@ -1,6 +1,6 @@
-#include "adtsframe.h"
+#include "./adtsframe.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 

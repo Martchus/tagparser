@@ -1,8 +1,8 @@
-#include "adtsstream.h"
+#include "./adtsstream.h"
 
-#include "tagparser/mp4/mp4ids.h"
+#include "../mp4/mp4ids.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <string>
 

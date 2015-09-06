@@ -1,5 +1,5 @@
-#include "backuphelper.h"
-#include "basicfileinfo.h"
+#include "./backuphelper.h"
+#include "./basicfileinfo.h"
 
 #include <string>
 #include <fstream>

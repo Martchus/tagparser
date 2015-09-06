@@ -1,4 +1,4 @@
-#include "signature.h"
+#include "./signature.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
 

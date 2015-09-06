@@ -1,11 +1,11 @@
 #ifndef ID3V2FRAME_H
 #define ID3V2FRAME_H
 
-#include "id3v2frameids.h"
+#include "./id3v2frameids.h"
 
-#include "tagparser/generictagfield.h"
-#include "tagparser/tagvalue.h"
-#include "tagparser/statusprovider.h"
+#include "../generictagfield.h"
+#include "../tagvalue.h"
+#include "../statusprovider.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

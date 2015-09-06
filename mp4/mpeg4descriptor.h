@@ -1,7 +1,7 @@
 #ifndef MPEG4DESCRIPTOR_H
 #define MPEG4DESCRIPTOR_H
 
-#include "tagparser/genericfileelement.h"
+#include "../genericfileelement.h"
 
 #include <c++utilities/misc/memory.h>
 

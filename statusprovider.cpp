@@ -1,4 +1,4 @@
-#include "statusprovider.h"
+#include "./statusprovider.h"
 
 using namespace std;
 

@@ -1,10 +1,10 @@
 #ifndef ABSTRACTTRACK_H
 #define ABSTRACTTRACK_H
 
-#include "statusprovider.h"
-#include "size.h"
-#include "margin.h"
-#include "mediaformat.h"
+#include "./statusprovider.h"
+#include "./size.h"
+#include "./margin.h"
+#include "./mediaformat.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>

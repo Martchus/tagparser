@@ -1,13 +1,13 @@
 #ifndef MATROSKACONTAINER_H
 #define MATROSKACONTAINER_H
 
-#include "ebmlelement.h"
-#include "matroskatag.h"
-#include "matroskatrack.h"
-#include "matroskachapter.h"
-#include "matroskaattachment.h"
+#include "./ebmlelement.h"
+#include "./matroskatag.h"
+#include "./matroskatrack.h"
+#include "./matroskachapter.h"
+#include "./matroskaattachment.h"
 
-#include "tagparser/genericcontainer.h"
+#include "../genericcontainer.h"
 
 #include <c++utilities/conversion/types.h>
 

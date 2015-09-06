@@ -1,7 +1,7 @@
 #ifndef TAGFIELD_H
 #define TAGFIELD_H
 
-#include "tagvalue.h"
+#include "./tagvalue.h"
 
 namespace Media {
 

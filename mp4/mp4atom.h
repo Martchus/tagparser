@@ -1,9 +1,9 @@
 #ifndef MP4ATOM_H
 #define MP4ATOM_H
 
-#include "mp4ids.h"
+#include "./mp4ids.h"
 
-#include "tagparser/genericfileelement.h"
+#include "../genericfileelement.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringconversion.h>

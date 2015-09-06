@@ -1,17 +1,17 @@
-#include "ebmlelement.h"
-#include "matroskatrack.h"
-#include "matroskacontainer.h"
-#include "matroskaid.h"
+#include "./ebmlelement.h"
+#include "./matroskatrack.h"
+#include "./matroskacontainer.h"
+#include "./matroskaid.h"
 
-#include "tagparser/avi/bitmapinfoheader.h"
+#include "../avi/bitmapinfoheader.h"
 
-#include "tagparser/wav/waveaudiostream.h"
+#include "../wav/waveaudiostream.h"
 
-#include "tagparser/mp4/mp4ids.h"
-#include "tagparser/mp4/mp4track.h"
+#include "../mp4/mp4ids.h"
+#include "../mp4/mp4track.h"
 
-#include "tagparser/mediaformat.h"
-#include "tagparser/exceptions.h"
+#include "../mediaformat.h"
+#include "../exceptions.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 

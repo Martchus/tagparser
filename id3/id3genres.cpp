@@ -1,4 +1,4 @@
-#include "id3genres.h"
+#include "./id3genres.h"
 
 using namespace std;
 

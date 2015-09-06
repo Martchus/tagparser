@@ -1,9 +1,9 @@
 #ifndef MEDIA_ABSTRACTCONTAINER_H
 #define MEDIA_ABSTRACTCONTAINER_H
 
-#include "statusprovider.h"
-#include "exceptions.h"
-#include "tagtarget.h"
+#include "./statusprovider.h"
+#include "./exceptions.h"
+#include "./tagtarget.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

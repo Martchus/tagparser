@@ -1,7 +1,7 @@
-#include "matroskaattachment.h"
-#include "matroskacontainer.h"
-#include "ebmlelement.h"
-#include "matroskaid.h"
+#include "./matroskaattachment.h"
+#include "./matroskacontainer.h"
+#include "./ebmlelement.h"
+#include "./matroskaid.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/misc/memory.h>

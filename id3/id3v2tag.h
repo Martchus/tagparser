@@ -1,9 +1,9 @@
 #ifndef ID3V2TAG_H
 #define ID3V2TAG_H
 
-#include "id3v2frame.h"
+#include "./id3v2frame.h"
 
-#include "tagparser/fieldbasedtag.h"
+#include "../fieldbasedtag.h"
 
 #include <map>
 

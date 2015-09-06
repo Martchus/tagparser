@@ -1,6 +1,6 @@
-#include "mpeg4descriptor.h"
-#include "mp4container.h"
-#include "mp4ids.h"
+#include "./mpeg4descriptor.h"
+#include "./mp4container.h"
+#include "./mp4ids.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/conversion/stringconversion.h>

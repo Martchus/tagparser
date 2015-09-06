@@ -1,6 +1,6 @@
-#include "mpegaudioframe.h"
+#include "./mpegaudioframe.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 

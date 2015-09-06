@@ -1,7 +1,7 @@
 #ifndef SIGNATURE_H
 #define SIGNATURE_H
 
-#include "mediaformat.h"
+#include "./mediaformat.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/application/global.h>

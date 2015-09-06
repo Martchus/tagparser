@@ -1,4 +1,4 @@
-#include "avcconfiguration.h"
+#include "./avcconfiguration.h"
 
 namespace Media {
 

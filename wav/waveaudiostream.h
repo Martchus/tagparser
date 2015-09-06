@@ -1,7 +1,7 @@
 #ifndef WAVEAUDIOSTREAM_H
 #define WAVEAUDIOSTREAM_H
 
-#include "abstracttrack.h"
+#include "../abstracttrack.h"
 
 #include <fstream>
 

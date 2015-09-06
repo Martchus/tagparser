@@ -1,9 +1,9 @@
 #ifndef GENERICFILEELEMENT_H
 #define GENERICFILEELEMENT_H
 
-#include "notification.h"
-#include "exceptions.h"
-#include "statusprovider.h"
+#include "./notification.h"
+#include "./exceptions.h"
+#include "./statusprovider.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/copy.h>

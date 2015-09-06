@@ -1,4 +1,4 @@
-#include "bitmapinfoheader.h"
+#include "./bitmapinfoheader.h"
 
 #include <c++utilities/io/binaryreader.h>
 

@@ -1,8 +1,8 @@
-#include "id3v2frame.h"
-#include "id3genres.h"
-#include "id3v2frameids.h"
+#include "./id3v2frame.h"
+#include "./id3genres.h"
+#include "./id3v2frameids.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>

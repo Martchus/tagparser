@@ -1,7 +1,7 @@
 #ifndef STATUSPROVIDER_H
 #define STATUSPROVIDER_H
 
-#include "notification.h"
+#include "./notification.h"
 
 #include <functional>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "basicfileinfo.h"
+#include "./basicfileinfo.h"
 
 using namespace std;
 

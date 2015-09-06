@@ -1,7 +1,7 @@
-#include "id3v1tag.h"
-#include "id3genres.h"
+#include "./id3v1tag.h"
+#include "./id3genres.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/conversion/conversionexception.h>
 

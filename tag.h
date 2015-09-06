@@ -1,9 +1,9 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include "statusprovider.h"
-#include "tagvalue.h"
-#include "tagtarget.h"
+#include "./statusprovider.h"
+#include "./tagvalue.h"
+#include "./tagtarget.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>

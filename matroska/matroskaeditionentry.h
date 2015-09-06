@@ -1,7 +1,7 @@
 #ifndef MEDIA_MATROSKAEDITIONENTRY_H
 #define MEDIA_MATROSKAEDITIONENTRY_H
 
-#include "matroskachapter.h"
+#include "./matroskachapter.h"
 
 namespace Media {
 

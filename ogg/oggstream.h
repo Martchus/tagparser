@@ -1,8 +1,9 @@
 #ifndef MEDIA_OGGSTREAM_H
 #define MEDIA_OGGSTREAM_H
 
-#include "oggpage.h"
-#include "abstracttrack.h"
+#include "./oggpage.h"
+
+#include "../abstracttrack.h"
 
 namespace Media {
 

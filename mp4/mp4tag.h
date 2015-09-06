@@ -1,9 +1,9 @@
 #ifndef MP4TAG_H
 #define MP4TAG_H
 
-#include "mp4tagfield.h"
+#include "./mp4tagfield.h"
 
-#include "tagparser/fieldbasedtag.h"
+#include "../fieldbasedtag.h"
 
 namespace Media
 {

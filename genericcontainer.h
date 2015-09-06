@@ -1,7 +1,7 @@
 #ifndef MEDIA_GENERICCONTAINER_H
 #define MEDIA_GENERICCONTAINER_H
 
-#include "abstractcontainer.h"
+#include "./abstractcontainer.h"
 
 #include <algorithm>
 #include <memory>

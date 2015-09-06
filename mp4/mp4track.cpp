@@ -1,14 +1,14 @@
-#include "mp4atom.h"
-#include "mp4container.h"
-#include "mp4track.h"
-#include "mp4ids.h"
-#include "mpeg4descriptor.h"
+#include "./mp4atom.h"
+#include "./mp4container.h"
+#include "./mp4track.h"
+#include "./mp4ids.h"
+#include "./mpeg4descriptor.h"
 
-#include "tagparser/mpegaudio/mpegaudioframe.h"
-#include "tagparser/mpegaudio/mpegaudioframestream.h"
+#include "../mpegaudio/mpegaudioframe.h"
+#include "../mpegaudio/mpegaudioframestream.h"
 
-#include "tagparser/exceptions.h"
-#include "tagparser/mediaformat.h"
+#include "../exceptions.h"
+#include "../mediaformat.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

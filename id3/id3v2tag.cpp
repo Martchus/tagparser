@@ -1,7 +1,7 @@
-#include "id3v2tag.h"
-#include "id3v2frameids.h"
+#include "./id3v2tag.h"
+#include "./id3v2frameids.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 

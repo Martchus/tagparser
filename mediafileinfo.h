@@ -1,10 +1,10 @@
 #ifndef MEDIAINFO_H
 #define MEDIAINFO_H
 
-#include "signature.h"
-#include "statusprovider.h"
-#include "basicfileinfo.h"
-#include "abstractcontainer.h"
+#include "./signature.h"
+#include "./statusprovider.h"
+#include "./basicfileinfo.h"
+#include "./abstractcontainer.h"
 
 #include <string>
 #include <fstream>

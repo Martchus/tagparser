@@ -1,11 +1,11 @@
 #ifndef EBMLELEMENT_H
 #define EBMLELEMENT_H
 
-#include "ebmlid.h"
-#include "matroskaid.h"
+#include "./ebmlid.h"
+#include "./matroskaid.h"
 
-#include "tagparser/statusprovider.h"
-#include "tagparser/genericfileelement.h"
+#include "../statusprovider.h"
+#include "../genericfileelement.h"
 
 #include <c++utilities/conversion/types.h>
 

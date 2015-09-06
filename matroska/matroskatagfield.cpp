@@ -1,8 +1,8 @@
-#include "matroskatagfield.h"
-#include "ebmlelement.h"
-#include "matroskacontainer.h"
+#include "./matroskatagfield.h"
+#include "./ebmlelement.h"
+#include "./matroskacontainer.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/misc/memory.h>

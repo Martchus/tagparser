@@ -1,7 +1,7 @@
 #ifndef AVCCONFIGURATION_H
 #define AVCCONFIGURATION_H
 
-#include "avcinfo.h"
+#include "./avcinfo.h"
 
 #include <vector>
 

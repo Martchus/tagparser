@@ -1,7 +1,7 @@
 #ifndef MEDIA_MATROSKAATTACHMENT_H
 #define MEDIA_MATROSKAATTACHMENT_H
 
-#include "tagparser/abstractattachment.h"
+#include "../abstractattachment.h"
 
 namespace Media {
 

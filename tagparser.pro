@@ -1,5 +1,8 @@
 projectname = tagparser
-VERSION = 2.0.0
+appname = "Tag Parser"
+appauthor = Martchus
+appurl = "https://github.com/$${appauthor}/$${projectname}"
+VERSION = 2.0.1
 
 # include ../../common.pri when building as part of a subdirs project; otherwise include general.pri
 !include(../../common.pri) {

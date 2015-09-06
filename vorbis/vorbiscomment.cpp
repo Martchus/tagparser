@@ -1,9 +1,9 @@
-#include "vorbiscomment.h"
-#include "vorbiscommentids.h"
+#include "./vorbiscomment.h"
+#include "./vorbiscommentids.h"
 
-#include "tagparser/ogg/oggiterator.h"
+#include "../ogg/oggiterator.h"
 
-#include "tagparser/exceptions.h"
+#include "../exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
