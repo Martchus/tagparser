@@ -5,9 +5,9 @@
 #include "oggstream.h"
 #include "oggiterator.h"
 
-#include "../vorbis/vorbiscomment.h"
+#include "tagparser/vorbis/vorbiscomment.h"
 
-#include "../genericcontainer.h"
+#include "tagparser/genericcontainer.h"
 
 #include <unordered_map>
 #include <tuple>

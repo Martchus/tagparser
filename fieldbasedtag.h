@@ -6,8 +6,7 @@
 #include <map>
 #include <functional>
 
-namespace Media
-{
+namespace Media {
 
 /*!
  * \class Media::FieldMapBasedTag

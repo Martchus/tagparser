@@ -1,7 +1,7 @@
 #ifndef MEDIA_MATROSKATRACK_H
 #define MEDIA_MATROSKATRACK_H
 
-#include "../abstracttrack.h"
+#include "tagparser/abstracttrack.h"
 
 namespace Media {
 

@@ -6,8 +6,7 @@
 #include <string>
 #include <list>
 
-namespace Media
-{
+namespace Media {
 
 /*!
  * \brief Specifies the notification type.

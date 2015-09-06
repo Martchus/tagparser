@@ -1,7 +1,7 @@
 #include "oggcontainer.h"
 
-#include "../mediafileinfo.h"
-#include "../backuphelper.h"
+#include "tagparser/mediafileinfo.h"
+#include "tagparser/backuphelper.h"
 
 #include <c++utilities/io/copy.h>
 #include <c++utilities/misc/memory.h>

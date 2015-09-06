@@ -3,7 +3,8 @@
 #include "mp4atom.h"
 #include "mp4ids.h"
 #include "mp4container.h"
-#include "../exceptions.h"
+
+#include "tagparser/exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

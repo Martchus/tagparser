@@ -2,7 +2,8 @@
 #define MPEGAUDIOFRAMESTREAM_H
 
 #include "mpegaudioframe.h"
-#include "../abstracttrack.h"
+
+#include "tagparser/abstracttrack.h"
 
 #include <list>
 

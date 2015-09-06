@@ -3,7 +3,7 @@
 
 #include "mp4tagfield.h"
 
-#include "../fieldbasedtag.h"
+#include "tagparser/fieldbasedtag.h"
 
 namespace Media
 {

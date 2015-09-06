@@ -1,8 +1,9 @@
 #include "mp4container.h"
 #include "mp4ids.h"
-#include "../exceptions.h"
-#include "../mediafileinfo.h"
-#include "../backuphelper.h"
+
+#include "tagparser/exceptions.h"
+#include "tagparser/mediafileinfo.h"
+#include "tagparser/backuphelper.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

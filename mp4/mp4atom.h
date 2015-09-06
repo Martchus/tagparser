@@ -3,7 +3,7 @@
 
 #include "mp4ids.h"
 
-#include "../genericfileelement.h"
+#include "tagparser/genericfileelement.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringconversion.h>

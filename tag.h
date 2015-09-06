@@ -12,8 +12,7 @@
 #include <type_traits>
 #include <string>
 
-namespace Media
-{
+namespace Media {
 
 /*!
  * \brief Specifies the tag type.

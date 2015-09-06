@@ -1,6 +1,6 @@
 #include "mp4ids.h"
 
-#include "../mediaformat.h"
+#include "tagparser/mediaformat.h"
 
 namespace Media {
 

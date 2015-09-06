@@ -3,8 +3,9 @@
 
 #include "ebmlid.h"
 #include "matroskaid.h"
-#include "../statusprovider.h"
-#include "../genericfileelement.h"
+
+#include "tagparser/statusprovider.h"
+#include "tagparser/genericfileelement.h"
 
 #include <c++utilities/conversion/types.h>
 

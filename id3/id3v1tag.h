@@ -1,7 +1,7 @@
 #ifndef ID3V1TAG_H
 #define ID3V1TAG_H
 
-#include "../tag.h"
+#include "tagparser/tag.h"
 
 namespace Media
 {

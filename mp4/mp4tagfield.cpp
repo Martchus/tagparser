@@ -2,7 +2,8 @@
 #include "mp4tagfield.h"
 #include "mp4atom.h"
 #include "mp4ids.h"
-#include "../exceptions.h"
+
+#include "tagparser/exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

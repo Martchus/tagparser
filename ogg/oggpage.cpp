@@ -1,6 +1,6 @@
 #include "oggpage.h"
 
-#include "../exceptions.h"
+#include "tagparser/exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/conversion/binaryconversion.h>

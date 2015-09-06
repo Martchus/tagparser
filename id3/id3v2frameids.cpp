@@ -1,5 +1,6 @@
 #include "id3v2frameids.h"
-#include "../exceptions.h"
+
+#include "tagparser/exceptions.h"
 
 namespace Media
 {

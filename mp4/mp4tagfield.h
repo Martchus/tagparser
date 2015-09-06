@@ -1,8 +1,8 @@
 #ifndef MP4TAGATOM_H
 #define MP4TAGATOM_H
 
-#include "../generictagfield.h"
-#include "../statusprovider.h"
+#include "tagparser/generictagfield.h"
+#include "tagparser/statusprovider.h"
 
 #include <vector>
 

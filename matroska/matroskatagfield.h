@@ -1,8 +1,8 @@
 #ifndef MEDIA_MATROSKATAGFIELD_H
 #define MEDIA_MATROSKATAGFIELD_H
 
-#include "../generictagfield.h"
-#include "../statusprovider.h"
+#include "tagparser/generictagfield.h"
+#include "tagparser/statusprovider.h"
 
 namespace Media {
 

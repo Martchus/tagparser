@@ -3,8 +3,7 @@
 
 #include "tagvalue.h"
 
-namespace Media
-{
+namespace Media {
 
 template <class implementationType>
 class TagField;

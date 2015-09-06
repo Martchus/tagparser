@@ -3,8 +3,8 @@
 
 #include "vorbiscommentfield.h"
 
-#include "../caseinsensitivecomparer.h"
-#include "../fieldbasedtag.h"
+#include "tagparser/caseinsensitivecomparer.h"
+#include "tagparser/fieldbasedtag.h"
 
 namespace Media {
 

@@ -1,6 +1,6 @@
 #include "oggiterator.h"
 
-#include "../exceptions.h"
+#include "tagparser/exceptions.h"
 
 namespace Media {
 

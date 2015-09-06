@@ -1,9 +1,9 @@
 #include "vorbisidentificationheader.h"
 #include "vorbispackagetypes.h"
 
-#include "../ogg/oggiterator.h"
+#include "tagparser/ogg/oggiterator.h"
 
-#include "../exceptions.h"
+#include "tagparser/exceptions.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
 

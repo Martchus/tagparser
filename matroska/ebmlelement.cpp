@@ -2,7 +2,8 @@
 #include "ebmlid.h"
 #include "matroskacontainer.h"
 #include "matroskaid.h"
-#include "../exceptions.h"
+
+#include "tagparser/exceptions.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringconversion.h>

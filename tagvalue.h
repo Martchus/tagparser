@@ -11,8 +11,7 @@
 #include <string>
 #include <memory>
 
-namespace Media
-{
+namespace Media {
 
 /*!
  * \brief Specifies the text encoding.

@@ -13,6 +13,10 @@ TEMPLATE = lib
 CONFIG -= qt
 CONFIG += shared
 
+underconstruction {
+    DEFINES += UNDER_CONSTRUCTION
+}
+
 SOURCES += \
     abstractcontainer.cpp \
     abstracttrack.cpp \

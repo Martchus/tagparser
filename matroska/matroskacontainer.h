@@ -7,7 +7,7 @@
 #include "matroskachapter.h"
 #include "matroskaattachment.h"
 
-#include "../genericcontainer.h"
+#include "tagparser/genericcontainer.h"
 
 #include <c++utilities/conversion/types.h>
 

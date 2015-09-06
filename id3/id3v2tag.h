@@ -3,7 +3,7 @@
 
 #include "id3v2frame.h"
 
-#include "../fieldbasedtag.h"
+#include "tagparser/fieldbasedtag.h"
 
 #include <map>
 

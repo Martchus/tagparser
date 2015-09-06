@@ -2,7 +2,8 @@
 #define MEDIA_ADTSSTREAM_H
 
 #include "adtsframe.h"
-#include "../abstracttrack.h"
+
+#include "tagparser/abstracttrack.h"
 
 namespace Media {
 

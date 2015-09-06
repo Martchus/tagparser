@@ -5,9 +5,9 @@
 #include "matroskaeditionentry.h"
 #include "matroskaseekinfo.h"
 
-#include "../mediafileinfo.h"
-#include "../exceptions.h"
-#include "../backuphelper.h"
+#include "tagparser/mediafileinfo.h"
+#include "tagparser/exceptions.h"
+#include "tagparser/backuphelper.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>

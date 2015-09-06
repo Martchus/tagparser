@@ -11,8 +11,7 @@
 #include <vector>
 #include <memory>
 
-namespace Media
-{
+namespace Media {
 
 class Tag;
 class Id3v1Tag;

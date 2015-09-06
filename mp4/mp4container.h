@@ -4,7 +4,8 @@
 #include "mp4atom.h"
 #include "mp4tag.h"
 #include "mp4track.h"
-#include "../genericcontainer.h"
+
+#include "tagparser/genericcontainer.h"
 
 #include <c++utilities/conversion/types.h>
 

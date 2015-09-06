@@ -7,8 +7,7 @@
 #include <string>
 #include <sstream>
 
-namespace Media
-{
+namespace Media {
 
 /*!
  * \brief The Size class defines the size of a two-dimensional object using integer point precision.

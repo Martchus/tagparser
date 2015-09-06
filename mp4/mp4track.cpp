@@ -4,11 +4,11 @@
 #include "mp4ids.h"
 #include "mpeg4descriptor.h"
 
-#include "../mpegaudio/mpegaudioframe.h"
-#include "../mpegaudio/mpegaudioframestream.h"
+#include "tagparser/mpegaudio/mpegaudioframe.h"
+#include "tagparser/mpegaudio/mpegaudioframestream.h"
 
-#include "../exceptions.h"
-#include "../mediaformat.h"
+#include "tagparser/exceptions.h"
+#include "tagparser/mediaformat.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
@@ -432,6 +432,7 @@ vector<uint64> Mp4Track::readChunkSizes()
     return chunkSizes;
 }
 
+#ifdef UNDER_CONSTRUCTION
 /*!
  * \brief Reads the AVC configuration for the track.
  * \remarks
@@ -486,6 +487,7 @@ AvcConfiguration Mp4Track::parseAvcConfiguration(StatusProvider &statusProvider,
     }
     return config;
 }
+#endif
 
 /*!
  * \brief Reads the MPEG-4 elementary stream descriptor for the track.

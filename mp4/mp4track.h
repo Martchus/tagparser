@@ -1,9 +1,11 @@
 #ifndef MP4TRACK_H
 #define MP4TRACK_H
 
-#include "../avc/avcconfiguration.h"
+#ifdef UNDER_CONSTRUCTION
+#include "tagparser/avc/avcconfiguration.h"
+#endif
 
-#include "../abstracttrack.h"
+#include "tagparser/abstracttrack.h"
 
 #include <vector>
 #include <memory>
@@ -133,7 +135,9 @@ public:
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
 
     // methods to parse configuration details from the track header
+#ifdef UNDER_CONSTRUCTION
     static AvcConfiguration parseAvcConfiguration(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);
+#endif
     static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom);
     static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(StatusProvider &statusProvider, std::istream &stream, uint64 startOffset, uint64 size);
     static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);

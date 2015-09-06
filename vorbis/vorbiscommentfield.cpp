@@ -1,11 +1,11 @@
 #include "vorbiscommentfield.h"
 #include "vorbiscommentids.h"
 
-#include "../ogg/oggiterator.h"
+#include "tagparser/ogg/oggiterator.h"
 
-#include "../id3/id3v2frame.h"
+#include "tagparser/id3/id3v2frame.h"
 
-#include "../exceptions.h"
+#include "tagparser/exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

@@ -2,7 +2,8 @@
 #define MEDIA_MATROSKATAG_H
 
 #include "matroskatagfield.h"
-#include "../fieldbasedtag.h"
+
+#include "tagparser/fieldbasedtag.h"
 
 namespace Media {
 

@@ -1,7 +1,7 @@
 #include "waveaudiostream.h"
 
-#include "../exceptions.h"
-#include "../mediaformat.h"
+#include "tagparser/exceptions.h"
+#include "tagparser/mediaformat.h"
 
 #include <c++utilities/io/binaryreader.h>
 

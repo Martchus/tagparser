@@ -3,7 +3,7 @@
 
 #include "ebmlelement.h"
 
-#include "../statusprovider.h"
+#include "tagparser/statusprovider.h"
 
 #include <utility>
 
