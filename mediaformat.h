@@ -83,6 +83,7 @@ enum class GeneralMediaFormat
     VobSub, /**< VobSub */
     Vorbis, /**< Vorbis */
     Vp8, /** < VP8 */
+    Vp9, /** < VP9 */
     WavPack, /**< WavPack */
     WindowsMediaAudio /**< Windows Media Audio */
 };

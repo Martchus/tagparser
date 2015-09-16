@@ -87,6 +87,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::ProRes;
     } else if(part1 == "V_VP8") {
         fmt.general = GeneralMediaFormat::Vp8;
+    } else if(part1 == "V_VP9") {
+        fmt.general = GeneralMediaFormat::Vp9;
     } else if(part1 == "A_MPEG") {
         fmt.general = GeneralMediaFormat::Mpeg1Audio;
         if(part2 == "L1") {
@@ -407,6 +409,14 @@ void MatroskaTrack::internalParseHeader()
         break;
     default:
         ;
+    }
+    if(m_format.general == GeneralMediaFormat::Unknown && m_formatName.empty()) {
+        if(startsWith<string>(m_formatId, "V_") || startsWith<string>(m_formatId, "A_") || startsWith<string>(m_formatId, "S_")) {
+            m_formatName = m_formatId.substr(2);
+        } else {
+            m_formatName = m_formatId;
+        }
+        m_formatName.append(" (unknown)");
     }
 }
 

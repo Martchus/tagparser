@@ -219,6 +219,7 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::VobSub: return "VobSub";
     case GeneralMediaFormat::Vorbis: return "Vorbis";
     case GeneralMediaFormat::Vp8: return "VP8";
+    case GeneralMediaFormat::Vp9: return "VP9";
     case GeneralMediaFormat::WavPack: return "WavPack";
     case GeneralMediaFormat::WindowsMediaAudio: return "Windows Media Audio";
     default: return "unknown";
@@ -379,6 +380,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::VobSub: return "VobSub";
     case GeneralMediaFormat::Vorbis: return "Vorbis";
     case GeneralMediaFormat::Vp8: return "VP8";
+    case GeneralMediaFormat::Vp9: return "VP9";
     case GeneralMediaFormat::WavPack: return "WavPack";
     case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
     default: return "";
