@@ -5,6 +5,7 @@
 #include <c++utilities/misc/memory.h>
 
 using namespace std;
+using namespace ChronoUtilities;
 
 namespace Media {
 
@@ -48,10 +49,10 @@ void MatroskaChapter::internalParse()
         case MatroskaIds::ChapterStringUID:
             break;
         case MatroskaIds::ChapterTimeStart:
-            m_startTime = chapterAtomChild->readUInteger() / 100;
+            m_startTime = TimeSpan(chapterAtomChild->readUInteger() / 100);
             break;
         case MatroskaIds::ChapterTimeEnd:
-            m_endTime = chapterAtomChild->readUInteger() / 100;
+            m_endTime = TimeSpan(chapterAtomChild->readUInteger() / 100);
             break;
         case MatroskaIds::ChapterFlagHidden:
             m_hidden = chapterAtomChild->readUInteger() == 1;
