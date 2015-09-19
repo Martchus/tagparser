@@ -79,7 +79,7 @@ enum Sig16 : uint16
     Jpeg = 0xffd8u,
     Lha = 0x1FA0u,
     Lzw = 0x1F9Du,
-    MpegAudioFrames = 0xFFFBu,
+    MpegAudioFrames = 0x7FFu,
     PortableExecutable = 0x4D5Au,
     Utf16Text = 0xFFFEu,
     WindowsBitmap = 0x424du,
@@ -193,8 +193,6 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::Lha;
     case Lzw:
         return ContainerFormat::Lzw;
-    case MpegAudioFrames:
-        return ContainerFormat::MpegAudioFrames;
     case PortableExecutable:
         return ContainerFormat::PortableExecutable;
     case Utf16Text:
@@ -204,8 +202,12 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     default:
         ;
     }
+    // check other signatures
     if(((sig >> 48) & AdtsMask) == Adts) {
         return ContainerFormat::Adts;
+    }
+    if((sig >> 53) == MpegAudioFrames) {
+        return ContainerFormat::MpegAudioFrames;
     }
     return ContainerFormat::Unknown;
 }
