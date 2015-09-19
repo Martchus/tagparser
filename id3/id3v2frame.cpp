@@ -114,7 +114,7 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
         throw InvalidDataException();
     }
     // parse the data
-    vector<char> buffer;
+    unique_ptr<char[]> buffer;
     if(isCompressed()) {
         // decompress compressed data
         uLongf decompressedSize = version >= 4 ? reader.readSynchsafeUInt32BE() : reader.readUInt32BE();
@@ -122,11 +122,10 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
             addNotification(NotificationType::Critical, "The decompressed size is smaller then the compressed size.", context);
             throw InvalidDataException();
         }
-        vector<char> bufferCompressed;
-        bufferCompressed.resize(m_dataSize);
-        reader.read(bufferCompressed.data(), m_dataSize);
-        buffer.resize(decompressedSize);
-        switch(uncompress(reinterpret_cast<Bytef *>(buffer.data()), &decompressedSize, reinterpret_cast<Bytef *>(bufferCompressed.data()), m_dataSize)) {
+        unique_ptr<char[]> bufferCompressed = make_unique<char[]>(m_dataSize);;
+        reader.read(bufferCompressed.get(), m_dataSize);
+        buffer = make_unique<char[]>(decompressedSize);
+        switch(uncompress(reinterpret_cast<Bytef *>(buffer.get()), &decompressedSize, reinterpret_cast<Bytef *>(bufferCompressed.get()), m_dataSize)) {
         case Z_MEM_ERROR:
             addNotification(NotificationType::Critical, "Decompressing failed. The source buffer was too small.", context);
             throw InvalidDataException();
@@ -141,53 +140,53 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
         }
         m_dataSize = decompressedSize;
     } else {
-        buffer.resize(m_dataSize);
-        reader.read(buffer.data(), m_dataSize);
+        buffer = make_unique<char[]>(m_dataSize);
+        reader.read(buffer.get(), m_dataSize);
     }
     if(Id3v2FrameIds::isTextfield(id())) {
         // frame contains text
-        TagTextEncoding dataEncoding = helper.parseTextEncodingByte(buffer.front()); // the first byte stores the encoding
-        // the track number or the disk number frame
+        TagTextEncoding dataEncoding = helper.parseTextEncodingByte(*buffer.get()); // the first byte stores the encoding
         if((version >= 3 &&
             (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && id() == Id3v2FrameIds::sTrackPosition)) {
+            // the track number or the disk number frame
             try {
                 PositionInSet position;
                 if(characterSize(dataEncoding) > 1) {
-                    position = PositionInSet(helper.parseWideString(buffer.data() + 1, m_dataSize - 1, dataEncoding));
+                    position = PositionInSet(helper.parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
                 } else {
-                    position = PositionInSet(helper.parseString(buffer.data() + 1, m_dataSize - 1, dataEncoding));
+                    position = PositionInSet(helper.parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
                 }
                 value().assignPosition(position);
             } catch(ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
             }
-        // frame contains length
         } else if((version >= 3 && id() == Id3v2FrameIds::lLength) || (version < 3 && id() == Id3v2FrameIds::sLength)) {
+            // frame contains length
             double milliseconds;
             try {
                 if(characterSize(dataEncoding) > 1) {
-                    wstring millisecondsStr = helper.parseWideString(buffer.data() + 1, m_dataSize - 1, dataEncoding);
+                    wstring millisecondsStr = helper.parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                     milliseconds = ConversionUtilities::stringToNumber<double, wstring>(millisecondsStr, 10);
                 } else {
-                    milliseconds = ConversionUtilities::stringToNumber<double>(helper.parseString(buffer.data() + 1, m_dataSize - 1, dataEncoding), 10);
+                    milliseconds = ConversionUtilities::stringToNumber<double>(helper.parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
                 }
                 value().assignTimeSpan(TimeSpan::fromMilliseconds(milliseconds));
             } catch (ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of the length frame is not numeric and will be ignored.", context);
             }
-        // genre/content type
         } else if((version >= 3 && id() == Id3v2FrameIds::lGenre) || (version < 3 && id() == Id3v2FrameIds::sGenre)) {
+            // genre/content type
             int genreIndex;
             try {
                 if(characterSize(dataEncoding) > 1) {
-                    wstring indexStr = helper.parseWideString(buffer.data() + 1, m_dataSize - 1, dataEncoding);
+                    wstring indexStr = helper.parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                     if(indexStr.front() == L'(' && indexStr.back() == L')') {
                         indexStr = indexStr.substr(1, indexStr.length() - 2);
                     }
                     genreIndex = ConversionUtilities::stringToNumber<int, wstring>(indexStr, 10);
                 } else {
-                    string indexStr = helper.parseString(buffer.data() + 1, m_dataSize - 1, dataEncoding);
+                    string indexStr = helper.parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                     if(indexStr.front() == '(' && indexStr.back() == ')') {
                         indexStr = indexStr.substr(1, indexStr.length() - 2);
                     }
@@ -197,26 +196,31 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
             } catch(ConversionException &) {
                 // genre is specified as string
                 // string might be null terminated
-                auto substr = helper.parseSubstring(buffer.data() + 1, m_dataSize - 1, dataEncoding);
+                auto substr = helper.parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                 value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
             }
         } else { // any other text frame
             // string might be null terminated
-            auto substr = helper.parseSubstring(buffer.data() + 1, m_dataSize - 1, dataEncoding);
+            auto substr = helper.parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
             value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
         }
-    // frame stores picture
-    } else if((version >= 3 && id() == Id3v2FrameIds::lCover) || (version < 3 && id() == Id3v2FrameIds::sCover)) {
+    } else if(version >= 3 && id() == Id3v2FrameIds::lCover) {
+        // frame stores picture
         byte type;
-        helper.parsePicture(buffer.data(), m_dataSize, value(), type);
+        helper.parsePicture(buffer.get(), m_dataSize, value(), type);
         setTypeInfo(type);
-    // comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
+    } else if(version < 3 && id() == Id3v2FrameIds::sCover) {
+        // frame stores legacy picutre
+        byte type;
+        helper.parseLegacyPicture(buffer.get(), m_dataSize, value(), type);
+        setTypeInfo(type);
     } else if(((version >= 3 && id() == Id3v2FrameIds::lComment) || (version < 3 && id() == Id3v2FrameIds::sComment))
               || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics) || (version < 3 && id() == Id3v2FrameIds::sUnsynchronizedLyrics))) {
-        helper.parseComment(buffer.data(), m_dataSize, value());
-    // unknown frame
+        // comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
+        helper.parseComment(buffer.get(), m_dataSize, value());
     } else {
-        value().assignData(buffer.data(), m_dataSize, TagDataType::Undefined);
+        // unknown frame
+        value().assignData(buffer.get(), m_dataSize, TagDataType::Undefined);
     }
 }
 
@@ -252,7 +256,7 @@ void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
             // try to convert the short frame id to its long equivalent
             frameId = Id3v2FrameIds::convertToLongId(frameId);
             if(frameId == 0) {
-                addNotification(NotificationType::Critical, "The short frame id can't be converted to its long equivalent which is needed to use the frame in a newer version of ID3v2.", context);
+                addNotification(NotificationType::Critical, "The short frame ID can't be converted to its long equivalent which is needed to use the frame in a newer version of ID3v2.", context);
                 throw InvalidDataException();
             }
         }
@@ -261,7 +265,7 @@ void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
             // try to convert the long frame id to its short equivalent
             frameId = Id3v2FrameIds::convertToShortId(frameId);
             if(frameId == 0) {
-                addNotification(NotificationType::Critical, "The long frame id can't be converted to its short equivalent which is needed to use the frame in the old version of ID3v2.", context);
+                addNotification(NotificationType::Critical, "The long frame ID can't be converted to its short equivalent which is needed to use the frame in the old version of ID3v2.", context);
                 throw InvalidDataException();
             }
         }
@@ -291,10 +295,12 @@ void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
                 // any other text frame
                 helper.makeString(buffer, decompressedSize, value().toString(), value().dataEncoding()); // the same as a normal text frame
             }
-        } else if((version >= 3 && frameId == Id3v2FrameIds::lCover)
-                  || (version < 3 && frameId == Id3v2FrameIds::sCover)) {
+        } else if(version >= 3 && frameId == Id3v2FrameIds::lCover) {
             // picture frame
             helper.makePicture(buffer, decompressedSize, value(), isTypeInfoAssigned() ? typeInfo() : 0);
+        } else if(version < 3 && frameId == Id3v2FrameIds::sCover) {
+            // legacy picture frame
+            helper.makeLegacyPicture(buffer, decompressedSize, value(), isTypeInfoAssigned() ? typeInfo() : 0);
         } else if(((version >= 3 && id() == Id3v2FrameIds::lComment)
                    || (version < 3 && id() == Id3v2FrameIds::sComment))
                   || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics)
@@ -542,7 +548,34 @@ void Id3v2FrameHelper::parseBom(const char *buffer, size_t maxSize, TagTextEncod
 }
 
 /*!
- * \brief Parses the picture from the specified \a buffer.
+ * \brief Parses the ID3v2.2 picture from the specified \a buffer.
+ * \param buffer Specifies the buffer holding the picture.
+ * \param maxSize Specifies the maximal number of bytes to read from the buffer.
+ * \param tagValue Specifies the tag value used to store the results.
+ * \param typeInfo Specifies a byte used to store the type info.
+ */
+void Id3v2FrameHelper::parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
+{
+    static const string context("parsing ID3v2.2 picture frame");
+    if(maxSize < 6) {
+        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete.", context);
+        throw TruncatedDataException();
+    }
+    const char *end = buffer + maxSize;
+    auto dataEncoding = parseTextEncodingByte(*buffer); // the first byte stores the encoding
+    //auto imageFormat = parseSubstring(buffer + 1, 3, TagTextEncoding::Latin1);
+    typeInfo = static_cast<unsigned char>(*(buffer + 4));
+    auto substr = parseSubstring(buffer + 5, end - 5 - buffer, dataEncoding, true);
+    tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
+    if(get<2>(substr) >= end) {
+        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
+        throw TruncatedDataException();
+    }
+    tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
+}
+
+/*!
+ * \brief Parses the ID3v2.3 picture from the specified \a buffer.
  * \param buffer Specifies the buffer holding the picture.
  * \param maxSize Specifies the maximal number of bytes to read from the buffer.
  * \param tagValue Specifies the tag value used to store the results.
@@ -550,11 +583,11 @@ void Id3v2FrameHelper::parseBom(const char *buffer, size_t maxSize, TagTextEncod
  */
 void Id3v2FrameHelper::parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
 {
-    static const string context("parsing ID3v2 picture frame");
+    static const string context("parsing ID3v2.3 picture frame");
     const char *end = buffer + maxSize;
     auto dataEncoding = parseTextEncodingByte(*buffer); // the first byte stores the encoding
-    auto mimeTypeEnc = TagTextEncoding::Latin1; // MIME type shoud be encoded in Latin-1
-    auto substr = parseSubstring(buffer + 1, maxSize - 1, mimeTypeEnc, true);
+    auto mimeTypeEncoding = TagTextEncoding::Latin1;
+    auto substr = parseSubstring(buffer + 1, maxSize - 1, mimeTypeEncoding, true);
     if(get<1>(substr)) {
         tagValue.setMimeType(string(get<0>(substr), get<1>(substr)));
     }
@@ -646,7 +679,50 @@ void Id3v2FrameHelper::makeEncodingAndData(unique_ptr<char[]> &buffer, uint32 &b
 }
 
 /*!
- * \brief Writes the specified picture to the specified buffer.
+ * \brief Writes the specified picture to the specified buffer (ID3v2.2).
+ */
+void Id3v2FrameHelper::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
+{
+    // calculate needed buffer size and create buffer
+    TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
+    uint32 dataSize = picture.dataSize();
+    string::size_type descriptionLength = picture.description().find('\0');
+    if(descriptionLength == string::npos) {
+        descriptionLength = picture.description().length();
+    }
+    buffer = make_unique<char[]>(bufferSize = 1             + 3            + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
+    // note:                                  encoding byte + image format + picture type byte + description length + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
+    char *offset = buffer.get();
+    // write encoding byte
+    *offset = makeTextEncodingByte(descriptionEncoding);
+    // write mime type
+    const char *imageFormat;
+    if(picture.mimeType() == "image/jpeg") {
+        imageFormat = "JPG";
+    } else if(picture.mimeType() == "image/png") {
+        imageFormat = "PNG";
+    } else if(picture.mimeType() == "image/gif") {
+        imageFormat = "GIF";
+    } else if(picture.mimeType() == "-->") {
+        imageFormat = picture.mimeType().data();
+    } else {
+        imageFormat = "UND";
+    }
+    strncpy(++offset, imageFormat, 3);
+    // write picture type
+    *(offset += 3) = typeInfo;
+    // write description
+    picture.description().copy(++offset, descriptionLength);
+    *(offset += descriptionLength) = 0x00; // terminate description and increase data offset
+    if(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
+        *(++offset) = 0x00;
+    }
+    // write actual data
+    copy(picture.dataPointer(), picture.dataPointer() + picture.dataSize(), ++offset);
+}
+
+/*!
+ * \brief Writes the specified picture to the specified buffer (ID3v2.3).
  */
 void Id3v2FrameHelper::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
@@ -668,14 +744,12 @@ void Id3v2FrameHelper::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     *offset = makeTextEncodingByte(descriptionEncoding);
     // write mime type
     picture.mimeType().copy(++offset, mimeTypeLength);
-    offset += mimeTypeLength;
-    *offset = 0x00; // terminate mime type
+    *(offset += mimeTypeLength) = 0x00; // terminate mime type
     // write picture type
     *(++offset) = typeInfo;
     // write description
     picture.description().copy(++offset, descriptionLength);
-    offset += descriptionLength;
-    *offset = 0x00; // terminate description and increase data offset
+    *(offset += descriptionLength) = 0x00; // terminate description and increase data offset
     if(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;
     }
