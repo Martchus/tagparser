@@ -19,7 +19,7 @@ const char *mpegChannelModeString(MpegChannelMode channelMode)
     case MpegChannelMode::JointStereo: return "2 channels: joint stereo";
     case MpegChannelMode::DualChannel: return "2 channels: dual channel";
     case MpegChannelMode::SingleChannel: return "1 channel: single channel";
-    case MpegChannelMode::Unspecifed: return nullptr;
+    default: return nullptr;
     }
 }
 

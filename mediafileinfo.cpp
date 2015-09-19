@@ -133,21 +133,23 @@ void MediaFileInfo::parseContainerFormat()
     m_containerOffset = 0;
     // read signatrue
     char buff[16];
+    const char *const buffEnd = buff + sizeof(buff), *buffOffset;
 startParsingSignature:
     if(size() - m_containerOffset >= 16) {
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
         // skip zero bytes/padding
-        if(!(*reinterpret_cast<uint32 *>(buff))) {
+        size_t bytesSkipped = 0;
+        for(buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped);
+        if(bytesSkipped >= 4) {
+            m_containerOffset += bytesSkipped;
             // give up after 0x100 bytes
-            if(m_paddingSize >= 0x100u) {
+            if((m_paddingSize += bytesSkipped) >= 0x100u) {
                 m_containerParsed = true;
                 m_containerFormat = ContainerFormat::Unknown;
                 return;
             }
-            m_containerOffset += sizeof(uint32); // set the container offset
-            m_paddingSize += sizeof(uint32);
-            goto startParsingSignature; // read signature again
+            goto startParsingSignature;
         }
         if(m_paddingSize) {
             addNotification(NotificationType::Warning, ConversionUtilities::numberToString(m_paddingSize) + " zero-bytes skipped at the beginning of the file.", context);

@@ -106,7 +106,7 @@ void EbmlElement::internalParse()
         throw InvalidDataException();
     }
     // read size into buffer
-    *reinterpret_cast<dataSizeType *>(buf) = 0; // reset buffer
+    memset(buf, 0, sizeof(dataSizeType)); // reset buffer
     reader().read(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
     *(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength)) ^= mask; // xor the first byte in buffer which has been read from the file with mask
     m_dataSize = ConversionUtilities::BE::toUInt64(buf);
