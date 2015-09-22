@@ -15,7 +15,7 @@ namespace Media {
  */
 enum class NotificationType
 {
-    None = 0, /**< indicates that no notifications are present; should not be used when construction a notfication */
+    None = 0, /**< indicates that no notifications are present; should not be used when constructing a notfication */
     Debug = 1, /**< indicates a debbuging notification */
     Information = 2, /**< indicates an informal notification */
     Warning = 3, /**< indicates a warning */
