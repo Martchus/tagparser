@@ -6,6 +6,7 @@
 #include "../mediaformat.h"
 
 #include <c++utilities/io/binaryreader.h>
+#include <c++utilities/conversion/stringconversion.h>
 
 using namespace std;
 using namespace ChronoUtilities;
@@ -89,6 +90,7 @@ TrackType WaveAudioStream::type() const
 void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track)
 {
     track.m_format = waveHeader.format();
+    track.m_formatId = ConversionUtilities::numberToString(waveHeader.formatTag);
     track.m_channelCount = waveHeader.channelCount;
     track.m_samplingFrequency = waveHeader.sampleRate;
     track.m_bytesPerSecond = waveHeader.bytesPerSecond;
