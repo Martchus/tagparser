@@ -614,6 +614,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
         switch(audioCfg->extensionAudioObjectType) {
         case Ps:
             audioCfg->psPresent = true;
+            audioCfg->extensionChannelConfiguration = Mpeg4ChannelConfigs::FrontLeftFrontRight;
             break;
         }
         // read GA specific config
@@ -622,10 +623,10 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
         case TwinVq: case ErAacLc: case ErAacLtp: case ErAacScalable:
         case ErTwinVq: case ErBsac: case ErAacLd:
             audioCfg->frameLengthFlag = bitReader.readBits<byte>(1);
-            if((audioCfg->dependsOnCoreCoder = bitReader.readBits<byte>(1))) {
+            if((audioCfg->dependsOnCoreCoder = bitReader.readBit())) {
                 audioCfg->coreCoderDelay = bitReader.readBits<byte>(14);
             }
-            audioCfg->extensionFlag = bitReader.readBits<byte>(1);
+            audioCfg->extensionFlag = bitReader.readBit();
             if(audioCfg->channelConfiguration == 0) {
                 throw NotImplementedException(); // TODO: parse program_config_element
             }
@@ -648,7 +649,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
                 default:
                     ;
                 }
-                if(bitReader.readBits<byte>(1) == 1) { // extension flag 3
+                if(bitReader.readBit() == 1) { // extension flag 3
                     throw NotImplementedException(); // TODO
                 }
             }
@@ -676,7 +677,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
             uint16 syncExtensionType = bitReader.readBits<uint16>(11);
             if(syncExtensionType == 0x2B7) {
                 if((audioCfg->extensionAudioObjectType = getAudioObjectType()) == Sbr) {
-                    if((audioCfg->sbrPresent = bitReader.readBits<byte>(1))) {
+                    if((audioCfg->sbrPresent = bitReader.readBit())) {
                         if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
                             audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
                         }
@@ -686,9 +687,16 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
                             }
                         }
                     }
+                } else if(audioCfg->extensionAudioObjectType == ErBsac) {
+                    if((audioCfg->sbrPresent = bitReader.readBit())) {
+                        if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+                            audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
+                        }
+                    }
+                    audioCfg->extensionChannelConfiguration = bitReader.readBits<byte>(4);
                 }
             } else if (syncExtensionType == 0x548) {
-                audioCfg->psPresent = bitReader.readBits<byte>(1);
+                audioCfg->psPresent = bitReader.readBit();
             }
         }
     } catch(ios_base::failure &) {
@@ -1367,6 +1375,7 @@ void Mp4Track::internalParseHeader()
                                     addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }
                                 m_channelConfig = m_esInfo->audioSpecificConfig->channelConfiguration;
+                                m_extensionChannelConfig = m_esInfo->audioSpecificConfig->extensionChannelConfiguration;
                             }
                             if(m_esInfo->videoSpecificConfig) {
                                 // check the video specific config for useful information

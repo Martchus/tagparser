@@ -406,6 +406,7 @@ void MatroskaTrack::internalParseHeader()
                 addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
             }
             m_channelConfig = audioSpecificConfig->channelConfiguration;
+            m_extensionChannelConfig = audioSpecificConfig->extensionChannelConfiguration;
         }
         break;
     default:

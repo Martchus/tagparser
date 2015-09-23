@@ -50,6 +50,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64
     m_bytesPerSecond(0),
     m_channelCount(0),
     m_channelConfig(0),
+    m_extensionChannelConfig(0),
     m_sampleCount(0),
     m_quality(0),
     m_depth(0),
@@ -114,6 +115,27 @@ const char *AbstractTrack::channelConfigString() const
         return m_channelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_channelConfig) : nullptr;
     case GeneralMediaFormat::Mpeg1Audio: case GeneralMediaFormat::Mpeg2Audio:
         return mpegChannelModeString(static_cast<MpegChannelMode>(m_channelConfig));
+    default:
+        return nullptr;
+    }
+}
+
+/*!
+ * \brief Returns the extension channel configuration if available; otherwise returns nullptr.
+ */
+byte AbstractTrack::extensionChannelConfig() const
+{
+    return m_extensionChannelConfig;
+}
+
+/*!
+ * \brief Returns a string with the extension channel configuration if available; otherwise returns nullptr.
+ */
+const char *AbstractTrack::extensionChannelConfigString() const
+{
+    switch(m_format.general) {
+    case GeneralMediaFormat::Aac:
+        return m_extensionChannelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_extensionChannelConfig) : nullptr;
     default:
         return nullptr;
     }

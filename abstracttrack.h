@@ -75,6 +75,8 @@ public:
     uint16 channelCount() const;
     byte channelConfig() const;
     const char *channelConfigString() const;
+    byte extensionChannelConfig() const;
+    const char *extensionChannelConfigString() const;
     uint64 sampleCount() const;
     int quality() const;
     const Size &pixelSize() const;
@@ -129,6 +131,7 @@ protected:
     uint32 m_bytesPerSecond;
     uint16 m_channelCount;
     byte m_channelConfig;
+    byte m_extensionChannelConfig;
     uint16 m_chunkSize;
     uint64 m_sampleCount;
     int m_quality;
