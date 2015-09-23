@@ -236,13 +236,16 @@ LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent,
         fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4MainProfile);
         break;
     case AacLc:
-        fmt = MediaFormat(GeneralMediaFormat::Aac, sbrPresent ? SubFormats::AacMpeg4SpectralBandReplicationProfile : SubFormats::AacMpeg4LowComplexityProfile);
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile);
         break;
     case AacSsr:
         fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ScalableSamplingRateProfile);
         break;
     case AacLtp:
         fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LongTermPrediction);
+        break;
+    case Sbr:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile, ExtensionFormats::SpectralBandReplication);
         break;
     case AacScalable:
         fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ScalableSamplingRateProfile);
@@ -255,6 +258,9 @@ LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent,
         break;
     case ErAacLd:
         fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ERLowDelay);
+        break;
+    case Ps:
+        fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile, ExtensionFormats::ParametricStereo);
         break;
     case Layer1:
         fmt = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer1);

@@ -108,11 +108,9 @@ enum Mpeg1AudioLayer : unsigned char {
 enum AacProfile : unsigned char {
     AacMpeg2MainProfile = 1,
     AacMpeg2LowComplexityProfile,
-    AacMpeg2SpectralBandReplicationProfile,
     AacMpeg2ScalableSamplingRateProfile,
     AacMpeg4MainProfile,
     AacMpeg4LowComplexityProfile,
-    AacMpeg4SpectralBandReplicationProfile,
     AacMpeg4ScalableSamplingRateProfile,
     AacMpeg4LongTermPrediction,
     AacMpeg4ERLowComplecityProfile,
@@ -248,6 +246,7 @@ public:
 
     const char *name() const;
     const char *abbreviation() const;
+    const char *extensionName() const;
     operator bool() const;
     MediaFormat &operator+=(const MediaFormat &other);
 

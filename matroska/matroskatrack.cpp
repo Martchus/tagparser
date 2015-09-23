@@ -138,7 +138,7 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
             } else if(part3 == "LC") {
                 fmt.sub = SubFormats::AacMpeg2LowComplexityProfile;
             } else if(part3 == "SBR") {
-                fmt.sub = SubFormats::AacMpeg2SpectralBandReplicationProfile;
+                fmt.sub = SubFormats::AacMpeg2LowComplexityProfile;
                 fmt.extension = ExtensionFormats::SpectralBandReplication;
             } else if(part3 == "SSR") {
                 fmt.sub = SubFormats::AacMpeg2ScalableSamplingRateProfile;
@@ -149,7 +149,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
             } else if(part3 == "LC") {
                 fmt.sub = SubFormats::AacMpeg4LowComplexityProfile;
             } else if(part3 == "SBR") {
-                fmt.sub = SubFormats::AacMpeg4SpectralBandReplicationProfile;
+                fmt.sub = SubFormats::AacMpeg4LowComplexityProfile;
+                fmt.extension = ExtensionFormats::SpectralBandReplication;
             } else if(part3 == "SSR") {
                 fmt.sub = SubFormats::AacMpeg4ScalableSamplingRateProfile;
             } else if(part3 == "LTP") {

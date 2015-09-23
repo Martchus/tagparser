@@ -21,11 +21,9 @@ const char *MediaFormat::name() const
         switch(sub) {
         case AacMpeg2MainProfile: return "Advanced Audio Coding Main Profile";
         case AacMpeg2LowComplexityProfile: return "Advanced Audio Coding Low Complexity Profile";
-        case AacMpeg2SpectralBandReplicationProfile: return "Advanced Audio Coding Low Complexity with Spectral Band Replication Profile";
         case AacMpeg2ScalableSamplingRateProfile: return "Advanced Audio Coding Scalable Sampling Rate Profile";
         case AacMpeg4MainProfile: return "Advanced Audio Coding Main Profile";
         case AacMpeg4LowComplexityProfile: return "Advanced Audio Coding Low Complexity Profile";
-        case AacMpeg4SpectralBandReplicationProfile: return "Advanced Audio Coding Low Complexity with Spectral Band Replication Profile";
         case AacMpeg4ScalableSamplingRateProfile: return "Advanced Audio Coding Scaleable Sampling Rate Profile";
         case AacMpeg4LongTermPrediction: return "Advanced Audio Coding Long Term Predicition";
         case AacMpeg4ERLowComplecityProfile: return "Advanced Audio Coding Error Resilient Low Complexity Profile";
@@ -238,11 +236,9 @@ const char *MediaFormat::abbreviation() const
         switch(sub) {
         case AacMpeg2MainProfile: return "MPEG-2 AAC Main";
         case AacMpeg2LowComplexityProfile: return "MPEG-2 AAC-LC";
-        case AacMpeg2SpectralBandReplicationProfile: return "MPEG-2-SBR";
         case AacMpeg2ScalableSamplingRateProfile: return "MPEG-2 AAC-SSR";
         case AacMpeg4MainProfile: return "MPEG-4 AAC Main";
         case AacMpeg4LowComplexityProfile: return "MPEG-4 AAC-LC";
-        case AacMpeg4SpectralBandReplicationProfile: return "MPEG-4 HE-AAC";
         case AacMpeg4ScalableSamplingRateProfile: return "MPEG-4 AAC-SSR";
         case AacMpeg4LongTermPrediction: return "MPEG-4 AAC-LTP";
         case AacMpeg4ERLowComplecityProfile: return "MPEG-4 ER AAC-LC";
@@ -385,6 +381,33 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
     default: return "";
     }
+}
+
+/*!
+ * \brief Returns the abbreviation of the media format as C-style string.
+ *
+ * Returns an empty string if no abbreviation is available.
+ */
+const char *MediaFormat::extensionName() const
+{
+    switch(general) {
+    using namespace ExtensionFormats;
+    case GeneralMediaFormat::Aac:
+        switch(extension) {
+        case SpectralBandReplication:
+            return "Spectral Band Replication / HE-AAC";
+        case ParametricStereo:
+            return "Parametric Stereo / HE-AAC v2"; // PS never comes alone?
+        case (SpectralBandReplication | ParametricStereo):
+            return "Spectral Band Replication and Parametric Stereo / HE-AAC v2";
+        default:
+            ;
+        }
+        break;
+    default:
+        ;
+    }
+    return "";
 }
 
 }

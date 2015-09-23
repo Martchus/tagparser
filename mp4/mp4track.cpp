@@ -26,15 +26,6 @@ namespace Media {
 
 DateTime startDate = DateTime::fromDate(1904, 1, 1);
 
-MediaFormat fmtTable[] = {
-    GeneralMediaFormat::Unknown,
-    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4MainProfile),
-    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile),
-    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4ScalableSamplingRateProfile),
-    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LongTermPrediction),
-    MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4SpectralBandReplicationProfile)
-};
-
 Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
     audioObjectType(0),
     sampleFrequencyIndex(0xF),
@@ -610,7 +601,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
         switch(audioCfg->audioObjectType) {
         case Sbr:
         case Ps:
-            audioCfg->extensionAudioObjectType = Sbr;
+            audioCfg->extensionAudioObjectType = audioCfg->audioObjectType;
             audioCfg->sbrPresent = true;
             if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
                 audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
@@ -620,7 +611,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
             }
             break;
         }
-        switch(audioCfg->audioObjectType) {
+        switch(audioCfg->extensionAudioObjectType) {
         case Ps:
             audioCfg->psPresent = true;
             break;
@@ -681,7 +672,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
             }
             break;
         }
-        if(audioCfg->extensionAudioObjectType != 5 && bitReader.bitsAvailable() >= 16) {
+        if(audioCfg->extensionAudioObjectType != Sbr && audioCfg->extensionAudioObjectType != Ps && bitReader.bitsAvailable() >= 16) {
             uint16 syncExtensionType = bitReader.readBits<uint16>(11);
             if(syncExtensionType == 0x2B7) {
                 if((audioCfg->extensionAudioObjectType = getAudioObjectType()) == Sbr) {
