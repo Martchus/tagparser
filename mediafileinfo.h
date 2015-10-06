@@ -31,13 +31,25 @@ enum class MediaType;
 enum class TagType : unsigned int;
 
 /*!
- * \brief Specifies the usage of a certain tag type.
+ * \brief The TagUsage enum specifies the usage of a certain tag type.
  */
 enum class TagUsage
 {
     Always, /**< a tag of the type is always used; a new tag is created if none exists yet */
     KeepExisting, /**< existing tags of the type are kept and updated but no new tag is created  */
     Never /**< tags of the type are never used; a possibly existing tag of the type is removed */
+};
+
+/*!
+ * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
+ *        been parsed yet and if what the parsing result is.
+ */
+enum class ParsingStatus : byte
+{
+    NotParsedYet, /**< the part has not been parsed yet */
+    Ok, /**< the part has been parsed and no critical errors occured */
+    NotSupported, /**< tried to parse the part, but the format is not supported */
+    CriticalFailure /**< tried to parse the part, but critical errors occured */
 };
 
 class LIB_EXPORT MediaFileInfo : public BasicFileInfo, public StatusProvider
@@ -71,24 +83,24 @@ public:
     uint64 containerOffset() const;
     uint64 paddingSize() const;
     AbstractContainer *container() const;
-    bool isContainerParsed() const;
+    ParsingStatus containerParsingStatus() const;
     // ... the capters
-    bool areChaptersParsed() const;
+    ParsingStatus chaptersParsingStatus() const;
     std::vector<AbstractChapter *> chapters() const;
     bool areChaptersSupported() const;
     // ... the attachments
-    bool areAttachmentsParsed() const;
+    ParsingStatus attachmentsParsingStatus() const;
     std::vector<AbstractAttachment *> attachments() const;
     bool areAttachmentsSupported() const;
     // ... the tracks
-    bool areTracksParsed() const;
+    ParsingStatus tracksParsingStatus() const;
     std::size_t trackCount() const;
     std::vector<AbstractTrack *> tracks() const;
     bool hasTracksOfType(Media::MediaType type) const;
     ChronoUtilities::TimeSpan duration() const;
     bool areTracksSupported() const;
     // ... the tags
-    bool areTagsParsed() const;
+    ParsingStatus tagsParsingStatus() const;
     bool hasId3v1Tag() const;
     bool hasId3v2Tag() const;
     bool hasAnyTag() const;
@@ -116,6 +128,7 @@ public:
     // methods to get/wipe notifications
     bool haveRelatedObjectsNotifications() const;
     NotificationType worstNotificationTypeIncludingRelatedObjects() const;
+    void gatherRelatedNotifications(NotificationList &notifications) const;
     NotificationList gatherRelatedNotifications() const;
     void clearParsingResults();
 
@@ -132,7 +145,7 @@ private:
     // other formats are outsourced to container classes
     void makeMp3File();
     // fields related to the container
-    bool m_containerParsed;
+    ParsingStatus m_containerParsingStatus;
     ContainerFormat m_containerFormat;
     std::streamoff m_containerOffset;
     uint64 m_paddingSize;
@@ -140,12 +153,15 @@ private:
     std::list<std::streamoff> m_actualId3v2TagOffsets;
     std::unique_ptr<AbstractContainer> m_container;
     // fields related to the tracks
-    bool m_tracksParsed;
+    ParsingStatus m_tracksParsingStatus;
     std::unique_ptr<AbstractTrack> m_singleTrack;
     // fields related to the tag
-    bool m_tagParsed;
+    ParsingStatus m_tagsParsingStatus;
     std::unique_ptr<Id3v1Tag> m_id3v1Tag;
     std::vector<std::unique_ptr<Id3v2Tag> > m_id3v2Tags;
+    // fields related to the chapters and the attachments
+    ParsingStatus m_chaptersParsingStatus;
+    ParsingStatus m_attachmentsParsingStatus;
     // fields specifying object behaviour
     bool m_forceFullParse;
 };
@@ -153,9 +169,9 @@ private:
 /*!
  * \brief Returns an indication whether the container format has been parsed yet.
  */
-inline bool MediaFileInfo::isContainerParsed() const
+inline ParsingStatus MediaFileInfo::containerParsingStatus() const
 {
-    return m_containerParsed;
+    return m_containerParsingStatus;
 }
 
 /*!
@@ -218,17 +234,17 @@ inline uint64 MediaFileInfo::paddingSize() const
 /*!
  * \brief Returns an indication whether tag information has been parsed yet.
  */
-inline bool MediaFileInfo::areTagsParsed() const
+inline ParsingStatus MediaFileInfo::tagsParsingStatus() const
 {
-    return m_tagParsed;
+    return m_tagsParsingStatus;
 }
 
 /*!
  * \brief Returns an indication whether tracks have been parsed yet.
  */
-inline bool MediaFileInfo::areTracksParsed() const
+inline ParsingStatus MediaFileInfo::tracksParsingStatus() const
 {
-    return m_tracksParsed;
+    return m_tracksParsingStatus;
 }
 
 /*!
@@ -247,17 +263,17 @@ inline size_t MediaFileInfo::trackCount() const
 /*!
  * \brief Returns whether the chapters have been parsed yet.
  */
-inline bool MediaFileInfo::areChaptersParsed() const
+inline ParsingStatus MediaFileInfo::chaptersParsingStatus() const
 {
-    return m_container && m_container->areChaptersParsed();
+    return m_chaptersParsingStatus;
 }
 
 /*!
  * \brief Returns whether the attachments have been parsed yet.
  */
-inline bool MediaFileInfo::areAttachmentsParsed() const
+inline ParsingStatus MediaFileInfo::attachmentsParsingStatus() const
 {
-    return m_container && m_container->areAttachmentsParsed();
+    return m_attachmentsParsingStatus;
 }
 
 /*!

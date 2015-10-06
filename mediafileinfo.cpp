@@ -66,12 +66,14 @@ namespace Media {
  * \brief Constructs a new MediaFileInfo.
  */
 MediaFileInfo::MediaFileInfo() :
-    m_containerParsed(false),
+    m_containerParsingStatus(ParsingStatus::NotParsedYet),
     m_containerFormat(ContainerFormat::Unknown),
     m_containerOffset(0),
     m_actualExistingId3v1Tag(false),
-    m_tracksParsed(false),
-    m_tagParsed(false),
+    m_tracksParsingStatus(ParsingStatus::NotParsedYet),
+    m_tagsParsingStatus(ParsingStatus::NotParsedYet),
+    m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
+    m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
     m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
 {}
 
@@ -82,12 +84,14 @@ MediaFileInfo::MediaFileInfo() :
  */
 MediaFileInfo::MediaFileInfo(const string &path) :
     BasicFileInfo(path),
-    m_containerParsed(false),
+    m_containerParsingStatus(ParsingStatus::NotParsedYet),
     m_containerFormat(ContainerFormat::Unknown),
     m_containerOffset(0),
     m_actualExistingId3v1Tag(false),
-    m_tracksParsed(false),
-    m_tagParsed(false),
+    m_tracksParsingStatus(ParsingStatus::NotParsedYet),
+    m_tagsParsingStatus(ParsingStatus::NotParsedYet),
+    m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
+    m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
     m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
 {}
 
@@ -120,7 +124,7 @@ MediaFileInfo::~MediaFileInfo()
  */
 void MediaFileInfo::parseContainerFormat()
 {
-    if(isContainerParsed()) {
+    if(containerParsingStatus() != ParsingStatus::NotParsedYet) {
         // there's no need to read the container format twice
         return;
     }
@@ -145,7 +149,7 @@ startParsingSignature:
             m_containerOffset += bytesSkipped;
             // give up after 0x100 bytes
             if((m_paddingSize += bytesSkipped) >= 0x100u) {
-                m_containerParsed = true;
+                m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
                 return;
             }
@@ -172,7 +176,7 @@ startParsingSignature:
             try {
                 static_cast<Mp4Container *>(m_container.get())->validateElementStructure(notifications, &m_paddingSize);
             } catch (Failure &) {
-                // nothing to do here, notifications will be added
+                m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             addNotifications(notifications);
             break;
@@ -193,7 +197,7 @@ startParsingSignature:
                     container->validateIndex();
                 }
             } catch(Failure &) {
-                // nothing to do, notificatons will be added
+                m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             m_container = move(container);
             addNotifications(notifications);
@@ -206,7 +210,13 @@ startParsingSignature:
             ;
         }
     }
-    m_containerParsed = true;
+    if(m_containerParsingStatus == ParsingStatus::NotParsedYet) {
+        if(m_containerFormat == ContainerFormat::Unknown) {
+            m_containerParsingStatus = ParsingStatus::NotSupported;
+        } else {
+            m_containerParsingStatus = ParsingStatus::Ok;
+        }
+    }
 }
 
 /*!
@@ -231,7 +241,7 @@ startParsingSignature:
  */
 void MediaFileInfo::parseTracks()
 {
-    if(areTracksParsed()) { // there's no need to read the file segment twice
+    if(tracksParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tracks twice
         return;
     }
     parseContainerFormat(); // ensure the container format has been load yet
@@ -255,12 +265,14 @@ void MediaFileInfo::parseTracks()
             }
             m_singleTrack->parseHeader();
         }
+        m_tracksParsingStatus = ParsingStatus::Ok;
     } catch (NotImplementedException &) {
         addNotification(NotificationType::Information, "Parsing tracks is not implemented for the container format of the file.", context);
+        m_tracksParsingStatus = ParsingStatus::NotSupported;
     } catch (Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse tracks.", context);
+        m_tracksParsingStatus = ParsingStatus::CriticalFailure;
     }
-    m_tracksParsed = true;
 }
 
 /*!
@@ -286,7 +298,7 @@ void MediaFileInfo::parseTracks()
  */
 void MediaFileInfo::parseTags()
 {
-    if(areTagsParsed()) {
+    if(tagsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tags twice
         return;
     }
     parseContainerFormat(); // ensure the container format has been load yet
@@ -300,13 +312,14 @@ void MediaFileInfo::parseTags()
         } catch(NoDataFoundException &) {
             m_id3v1Tag.reset(); // no ID3v1 tag found
         } catch(Failure &) {
+            m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             addNotification(NotificationType::Critical, "Unable to parse ID3v1 tag.", context);
         }
     }
     // the offsets of the ID3v2 tags have already been parsed when parsing the container format
     m_id3v2Tags.clear();
-    for(streamoff offset : m_actualId3v2TagOffsets) {
-        unique_ptr<Id3v2Tag> id3v2Tag = make_unique<Id3v2Tag>();
+    for(const auto offset : m_actualId3v2TagOffsets) {
+        auto id3v2Tag = make_unique<Id3v2Tag>();
         stream().seekg(offset, ios_base::beg);
         try {
             id3v2Tag->parse(stream());
@@ -314,6 +327,7 @@ void MediaFileInfo::parseTags()
         } catch(NoDataFoundException &) {
             continue;
         } catch(Failure &) {
+            m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             addNotification(NotificationType::Critical, "Unable to parse ID3v2 tag.", context);
         }
         m_id3v2Tags.emplace_back(id3v2Tag.release());
@@ -322,12 +336,20 @@ void MediaFileInfo::parseTags()
         try {
             m_container->parseTags();
         } catch (NotImplementedException &) {
+            if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+                // do not override parsing status from ID3 tags here
+                m_tagsParsingStatus = ParsingStatus::NotSupported;
+            }
             addNotification(NotificationType::Information, "Parsing tags is not implemented for the container format of the file.", context);
         } catch (Failure &) {
+            m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             addNotification(NotificationType::Critical, "Unable to parse tag.", context);
         }
     }
-    m_tagParsed = true;
+    if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+        // do not override error status here
+        m_tagsParsingStatus = ParsingStatus::Ok;
+    }
 }
 
 /*!
@@ -349,32 +371,44 @@ void MediaFileInfo::parseTags()
  */
 void MediaFileInfo::parseChapters()
 {
+    if(chaptersParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the chapters twice
+        return;
+    }
     static const string context("parsing chapters");
     try {
         if(m_container) {
             m_container->parseChapters();
+            m_chaptersParsingStatus = ParsingStatus::Ok;
         } else {
             throw NotImplementedException();
         }
     } catch (NotImplementedException &) {
+        m_chaptersParsingStatus = ParsingStatus::NotSupported;
         addNotification(NotificationType::Information, "Parsing chapters is not implemented for the container format of the file.", context);
     } catch (Failure &) {
+        m_chaptersParsingStatus = ParsingStatus::CriticalFailure;
         addNotification(NotificationType::Critical, "Unable to parse chapters.", context);
     }
 }
 
 void MediaFileInfo::parseAttachments()
 {
+    if(attachmentsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the attachments twice
+        return;
+    }
     static const string context("parsing attachments");
     try {
         if(m_container) {
             m_container->parseAttachments();
+            m_attachmentsParsingStatus = ParsingStatus::Ok;
         } else {
             throw NotImplementedException();
         }
     } catch (NotImplementedException &) {
+        m_attachmentsParsingStatus = ParsingStatus::NotSupported;
         addNotification(NotificationType::Information, "Parsing attachments is not implemented for the container format of the file.", context);
     } catch (Failure &) {
+        m_attachmentsParsingStatus = ParsingStatus::CriticalFailure;
         addNotification(NotificationType::Critical, "Unable to parse attachments.", context);
     }
 }
@@ -490,17 +524,51 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  *
- * \remarks The method parseTag() needs to be called before this method can be called.
+ * \remarks Tags and tracks need to be parsed without errors before this method can be called.
+ *          All previous parsing results are cleared (using clearParsingResults()). Hence
+ *          the file must be reparsed. All related objects (tags, tracks, ...) might get invalidated.
+ *          This includes notifications of these objects as well.
  *
- * \sa isTagParsed()
- * \sa parseTag()
+ * \sa clearParsingResults()
  */
 void MediaFileInfo::applyChanges()
 {   
     const string context("making file");
     addNotification(NotificationType::Information, "Changes are about to be applied.", context);
-    if(!areTagsParsed() && !areTracksParsed()) {
-        addNotification(NotificationType::Critical, "Tags and tracks have to be parsed before changes can be applied.", context);
+    bool previousParsingSucessful = true;
+    switch(tagsParsingStatus()) {
+    case ParsingStatus::Ok:
+    case ParsingStatus::NotSupported:
+        break;
+    default:
+        previousParsingSucessful = false;
+        addNotification(NotificationType::Critical, "Tags have to be parsed without critical errors before changes can be applied.", context);
+    }
+    switch(tracksParsingStatus()) {
+    case ParsingStatus::Ok:
+    case ParsingStatus::NotSupported:
+        break;
+    default:
+        previousParsingSucessful = false;
+        addNotification(NotificationType::Critical, "Tracks have to be parsed without critical errors before changes can be applied.", context);
+    }
+//    switch(chaptersParsingStatus()) {
+//    case ParsingStatus::Ok:
+//    case ParsingStatus::NotSupported:
+//        break;
+//    default:
+//        previousParsingSucessful = false;
+//        addNotification(NotificationType::Critical, "Chapters have to be parsed without critical errors before changes can be applied.", context);
+//    }
+//    switch(attachmentsParsingStatus()) {
+//    case ParsingStatus::Ok:
+//    case ParsingStatus::NotSupported:
+//        break;
+//    default:
+//        previousParsingSucessful = false;
+//        addNotification(NotificationType::Critical, "Attachments have to be parsed without critical errors before changes can be applied.", context);
+//    }
+    if(!previousParsingSucessful) {
         throw InvalidDataException();
     }
     if(m_container) { // container object takes care
@@ -512,13 +580,24 @@ void MediaFileInfo::applyChanges()
             addNotification(NotificationType::Warning, "Assigned ID3v2 tag can't be attached and will be ignored.", context);
         }
         m_container->forwardStatusUpdateCalls(this);
-        m_container->makeFile();
-        m_tracksParsed &= m_container->areTracksParsed();
-        m_tagParsed &= m_container->areTagsParsed();
+        m_tracksParsingStatus = ParsingStatus::NotParsedYet;
+        m_tagsParsingStatus = ParsingStatus::NotParsedYet;
+        try {
+            m_container->makeFile();
+        } catch(...) {
+            clearParsingResults();
+            throw;
+        }
     } else { // implementation if no container object is present
         // assume the file is a MP3 file
-        makeMp3File();
+        try {
+            makeMp3File();
+        } catch(...) {
+            clearParsingResults();
+            throw;
+        }
     }
+    clearParsingResults();
 }
 
 /*!
@@ -652,18 +731,16 @@ vector<AbstractTrack *> MediaFileInfo::tracks() const
  */
 bool MediaFileInfo::hasTracksOfType(MediaType type) const
 {
-    if(!areTracksParsed()) {
-        return false;
-    }
-    if(type == MediaType::Audio && m_singleTrack) {
-        return true;
-    } else if(m_container) {
-        for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
-            if(m_container->track(i)->mediaType() == type) {
-                return true;
+    if(tracksParsingStatus() != ParsingStatus::NotParsedYet) {
+        if(m_singleTrack && m_singleTrack->mediaType() == type) {
+            return true;
+        } else if(m_container) {
+            for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
+                if(m_container->track(i)->mediaType() == type) {
+                    return true;
+                }
             }
         }
-
     }
     return false;
 }
@@ -703,12 +780,11 @@ ChronoUtilities::TimeSpan MediaFileInfo::duration() const
  */
 bool MediaFileInfo::removeId3v1Tag()
 {
-    if(!areTagsParsed()) {
-        return false;
-    }
-    if(m_id3v1Tag) {
-        m_id3v1Tag.reset();
-        return true;
+    if(tagsParsingStatus() != ParsingStatus::NotParsedYet) {
+        if(m_id3v1Tag) {
+            m_id3v1Tag.reset();
+            return true;
+        }
     }
     return false;
 }
@@ -730,7 +806,7 @@ bool MediaFileInfo::removeId3v1Tag()
  */
 Id3v1Tag *MediaFileInfo::createId3v1Tag()
 {
-    if(!areTagsParsed()) {
+    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
         return nullptr;
     }
     if(!m_id3v1Tag) {
@@ -754,13 +830,12 @@ Id3v1Tag *MediaFileInfo::createId3v1Tag()
  */
 bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
 {
-    if(!areTagsParsed()) {
-        return false;
-    }
-    for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
-        if(i->get() == tag) {
-            m_id3v2Tags.erase(i);
-            return true;
+    if(tagsParsingStatus() != ParsingStatus::NotParsedYet) {
+        for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
+            if(i->get() == tag) {
+                m_id3v2Tags.erase(i);
+                return true;
+            }
         }
     }
     return false;
@@ -777,7 +852,7 @@ bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
  */
 bool MediaFileInfo::removeAllId3v2Tags()
 {
-    if(!areTagsParsed() || m_id3v2Tags.size() == 0) {
+    if(tagsParsingStatus() == ParsingStatus::NotParsedYet || m_id3v2Tags.empty()) {
         return false;
     }
     m_id3v2Tags.clear();
@@ -1065,12 +1140,14 @@ NotificationType MediaFileInfo::worstNotificationTypeIncludingRelatedObjects() c
 }
 
 /*!
- * \brief Returns the noficications of the current instance and all related
- *        objects (tracks, tags, container).
+ * \brief Returns the notifications of the current instance and all related
+ *        objects (tracks, tags, container, ...).
+ *
+ * \remarks The specified list is not cleared before notifications are added.
  */
-NotificationList MediaFileInfo::gatherRelatedNotifications() const
+void MediaFileInfo::gatherRelatedNotifications(NotificationList &notifications) const
 {
-    NotificationList notifications(this->notifications());
+    notifications.insert(notifications.end(), this->notifications().cbegin(), this->notifications().cend());
     if(m_container) {
         notifications.insert(notifications.end(), m_container->notifications().cbegin(), m_container->notifications().cend());
     }
@@ -1083,6 +1160,19 @@ NotificationList MediaFileInfo::gatherRelatedNotifications() const
     for(const auto *chapter : chapters()) {
         notifications.insert(notifications.end(), chapter->notifications().cbegin(), chapter->notifications().cend());
     }
+    for(const auto *attachment : attachments()) {
+        notifications.insert(notifications.end(), attachment->notifications().cbegin(), attachment->notifications().cend());
+    }
+}
+
+/*!
+ * \brief Returns the notifications of the current instance and all related
+ *        objects (tracks, tags, container, ...).
+ */
+NotificationList MediaFileInfo::gatherRelatedNotifications() const
+{
+    NotificationList notifications;
+    gatherRelatedNotifications(notifications);
     return notifications;
 }
 
@@ -1092,15 +1182,19 @@ NotificationList MediaFileInfo::gatherRelatedNotifications() const
  *
  * This allows a rescan of the file using parsing methods like parseContainerFormat().
  * (These methods do nothing if the information to be parsed has already been gathered.)
+ *
+ * \remarks Any pointers previously returned by tags(), tracks(), ... object are invalidated.
  */
 void MediaFileInfo::clearParsingResults()
 {
-    m_containerParsed = false;
+    m_containerParsingStatus = ParsingStatus::NotParsedYet;
     m_containerFormat = ContainerFormat::Unknown;
     m_containerOffset = 0;
     m_paddingSize = 0;
-    m_tracksParsed = false;
-    m_tagParsed = false;
+    m_tracksParsingStatus = ParsingStatus::NotParsedYet;
+    m_tagsParsingStatus = ParsingStatus::NotParsedYet;
+    m_chaptersParsingStatus = ParsingStatus::NotParsedYet;
+    m_attachmentsParsingStatus = ParsingStatus::NotParsedYet;
     m_id3v1Tag.reset();
     m_id3v2Tags.clear();
     m_actualId3v2TagOffsets.clear();
