@@ -42,6 +42,8 @@ public:
     MatroskaAttachment *attachment(std::size_t index);
     std::size_t attachmentCount() const;
 
+    void reset();
+
 protected:
     void internalParseHeader();
     void internalParseTags();

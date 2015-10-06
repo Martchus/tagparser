@@ -24,6 +24,7 @@ public:
 
     bool supportsTrackModifications() const;
     bool isFragmented() const;
+    void reset();
 
 protected:
     void internalParseHeader();

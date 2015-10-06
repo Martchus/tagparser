@@ -38,6 +38,12 @@ Mp4Container::Mp4Container(MediaFileInfo &fileInfo, uint64 startOffset) :
 Mp4Container::~Mp4Container()
 {}
 
+void Mp4Container::reset()
+{
+    GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom>::reset();
+    m_fragmented = false;
+}
+
 void Mp4Container::internalParseHeader()
 {
     //const string context("parsing header of MP4 container"); will be used when generating notifications

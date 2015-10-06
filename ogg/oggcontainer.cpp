@@ -31,6 +31,12 @@ OggContainer::OggContainer(MediaFileInfo &fileInfo, uint64 startOffset) :
 OggContainer::~OggContainer()
 {}
 
+void OggContainer::reset()
+{
+    m_commentTable.clear();
+    m_iterator.reset();
+}
+
 void OggContainer::internalParseHeader()
 {
     static const string context("parsing OGG bitstream header");

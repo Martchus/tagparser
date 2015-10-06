@@ -45,6 +45,7 @@ public:
 
     bool isChecksumValidationEnabled() const;
     void setChecksumValidationEnabled(bool enabled);
+    void reset();
 
 protected:
     void internalParseHeader();

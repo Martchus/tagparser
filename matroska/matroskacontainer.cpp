@@ -52,6 +52,26 @@ MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset
 MatroskaContainer::~MatroskaContainer()
 {}
 
+void MatroskaContainer::reset()
+{
+    GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>::reset();
+    m_maxIdLength = 4;
+    m_maxSizeLength = 8;
+    m_version = 1;
+    m_readVersion = 1;
+    m_doctype = "matroska";
+    m_doctypeVersion = 1;
+    m_doctypeReadVersion = 1;
+    m_tracksElements.clear();
+    m_segmentInfoElements.clear();
+    m_tagsElements.clear();
+    m_chaptersElements.clear();
+    m_attachmentsElements.clear();
+    m_seekInfos.clear();
+    m_editionEntries.clear();
+    m_attachments.clear();
+}
+
 /*!
  * \brief Validates the file index (cue entries).
  * \remarks Checks only for cluster positions and missing, unknown or surplus elements.
