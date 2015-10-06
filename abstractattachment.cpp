@@ -3,6 +3,8 @@
 #include "./mediafileinfo.h"
 #include "./exceptions.h"
 
+#include <c++utilities/misc/memory.h>
+
 #include <sstream>
 
 using namespace std;
@@ -123,16 +125,17 @@ void AbstractAttachment::clear()
  */
 void AbstractAttachment::setFile(const std::string &path)
 {
-    m_data.reset(new FileDataBlock(path));
-    FileDataBlock &data = *static_cast<FileDataBlock *>(m_data.get());
-    string fileName = data.fileInfo()->fileName();
+    m_data.reset();
+    auto file = make_unique<FileDataBlock>(path);
+    const auto fileName = file->fileInfo()->fileName();
     if(!fileName.empty()) {
         m_name = fileName;
     }
-    const char *mimeType = data.fileInfo()->mimeType();
+    const char *mimeType = file->fileInfo()->mimeType();
     if(*mimeType) {
         m_mimeType = mimeType;
     }
+    m_data = move(file);
 }
 
 } // namespace Media
