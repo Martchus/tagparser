@@ -100,6 +100,7 @@ public:
     void clear();
     bool isIgnored() const;
     void setIgnored(bool ignored);
+    bool isEmpty() const;
 
 protected:
     AbstractAttachment();
@@ -232,6 +233,15 @@ inline bool AbstractAttachment::isIgnored() const
 inline void AbstractAttachment::setIgnored(bool ignored)
 {
     m_ignored = ignored;
+}
+
+/*!
+ * \brief Returns whether the attachment is empty (no data and no meta-data assigned).
+ * \remarks Does not take into account whether an ID is set.
+ */
+inline bool AbstractAttachment::isEmpty() const
+{
+    return m_description.empty() && m_name.empty() && !m_mimeType.empty() && !m_data;
 }
 
 } // namespace Media
