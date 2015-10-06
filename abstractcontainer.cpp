@@ -422,6 +422,8 @@ void AbstractContainer::reset()
     m_tagsParsed = false;
     m_tracksParsed = false;
     m_tracksAltered = false;
+    m_chaptersParsed = false;
+    m_attachmentsParsed = false;
     m_version = 0;
     m_readVersion = 0;
     m_doctypeVersion = 0;
