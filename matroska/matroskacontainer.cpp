@@ -950,7 +950,6 @@ void MatroskaContainer::internalMakeFile()
                     }
                     // write "Cues"-element
                     if(cuesPresent) {
-                        cuesUpdater.invalidateNotifications();
                         try {
                             cuesUpdater.make(outputStream);
                         } catch(Failure &) {

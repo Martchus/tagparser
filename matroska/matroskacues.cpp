@@ -153,7 +153,7 @@ bool MatroskaCuePositionUpdater::updateOffsets(uint64 originalOffset, uint64 new
 }
 
 /*!
- * \brief Sets the relative of the entries with the specified \a originalRelativeOffset and the specified \a referenceOffset to \a newRelativeOffset.
+ * \brief Sets the relative offset of the entries with the specified \a originalRelativeOffset and the specified \a referenceOffset to \a newRelativeOffset.
  * \returns Returns whether the size of the "Cues"-element has been altered.
  */
 bool MatroskaCuePositionUpdater::updateRelativeOffsets(uint64 referenceOffset, uint64 originalRelativeOffset, uint64 newRelativeOffset)
@@ -174,22 +174,28 @@ bool MatroskaCuePositionUpdater::updateRelativeOffsets(uint64 referenceOffset, u
  */
 bool MatroskaCuePositionUpdater::updateSize(EbmlElement *element, int shift)
 {
-    if(!element || shift == 0) {
-        return shift != 0;
+    if(!shift) {
+        // shift is gone
+        return false;
+    }
+    if(!element) {
+        // there was no parent (shouldn't happen in a normal file structure since the Segment element should
+        // be parent of the Cues element)
+        return shift;
     }
     try {
         // get size info
-        auto &size = m_sizes[element];
+        uint64 &size = m_sizes.at(element);
         // calculate new size
-        uint64 newSize = shift > 0 ? size + static_cast<uint64>(shift) : size - static_cast<uint64>(shift);
+        uint64 newSize = shift > 0 ? size + static_cast<uint64>(shift) : size - static_cast<uint64>(-shift);
         // shift parent
         bool updated = updateSize(element->parent(), shift + static_cast<int>(EbmlElement::calculateSizeDenotationLength(newSize)) - static_cast<int>(EbmlElement::calculateSizeDenotationLength(size)));
         // apply new size
         size = newSize;
         return updated;
     } catch(out_of_range &) {
-        addNotification(NotificationType::Critical, "Size information for element is missing.", "updating index");
-        return false;
+        // the element is out of the scope of the cue position updater (likely the Segment element)
+        return shift;
     }
 }
 
