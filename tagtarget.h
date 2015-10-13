@@ -63,7 +63,7 @@ inline TagTarget::TagTarget(uint64 level, IdContainerType tracks, IdContainerTyp
  */
 inline uint64 TagTarget::level() const
 {
-    return m_level;
+    return m_level ? m_level : 50;
 }
 
 /*!
@@ -185,8 +185,8 @@ inline void TagTarget::clear()
  */
 inline bool TagTarget::operator ==(const TagTarget &other) const
 {
-    return m_level == other.m_level
-            && m_levelName == other.m_levelName
+    return level() == other.level()
+            //&& m_levelName == other.m_levelName // consider targets with the same level number but different level names equal?
             && m_tracks == other.m_tracks
             && m_chapters == other.m_chapters
             && m_editions == other.m_editions

@@ -217,14 +217,17 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag) :
     // calculate size of "Targets" element
     m_targetsSize = 0; // NOT including ID and size
     if(m_tag.target().level() != 50) {
-        m_targetsSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_tag.target().level()); // size of "TargetTypeValue"
+        // size of "TargetTypeValue"
+        m_targetsSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_tag.target().level());
     }
     if(!m_tag.target().levelName().empty()) {
-        m_targetsSize += 2 + EbmlElement::calculateSizeDenotationLength(m_tag.target().levelName().size()) + m_tag.target().levelName().size(); // size of "TargetType"
+        // size of "TargetType"
+        m_targetsSize += 2 + EbmlElement::calculateSizeDenotationLength(m_tag.target().levelName().size()) + m_tag.target().levelName().size();
     }
     for(const auto &v : initializer_list<vector<uint64> >{m_tag.target().tracks(), m_tag.target().editions(), m_tag.target().chapters(), m_tag.target().attachments()}) {
         for(auto uid : v) {
-            m_targetsSize += 2 + 1 + EbmlElement::calculateUIntegerLength(uid); // size of UID denotation
+            // size of UID denotation
+            m_targetsSize += 2 + 1 + EbmlElement::calculateUIntegerLength(uid);
         }
     }
     m_tagSize = 2 + EbmlElement::calculateSizeDenotationLength(m_targetsSize) + m_targetsSize;

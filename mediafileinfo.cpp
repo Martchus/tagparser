@@ -439,6 +439,7 @@ void MediaFileInfo::parseEverything()
  * \param mergeMultipleSuccessiveId3v2Tags Specifies whether multiple successive ID3v2 tags should be merged (see mergeId3v2Tags()).
  * \param keepExistingId3v2version Specifies whether the version of existing ID3v2 tags should be updated.
  * \param id3v2version Specifies the IDv2 version to be used. Valid values are 2, 3 and 4.
+ * \param requiredTargets Specifies the required targets. Targets are ignored if not supported by the container.
  * \return Returns an indication whether appropriate tags could be created for the file.
  * \remarks
  *          - The ID3 related arguments are only practiced when the file format is MP3 or when the file format
@@ -452,12 +453,38 @@ void MediaFileInfo::parseEverything()
  *          - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never)
  *            and an ID3v1 tag will be created instead not all fields can be transfered.
  */
-bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, uint32 id3v2version)
+bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, uint32 id3v2version, const std::vector<TagTarget> &requiredTargets)
 {
     // check if tags need to be created/adjusted/removed
-    if(m_container) { // container object takes care of tag management
-        m_container->createTag();
-    } else { // no container object present; creation of ID3 tag is possible
+    bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 && requiredTargets.front().isEmpty());
+    bool targetsSupported = false;
+    if(m_container) {
+        // container object takes care of tag management
+        if(targetsRequired) {
+            // check whether container supports targets
+            if(m_container->tagCount()) {
+                // all tags in the container should support targets if the first one supports targets
+                targetsSupported = m_container->tag(0)->supportsTarget();
+            } else {
+                // try to create a new tag and check whether targets are supported
+                auto *tag = m_container->createTag();
+                if(tag) {
+                    if((targetsSupported = tag->supportsTarget())) {
+                        tag->setTarget(requiredTargets.front());
+                    }
+                }
+            }
+            if(targetsSupported) {
+                for(const auto &target : requiredTargets) {
+                    m_container->createTag(target);
+                }
+            }
+        } else {
+            // no targets are required -> just ensure that at least one tag is present
+            m_container->createTag();
+        }
+    } else {
+        // no container object present; creation of ID3 tag is possible
         if(!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
             switch(containerFormat()) {
             case ContainerFormat::MpegAudioFrames:
@@ -494,17 +521,20 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
         if(id3v2usage == TagUsage::Never) {
             if(hasId3v1Tag()) {
                 // transfer tags to ID3v1 tag before removing
-                for(const unique_ptr<Id3v2Tag> &tag : id3v2Tags()) {
+                for(const auto &tag : id3v2Tags()) {
                     id3v1Tag()->insertValues(*tag, false);
                 }
             }
             removeAllId3v2Tags();
         } else if(!keepExistingId3v2version) {
             // set version of ID3v2 tag according user preferences
-            for(const unique_ptr<Id3v2Tag> &tag : id3v2Tags()) {
+            for(const auto &tag : id3v2Tags()) {
                 tag->setVersion(id3v2version, 0);
             }
         }
+    }
+    if(targetsRequired && !targetsSupported) {
+        addNotification(NotificationType::Warning, "The container/tags do not support targets. The specified targets are ignored.", "creating tags");
     }
     return true;
 }
