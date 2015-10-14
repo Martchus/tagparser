@@ -74,7 +74,8 @@ public:
     const std::string &documentType() const;
     uint64 doctypeVersion() const;
     uint64 doctypeReadVersion() const;
-    const std::string &title() const;
+    const std::vector<std::string> &titles() const;
+    void setTitle(const std::string &title, std::size_t segmentIndex = 0);
     ChronoUtilities::TimeSpan duration() const;
     ChronoUtilities::DateTime creationTime() const;
     ChronoUtilities::DateTime modificationTime() const;
@@ -97,7 +98,7 @@ protected:
     std::string m_doctype;
     uint64 m_doctypeVersion;
     uint64 m_doctypeReadVersion;
-    std::string m_title;
+    std::vector<std::string> m_titles;
     ChronoUtilities::TimeSpan m_duration;
     ChronoUtilities::DateTime m_creationTime;
     ChronoUtilities::DateTime m_modificationTime;
@@ -243,12 +244,28 @@ inline uint64 AbstractContainer::doctypeReadVersion() const
     return m_doctypeReadVersion;
 }
 
+
 /*!
- * \brief Returns the title if known; otherwise returns an empty string.
+ * \brief Returns the title(s) of the file.
+ * \remarks
+ *  - If the container does not support titles an empty vector will be returned.
+ *  - If there are multiple segments, the title of each segment is returned.
+ * \sa setTitle()
  */
-inline const std::string &AbstractContainer::title() const
+inline const std::vector<std::string> &AbstractContainer::titles() const
 {
-    return m_title;
+    return m_titles;
+}
+
+/*!
+ * \brief Sets the title for the specified segment.
+ * \remarks The title is ignored if it is not supported by the concrete container format.
+ * \throws Throws out_of_range if the segment does not exist.
+ * \sa titles()
+ */
+inline void AbstractContainer::setTitle(const std::string &title, std::size_t segmentIndex)
+{
+    m_titles.at(segmentIndex) = title;
 }
 
 /*!

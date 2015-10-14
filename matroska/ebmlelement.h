@@ -70,6 +70,7 @@ public:
     static byte makeUInteger(uint64 value, char *buff);
     static void makeSimpleElement(std::ostream &stream, identifierType id, uint64 content);
     static void makeSimpleElement(std::ostream &stream, identifierType id, const std::string &content);
+    static void makeSimpleElement(std::ostream &stream, GenericFileElement::identifierType id, const char *data, std::size_t dataSize);
 
 protected:
     EbmlElement(EbmlElement &parent, uint64 startOffset);

@@ -412,7 +412,6 @@ size_t AbstractContainer::attachmentCount() const
 {
     return 0;
 }
-
 /*!
  * \brief Discards all parsing results.
  */
@@ -429,6 +428,7 @@ void AbstractContainer::reset()
     m_doctypeVersion = 0;
     m_doctypeReadVersion = 0;
     m_timeScale = 0;
+    m_titles.clear();
 }
 
 } // namespace Media

@@ -24,6 +24,10 @@ using namespace ChronoUtilities;
 
 namespace Media {
 
+constexpr const char appInfo[] = APP_NAME " v" APP_VERSION;
+constexpr uint64 appInfoElementDataSize = sizeof(appInfo) - 1;
+constexpr uint64 appInfoElementTotalSize = 2 + 1 + appInfoElementDataSize;
+
 /*!
  * \class Media::MatroskaContainer
  * \brief Implementation of GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>.
@@ -523,11 +527,13 @@ void MatroskaContainer::parseSegmentInfo()
         EbmlElement *subElement = element->firstChild();
         float64 rawDuration = 0.0;
         uint64 timeScale = 0;
+        bool hasTitle = false;
         while(subElement) {
             subElement->parse();
             switch(subElement->id()) {
             case MatroskaIds::Title:
-                m_title = subElement->readString();
+                m_titles.emplace_back(subElement->readString());
+                hasTitle = true;
                 break;
             case MatroskaIds::Duration:
                 rawDuration = subElement->readFloat();
@@ -537,6 +543,11 @@ void MatroskaContainer::parseSegmentInfo()
                 break;
             }
             subElement = subElement->nextSibling();
+        }
+        if(!hasTitle) {
+            // add empty string as title for segment if no
+            // "Title"-element has been specified
+            m_titles.emplace_back();
         }
         if(rawDuration > 0.0 && timeScale > 0) {
             m_duration += TimeSpan::fromSeconds(rawDuration * timeScale / 1000000000);
@@ -742,12 +753,14 @@ void MatroskaContainer::internalMakeFile()
         EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeReadVersion, m_doctypeReadVersion);
         // write segments
         EbmlElement *level1Element, *level2Element;
+        uint64 segmentInfoElementDataSize;
         MatroskaSeekInfo seekInfo;
         MatroskaCuePositionUpdater cuesUpdater;
         vector<MatroskaTagMaker> tagMaker;
         uint64 tagElementsSize, tagsSize;
         vector<MatroskaAttachmentMaker> attachmentMaker;
         uint64 attachedFileElementsSize, attachmentsSize;
+        unsigned int segmentIndex = 0;
         unsigned int index;
         try {
             for(; level0Element; level0Element = level0Element->nextSibling()) {
@@ -821,7 +834,42 @@ void MatroskaContainer::internalMakeFile()
                     // calculate size of "SeekHead"-element
                     elementSize += seekInfo.actualSize();
                     // pretend writing elements to find out the offsets and the total segment size
-                    for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::SegmentInfo, MatroskaIds::Tracks, MatroskaIds::Chapters}) {
+                    // pretend writing "SegmentInfo"-element
+                    for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo), ++index) {
+                        // update offset in "SeekHead"-element
+                        if(seekInfo.push(index, MatroskaIds::SegmentInfo, currentOffset + elementSize)) {
+                            goto calculateSegmentSize;
+                        } else {
+                            // add size of "SegmentInfo"-element
+                            // -> size of "MuxingApp"- and "WritingApp"-element
+                            segmentInfoElementDataSize = 2 * appInfoElementTotalSize;
+                            // -> add size of "Title"-element
+                            if(segmentIndex < m_titles.size()) {
+                                const auto &title = m_titles[segmentIndex];
+                                if(!title.empty()) {
+                                    segmentInfoElementDataSize += 2 + EbmlElement::calculateSizeDenotationLength(title.size()) + title.size();
+                                }
+                            }
+                            // -> add size of other childs
+                            for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                                level2Element->parse();
+                                switch(level2Element->id()) {
+                                case EbmlIds::Void: // skipped
+                                case EbmlIds::Crc32: // skipped
+                                case MatroskaIds::Title: // calculated separately
+                                case MatroskaIds::MuxingApp: // calculated separately
+                                case MatroskaIds::WrittingApp: // calculated separately
+                                    break;
+                                default:
+                                    segmentInfoElementDataSize += level2Element->totalSize();
+                                }
+                            }
+                            // -> calculate total size
+                            elementSize += 4 + EbmlElement::calculateSizeDenotationLength(segmentInfoElementDataSize) + segmentInfoElementDataSize;
+                        }
+                    }
+                    // pretend writing "Tracks"- and "Chapters"-element
+                    for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
                         for(level1Element = level0Element->childById(id), index = 0; level1Element; level1Element = level1Element->siblingById(id), ++index) {
                             // update offset in "SeekHead"-element
                             if(seekInfo.push(index, id, currentOffset + elementSize)) {
@@ -922,9 +970,39 @@ void MatroskaContainer::internalMakeFile()
                     seekInfo.invalidateNotifications();
                     seekInfo.make(outputStream);
                     addNotifications(seekInfo);
-                    // write other elements
-                    for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::SegmentInfo, MatroskaIds::Tracks, MatroskaIds::Chapters}) {
-                        for(level1Element = level0Element->childById(id), index = 0; level1Element; level1Element = level1Element->siblingById(id), ++index) {
+                    // write "SegmentInfo"-element
+                    for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo); level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo)) {
+                        // -> write ID and size
+                        outputWriter.writeUInt32BE(MatroskaIds::SegmentInfo);
+                        sizeLength = EbmlElement::makeSizeDenotation(segmentInfoElementDataSize, buff);
+                        outputStream.write(buff, sizeLength);
+                        // -> write childs
+                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                            switch(level2Element->id()) {
+                            case EbmlIds::Void: // skipped
+                            case EbmlIds::Crc32: // skipped
+                            case MatroskaIds::Title: // written separately
+                            case MatroskaIds::MuxingApp: // written separately
+                            case MatroskaIds::WrittingApp: // written separately
+                                break;
+                            default:
+                                level2Element->copyEntirely(outputStream);
+                            }
+                        }
+                        // -> write "Title"-element
+                        if(segmentIndex < m_titles.size()) {
+                            const auto &title = m_titles[segmentIndex];
+                            if(!title.empty()) {
+                                EbmlElement::makeSimpleElement(outputStream, MatroskaIds::Title, title);
+                            }
+                        }
+                        // -> write "MuxingApp"- and "WritingApp"-element
+                        EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, appInfo, appInfoElementDataSize);
+                        EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp, appInfo, appInfoElementDataSize);
+                    }
+                    // write "Tracks"- and "Chapters"-element
+                    for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
+                        for(level1Element = level0Element->childById(id); level1Element; level1Element = level1Element->siblingById(id)) {
                             level1Element->copyEntirely(outputStream);
                         }
                     }
@@ -965,8 +1043,8 @@ void MatroskaContainer::internalMakeFile()
                         updateStatus("Writing segment data ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / elementSize);
                     }
                     // write "Cluster"-element
-                    for(level1Element = level0Element->childById(MatroskaIds::Cluster), index = 0, clusterSizesIterator = clusterSizes.cbegin();
-                        level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index, ++clusterSizesIterator) {
+                    for(level1Element = level0Element->childById(MatroskaIds::Cluster), clusterSizesIterator = clusterSizes.cbegin();
+                        level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++clusterSizesIterator) {
                         // calculate position of cluster in segment
                         clusterSize = currentOffset + (static_cast<uint64>(outputStream.tellp()) - offset);
                         // write header; checking whether clusterSizesIterator is valid shouldn't be necessary
@@ -993,6 +1071,7 @@ void MatroskaContainer::internalMakeFile()
                             updatePercentage(static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / elementSize);
                         }
                     }
+                    ++segmentIndex; // increase the current segment index
                     currentOffset += 4 + sizeLength + elementSize; // increase current write offset by the size of the segment which has just been written
                     readOffset = level0Element->totalSize(); // increase the read offset by the size of the segment read from the orignial file
                     break;

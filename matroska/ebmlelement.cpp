@@ -355,7 +355,7 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff)
  * \brief Makes a simple EBML element.
  * \param stream Specifies the stream to write the data to.
  * \param id Specifies the element ID.
- * \param content Specifies the value of the element which is a unsigned integer (max. 64-bit).
+ * \param content Specifies the value of the element as unsigned integer.
  */
 void EbmlElement::makeSimpleElement(ostream &stream, identifierType id, uint64 content)
 {
@@ -373,7 +373,7 @@ void EbmlElement::makeSimpleElement(ostream &stream, identifierType id, uint64 c
  * \brief Makes a simple EBML element.
  * \param stream Specifies the stream to write the data to.
  * \param id Specifies the element ID.
- * \param content Specifies the string value of the element.
+ * \param content Specifies the value of the element as string.
  */
 void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::identifierType id, const string &content)
 {
@@ -383,6 +383,23 @@ void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::identif
     sizeLength = EbmlElement::makeSizeDenotation(content.size(), buff1);
     stream.write(buff1, sizeLength);
     stream.write(content.c_str(), content.size());
+}
+
+/*!
+ * \brief Makes a simple EBML element.
+ * \param stream Specifies the stream to write the data to.
+ * \param id Specifies the element ID.
+ * \param data Specifies the data of the element.
+ * \param dataSize Specifies the size of \a data.
+ */
+void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::identifierType id, const char *data, std::size_t dataSize)
+{
+    char buff1[8];
+    byte sizeLength = EbmlElement::makeId(id, buff1);
+    stream.write(buff1, sizeLength);
+    sizeLength = EbmlElement::makeSizeDenotation(dataSize, buff1);
+    stream.write(buff1, sizeLength);
+    stream.write(data, dataSize);
 }
 
 }

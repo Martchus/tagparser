@@ -22,3 +22,4 @@ It also depends on zlib.
 ## TODO
 - Use padding to prevent rewriting the entire file to save tags.
 - Support more tag formats (EXIF, PDF metadata, ...).
+- Do tests with Matroska files which have multiple segments.
