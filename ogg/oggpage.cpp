@@ -76,7 +76,6 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
 {
     stream.seekg(startOffset);
     uint32 crc = 0x0;
-    uint32 *crc32Table = BinaryReader::crc32Table();
     byte value, segmentTableSize = 0, segmentTableIndex = 0;
     for(uint32 i = 0, segmentLength = 27; i < segmentLength; ++i) {
         switch(i) {
@@ -98,7 +97,7 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
                 ++segmentTableIndex;
             }
         }
-        crc = (crc << 8) ^ crc32Table[((crc >> 24) & 0xFF) ^ value];
+        crc = (crc << 8) ^ BinaryReader::crc32Table[((crc >> 24) & 0xFF) ^ value];
     }
     return crc;
 }
