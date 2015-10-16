@@ -565,13 +565,13 @@ void MediaFileInfo::applyChanges()
 {   
     const string context("making file");
     addNotification(NotificationType::Information, "Changes are about to be applied.", context);
-    bool previousParsingSucessful = true;
+    bool previousParsingSuccessful = true;
     switch(tagsParsingStatus()) {
     case ParsingStatus::Ok:
     case ParsingStatus::NotSupported:
         break;
     default:
-        previousParsingSucessful = false;
+        previousParsingSuccessful = false;
         addNotification(NotificationType::Critical, "Tags have to be parsed without critical errors before changes can be applied.", context);
     }
     switch(tracksParsingStatus()) {
@@ -579,7 +579,7 @@ void MediaFileInfo::applyChanges()
     case ParsingStatus::NotSupported:
         break;
     default:
-        previousParsingSucessful = false;
+        previousParsingSuccessful = false;
         addNotification(NotificationType::Critical, "Tracks have to be parsed without critical errors before changes can be applied.", context);
     }
 //    switch(chaptersParsingStatus()) {
@@ -587,7 +587,7 @@ void MediaFileInfo::applyChanges()
 //    case ParsingStatus::NotSupported:
 //        break;
 //    default:
-//        previousParsingSucessful = false;
+//        previousParsingSuccessful = false;
 //        addNotification(NotificationType::Critical, "Chapters have to be parsed without critical errors before changes can be applied.", context);
 //    }
 //    switch(attachmentsParsingStatus()) {
@@ -595,10 +595,10 @@ void MediaFileInfo::applyChanges()
 //    case ParsingStatus::NotSupported:
 //        break;
 //    default:
-//        previousParsingSucessful = false;
+//        previousParsingSuccessful = false;
 //        addNotification(NotificationType::Critical, "Attachments have to be parsed without critical errors before changes can be applied.", context);
 //    }
-    if(!previousParsingSucessful) {
+    if(!previousParsingSuccessful) {
         throw InvalidDataException();
     }
     if(m_container) { // container object takes care
@@ -1236,7 +1236,7 @@ void MediaFileInfo::clearParsingResults()
 /*!
  * \brief Merges the assigned ID3v2 tags.
  *
- * Some files I've got contain multiple sucessive ID3v2 tags. If the tags of
+ * Some files I've got contain multiple successive ID3v2 tags. If the tags of
  * such an file is parsed by this class, these tags will be kept seperate.
  * This method merges all assigned ID3v2 tags. All fields from the additional
  * ID3v2 tags will be inserted to the first tag. All assigned ID3v2 tag instances

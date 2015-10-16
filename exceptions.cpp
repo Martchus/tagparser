@@ -111,7 +111,7 @@ const char *TruncatedDataException::what() const USE_NOTHROW
 /*!
  * \class Media::OperationAbortedException
  * \brief The exception that is thrown when an operation has been stopped
- *        and thus not sucessfully completed because it has been aborted.
+ *        and thus not successfully completed because it has been aborted.
  */
 
 /*!

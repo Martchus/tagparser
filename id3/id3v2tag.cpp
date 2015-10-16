@@ -227,7 +227,7 @@ void Id3v2Tag::parse(istream &stream)
                 try {
                     frame.parse(reader, majorVersion, bytesRemaining);
                     if(frameId) {
-                        // add frame if parsing was sucessfull
+                        // add frame if parsing was successfull
                         if(Id3v2FrameIds::isTextfield(frameId) && fields().count(frame.id()) == 1) {
                             addNotification(NotificationType::Warning, "The text frame " + frame.frameIdString() + " exists more than once.", context);
                         }
