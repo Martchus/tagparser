@@ -128,7 +128,7 @@ void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_
     stream.seekp(startOffset);
     BinaryWriter writer(&stream);
     if(denote64BitSize) {
-        writer.writeUInt32BE(0);
+        writer.writeUInt32BE(1);
         stream.seekp(4, ios_base::cur);
         writer.writeUInt64BE(currentOffset - startOffset);
     } else {
