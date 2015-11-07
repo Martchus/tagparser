@@ -40,6 +40,12 @@ enum class TagUsage
     Never /**< tags of the type are never used; a possibly existing tag of the type is removed */
 };
 
+enum class TagPosition
+{
+    BeforeData,
+    AfterData
+};
+
 /*!
  * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
  *        been parsed yet and if what the parsing result is.
@@ -135,6 +141,14 @@ public:
     // methods to get, set object behaviour
     bool isForcingFullParse() const;
     void setForceFullParse(bool forceFullParse);
+    size_t minPadding() const;
+    void setMinPadding(size_t minPadding);
+    size_t maxPadding() const;
+    void setMaxPadding(size_t maxPadding);
+    TagPosition tagPosition() const;
+    void setTagPosition(TagPosition tagPosition);
+    bool forceTagPosition() const;
+    void setForceTagPosition(bool forceTagPosition);
 
 protected:
     virtual void invalidated();
@@ -164,6 +178,10 @@ private:
     ParsingStatus m_attachmentsParsingStatus;
     // fields specifying object behaviour
     bool m_forceFullParse;
+    size_t m_minPadding;
+    size_t m_maxPadding;
+    TagPosition m_tagPosition;
+    bool m_forceTagPosition;
 };
 
 /*!
@@ -360,6 +378,99 @@ inline bool MediaFileInfo::isForcingFullParse() const
 inline void MediaFileInfo::setForceFullParse(bool forceFullParse)
 {
     m_forceFullParse = forceFullParse;
+}
+
+/*!
+ * \brief Returns the minimum padding to be written before the data blocks when applying changes.
+ *
+ * Padding in front of the file allows adding additional fields afterwards whithout needing
+ * to rewrite the entire file or to put tag information at the end of the file.
+ *
+ * \sa maxPadding()
+ * \sa tagPosition()
+ * \sa setMinPadding()
+ */
+inline size_t MediaFileInfo::minPadding() const
+{
+    return m_minPadding;
+}
+
+/*!
+ * \brief Sets the minimum padding to be written before the data blocks when applying changes.
+ * \remarks This value might be ignored if not supported by the container/tag format or the corresponding implementation.
+ * \sa minPadding()
+ */
+inline void MediaFileInfo::setMinPadding(size_t minPadding)
+{
+    m_minPadding = minPadding;
+}
+
+/*!
+ * \brief Returns the maximum padding to be written before the data blocks when applying changes.
+ *
+ * Padding in front of the file allows adding additional fields afterwards whithout needing
+ * to rewrite the entire file or to put tag information at the end of the file.
+ *
+ * \sa minPadding()
+ * \sa tagPosition()
+ * \sa setMaxPadding()
+ */
+inline size_t MediaFileInfo::maxPadding() const
+{
+    return m_maxPadding;
+}
+
+/*!
+ * \brief Sets the maximum padding to be written before the data blocks when applying changes.
+ * \remarks This value might be ignored if not supported by the container/tag format or the corresponding implementation.
+ * \sa maxPadding()
+ */
+inline void MediaFileInfo::setMaxPadding(size_t maxPadding)
+{
+    m_maxPadding = maxPadding;
+}
+
+/*!
+ * \brief Returns the position (in the output file) where the tag information is written when applying changes.
+ * \sa setTagPosition()
+ */
+inline TagPosition MediaFileInfo::tagPosition() const
+{
+    return m_tagPosition;
+}
+
+/*!
+ * \brief Sets the position (in the output file) where the tag information is written when applying changes.
+ *
+ * \remarks
+ *  - If putting the tags at another position would prevent rewriting the entire file the specified position
+ *    might not be used if forceTagPosition() is false.
+ *  - However if the specified position is not supported by the container/tag format or by the implementation
+ *    for the format it is ignored (even if forceTagPosition() is true).
+ */
+inline void MediaFileInfo::setTagPosition(TagPosition tagPosition)
+{
+    m_tagPosition = tagPosition;
+}
+
+/*!
+ * \brief Returns whether tagPosition() is forced.
+ * \sa setForceTagPosition()
+ * \sa tagPosition(), setTagPosition()
+ */
+inline bool MediaFileInfo::forceTagPosition() const
+{
+    return m_forceTagPosition;
+}
+
+/*!
+ * \brief Sets whether tagPosition() is forced.
+ * \sa forceTagPosition()
+ * \sa tagPosition(), setTagPosition()
+ */
+inline void MediaFileInfo::setForceTagPosition(bool forceTagPosition)
+{
+    m_forceTagPosition = forceTagPosition;
 }
 
 }

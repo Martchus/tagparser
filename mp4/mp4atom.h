@@ -66,7 +66,8 @@ public:
     bool isPadding() const;
     uint64 firstChildOffset() const;
 
-    static void seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset, bool denote64BitSize = false);
+    static void seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset);
+    static void seekBackAndWriteAtomSize64(std::ostream &stream, const std::ostream::pos_type &startOffset);
 
 protected:
     Mp4Atom(containerType& container, uint64 startOffset, uint64 maxSize);

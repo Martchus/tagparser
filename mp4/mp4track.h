@@ -156,6 +156,7 @@ public:
 
     // methods to update chunk offsets
     void updateChunkOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets);
+    void updateChunkOffsets(const std::vector<uint64> &chunkOffsets);
     void updateChunkOffset(uint32 chunkIndex, uint64 offset);
 
 protected:

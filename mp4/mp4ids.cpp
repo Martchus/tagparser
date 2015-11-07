@@ -290,6 +290,9 @@ uint32 mpeg4SamplingFrequencyTable[] = {
     24000, 22050, 16000, 12000, 11025, 8000, 7350
 };
 
+/*!
+ * \brief Encapsulates all supported MPEG-4 channel configurations.
+ */
 namespace Mpeg4ChannelConfigs {
 
 /*!

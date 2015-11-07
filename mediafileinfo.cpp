@@ -53,13 +53,12 @@ namespace Media {
 
 /*!
  * \class Media::MediaFileInfo
- * \brief The MediaFileInfo class extends the BasicFileInfo class.
+ * \brief The MediaFileInfo class allows to read and write tag information providing
+ *        a container/tag format independent interface.
  *
- * The MediaFileInfo class allows to read and edit meta information
- * of MP3 files with ID3 tag and MP4 files with iTunes tag. It also
- * provides some technical information about these types of files such
- * as contained streams.
- * A bunch of other file types (see Media::ContainerFormat) can be recognized.
+ * It also provides some technical information such as contained streams.
+ *
+ * For examples see "cli/mainfeatures.cpp" of the tageditor repository.
  */
 
 /*!
@@ -74,7 +73,11 @@ MediaFileInfo::MediaFileInfo() :
     m_tagsParsingStatus(ParsingStatus::NotParsedYet),
     m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
     m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
-    m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
+    m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
+    m_minPadding(0),
+    m_maxPadding(0),
+    m_tagPosition(TagPosition::BeforeData),
+    m_forceTagPosition(true)
 {}
 
 /*!
@@ -92,7 +95,11 @@ MediaFileInfo::MediaFileInfo(const string &path) :
     m_tagsParsingStatus(ParsingStatus::NotParsedYet),
     m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
     m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
-    m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
+    m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
+    m_minPadding(0),
+    m_maxPadding(0),
+    m_tagPosition(TagPosition::BeforeData),
+    m_forceTagPosition(true)
 {}
 
 /*!
@@ -181,7 +188,7 @@ startParsingSignature:
             addNotifications(notifications);
             break;
         } case ContainerFormat::Ebml: {
-            unique_ptr<MatroskaContainer> container = make_unique<MatroskaContainer>(*this, m_containerOffset);
+            auto container = make_unique<MatroskaContainer>(*this, m_containerOffset);
             NotificationList notifications;
             try {
                 container->parseHeader();

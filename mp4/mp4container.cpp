@@ -211,17 +211,17 @@ void Mp4Container::internalMakeFile()
         setStream(backupStream);
         // recreate original file
         outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-        // collect needed atoms
+        // collect needed atoms from the original file
         Mp4Atom *ftypAtom, *pdinAtom, *moovAtom;
         try {
             ftypAtom = firstElement()->siblingById(Mp4AtomIds::FileType, true); // mandatory
             if(!ftypAtom) { // throw error if missing
-                addNotification(NotificationType::Critical, "Mandatory ftyp atom not found.", context);
+                addNotification(NotificationType::Critical, "Mandatory \"ftyp\"-atom not found.", context);
             }
             pdinAtom = firstElement()->siblingById(Mp4AtomIds::ProgressiveDownloadInformation, true); // not mandatory
             moovAtom = firstElement()->siblingById(Mp4AtomIds::Movie, true); // mandatory
             if(!moovAtom) { // throw error if missing
-                addNotification(NotificationType::Critical, "Mandatory moov atom not found.", context);
+                addNotification(NotificationType::Critical, "Mandatory \"moov\"-atom not found.", context);
                 throw InvalidDataException();
             }
         } catch (Failure &) {
@@ -231,169 +231,212 @@ void Mp4Container::internalMakeFile()
         if(m_tags.size() > 1) {
             addNotification(NotificationType::Warning, "There are multiple MP4-tags assigned. Only the first one will be attached to the file.", context);
         }
-        // write all top-level atoms, header boxes be placed first
+        // write all top-level atoms
         updateStatus("Writing header ...");
+        // write "ftype"-atom
         ftypAtom->copyEntirely(outputStream);
+        // write "pdin"-atom ("progressive download information")
         if(pdinAtom) {
             pdinAtom->copyEntirely(outputStream);
         }
-        ostream::pos_type newMoovOffset = outputStream.tellp();
-        Mp4Atom *udtaAtom = nullptr;
-        uint64 newUdtaOffset = 0u;
-        if(isAborted()) {
-            throw OperationAbortedException();
-        }
-        moovAtom->copyWithoutChilds(outputStream);
-        for(Mp4Atom *moovChildAtom = moovAtom->firstChild(); moovChildAtom; moovChildAtom = moovChildAtom->nextSibling()) { // write child atoms manually, because the child udta has to be altered/ignored
-            try {
-                moovChildAtom->parse();
-            } catch(Failure &) {
-                addNotification(NotificationType::Critical, "Unable to parse childs of moov atom of original file.", context);
-                throw InvalidDataException();
-            }
-            if(moovChildAtom->id() == Mp4AtomIds::UserData) {
-                // found a udta (user data) atom which childs hold tag infromation
-                if(!udtaAtom) {
-                    udtaAtom = moovChildAtom;
-                    //  check if the udta atom needs to be written
-                    bool writeUdtaAtom = !m_tags.empty(); // it has to be written only when a MP4 tag is assigned
-                    if(!writeUdtaAtom) { // or when there is at least one child except the meta atom in the original file
-                        try {
-                            for(Mp4Atom *udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
-                                udtaChildAtom->parse();
-                                if(udtaChildAtom->id() != Mp4AtomIds::Meta) {
-                                    writeUdtaAtom = true;
-                                    break;
-                                }
-                            }
-                        } catch(Failure &) {
-                            addNotification(NotificationType::Warning,
-                                            "Unable to parse childs of udta atom of original file. These invalid/unknown atoms will be ignored.", context);
-                        }
-                    }
-                    if(writeUdtaAtom) {
-                        updateStatus("Writing tag information ...");
-                        newUdtaOffset = outputStream.tellp(); // save offset
-                        udtaAtom->copyHeader(outputStream); // and write header
-                        // write meta atom if there's a tag assigned
-                        if(!m_tags.empty()) {
-                            try {
-                                m_tags.front()->make(outputStream);
-                            } catch(Failure &) {
-                                addNotification(NotificationType::Warning, "Unable to write meta atom (of assigned mp4 tag).", context);
-                            }
-                            addNotifications(*m_tags.front());
-                        }
-                         // write rest of the child atoms of udta atom
-                        try {
-                            for(Mp4Atom *udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
-                                udtaChildAtom->parse();
-                                if(udtaChildAtom->id() != Mp4AtomIds::Meta) { // skip meta atoms here of course
-                                    udtaChildAtom->copyEntirely(outputStream);
-                                }
-                            }
-                        } catch(Failure &) {
-                            addNotification(NotificationType::Warning,
-                                                  "Unable to parse childs of udta atom of original file. These will be ignored.", context);
-                        }
-                        // write correct size of udta atom
-                        Mp4Atom::seekBackAndWriteAtomSize(outputStream, newUdtaOffset);
-                    }
-                } else {
-                    addNotification(NotificationType::Warning, "The source file has multiple udta atoms. Surplus atoms will be ignored.", context);
-                }
-            } else if(!writeChunkByChunk || moovChildAtom->id() != Mp4AtomIds::Track) {
-                // copy trak atoms only when not writing the data chunk-by-chunk
-                moovChildAtom->copyEntirely(outputStream);
-            }
-        }
-        // the original file has no udta atom but there is tag information to be written
-        if(!udtaAtom && !m_tags.empty()) {
-            updateStatus("Writing tag information ...");
-            newUdtaOffset = outputStream.tellp();
-            // write udta atom
-            outputWriter.writeUInt32BE(0); // the size will be written later
-            outputWriter.writeUInt32BE(Mp4AtomIds::UserData);
-            // write tags
-            try {
-                m_tags.front()->make(outputStream);
-                Mp4Atom::seekBackAndWriteAtomSize(outputStream, newUdtaOffset);
-            } catch(Failure &) {
-                addNotification(NotificationType::Warning, "Unable to write meta atom (of assigned mp4 tag).", context);
-                outputStream.seekp(-8, ios_base::cur);
-            }
-        }
-        // write trak atoms for each currently assigned track, this is only required when writing data chunk-by-chunk
-        if(writeChunkByChunk) {
-            updateStatus("Writing meta information for the tracks ...");
-            for(auto &track : tracks()) {
-                if(isAborted()) {
-                    throw OperationAbortedException();
-                }
-                track->setOutputStream(outputStream);
-                track->makeTrack();
-            }
-        }
-        Mp4Atom::seekBackAndWriteAtomSize(outputStream, newMoovOffset);
         // prepare for writing the actual data
         vector<tuple<istream *, vector<uint64>, vector<uint64> > > trackInfos; // used when writing chunk-by-chunk
-        uint64 totalChunkCount; // used when writing chunk-by-chunk
+        uint64 totalChunkCount = 0; // used when writing chunk-by-chunk
         vector<int64> origMdatOffsets; // used when simply copying mdat
         vector<int64> newMdatOffsets; // used when simply copying mdat
-        // write other atoms
-        for(Mp4Atom *otherTopLevelAtom = firstElement(); otherTopLevelAtom; otherTopLevelAtom = otherTopLevelAtom->nextSibling()) {
-            if(isAborted()) {
-                throw OperationAbortedException();
-            }
-            try {
-                otherTopLevelAtom->parse();
-            } catch(Failure &) {
-                addNotification(NotificationType::Critical, "Unable to parse all top-level atoms of original file.", context);
-                throw InvalidDataException();
-            }
-            using namespace Mp4AtomIds;
-            switch(otherTopLevelAtom->id()) {
-            case FileType: case ProgressiveDownloadInformation: case Movie: case Free: case Skip:
-                break;
-            case MediaData:
+        auto trackCount = tracks().size();
+        for(byte pass = 0; pass != 2; ++pass) {
+            if(fileInfo().tagPosition() == (pass ? TagPosition::AfterData : TagPosition::BeforeData)) {
+                // write "moov"-atom (contains track and tag information)
+                ostream::pos_type newMoovOffset = outputStream.tellp();
+                Mp4Atom *udtaAtom = nullptr;
+                uint64 newUdtaOffset = 0u;
+                // -> write child atoms manually, because the child "udta" has to be altered/ignored
+                moovAtom->copyWithoutChilds(outputStream);
+                for(Mp4Atom *moovChildAtom = moovAtom->firstChild(); moovChildAtom; moovChildAtom = moovChildAtom->nextSibling()) {
+                    try {
+                        moovChildAtom->parse();
+                    } catch(Failure &) {
+                        addNotification(NotificationType::Critical, "Unable to parse childs of moov atom of original file.", context);
+                        throw InvalidDataException();
+                    }
+                    if(moovChildAtom->id() == Mp4AtomIds::UserData) {
+                        // found a "udta" (user data) atom which child "meta" holds tag information
+                        if(!udtaAtom) {
+                            udtaAtom = moovChildAtom;
+                            // check whether the "udta"-atom needs to be written
+                            // it has to be written only when an MP4 tag is assigned
+                            bool writeUdtaAtom = !m_tags.empty();
+                            // or when there is at least one child except the meta atom in the original file
+                            if(!writeUdtaAtom) {
+                                try {
+                                    for(Mp4Atom *udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
+                                        udtaChildAtom->parse();
+                                        if(udtaChildAtom->id() != Mp4AtomIds::Meta) {
+                                            writeUdtaAtom = true;
+                                            break;
+                                        }
+                                    }
+                                } catch(Failure &) {
+                                    addNotification(NotificationType::Warning,
+                                                    "Unable to parse childs of \"udta\"-atom atom of original file. These invalid/unknown atoms will be ignored.", context);
+                                }
+                            }
+                            if(writeUdtaAtom) {
+                                updateStatus("Writing tag information ...");
+                                newUdtaOffset = outputStream.tellp(); // save offset
+                                udtaAtom->copyHeader(outputStream); // and write header
+                                // write meta atom if there's a tag assigned
+                                if(!m_tags.empty()) {
+                                    try {
+                                        m_tags.front()->make(outputStream);
+                                    } catch(Failure &) {
+                                        addNotification(NotificationType::Warning, "Unable to write meta atom (of assigned mp4 tag).", context);
+                                    }
+                                    addNotifications(*m_tags.front());
+                                }
+                                // write rest of the child atoms of "udta"-atom
+                                try {
+                                    for(Mp4Atom *udtaChildAtom = udtaAtom->firstChild(); udtaChildAtom; udtaChildAtom = udtaChildAtom->nextSibling()) {
+                                        udtaChildAtom->parse();
+                                        // skip "meta"-atoms here of course
+                                        if(udtaChildAtom->id() != Mp4AtomIds::Meta) {
+                                            udtaChildAtom->copyEntirely(outputStream);
+                                        }
+                                    }
+                                } catch(Failure &) {
+                                    addNotification(NotificationType::Warning,
+                                                          "Unable to parse childs of \"udta\"-atom of original file. These will be ignored.", context);
+                                }
+                                // write correct size of udta atom
+                                Mp4Atom::seekBackAndWriteAtomSize(outputStream, newUdtaOffset);
+                            }
+                        } else {
+                            addNotification(NotificationType::Warning, "The source file has multiple \"udta\"-atoms. Surplus atoms will be ignored.", context);
+                        }
+                    } else if(!writeChunkByChunk || moovChildAtom->id() != Mp4AtomIds::Track) {
+                        // copy "trak"-atoms only when not writing the data chunk-by-chunk
+                        moovChildAtom->copyEntirely(outputStream);
+                    }
+                }
+                // -> the original file has no udta atom but there is tag information to be written
+                if(!udtaAtom && !m_tags.empty()) {
+                    updateStatus("Writing tag information ...");
+                    newUdtaOffset = outputStream.tellp();
+                    // write udta atom
+                    outputWriter.writeUInt32BE(0); // the size will be written later
+                    outputWriter.writeUInt32BE(Mp4AtomIds::UserData);
+                    // write tags
+                    try {
+                        m_tags.front()->make(outputStream);
+                        Mp4Atom::seekBackAndWriteAtomSize(outputStream, newUdtaOffset);
+                    } catch(Failure &) {
+                        addNotification(NotificationType::Warning, "Unable to write meta atom (of assigned mp4 tag).", context);
+                    }
+                }
+                // -> write trak atoms for each currently assigned track (this is only required when writing data chunk-by-chunk)
                 if(writeChunkByChunk) {
-                    break; // write actual data separately when writing chunk by chunk
-                } else {
-                    // store the mdat offsets when not writing chunk by chunk to be able to update the stco tables
-                    origMdatOffsets.push_back(otherTopLevelAtom->startOffset());
-                    newMdatOffsets.push_back(outputStream.tellp());
+                    updateStatus("Writing meta information for the tracks ...");
+                    for(auto &track : tracks()) {
+                        track->setOutputStream(outputStream);
+                        track->makeTrack();
+                    }
                 }
-            default:
-                updateStatus("Writing " + otherTopLevelAtom->idToString() + " atom ...");
-                otherTopLevelAtom->forwardStatusUpdateCalls(this);
-                otherTopLevelAtom->copyEntirely(outputStream);
+                Mp4Atom::seekBackAndWriteAtomSize(outputStream, newMoovOffset);
+            } else {
+                // write other atoms and "mdat"-atom (holds actual data)
+                for(Mp4Atom *otherTopLevelAtom = firstElement(); otherTopLevelAtom; otherTopLevelAtom = otherTopLevelAtom->nextSibling()) {
+                    if(isAborted()) {
+                        throw OperationAbortedException();
+                    }
+                    try {
+                        otherTopLevelAtom->parse();
+                    } catch(Failure &) {
+                        addNotification(NotificationType::Critical, "Unable to parse all top-level atoms of original file.", context);
+                        throw InvalidDataException();
+                    }
+                    using namespace Mp4AtomIds;
+                    switch(otherTopLevelAtom->id()) {
+                    case FileType: case ProgressiveDownloadInformation: case Movie: case Free: case Skip:
+                        break;
+                    case MediaData:
+                        if(writeChunkByChunk) {
+                            break; // write actual data separately when writing chunk by chunk
+                        } else {
+                            // store the mdat offsets when not writing chunk by chunk to be able to update the stco tables
+                            origMdatOffsets.push_back(otherTopLevelAtom->startOffset());
+                            newMdatOffsets.push_back(outputStream.tellp());
+                        }
+                    default:
+                        updateStatus("Writing " + otherTopLevelAtom->idToString() + " atom ...");
+                        otherTopLevelAtom->forwardStatusUpdateCalls(this);
+                        otherTopLevelAtom->copyEntirely(outputStream);
+                    }
+                }
+                // when writing chunk by chunk the actual data needs to be written separately
+                if(writeChunkByChunk) {
+                    // get the chunk offset and the chunk size table from the old file to be able to write single chunks later ...
+                    updateStatus("Reading chunk offsets and sizes from the original file ...");
+                    trackInfos.reserve(trackCount);
+                    for(auto &track : tracks()) {
+                        if(isAborted()) {
+                            throw OperationAbortedException();
+                        }
+                        // ensure the track reads from the original file
+                        if(&track->inputStream() == &outputStream) {
+                            track->setInputStream(backupStream);
+                        }
+                        trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsets(), track->readChunkSizes());
+                        const vector<uint64> &chunkOffsetTable = get<1>(trackInfos.back());
+                        const vector<uint64> &chunkSizesTable = get<2>(trackInfos.back());
+                        totalChunkCount += track->chunkCount();
+                        if(track->chunkCount() != chunkOffsetTable.size() || track->chunkCount() != chunkSizesTable.size()) {
+                            addNotification(NotificationType::Critical, "Chunks of track " + numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
+                        }
+                    }
+                    // writing single chunks is needed when tracks have been added or removed
+                    updateStatus("Writing chunks to mdat atom ...");
+                    //outputStream.seekp(0, ios_base::end);
+                    ostream::pos_type newMdatOffset = outputStream.tellp();
+                    writer().writeUInt32BE(1); // denote 64 bit size
+                    outputWriter.writeUInt32BE(Mp4AtomIds::MediaData);
+                    outputWriter.writeUInt64BE(0); // write size of mdat atom later
+                    CopyHelper<0x2000> copyHelper;
+                    uint64 chunkIndex = 0;
+                    uint64 totalChunksCopied = 0;
+                    bool chunksCopied;
+                    do {
+                        if(isAborted()) {
+                            throw OperationAbortedException();
+                        }
+                        chunksCopied = false;
+                        for(size_t trackIndex = 0; trackIndex < trackCount; ++trackIndex) {
+                            //auto &track = tracks()[trackIndex];
+                            auto &trackInfo = trackInfos[trackIndex];
+                            istream &sourceStream = *get<0>(trackInfo);
+                            vector<uint64> &chunkOffsetTable = get<1>(trackInfo);
+                            const vector<uint64> &chunkSizesTable = get<2>(trackInfo);
+                            if(chunkIndex < chunkOffsetTable.size() && chunkIndex < chunkSizesTable.size()) {
+                                sourceStream.seekg(chunkOffsetTable[chunkIndex]);
+                                //outputStream.seekp(0, ios_base::end);
+                                chunkOffsetTable[chunkIndex] = outputStream.tellp();
+                                copyHelper.copy(sourceStream, outputStream, chunkSizesTable[chunkIndex]);
+                                //track->updateChunkOffset(chunkIndex, chunkOffset);
+                                chunksCopied = true;
+                                ++totalChunksCopied;
+                            }
+                        }
+                        ++chunkIndex;
+                        updatePercentage(static_cast<double>(totalChunksCopied) / totalChunkCount);
+                    } while(chunksCopied);
+                    //outputStream.seekp(0, ios_base::end);
+                    Mp4Atom::seekBackAndWriteAtomSize64(outputStream, newMdatOffset);
+                }
             }
         }
-        // when writing chunk by chunk the actual data needs to be written separately
-        if(writeChunkByChunk) {
-            // get the chunk offset and the chunk size table from the old file to be able to write single chunks later ...
-            updateStatus("Reading chunk offsets and sizes from the original file ...");
-            trackInfos.reserve(tracks().size());
-            totalChunkCount = 0;
-            for(auto &track : tracks()) {
-                if(&track->inputStream() == &outputStream) {
-                    track->setInputStream(backupStream); // ensure the track reads from the original file
-                }
-                trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsets(), track->readChunkSizes());
-                const vector<uint64> &chunkOffsetTable = get<1>(trackInfos.back());
-                const vector<uint64> &chunkSizesTable = get<2>(trackInfos.back());
-                totalChunkCount += track->chunkCount();
-                if(track->chunkCount() != chunkOffsetTable.size() || track->chunkCount() != chunkSizesTable.size()) {
-                    addNotification(NotificationType::Critical, "Chunks of track " + numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
-                }
-            }
-        }
-        if(isAborted()) {
-            throw OperationAbortedException();
-        }
-        // reparse what is written so far
+        // reparse new file
         updateStatus("Reparsing output file ...");
-        outputStream.close(); // the outputStream needs to be reopened to be able to read again
+        outputStream.close(); // outputStream needs to be reopened to be able to read again
         outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
         setStream(outputStream);
         m_headerParsed = false;
@@ -406,54 +449,27 @@ void Mp4Container::internalMakeFile()
             addNotification(NotificationType::Critical, "Unable to reparse the header of the new file.", context);
             throw;
         }
+        // update chunk offsets in the "stco"-atom of each track
+        if(trackCount != tracks().size()) {
+            stringstream error;
+            error << "Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file (" << tracks().size()
+                  << ") differs from the number of tracks in the original file (" << trackCount << ").";
+            addNotification(NotificationType::Critical, error.str(), context);
+            throw Failure();
+        }
         if(writeChunkByChunk) {
-            // checking parsed tracks
-            size_t trackCount = tracks().size();
-            if(trackCount != trackInfos.size()) {
-                if(trackCount > trackInfos.size()) {
-                    trackCount = trackInfos.size();
+            updateStatus("Updating chunk offset table for each track ...");
+            for(size_t trackIndex = 0; trackIndex < trackCount; ++trackIndex) {
+                auto &track = tracks()[trackIndex];
+                auto &chunkOffsetTable = get<1>(trackInfos[trackIndex]);
+                if(track->chunkCount() == chunkOffsetTable.size()) {
+                    track->updateChunkOffsets(chunkOffsetTable);
+                } else {
+                    addNotification(NotificationType::Critical, "Unable to update chunk offsets of track " + numberToString(trackIndex + 1) + ": Number of chunks in the output file differs from the number of chunks in the orignal file.", context);
+                    throw Failure();
                 }
-                addNotification(NotificationType::Critical, "The track meta data could not be written correctly. Trying to write the chunk data anyways.", context);
             }
-            // writing single chunks is needed when tracks have been added or removed
-            updateStatus("Writing chunks to mdat atom ...");
-            outputStream.seekp(0, ios_base::end);
-            ostream::pos_type newMdatOffset = outputStream.tellp();
-            writer().writeUInt32BE(0); // denote 64 bit size
-            writer().writeUInt32BE(Mp4AtomIds::MediaData);
-            writer().writeUInt64BE(0); // write size of mdat atom later
-            CopyHelper<0x2000> copyHelper;
-            uint64 chunkIndex = 0;
-            uint64 totalChunksCopied = 0;
-            bool chunksCopied;
-            do {
-                if(isAborted()) {
-                    throw OperationAbortedException();
-                }
-                chunksCopied = false;
-                for(size_t trackIndex = 0; trackIndex < trackCount; ++trackIndex) {
-                    auto &track = tracks()[trackIndex];
-                    auto &trackInfo = trackInfos[trackIndex];
-                    istream &sourceStream = *get<0>(trackInfo);
-                    const vector<uint64> &chunkOffsetTable = get<1>(trackInfo);
-                    const vector<uint64> &chunkSizesTable = get<2>(trackInfo);
-                    if(chunkIndex < chunkOffsetTable.size() && chunkIndex < chunkSizesTable.size()) {
-                        sourceStream.seekg(chunkOffsetTable[chunkIndex]);
-                        outputStream.seekp(0, ios_base::end);
-                        uint64 chunkOffset = outputStream.tellp();
-                        copyHelper.copy(sourceStream, outputStream, chunkSizesTable[chunkIndex]);
-                        track->updateChunkOffset(chunkIndex, chunkOffset);
-                        chunksCopied = true;
-                        ++totalChunksCopied;
-                    }
-                }
-                ++chunkIndex;
-                updatePercentage(static_cast<double>(totalChunksCopied) / totalChunkCount);
-            } while(chunksCopied);
-            outputStream.seekp(0, ios_base::end);
-            Mp4Atom::seekBackAndWriteAtomSize(outputStream, newMdatOffset, true);
         } else {
-            // correct mdat offsets in the stco atom of each track when we've just copied the mdat atom
             updateOffsets(origMdatOffsets, newMdatOffsets);
         }
         updatePercentage(100.0);
@@ -494,7 +510,7 @@ void Mp4Container::internalMakeFile()
  * \param oldMdatOffsets Specifies a vector holding the old offsets of the "mdat"-atoms.
  * \param newMdatOffsets Specifies a vector holding the new offsets of the "mdat"-atoms.
  *
- * Internally uses Mp4Track::updateOffsets(). Offsets stored in the "tfhd"-atom are also
+ * Uses internally Mp4Track::updateOffsets(). Offsets stored in the "tfhd"-atom are also
  * updated (this is not tested yet since I don't have files using this atom).
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
@@ -510,7 +526,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
         addNotification(NotificationType::Critical, "No MP4 atoms could be found.", context);
         throw InvalidDataException();
     }
-    // update "base-data-offset-present" of tfhd atom (NOT tested properly)
+    // update "base-data-offset-present" of "tfhd"-atom (NOT tested properly)
     try {
         for(Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, false);
             moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, false)) {
@@ -574,14 +590,16 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
             try {
                 track->parseHeader();
             } catch(Failure &) {
-                addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated because the track seems to be invalid. The newly written file seems to be damaged.", context);
+                addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated because the track seems to be invalid..", context);
+                throw;
             }
         }
         if(track->isHeaderValid()) {
             try {
                 track->updateChunkOffsets(oldMdatOffsets, newMdatOffsets);
             } catch(Failure &) {
-                addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated. The altered file is damaged now, restore the backup!", context);
+                addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated.", context);
+                throw;
             }
         }
     }

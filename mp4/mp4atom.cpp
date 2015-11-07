@@ -78,7 +78,7 @@ void Mp4Atom::internalParse()
     }
     m_id = reader().readUInt32BE();
     m_idLength = 4;
-    if(dataSize() == 1) { // atom denotes 64-bit size
+    if(m_dataSize == 1) { // atom denotes 64-bit size
         m_dataSize = reader().readUInt64BE();
         m_sizeLength = 12; // 4 bytes indicate long size denotation + 8 bytes for actual size denotation
         if(dataSize() < 16 && m_dataSize != 1) {
@@ -116,24 +116,37 @@ void Mp4Atom::internalParse()
  * \brief This function helps to write the atom size after writing an atom to a stream.
  * \param stream Specifies the stream.
  * \param startOffset Specifies the start offset of the atom.
- * \param denote64BitSize Specifies whether the atom denotes its size with a 64-bit unsigned integer.
  *
  * This function seeks back to the start offset and writes the difference between the
  * previous offset and the start offset as 32-bit unsigned integer to the \a stream.
  * Then it seeks back to the previous offset.
  */
-void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_type &startOffset, bool denote64BitSize)
+void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_type &startOffset)
 {
     ostream::pos_type currentOffset = stream.tellp();
     stream.seekp(startOffset);
     BinaryWriter writer(&stream);
-    if(denote64BitSize) {
-        writer.writeUInt32BE(0);
-        stream.seekp(4, ios_base::cur);
-        writer.writeUInt64BE(currentOffset - startOffset);
-    } else {
-        writer.writeUInt32BE(currentOffset - startOffset);
-    }
+    writer.writeUInt32BE(currentOffset - startOffset);
+    stream.seekp(currentOffset);
+}
+
+/*!
+ * \brief This function helps to write the atom size after writing an atom to a stream.
+ * \param stream Specifies the stream.
+ * \param startOffset Specifies the start offset of the atom.
+ *
+ * This function seeks back to the start offset and writes the difference between the
+ * previous offset and the start offset as 64-bit unsigned integer to the \a stream.
+ * Then it seeks back to the previous offset.
+ */
+void Mp4Atom::seekBackAndWriteAtomSize64(std::ostream &stream, const ostream::pos_type &startOffset)
+{
+    ostream::pos_type currentOffset = stream.tellp();
+    stream.seekp(startOffset);
+    BinaryWriter writer(&stream);
+    writer.writeUInt32BE(1);
+    stream.seekp(4, ios_base::cur);
+    writer.writeUInt64BE(currentOffset - startOffset);
     stream.seekp(currentOffset);
 }
 

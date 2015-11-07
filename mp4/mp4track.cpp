@@ -780,8 +780,8 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Sta
 }
 
 /*!
- * \brief Updates the chunk offsets of the track. This is necessary when the mdat atom (which contains
- *        the actual chunk data) is moved.
+ * \brief Updates the chunk offsets of the track. This is necessary when the "mdat"-atom
+ *        (which contains the actual chunk data) is moved.
  * \param oldMdatOffsets Specifies a vector holding the old offsets of the "mdat"-atoms.
  * \param newMdatOffsets Specifies a vector holding the new offsets of the "mdat"-atoms.
  *
@@ -850,9 +850,52 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
 }
 
 /*!
+ * \brief Updates the chunk offsets of the track. This is necessary when the "mdat"-atom
+ *        (which contains the actual chunk data) is moved.
+ * \param chunkOffsets Specifies the new chunk offset table.
+ *
+ * \throws Throws InvalidDataException when
+ *          - there is no stream assigned.
+ *          - the header has been considered as invalid when parsing the header information.
+ *          - the size of \a chunkOffsets does not match chunkCount().
+ *          - there is no atom holding these offsets.
+ *          - the ID of the atom holding these offsets is not "stco" or "co64".
+ */
+void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
+{
+    if(!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
+        throw InvalidDataException();
+    }
+    if(chunkOffsets.size() != chunkCount()) {
+        throw InvalidDataException();
+    }
+    m_ostream->seekp(m_stcoAtom->dataOffset() + 8);
+    switch(m_stcoAtom->id()) {
+    case Mp4AtomIds::ChunkOffset:
+        for(auto offset : chunkOffsets) {
+            m_writer.writeUInt32BE(offset);
+        }
+        break;
+    case Mp4AtomIds::ChunkOffset64:
+        for(auto offset : chunkOffsets) {
+            m_writer.writeUInt64BE(offset);
+        }
+    default:
+        throw InvalidDataException();
+    }
+}
+
+/*!
  * \brief Updates a particular chunk offset.
  * \param chunkIndex Specifies the index of the chunk offset to be updated.
  * \param offset Specifies the new chunk offset.
+ * \remarks This method seems to be obsolete.
+ * \throws Throws InvalidDataException when
+ *          - there is no stream assigned.
+ *          - the header has been considered as invalid when parsing the header information.
+ *          - \a chunkIndex is not less than chunkCount().
+ *          - there is no atom holding these offsets.
+ *          - the ID of the atom holding these offsets is not "stco" or "co64".
  */
 void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
 {
@@ -1006,7 +1049,7 @@ void Mp4Track::makeMedia()
     // write minf atom
     makeMediaInfo();
     // write size (of mdia atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), mdiaStartOffset, false);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), mdiaStartOffset);
 }
 
 /*!
@@ -1060,7 +1103,7 @@ void Mp4Track::makeMediaInfo()
     // write stbl atom
     makeSampleTable();
     // write size (of minf atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset, false);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset);
 }
 
 /*!
@@ -1123,7 +1166,7 @@ void Mp4Track::makeSampleTable()
     // write subs atom (sub-sample information)
 
     // write size (of stbl atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset, false);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset);
 }
 
 void Mp4Track::internalParseHeader()
