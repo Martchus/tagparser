@@ -21,7 +21,7 @@ public:
 
 private:
     std::vector<std::string> m_languages;
-    std::vector<std::string> m_countrys;
+    std::vector<std::string> m_countries;
 };
 
 inline LocaleAwareString::LocaleAwareString(const std::string &value) :
@@ -43,12 +43,12 @@ inline std::vector<std::string> &LocaleAwareString::languages()
 
 inline const std::vector<std::string> &LocaleAwareString::countries() const
 {
-    return m_countrys;
+    return m_countries;
 }
 
 inline std::vector<std::string> &LocaleAwareString::countries()
 {
-    return m_countrys;
+    return m_countries;
 }
 
 } // namespace Media
