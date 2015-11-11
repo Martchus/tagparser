@@ -694,11 +694,12 @@ void MatroskaContainer::internalMakeFile()
 {
     invalidateStatus();
     static const string context("making Matroska container");
+    updateStatus("Calculating element sizes ...");
     if(!isHeaderParsed()) {
         addNotification(NotificationType::Critical, "The header has not been parsed yet.", context);
         throw InvalidDataException();
     }
-    EbmlElement *level0Element = firstElement();
+    EbmlElement *level0Element = firstElement(), *level1Element, *level2Element;
     if(!level0Element) {
         addNotification(NotificationType::Critical, "No EBML elements could be found.", context);
         throw InvalidDataException();
@@ -741,15 +742,59 @@ void MatroskaContainer::internalMakeFile()
             }
         }
         uint64 attachmentsSize = attachedFileElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(attachedFileElementsSize) + attachedFileElementsSize : 0;
-        // check the number of segments to be written
+        // check:
+        //  - the number of segments to be written
+        //  - current media data / first cluster offset
+        //  - current padding
+        //  - whether there are tags or attachments in additional segments
+        // to determine whether a rewrite is required
         unsigned int lastSegmentIndex = static_cast<unsigned int>(-1);
+        bool firstClusterFound = false;
+        uint64 currentFirstClusterOffset = 0;
+        uint64 currentPadding = 0;
+        bool rewriteRequired = false;
         for(; level0Element; level0Element = level0Element->nextSibling()) {
             level0Element->parse();
-            if(level0Element->id() == MatroskaIds::Segment) {
-                ++lastSegmentIndex;
+            switch(level0Element->id()) {
+            case EbmlIds::Void:
+                if(!firstClusterFound) {
+                    currentPadding += level0Element->totalSize();
+                }
+                break;
+            case MatroskaIds::Segment:
+                // check the additional segment for tags and attachments
+                if(++lastSegmentIndex && !rewriteRequired) {
+                    for(level1Element = level0Element->firstChild(); level1Element; level1Element = level1Element->nextSibling()) {
+                        level1Element->parse();
+                        if(level1Element->id() == MatroskaIds::Attachments || level1Element->id() == MatroskaIds::Tags) {
+                            rewriteRequired = true;
+                            break;
+                        }
+                    }
+                }
+                // check the segment for the first "Cluster"-element (if not found yet)
+                if(!firstClusterFound) {
+                    for(level1Element = level0Element->firstChild(); level1Element; level1Element = level1Element->nextSibling()) {
+                        level1Element->parse();
+                        switch(level1Element->id()) {
+                        case EbmlIds::Void:
+                            currentPadding += level1Element->totalSize();
+                            break;
+                        case MatroskaIds::Cluster:
+                            currentFirstClusterOffset = level1Element->startOffset();
+                            firstClusterFound = true;
+                            break;
+                        }
+                    }
+                }
+                break;
             }
         }
+        if(!rewriteRequired) {
+            rewriteRequired = currentPadding <= fileInfo().maxPadding() && currentPadding >= fileInfo().minPadding();
+        }
         // prepare rewriting the file
+        //TODO: do backup stuff only when rewrite is really required
         updateStatus("Preparing for rewriting Matroska/EBML file ...");
         fileInfo().close(); // ensure the file is close before renaming it
         string backupPath;
@@ -778,27 +823,14 @@ void MatroskaContainer::internalMakeFile()
             byte sizeLength; // size length used to make size denotations
             char buff[8]; // buffer used to make size denotations
             // calculate EBML header size
-            updateStatus("Writing EBML header ...");
-            elementSize = 2 * 7; // sub element ID sizes
+            uint64 ebmlHeaderSize = 2 * 7; // sub element ID sizes
             for(auto headerValue : initializer_list<uint64>{m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion}) {
-                elementSize += sizeLength = EbmlElement::calculateUIntegerLength(headerValue);
-                elementSize += EbmlElement::calculateSizeDenotationLength(sizeLength);
+                ebmlHeaderSize += sizeLength = EbmlElement::calculateUIntegerLength(headerValue);
+                ebmlHeaderSize += EbmlElement::calculateSizeDenotationLength(sizeLength);
             }
-            elementSize += m_doctype.size();
-            elementSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
-            // write EBML header
-            outputWriter.writeUInt32BE(EbmlIds::Header);
-            sizeLength = EbmlElement::makeSizeDenotation(elementSize, buff);
-            outputStream.write(buff, sizeLength);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::Version, m_version);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::ReadVersion, m_readVersion);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxIdLength, m_maxIdLength);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxSizeLength, m_maxSizeLength);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocType, m_doctype);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeVersion, m_doctypeVersion);
-            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeReadVersion, m_doctypeReadVersion);
-            // write segments
-            EbmlElement *level1Element, *level2Element;
+            ebmlHeaderSize += m_doctype.size();
+            ebmlHeaderSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
+            // prepare writing segments
             uint64 segmentInfoElementDataSize;
             MatroskaSeekInfo seekInfo;
             MatroskaCuePositionUpdater cuesUpdater;
@@ -985,6 +1017,24 @@ void MatroskaContainer::internalMakeFile()
                                 }
                             }
                         }
+                        // start the actual writing
+                        if(!segmentIndex) {
+                            // nothing written so far (just prepared)
+                            // -> decided whether it is necessary to rewrite the entire file
+                            // TODO
+                            // write EBML header (before writing the first segment)
+                            updateStatus("Writing EBML header ...");
+                            outputWriter.writeUInt32BE(EbmlIds::Header);
+                            sizeLength = EbmlElement::makeSizeDenotation(ebmlHeaderSize, buff);
+                            outputStream.write(buff, sizeLength);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::Version, m_version);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::ReadVersion, m_readVersion);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxIdLength, m_maxIdLength);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxSizeLength, m_maxSizeLength);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocType, m_doctype);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeVersion, m_doctypeVersion);
+                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeReadVersion, m_doctypeReadVersion);
+                        }
                         // write "Segment"-element actually
                         updateStatus("Writing segment header ...");
                         outputWriter.writeUInt32BE(MatroskaIds::Segment);
@@ -1139,7 +1189,10 @@ void MatroskaContainer::internalMakeFile()
                         level0Element->copyEntirely(outputStream);
                     }
                 }
+            } catch(OperationAbortedException &) {
+                throw;
             } catch(Failure &) {
+                // any failures here are caused because the original faile could not be parsed correctly (except OperationAbortedException which is handled above)
                 addNotifications(cuesUpdater);
                 addNotification(NotificationType::Critical, "Unable to parse content in top-level element at " + numberToString(level0Element->startOffset()) + " of original file.", context);
                 throw;
