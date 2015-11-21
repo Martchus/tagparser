@@ -161,6 +161,7 @@ public:
     uint32 sizeLength() const;
     uint64 dataOffset() const;
     uint64 totalSize() const;
+    uint64 endOffset() const;
     uint64 maxTotalSize() const;
     implementationType* parent();
     const implementationType* parent() const;
@@ -408,6 +409,15 @@ template <class ImplementationType>
 inline uint64 GenericFileElement<ImplementationType>::totalSize() const
 {
     return headerSize() + dataSize();
+}
+
+/*!
+ * \brief Returns the offset of the first byte which doesn't belong to this element anymore.
+ */
+template <class ImplementationType>
+inline uint64 GenericFileElement<ImplementationType>::endOffset() const
+{
+    return startOffset() + totalSize();
 }
 
 /*!
