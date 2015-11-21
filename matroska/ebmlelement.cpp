@@ -258,35 +258,37 @@ byte EbmlElement::makeId(GenericFileElement::identifierType id, char *buff)
 }
 
 /*!
- * \brief Makes the size denotation for the specified \a size and stores it to \a buff
- *        which must be at least 8 bytes long.
- * \returns Returns the number of bytes written to \a buff.
+ * \brief Makes the size denotation for the specified \a size and stores it to \a buff.
+ * \param size Specifies the size to be denoted.
+ * \param buff Specifies the buffer to store the denotation. Must be at least 8 bytes long.
+ * \param minBytes Specifies the minimum number of bytes to use. Might be use allow subsequent element growth.
+ * \returns Returns the number of bytes written to \a buff. Always in the range of \a minBytes and 8.
  * \throws Throws InvalidDataException() if \a size can not be represented.
  */
-byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
+byte EbmlElement::makeSizeDenotation(uint64 size, char *buff, byte minBytes)
 {
-    if(size < 126) {
+    if(minBytes <= 1 && size < 126) {
         *buff = static_cast<byte>(size | 0x80);
         return 1;
-    } else if(size <= 16382ul) {
+    } else if(minBytes <= 2 && size <= 16382ul) {
         BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
         return 2;
-    } else if(size <= 2097150ul) {
+    } else if(minBytes <= 3 && size <= 2097150ul) {
         BE::getBytes(static_cast<uint32>((size | 0x200000) << 0x08), buff);
         return 3;
-    } else if(size <= 268435454ul) {
+    } else if(minBytes <= 4 && size <= 268435454ul) {
         BE::getBytes(static_cast<uint32>(size | 0x10000000), buff);
         return 4;
-    } else if(size <= 34359738366ul) {
+    } else if(minBytes <= 5 && size <= 34359738366ul) {
         BE::getBytes(static_cast<uint64>((size | 0x800000000) << 0x18), buff);
         return 5;
-    } else if(size <= 4398046511102ul) {
+    } else if(minBytes <= 6 && size <= 4398046511102ul) {
         BE::getBytes(static_cast<uint64>((size | 0x40000000000) << 0x10), buff);
         return 6;
-    } else if(size <= 562949953421310ul) {
+    } else if(minBytes <= 7 && size <= 562949953421310ul) {
         BE::getBytes(static_cast<uint64>((size | 0x2000000000000) << 0x08), buff);
         return 7;
-    } else if(size <= 72057594037927934ul) {
+    } else if(minBytes <= 8 && size <= 72057594037927934ul) {
         BE::getBytes(static_cast<uint64>(size | 0x100000000000000), buff);
         return 8;
     }
