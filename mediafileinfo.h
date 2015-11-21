@@ -145,6 +145,8 @@ public:
     void setMinPadding(size_t minPadding);
     size_t maxPadding() const;
     void setMaxPadding(size_t maxPadding);
+    size_t preferredPadding() const;
+    void setPreferredPadding(size_t preferredPadding);
     TagPosition tagPosition() const;
     void setTagPosition(TagPosition tagPosition);
     bool forceTagPosition() const;
@@ -180,6 +182,7 @@ private:
     bool m_forceFullParse;
     size_t m_minPadding;
     size_t m_maxPadding;
+    size_t m_preferredPadding;
     TagPosition m_tagPosition;
     bool m_forceTagPosition;
 };
@@ -428,6 +431,27 @@ inline size_t MediaFileInfo::maxPadding() const
 inline void MediaFileInfo::setMaxPadding(size_t maxPadding)
 {
     m_maxPadding = maxPadding;
+}
+
+/*!
+ * \brief Returns the padding to be written before the data block when applying changes and the file needs to be rewritten anyways.
+ *
+ * Padding in front of the file allows adding additional fields afterwards whithout needing
+ * to rewrite the entire file or to put tag information at the end of the file.
+ */
+inline size_t MediaFileInfo::preferredPadding() const
+{
+    return m_preferredPadding;
+}
+
+/*!
+ * \brief Sets the padding to be written before the data block when applying changes and the file needs to be rewritten anyways.
+ * \remarks This value might be ignored if not supported by the container/tag format or the corresponding implementation.
+ * \sa preferredPadding()
+ */
+inline void MediaFileInfo::setPreferredPadding(size_t preferredPadding)
+{
+    m_preferredPadding = preferredPadding;
 }
 
 /*!

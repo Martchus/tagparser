@@ -76,6 +76,7 @@ MediaFileInfo::MediaFileInfo() :
     m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
     m_minPadding(0),
     m_maxPadding(0),
+    m_preferredPadding(0),
     m_tagPosition(TagPosition::BeforeData),
     m_forceTagPosition(true)
 {}
@@ -98,6 +99,7 @@ MediaFileInfo::MediaFileInfo(const string &path) :
     m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
     m_minPadding(0),
     m_maxPadding(0),
+    m_preferredPadding(0),
     m_tagPosition(TagPosition::BeforeData),
     m_forceTagPosition(true)
 {}
