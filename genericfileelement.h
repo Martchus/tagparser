@@ -7,6 +7,7 @@
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/copy.h>
+#include <c++utilities/misc/memory.h>
 
 #include <list>
 #include <initializer_list>
@@ -26,7 +27,6 @@ namespace Media {
 
 template <class ImplementationType>
 class GenericFileElement;
-
 
 /*!
  * \class Media::FileElementIterator
@@ -191,6 +191,10 @@ public:
     void copyHeader(std::ostream &targetStream);
     void copyWithoutChilds(std::ostream &targetStream);
     void copyEntirely(std::ostream &targetStream);
+    void makeBuffer();
+    void releaseBuffer();
+    void copyBuffer(std::ostream &targetStream);
+    const std::unique_ptr<char[]> &buffer();
     implementationType *denoteFirstChild(uint32 offset);
 
 protected:
@@ -202,6 +206,7 @@ protected:
     implementationType* m_parent;
     std::unique_ptr<implementationType> m_nextSibling;
     std::unique_ptr<implementationType> m_firstChild;
+    std::unique_ptr<char[]> m_buffer;
 
 private:
     void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy);
@@ -767,7 +772,7 @@ void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
         parse();
         gatheredNotifications.insert(gatheredNotifications.end(), notifications().begin(), notifications().end());
         if(firstChild()) { // element is parent
-            firstChild()->validateSubsequentElementStructure(gatheredNotifications);
+            firstChild()->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
         } else if(paddingSize && isPadding()) { // element is padding
             *paddingSize += totalSize();
         }
@@ -809,6 +814,32 @@ template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetStream)
 {
     copyInternal(targetStream, startOffset(), totalSize());
+}
+
+template <class ImplementationType>
+void GenericFileElement<ImplementationType>::makeBuffer()
+{
+    m_buffer = std::make_unique<char[]>(totalSize());
+    container().stream().seekg(startOffset());
+    container().stream().read(m_buffer.get(), totalSize());
+}
+
+template <class ImplementationType>
+inline void GenericFileElement<ImplementationType>::releaseBuffer()
+{
+    m_buffer.release();
+}
+
+template <class ImplementationType>
+inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
+{
+    targetStream.write(m_buffer.get(), totalSize());
+}
+
+template <class ImplementationType>
+inline const std::unique_ptr<char[]> &GenericFileElement<ImplementationType>::buffer()
+{
+    return m_buffer;
 }
 
 /*!
