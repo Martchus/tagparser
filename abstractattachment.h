@@ -24,6 +24,9 @@ public:
     std::istream::pos_type startOffset() const;
     std::istream::pos_type endOffset() const;
     std::istream::pos_type size() const;
+    const std::unique_ptr<char[]> &buffer() const;
+    void makeBuffer() const;
+    void releaseBuffer();
 
 protected:
     StreamDataBlock();
@@ -31,6 +34,7 @@ protected:
     std::function<std::istream & ()> m_stream;
     std::istream::pos_type m_startOffset;
     std::istream::pos_type m_endOffset;
+    mutable std::unique_ptr<char[]> m_buffer;
 };
 
 /*!
@@ -67,6 +71,22 @@ inline std::istream::pos_type StreamDataBlock::size() const
     return m_endOffset - m_startOffset;
 }
 
+/*!
+ * \brief Returns the data buffered via makeBuffer().
+ */
+inline const std::unique_ptr<char[]> &StreamDataBlock::buffer() const
+{
+    return m_buffer;
+}
+
+/*!
+ * \brief Releases buffered data.
+ */
+inline void StreamDataBlock::releaseBuffer()
+{
+    m_buffer.release();
+}
+
 class LIB_EXPORT FileDataBlock : public StreamDataBlock
 {
 public:
@@ -96,6 +116,7 @@ public:
     const StreamDataBlock *data() const;
     void setData(std::unique_ptr<StreamDataBlock> &&data);
     void setFile(const std::string &path);
+    bool isDataFromFile() const;
     std::string label() const;
     void clear();
     bool isIgnored() const;
@@ -111,6 +132,7 @@ private:
     std::string m_mimeType;
     uint64 m_id;
     std::unique_ptr<StreamDataBlock> m_data;
+    bool m_isDataFromFile;
     bool m_ignored;
 };
 
@@ -119,6 +141,7 @@ private:
  */
 inline AbstractAttachment::AbstractAttachment() :
     m_id(0),
+    m_isDataFromFile(false),
     m_ignored(false)
 {}
 
@@ -211,6 +234,15 @@ inline const StreamDataBlock *AbstractAttachment::data() const
 inline void AbstractAttachment::setData(std::unique_ptr<StreamDataBlock> &&data)
 {
     m_data = std::move(data);
+    m_isDataFromFile = false;
+}
+
+/*!
+ * \brief Returns whether the assigned data has been assigned using the setFile() method.
+ */
+inline bool AbstractAttachment::isDataFromFile() const
+{
+    return m_isDataFromFile;
 }
 
 /*!

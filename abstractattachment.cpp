@@ -53,6 +53,16 @@ StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream,
 }
 
 /*!
+ * \brief Buffers the data block. Buffered data can be accessed via buffer().
+ */
+void StreamDataBlock::makeBuffer() const
+{
+    m_buffer = make_unique<char[]>(size());
+    stream().seekg(startOffset());
+    stream().read(m_buffer.get(), size());
+}
+
+/*!
  * \class Media::FileDataBlock
  * \brief The FileDataBlock class is a reference to a certain data block of a file stream.
  */
@@ -136,6 +146,7 @@ void AbstractAttachment::setFile(const std::string &path)
         m_mimeType = mimeType;
     }
     m_data = move(file);
+    m_isDataFromFile = true;
 }
 
 } // namespace Media
