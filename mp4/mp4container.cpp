@@ -246,7 +246,7 @@ void Mp4Container::internalMakeFile()
         vector<int64> newMdatOffsets; // used when simply copying mdat
         auto trackCount = tracks().size();
         for(byte pass = 0; pass != 2; ++pass) {
-            if(fileInfo().tagPosition() == (pass ? TagPosition::AfterData : TagPosition::BeforeData)) {
+            if(fileInfo().tagPosition() == (pass ? ElementPosition::AfterData : ElementPosition::BeforeData)) {
                 // write "moov"-atom (contains track and tag information)
                 ostream::pos_type newMoovOffset = outputStream.tellp();
                 Mp4Atom *udtaAtom = nullptr;

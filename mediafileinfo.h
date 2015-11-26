@@ -40,10 +40,11 @@ enum class TagUsage
     Never /**< tags of the type are never used; a possibly existing tag of the type is removed */
 };
 
-enum class TagPosition
+enum class ElementPosition
 {
-    BeforeData,
-    AfterData
+    BeforeData, /**< the element is positioned before the actual data */
+    AfterData, /**< the element is positioned after the actual data */
+    Keep /**< the element is placed at its previous position */
 };
 
 /*!
@@ -141,16 +142,22 @@ public:
     // methods to get, set object behaviour
     bool isForcingFullParse() const;
     void setForceFullParse(bool forceFullParse);
+    bool isForcingRewrite() const;
+    void setForceRewrite(bool forceRewrite);
     size_t minPadding() const;
     void setMinPadding(size_t minPadding);
     size_t maxPadding() const;
     void setMaxPadding(size_t maxPadding);
     size_t preferredPadding() const;
     void setPreferredPadding(size_t preferredPadding);
-    TagPosition tagPosition() const;
-    void setTagPosition(TagPosition tagPosition);
+    ElementPosition tagPosition() const;
+    void setTagPosition(ElementPosition tagPosition);
     bool forceTagPosition() const;
     void setForceTagPosition(bool forceTagPosition);
+    ElementPosition indexPosition() const;
+    void setIndexPosition(ElementPosition indexPosition);
+    bool forceIndexPosition() const;
+    void setForceIndexPosition(bool forceTagPosition);
 
 protected:
     virtual void invalidated();
@@ -180,11 +187,14 @@ private:
     ParsingStatus m_attachmentsParsingStatus;
     // fields specifying object behaviour
     bool m_forceFullParse;
+    bool m_forceRewrite;
     size_t m_minPadding;
     size_t m_maxPadding;
     size_t m_preferredPadding;
-    TagPosition m_tagPosition;
+    ElementPosition m_tagPosition;
     bool m_forceTagPosition;
+    ElementPosition m_indexPosition;
+    bool m_forceIndexPosition;
 };
 
 /*!
@@ -384,6 +394,22 @@ inline void MediaFileInfo::setForceFullParse(bool forceFullParse)
 }
 
 /*!
+ * \brief Returns whether forcing rewriting (when applying changes) is enabled.
+ */
+inline bool MediaFileInfo::isForcingRewrite() const
+{
+    return m_forceRewrite;
+}
+
+/*!
+ * \brief Sets whether forcing rewriting (when applying changes) is enabled.
+ */
+inline void MediaFileInfo::setForceRewrite(bool forceRewrite)
+{
+    m_forceRewrite = forceRewrite;
+}
+
+/*!
  * \brief Returns the minimum padding to be written before the data blocks when applying changes.
  *
  * Padding in front of the file allows adding additional fields afterwards whithout needing
@@ -458,7 +484,7 @@ inline void MediaFileInfo::setPreferredPadding(size_t preferredPadding)
  * \brief Returns the position (in the output file) where the tag information is written when applying changes.
  * \sa setTagPosition()
  */
-inline TagPosition MediaFileInfo::tagPosition() const
+inline ElementPosition MediaFileInfo::tagPosition() const
 {
     return m_tagPosition;
 }
@@ -471,8 +497,9 @@ inline TagPosition MediaFileInfo::tagPosition() const
  *    might not be used if forceTagPosition() is false.
  *  - However if the specified position is not supported by the container/tag format or by the implementation
  *    for the format it is ignored (even if forceTagPosition() is true).
+ *  - Default value is ElementPosition::BeforeData
  */
-inline void MediaFileInfo::setTagPosition(TagPosition tagPosition)
+inline void MediaFileInfo::setTagPosition(ElementPosition tagPosition)
 {
     m_tagPosition = tagPosition;
 }
@@ -495,6 +522,46 @@ inline bool MediaFileInfo::forceTagPosition() const
 inline void MediaFileInfo::setForceTagPosition(bool forceTagPosition)
 {
     m_forceTagPosition = forceTagPosition;
+}
+
+/*!
+ * \brief Returns the position (in the output file) where the index is written when applying changes.
+ * \sa setIndexPosition()
+ *
+ */
+inline ElementPosition MediaFileInfo::indexPosition() const
+{
+    return m_indexPosition;
+}
+
+/*!
+ * \brief Sets the position (in the output file) where the index is written when applying changes.
+ * \remarks Same rules as for tagPosition() apply. If conflicting with tagPosition(), tagPosition() has priority.
+ *
+ */
+inline void MediaFileInfo::setIndexPosition(ElementPosition indexPosition)
+{
+    m_indexPosition = indexPosition;
+}
+
+/*!
+ * \brief Returns whether indexPosition() is forced.
+ * \sa setForceIndexPosition()
+ * \sa indexPosition(), setIndexPosition()
+ */
+inline bool MediaFileInfo::forceIndexPosition() const
+{
+    return m_forceIndexPosition;
+}
+
+/*!
+ * \brief Sets whether indexPosition() is forced.
+ * \sa forceIndexPosition()
+ * \sa indexPosition(), setIndexPosition()
+ */
+inline void MediaFileInfo::setForceIndexPosition(bool forceIndexPosition)
+{
+    m_forceIndexPosition = forceIndexPosition;
 }
 
 }

@@ -74,11 +74,14 @@ MediaFileInfo::MediaFileInfo() :
     m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
     m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
     m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
+    m_forceRewrite(true),
     m_minPadding(0),
     m_maxPadding(0),
     m_preferredPadding(0),
-    m_tagPosition(TagPosition::BeforeData),
-    m_forceTagPosition(true)
+    m_tagPosition(ElementPosition::BeforeData),
+    m_forceTagPosition(true),
+    m_indexPosition(ElementPosition::BeforeData),
+    m_forceIndexPosition(true)
 {}
 
 /*!
@@ -97,11 +100,14 @@ MediaFileInfo::MediaFileInfo(const string &path) :
     m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
     m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
     m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
+    m_forceRewrite(true),
     m_minPadding(0),
     m_maxPadding(0),
     m_preferredPadding(0),
-    m_tagPosition(TagPosition::BeforeData),
-    m_forceTagPosition(true)
+    m_tagPosition(ElementPosition::BeforeData),
+    m_forceTagPosition(true),
+    m_indexPosition(ElementPosition::BeforeData),
+    m_forceIndexPosition(true)
 {}
 
 /*!
@@ -142,7 +148,7 @@ void MediaFileInfo::parseContainerFormat()
     open(); // ensure the file is open
     m_containerFormat = ContainerFormat::Unknown;
     // file size
-    m_paddingSize = 0x0u;
+    m_paddingSize = 0;
     m_containerOffset = 0;
     // read signatrue
     char buff[16];
