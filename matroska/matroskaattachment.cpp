@@ -82,21 +82,6 @@ void MatroskaAttachment::parse(EbmlElement *attachedFileElement)
 }
 
 /*!
- * \brief Prepares making.
- * \returns Returns a MatroskaAttachmentMaker object which can be used to actually make the attachment.
- * \remarks The attachment must NOT be mutated after making is prepared when it is intended to actually
- *          make the attachment using the make method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making error occurs.
- *
- * This method might be useful when it is necessary to know the size of the attachment before making it.
- * \sa make()
- */
-MatroskaAttachmentMaker MatroskaAttachment::prepareMaking()
-{
-    return MatroskaAttachmentMaker(*this);
-}
-
-/*!
  * \brief Writes the attachment to the specified \a stream (makes an "AttachedFile"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a making
@@ -171,7 +156,11 @@ void MatroskaAttachmentMaker::make(ostream &stream) const
         EbmlElement *child;
         for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
             if((child = attachment().attachedFileElement()->childById(id))) {
-                child->copyEntirely(stream);
+                if(child->buffer()) {
+                    child->copyBuffer(stream);
+                } else {
+                    child->copyEntirely(stream);
+                }
             }
         }
     }
@@ -181,9 +170,29 @@ void MatroskaAttachmentMaker::make(ostream &stream) const
         len = EbmlElement::makeSizeDenotation(attachment().data()->size(), buff);
         stream.write(buff, len);
         // copy data
-        CopyHelper<0x2000> copyHelper;
-        attachment().data()->stream().seekg(attachment().data()->startOffset());
-        copyHelper.copy(attachment().data()->stream(), stream, attachment().data()->size());
+        if(attachment().data()->buffer()) {
+            stream.write(attachment().data()->buffer().get(), attachment().data()->size());
+        } else {
+            CopyHelper<0x2000> copyHelper;
+            attachment().data()->stream().seekg(attachment().data()->startOffset());
+            copyHelper.copy(attachment().data()->stream(), stream, attachment().data()->size());
+        }
+
+    }
+}
+
+void MatroskaAttachmentMaker::bufferCurrentAttachments()
+{
+    EbmlElement *child;
+    if(attachment().attachedFileElement()) {
+        for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
+            if((child = attachment().attachedFileElement()->childById(id))) {
+                child->makeBuffer();
+            }
+        }
+    }
+    if(attachment().data() && attachment().data()->size() && !attachment().isDataFromFile()) {
+        attachment().data()->makeBuffer();
     }
 }
 
