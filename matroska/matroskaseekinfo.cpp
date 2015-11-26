@@ -14,7 +14,7 @@ namespace Media {
 
 /*!
  * \class Media::MatroskaSeekInfo
- * \brief The MatroskaSeekInfo class helps parsing and making "SeekHead" elements.
+ * \brief The MatroskaSeekInfo class helps parsing and making "SeekHead"-elements.
  */
 
 /*!
