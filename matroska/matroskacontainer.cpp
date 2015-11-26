@@ -158,11 +158,11 @@ void MatroskaContainer::validateIndex()
                                             // validate "Cluster" position denoted by "CueClusterPosition"-element
                                             clusterElement = make_unique<EbmlElement>(*this, segmentElement->dataOffset() + subElement->readUInteger() - currentOffset);
                                             try {
-                                                clusterElement->parse();
-                                                if(clusterElement->id() != MatroskaIds::Cluster) {
-                                                    addNotification(NotificationType::Critical, "\"CueClusterPosition\" element at " + numberToString(subElement->startOffset()) + " does not point to \"Cluster\"-element (points to " + numberToString(clusterElement->startOffset()) + ").", context);
-                                                }
-                                            } catch(Failure &) {
+                                            clusterElement->parse();
+                                            if(clusterElement->id() != MatroskaIds::Cluster) {
+                                                addNotification(NotificationType::Critical, "\"CueClusterPosition\" element at " + numberToString(subElement->startOffset()) + " does not point to \"Cluster\"-element (points to " + numberToString(clusterElement->startOffset()) + ").", context);
+                                            }
+                                        } catch(Failure &) {
                                                 addNotifications(context, *clusterElement);
                                             }
                                             break;
@@ -311,7 +311,7 @@ MatroskaAttachment *MatroskaContainer::createAttachment()
     srand (time(nullptr));
     byte tries = 0;
     uint64 attachmentId;
-    generateRandomId:
+generateRandomId:
     attachmentId = rand();
     if(tries < 0xFF) {
         for(const auto &attachment : m_attachments) {
@@ -342,14 +342,19 @@ void MatroskaContainer::internalParseHeader()
     vector<MatroskaSeekInfo>::size_type seekInfosIndex = 0;
     // loop through all top level elements
     for(EbmlElement *topLevelElement = m_firstElement.get(); topLevelElement; topLevelElement = topLevelElement->nextSibling()) {
-        topLevelElement->parse();
+        try {
+            topLevelElement->parse();
+        } catch(const Failure &) {
+            addNotification(NotificationType::Critical, "Unable to parse top-level element at " + numberToString(topLevelElement->startOffset()) + ".", context);
+            break;
+        }
         switch(topLevelElement->id()) {
         case EbmlIds::Header:
             for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
                     subElement->parse();
                 } catch (Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse all childs of EBML header element.", context);
+                    addNotification(NotificationType::Critical, "Unable to parse all childs of EBML header.", context);
                     break;
                 }
                 switch(subElement->id()) {
@@ -394,7 +399,7 @@ void MatroskaContainer::internalParseHeader()
                 try {
                     subElement->parse();
                 } catch (Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse all childs of EBML segment element.", context);
+                    addNotification(NotificationType::Critical, "Unable to parse all childs of \"Segment\"-element.", context);
                     break;
                 }
                 switch(subElement->id()) {
@@ -456,7 +461,7 @@ void MatroskaContainer::internalParseHeader()
                                             m_tracksElements.emplace_back(m_additionalElements.back().get());
                                         }
                                         break;
-                                   case MatroskaIds::Tags:
+                                    case MatroskaIds::Tags:
                                         if(excludesOffset(m_tagsElements, offset)) {
                                             m_additionalElements.emplace_back(move(element));
                                             m_tagsElements.emplace_back(m_additionalElements.back().get());
@@ -499,7 +504,7 @@ void MatroskaContainer::internalParseHeader()
         }
     }
     // finally parse the "Info"-element and fetch "EditionEntry"-elements
-    finish:
+finish:
     try {
         parseSegmentInfo();
     } catch (Failure &) {
@@ -601,8 +606,8 @@ void MatroskaContainer::internalParseTracks()
                 case MatroskaIds::TrackEntry:
                     m_tracks.emplace_back(make_unique<MatroskaTrack>(*subElement));
                     try {
-                        m_tracks.back()->parseHeader();
-                    } catch(NoDataFoundException &) {
+                    m_tracks.back()->parseHeader();
+                } catch(NoDataFoundException &) {
                         m_tracks.pop_back();
                     } catch(Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse track " + ConversionUtilities::numberToString(m_tracks.size()) + ".", context);
@@ -635,8 +640,8 @@ void MatroskaContainer::internalParseChapters()
                 case MatroskaIds::EditionEntry:
                     m_editionEntries.emplace_back(make_unique<MatroskaEditionEntry>(subElement));
                     try {
-                        m_editionEntries.back()->parseNested();
-                    } catch(NoDataFoundException &) {
+                    m_editionEntries.back()->parseNested();
+                } catch(NoDataFoundException &) {
                         m_editionEntries.pop_back();
                     } catch(Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse edition entry " + ConversionUtilities::numberToString(m_editionEntries.size()) + ".", context);
@@ -669,8 +674,8 @@ void MatroskaContainer::internalParseAttachments()
                 case MatroskaIds::AttachedFile:
                     m_attachments.emplace_back(make_unique<MatroskaAttachment>());
                     try {
-                        m_attachments.back()->parse(subElement);
-                    } catch(NoDataFoundException &) {
+                    m_attachments.back()->parse(subElement);
+                } catch(NoDataFoundException &) {
                         m_attachments.pop_back();
                     } catch(Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse attached file " + ConversionUtilities::numberToString(m_attachments.size()) + ".", context);
@@ -690,25 +695,129 @@ void MatroskaContainer::internalParseAttachments()
     }
 }
 
+struct SegmentData
+{
+    SegmentData() :
+        element(nullptr),
+        hasCrc32(false),
+        cuesElement(nullptr),
+        infoDataSize(0),
+        firstClusterElement(nullptr),
+        clusterEndOffset(0),
+        startOffset(0),
+        newPadding(0),
+        sizeDenotationLength(0),
+        totalDataSize(0),
+        totalSize(0)
+    {}
+
+    // "Segment"-element object (original file)
+    EbmlElement *element;
+    // whether CRC-32 checksum is present
+    bool hasCrc32;
+    // used to make "SeekHead"-element
+    MatroskaSeekInfo seekInfo;
+    // "Cues"-element (original file)
+    EbmlElement *cuesElement;
+    // used to make "Cues"-element
+    MatroskaCuePositionUpdater cuesUpdater;
+    // size of the "SegmentInfo"-element
+    uint64 infoDataSize;
+    // cluster sizes
+    vector<uint64> clusterSizes;
+    // first "Cluster"-element (original file)
+    EbmlElement *firstClusterElement;
+    // end offset of last "Cluster"-element (original file)
+    uint64 clusterEndOffset;
+    // start offset (in the new file)
+    uint64 startOffset;
+    // padding (in the new file)
+    uint64 newPadding;
+    // header size (in the new file)
+    byte sizeDenotationLength;
+    // total size of the segment data (in the new file, excluding header)
+    uint64 totalDataSize;
+    // total size of the segment data (in the new file, including header)
+    uint64 totalSize;
+};
+
 void MatroskaContainer::internalMakeFile()
 {
+    // set initial status
     invalidateStatus();
     static const string context("making Matroska container");
     updateStatus("Calculating element sizes ...");
+
+    // basic validation of original file
     if(!isHeaderParsed()) {
         addNotification(NotificationType::Critical, "The header has not been parsed yet.", context);
         throw InvalidDataException();
     }
-    EbmlElement *level0Element = firstElement(), *level1Element, *level2Element;
+
+    // define variables for parsing the elements of the original file
+    EbmlElement *level0Element = firstElement();
     if(!level0Element) {
         addNotification(NotificationType::Critical, "No EBML elements could be found.", context);
         throw InvalidDataException();
     }
-    // check whether a rewrite is required
+    EbmlElement *level1Element, *level2Element;
+
+    // define variables needed for precalculation of "Tags"- and "Attachments"-element
+    vector<MatroskaTagMaker> tagMaker;
+    uint64 tagElementsSize = 0;
+    uint64 tagsSize;
+    vector<MatroskaAttachmentMaker> attachmentMaker;
+    uint64 attachedFileElementsSize = 0;
+    uint64 attachmentsSize;
+
+    // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
+    // current segment index
+    unsigned int segmentIndex = 0;
+    // segment specific data
+    vector<SegmentData> segmentData;
+    // offset of the segment which is currently written / offset of "Cues"-element in segment
+    uint64 offset;
+    // current total offset (including EBML header)
+    uint64 totalOffset;
+    // current write offset (used to calculate positions)
+    uint64 currentPosition = 0;
+    // holds the offsets of all CRC-32 elements and the length of the enclosing block
+    vector<tuple<uint64, uint64> > crc32Offsets;
+    // size length used to make size denotations
+    byte sizeLength;
+    // sizes and offsets for cluster calculation
+    uint64 clusterSize, clusterReadSize, clusterReadOffset;
+
+    // define variables needed to manage file layout
+    // -> use the preferred tag position by default (might be changed later if not forced)
+    ElementPosition newTagPos = fileInfo().tagPosition();
+    // -> current tag position (determined later)
+    ElementPosition currentTagPos = ElementPosition::Keep;
+    // -> use the preferred cue position by default (might be changed later if not forced)
+    ElementPosition newCuesPos = fileInfo().indexPosition();
+    // --> current cue position (determined later)
+    ElementPosition currentCuesPos = ElementPosition::Keep;
+    // -> index of the last segment
+    unsigned int lastSegmentIndex = static_cast<unsigned int>(-1);
+
+    uint64 newPadding;
+    bool rewriteRequired = fileInfo().isForcingRewrite();
+
+    // calculate EBML header size
+    // -> sub element ID sizes
+    uint64 ebmlHeaderDataSize = 2 * 7;
+    // -> content and size denotation length of numeric sub elements
+    for(auto headerValue : initializer_list<uint64>{m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion}) {
+        ebmlHeaderDataSize += sizeLength = EbmlElement::calculateUIntegerLength(headerValue);
+        ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(sizeLength);
+    }
+    // -> content and size denotation length of string sub elements
+    ebmlHeaderDataSize += m_doctype.size();
+    ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
+    uint64 ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
+
     try {
-        // calculate size of tags
-        vector<MatroskaTagMaker> tagMaker;
-        uint64 tagElementsSize = 0;
+        // calculate size of "Tags"-element
         for(auto &tag : tags()) {
             tag->invalidateNotifications();
             try {
@@ -722,10 +831,9 @@ void MatroskaContainer::internalMakeFile()
             }
             addNotifications(*tag);
         }
-        uint64 tagsSize = tagElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(tagElementsSize) + tagElementsSize : 0;
-        // calculate size of attachments
-        vector<MatroskaAttachmentMaker> attachmentMaker;
-        uint64 attachedFileElementsSize = 0;
+        tagsSize = tagElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(tagElementsSize) + tagElementsSize : 0;
+
+        // calculate size of "Attachments"-element
         for(auto &attachment : m_attachments) {
             if(!attachment->isIgnored()) {
                 attachment->invalidateNotifications();
@@ -741,507 +849,461 @@ void MatroskaContainer::internalMakeFile()
                 addNotifications(*attachment);
             }
         }
-        uint64 attachmentsSize = attachedFileElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(attachedFileElementsSize) + attachedFileElementsSize : 0;
-        // check:
-        //  - the number of segments to be written
-        //  - current media data / first cluster offset
-        //  - current padding
-        //  - whether there are tags or attachments in additional segments
-        // to determine whether a rewrite is required
-        unsigned int lastSegmentIndex = static_cast<unsigned int>(-1);
-        bool firstClusterFound = false;
-        uint64 currentFirstClusterOffset = 0;
-        uint64 currentPadding = 0;
-        bool rewriteRequired = false;
-        for(; level0Element; level0Element = level0Element->nextSibling()) {
-            level0Element->parse();
-            switch(level0Element->id()) {
-            case EbmlIds::Void:
-                if(!firstClusterFound) {
-                    currentPadding += level0Element->totalSize();
-                }
-                break;
-            case MatroskaIds::Segment:
-                // check the additional segment for tags and attachments
-                if(++lastSegmentIndex && !rewriteRequired) {
-                    for(level1Element = level0Element->firstChild(); level1Element; level1Element = level1Element->nextSibling()) {
-                        level1Element->parse();
-                        if(level1Element->id() == MatroskaIds::Attachments || level1Element->id() == MatroskaIds::Tags) {
-                            rewriteRequired = true;
-                            break;
-                        }
-                    }
-                }
-                // check the segment for the first "Cluster"-element (if not found yet)
-                if(!firstClusterFound) {
-                    for(level1Element = level0Element->firstChild(); level1Element; level1Element = level1Element->nextSibling()) {
+        attachmentsSize = attachedFileElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(attachedFileElementsSize) + attachedFileElementsSize : 0;
+
+        // inspect layout of original file
+        //  - number of segments
+        //  - media data / first cluster offset
+        //  - last level 0 element and last "Segment"-element
+        try {
+            for(bool firstClusterFound = false, firstTagFound = false; level0Element; level0Element = level0Element->nextSibling()) {
+                level0Element->parse();
+                switch(level0Element->id()) {
+                case MatroskaIds::Segment:
+                    ++lastSegmentIndex;
+                    for(level1Element = level0Element->firstChild(); level1Element && !firstClusterFound && !firstTagFound; level1Element = level1Element->nextSibling()) {
                         level1Element->parse();
                         switch(level1Element->id()) {
-                        case EbmlIds::Void:
-                            currentPadding += level1Element->totalSize();
+                        case MatroskaIds::Tags:
+                        case MatroskaIds::Attachments:
+                            firstTagFound = true;
                             break;
                         case MatroskaIds::Cluster:
-                            currentFirstClusterOffset = level1Element->startOffset();
                             firstClusterFound = true;
-                            break;
+                        }
+                    }
+                    if(firstTagFound) {
+                        currentTagPos = ElementPosition::BeforeData;
+                    } else if(firstClusterFound) {
+                        currentTagPos = ElementPosition::AfterData;
+                    }
+                }
+            }
+
+            // now the number of segments is known -> allocate segment specific data
+            segmentData.resize(lastSegmentIndex + 1);
+
+            // now the current tag/cue position might be known
+            if(newTagPos == ElementPosition::Keep) {
+                if((newTagPos = currentTagPos) == ElementPosition::Keep) {
+                    newTagPos = ElementPosition::BeforeData;
+                }
+            }
+
+        } catch(Failure &) {
+            addNotification(NotificationType::Critical, "Unable to parse content in top-level element at " + numberToString(level0Element->startOffset()) + " of original file.", context);
+            throw;
+        }
+
+calculateSegmentData:
+        // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
+        // current "pretent" write offset
+        uint64 currentOffset = ebmlHeaderSize;
+        // current read offset (used to calculate positions)
+        uint64 readOffset = 0;
+        // index of current element during iteration
+        unsigned int index;
+
+        // if rewriting is required always use the preferred tag/cue position
+        if(rewriteRequired) {
+            newTagPos = fileInfo().tagPosition();
+            if(newTagPos == ElementPosition::Keep) {
+                if((newTagPos = currentTagPos) == ElementPosition::Keep) {
+                    newTagPos = ElementPosition::BeforeData;
+                }
+            }
+            newCuesPos = fileInfo().indexPosition();
+        }
+
+        // calculate sizes and other information required to make segments
+        updateStatus("Calculating segment data ...", 0.0);
+        for(level0Element = firstElement(), currentPosition = newPadding = segmentIndex = 0; level0Element; level0Element = level0Element->nextSibling()) {
+            switch(level0Element->id()) {
+            case EbmlIds::Header:
+                // header size has already been calculated
+                break;
+
+            case EbmlIds::Void:
+            case EbmlIds::Crc32:
+                // level 0 "Void"- and "Checksum"-elements are omitted
+                break;
+
+            case MatroskaIds::Segment: {
+                // get reference to the current segment data instance
+                SegmentData &segment = segmentData[segmentIndex];
+
+                // parse original "Cues"-element (if present)
+                if(!segment.cuesElement) {
+                    if((segment.cuesElement = level0Element->childById(MatroskaIds::Cues))) {
+                        try {
+                            segment.cuesUpdater.parse(segment.cuesElement);
+                        } catch(Failure &) {
+                            addNotifications(segment.cuesUpdater);
+                            throw;
+                        }
+                        addNotifications(segment.cuesUpdater);
+                    }
+                }
+
+                // get first "Cluster"-element
+                if(!segment.firstClusterElement) {
+                    segment.firstClusterElement = level0Element->childById(MatroskaIds::Cluster);
+                }
+
+                // determine current/new cue position
+                if(segment.cuesElement && segment.firstClusterElement) {
+                    currentCuesPos = segment.cuesElement->startOffset() < segment.firstClusterElement->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
+                    if(newCuesPos == ElementPosition::Keep) {
+                        newCuesPos = currentCuesPos;
+                    }
+                } else if(newCuesPos == ElementPosition::Keep) {
+                    newCuesPos = ElementPosition::BeforeData;
+                }
+
+                // set start offset of the segment in the new file
+                segment.startOffset = currentOffset;
+
+                // check whether the segment has a CRC-32 element
+                segment.hasCrc32 = level0Element->firstChild() && level0Element->firstChild()->id() == EbmlIds::Crc32;
+
+                // precalculate the size of the segment
+calculateSegmentSize:
+
+                // pretent writing "CRC-32"-element (which either present and 6 byte long or omitted)
+                segment.totalDataSize = segment.hasCrc32 ? 6 : 0;
+
+                // pretend writing "SeekHead"-element
+                segment.totalDataSize += segment.seekInfo.actualSize();
+
+                // pretend writing "SegmentInfo"-element
+                for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo), ++index) {
+                    // update offset in "SeekHead"-element
+                    if(segment.seekInfo.push(index, MatroskaIds::SegmentInfo, currentPosition + segment.totalDataSize)) {
+                        goto calculateSegmentSize;
+                    } else {
+                        // add size of "SegmentInfo"-element
+                        // -> size of "MuxingApp"- and "WritingApp"-element
+                        segment.infoDataSize = 2 * appInfoElementTotalSize;
+                        // -> add size of "Title"-element
+                        if(segmentIndex < m_titles.size()) {
+                            const auto &title = m_titles[segmentIndex];
+                            if(!title.empty()) {
+                                segment.infoDataSize += 2 + EbmlElement::calculateSizeDenotationLength(title.size()) + title.size();
+                            }
+                        }
+                        // -> add size of other childs
+                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                            level2Element->parse();
+                            switch(level2Element->id()) {
+                            case EbmlIds::Void: // skipped
+                            case EbmlIds::Crc32: // skipped
+                            case MatroskaIds::Title: // calculated separately
+                            case MatroskaIds::MuxingApp: // calculated separately
+                            case MatroskaIds::WrittingApp: // calculated separately
+                                break;
+                            default:
+                                level2Element->makeBuffer();
+                                segment.infoDataSize += level2Element->totalSize();
+                            }
+                        }
+                        // -> calculate total size
+                        segment.totalDataSize += 4 + EbmlElement::calculateSizeDenotationLength(segment.infoDataSize) + segment.infoDataSize;
+                    }
+                }
+
+                // pretend writing "Tracks"- and "Chapters"-element
+                for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
+                    for(level1Element = level0Element->childById(id), index = 0; level1Element; level1Element = level1Element->siblingById(id), ++index) {
+                        // update offset in "SeekHead"-element
+                        if(segment.seekInfo.push(index, id, currentPosition + segment.totalDataSize)) {
+                            goto calculateSegmentSize;
+                        } else {
+                            // add size of element
+                            level1Element->makeBuffer();
+                            segment.totalDataSize += level1Element->totalSize();
                         }
                     }
                 }
-                break;
-            }
-        }
-        if(!rewriteRequired) {
-            rewriteRequired = currentPadding <= fileInfo().maxPadding() && currentPadding >= fileInfo().minPadding();
-        }
-        // prepare rewriting the file
-        //TODO: do backup stuff only when rewrite is really required
-        updateStatus("Preparing for rewriting Matroska/EBML file ...");
-        fileInfo().close(); // ensure the file is close before renaming it
-        string backupPath;
-        fstream &outputStream = fileInfo().stream();
-        BinaryWriter outputWriter(&outputStream);
-        fstream backupStream; // create a stream to open the backup/original file
-        try {
-            BackupHelper::createBackupFile(fileInfo().path(), backupPath, backupStream);
-            // set backup stream as associated input stream since we need the original elements to write the new file
-            setStream(backupStream);
-            // recreate original file, define buffer variables
-            outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            // define needed variables
-            uint64 elementSize; // the size of the current element
-            uint64 clusterSize; // the new size the current cluster
-            uint64 clusterReadOffset; // the read offset of the current cluster
-            uint64 clusterReadSize; // the original size of the current cluster
-            vector<uint64> clusterSizes; // the sizes of the cluster elements
-            vector<uint64>::const_iterator clusterSizesIterator;
-            uint64 readOffset = 0; // the current read offset to calculate positions
-            uint64 currentOffset = 0; // the current write offset to calculate positions
-            uint64 offset; // offset of the segment which is currently written, offset of "Cues"-element in segment
-            bool cuesPresent; // whether the "Cues"-element is present in the current segment
-            vector<tuple<uint64, uint64> > crc32Offsets; // holds the offsets of all CRC-32 elements and the length of the enclosing block
-            bool elementHasCrc32; // whether the current segment has a CRC-32 element
-            byte sizeLength; // size length used to make size denotations
-            char buff[8]; // buffer used to make size denotations
-            // calculate EBML header size
-            uint64 ebmlHeaderSize = 2 * 7; // sub element ID sizes
-            for(auto headerValue : initializer_list<uint64>{m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion}) {
-                ebmlHeaderSize += sizeLength = EbmlElement::calculateUIntegerLength(headerValue);
-                ebmlHeaderSize += EbmlElement::calculateSizeDenotationLength(sizeLength);
-            }
-            ebmlHeaderSize += m_doctype.size();
-            ebmlHeaderSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
-            // prepare writing segments
-            uint64 segmentInfoElementDataSize;
-            MatroskaSeekInfo seekInfo;
-            MatroskaCuePositionUpdater cuesUpdater;
-            unsigned int segmentIndex = 0;
-            unsigned int index;
-            try {
-                for(level0Element = firstElement(); level0Element; level0Element = level0Element->nextSibling()) {
-                    switch(level0Element->id()) {
-                    case EbmlIds::Header:
-                        break; // header is already written; skip header here
-                    case EbmlIds::Void:
-                    case EbmlIds::Crc32:
-                        break;
-                    case MatroskaIds::Segment:
-                        // write "Segment" element
-                        updateStatus("Prepare writing segment ...", 0.0);
-                        // prepare writing tags
-                        // ensure seek info contains no old entries
-                        seekInfo.clear();
-                        // parse cues
-                        cuesUpdater.invalidateNotifications();
-                        if((level1Element = level0Element->childById(MatroskaIds::Cues))) {
-                            cuesPresent = true;
-                            try {
-                                cuesUpdater.parse(level1Element);
-                            } catch(Failure &) {
-                                addNotifications(cuesUpdater);
-                                throw;
-                            }
-                            addNotifications(cuesUpdater);
+
+                // "Tags"- and "Attachments"-element are written in either the first or the last segment
+                // and either before "Cues"- and "Cluster"-elements or after these elements
+                // depending on the desired tag position (at the front/at the end)
+                if(newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
+                    // pretend writing "Tags"-element
+                    if(tagsSize) {
+                        // update offsets in "SeekHead"-element
+                        if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
+                            goto calculateSegmentSize;
                         } else {
-                            cuesPresent = false;
+                            // add size of "Tags"-element
+                            segment.totalDataSize += tagsSize;
                         }
-                        // check whether the segment has a CRC-32 element
-                        elementHasCrc32 = level0Element->firstChild() && level0Element->firstChild()->id() == EbmlIds::Crc32;
-                        // calculate segment size
-                        calculateSegmentSize:
-                        // CRC-32 element is 6 byte long
-                        elementSize = elementHasCrc32 ? 6 : 0;
-                        // calculate size of "SeekHead"-element
-                        elementSize += seekInfo.actualSize();
-                        // pretend writing elements to find out the offsets and the total segment size
-                        // pretend writing "SegmentInfo"-element
-                        for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo), ++index) {
-                            // update offset in "SeekHead"-element
-                            if(seekInfo.push(index, MatroskaIds::SegmentInfo, currentOffset + elementSize)) {
-                                goto calculateSegmentSize;
-                            } else {
-                                // add size of "SegmentInfo"-element
-                                // -> size of "MuxingApp"- and "WritingApp"-element
-                                segmentInfoElementDataSize = 2 * appInfoElementTotalSize;
-                                // -> add size of "Title"-element
-                                if(segmentIndex < m_titles.size()) {
-                                    const auto &title = m_titles[segmentIndex];
-                                    if(!title.empty()) {
-                                        segmentInfoElementDataSize += 2 + EbmlElement::calculateSizeDenotationLength(title.size()) + title.size();
+                    }
+                    // pretend writing "Attachments"-element
+                    if(attachmentsSize) {
+                        // update offsets in "SeekHead"-element
+                        if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                            goto calculateSegmentSize;
+                        } else {
+                            // add size of "Attachments"-element
+                            segment.totalDataSize += attachmentsSize;
+                        }
+                    }
+                }
+
+                offset = segment.totalDataSize; // save current offset (offset before "Cues"-element)
+
+                // pretend writing "Cues"-element
+                if(newCuesPos == ElementPosition::BeforeData && segment.cuesElement) {
+                    // update offset of "Cues"-element in "SeekHead"-element
+                    if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                        goto calculateSegmentSize;
+                    } else {
+                        // add size of "Cues"-element
+addCuesElementSize:
+                        segment.totalDataSize += segment.cuesUpdater.totalSize();
+                    }
+                }
+
+                // decided whether it is necessary to rewrite the entire file (if not already rewriting)
+                if(!rewriteRequired) {
+                    // -> find first "Cluster"-element
+                    if((level1Element = segment.firstClusterElement)) {
+                        // there is at least one "Cluster"-element to be written
+                        //if(level1Element->startOffset() == currentFirstClusterOffset) {
+                            // just before the first "Cluster"-element
+                            // -> calculate total offset (excluding size denotation and incomplete index)
+                            totalOffset = currentOffset + 4 + segment.totalDataSize;
+
+                            if(totalOffset <= segment.firstClusterElement->startOffset()) {
+                                // the padding might be big enough, but
+                                // - the segment might become bigger (subsequent tags and attachments)
+                                // - the header size hasn't been taken into account yet
+                                // - seek information for first cluster and subsequent tags and attachments hasn't been taken into account
+
+                                // assume the size denotation length doesn't change -> use length from original file
+                                if(level0Element->headerSize() <= 4 || level0Element->headerSize() > 12) {
+                                    // validate original header size
+                                    addNotification(NotificationType::Critical, "Header size of \"Segment\"-element from original file is invalid.", context);
+                                    throw InvalidDataException();
+                                }
+                                segment.sizeDenotationLength = level0Element->headerSize() - 4;
+
+nonRewriteCalculations:
+                                // pretend writing "Cluster"-elements assuming there is not rewrite required
+                                // -> update offset in "SeakHead"-element
+                                if(segment.seekInfo.push(0, MatroskaIds::Cluster, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)) {
+                                    goto calculateSegmentSize;
+                                }
+                                // -> update offset of "Cluster"-element in "Cues"-element and get end offset of last "Cluster"-element
+                                for(; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster)) {
+                                    clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
+                                    segment.clusterEndOffset = level1Element->endOffset();
+                                    if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
+                                        segment.totalDataSize = offset;
+                                        goto addCuesElementSize;
                                     }
                                 }
-                                // -> add size of other childs
+                                segment.totalDataSize = segment.clusterEndOffset - currentOffset - 4 - segment.sizeDenotationLength;
+
+                                // pretend writing "Cues"-element
+                                if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                                    // update offset of "Cues"-element in "SeekHead"-element
+                                    if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                                        goto calculateSegmentSize;
+                                    } else {
+                                        // add size of "Cues"-element
+                                        segment.totalDataSize += segment.cuesUpdater.totalSize();
+                                    }
+                                }
+
+                                if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                                    // pretend writing "Tags"-element
+                                    if(tagsSize) {
+                                        // update offsets in "SeekHead"-element
+                                        if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
+                                            goto calculateSegmentSize;
+                                        } else {
+                                            // add size of "Tags"-element
+                                            segment.totalDataSize += tagsSize;
+                                        }
+                                    }
+                                    // pretend writing "Attachments"-element
+                                    if(attachmentsSize) {
+                                        // update offsets in "SeekHead"-element
+                                        if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                                            goto calculateSegmentSize;
+                                        } else {
+                                            // add size of "Attachments"-element
+                                            segment.totalDataSize += attachmentsSize;
+                                        }
+                                    }
+                                }
+
+                                // calculate total offset again (taking everything into account)
+                                // -> check whether assumed size denotation was correct
+                                if(segment.sizeDenotationLength != (sizeLength = EbmlElement::calculateSizeDenotationLength(segment.totalDataSize))) {
+                                    // assumption was wrong -> recalculate with new length
+                                    segment.sizeDenotationLength = sizeLength;
+                                    goto nonRewriteCalculations;
+                                }
+
+                                totalOffset = currentOffset + 4 + sizeLength + offset;
+                                // offset does not include size of "Cues"-element
+                                if(newCuesPos == ElementPosition::BeforeData) {
+                                    totalOffset += segment.cuesUpdater.totalSize();
+                                }
+                                if(totalOffset <= segment.firstClusterElement->startOffset()) {
+                                    // calculate new padding
+                                    if(segment.newPadding != 1) {
+                                        // "Void"-element is at least 2 byte long -> can't add 1 byte padding
+                                        newPadding += (segment.newPadding = segment.firstClusterElement->startOffset() - totalOffset);
+                                    } else {
+                                        rewriteRequired = true;
+                                    }
+                                } else {
+                                    rewriteRequired = true;
+                                }
+                            } else {
+                                rewriteRequired = true;
+                            }
+                        //} else {
+                            // first "Cluster"-element in the "Segment"-element but not the first "Cluster"-element in the file
+                            // TODO / nothing to do?
+                        //}
+
+                    } else {
+                        // there are no "Cluster"-elements in the current "Segment"-element
+                        // TODO / nothing to do?
+                    }
+
+                    if(rewriteRequired) {
+                        if(newTagPos != ElementPosition::AfterData && (!fileInfo().forceTagPosition() || (fileInfo().tagPosition() == ElementPosition::Keep && currentTagPos == ElementPosition::Keep))) {
+                            // rewriting might be avoided by writing the tags at the end
+                            newTagPos = ElementPosition::AfterData;
+                            rewriteRequired = false;
+                        } else if(newCuesPos != ElementPosition::AfterData && (!fileInfo().forceIndexPosition() || (fileInfo().indexPosition() == ElementPosition::Keep && currentCuesPos == ElementPosition::Keep))) {
+                            // rewriting might be avoided by writing the cues at the end
+                            newCuesPos = ElementPosition::AfterData;
+                            rewriteRequired = false;
+                        }
+                        // do calculations again for rewriting / changed element order
+                        goto calculateSegmentData;
+                    }
+                } else {
+                    // if rewrite is required pretend writing the remaining elements to compute total segment size
+
+                    // pretend writing "Void"-element (only if there is at least one "Cluster"-element in the segment)
+                    if(!segmentIndex && rewriteRequired && (level1Element = level0Element->childById(MatroskaIds::Cluster))) {
+                        // simply use the preferred padding
+                        segment.totalDataSize += (segment.newPadding = newPadding = fileInfo().preferredPadding());
+                    }
+
+                    // pretend writing "Cluster"-element
+                    segment.clusterSizes.clear();
+                    for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index) {
+                        // update offset of "Cluster"-element in "Cues"-element
+                        clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
+                        if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, currentPosition + segment.totalDataSize) && newCuesPos == ElementPosition::BeforeData) {
+                            segment.totalDataSize = offset; // reset element size to previously saved offset of "Cues"-element
+                            goto addCuesElementSize;
+                        } else {
+                            if(index == 0 && segment.seekInfo.push(index, MatroskaIds::Cluster, currentPosition + segment.totalDataSize)) {
+                                goto calculateSegmentSize;
+                            } else {
+                                // add size of "Cluster"-element
+                                clusterSize = clusterReadSize = 0;
                                 for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                                     level2Element->parse();
+                                    if(segment.cuesElement && segment.cuesUpdater.updateRelativeOffsets(clusterReadOffset, clusterReadSize, clusterSize) && newCuesPos == ElementPosition::BeforeData) {
+                                        segment.totalDataSize = offset;
+                                        goto addCuesElementSize;
+                                    }
                                     switch(level2Element->id()) {
-                                    case EbmlIds::Void: // skipped
-                                    case EbmlIds::Crc32: // skipped
-                                    case MatroskaIds::Title: // calculated separately
-                                    case MatroskaIds::MuxingApp: // calculated separately
-                                    case MatroskaIds::WrittingApp: // calculated separately
+                                    case EbmlIds::Void:
+                                    case EbmlIds::Crc32:
+                                        break;
+                                    case MatroskaIds::Position:
+                                        clusterSize += 1 + 1 + EbmlElement::calculateUIntegerLength(currentPosition + segment.totalDataSize);
                                         break;
                                     default:
-                                        segmentInfoElementDataSize += level2Element->totalSize();
+                                        clusterSize += level2Element->totalSize();
                                     }
+                                    clusterReadSize += level2Element->totalSize();
                                 }
-                                // -> calculate total size
-                                elementSize += 4 + EbmlElement::calculateSizeDenotationLength(segmentInfoElementDataSize) + segmentInfoElementDataSize;
+                                segment.clusterSizes.push_back(clusterSize);
+                                segment.totalDataSize += 4 + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
                             }
                         }
-                        // pretend writing "Tracks"- and "Chapters"-element
-                        for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
-                            for(level1Element = level0Element->childById(id), index = 0; level1Element; level1Element = level1Element->siblingById(id), ++index) {
-                                // update offset in "SeekHead"-element
-                                if(seekInfo.push(index, id, currentOffset + elementSize)) {
-                                    goto calculateSegmentSize;
-                                } else {
-                                    // add size of element
-                                    elementSize += level1Element->totalSize();
-                                }
-                            }
+                    }
+
+                    // pretend writing "Cues"-element
+                    if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                        // update offset of "Cues"-element in "SeekHead"-element
+                        if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                            goto calculateSegmentSize;
+                        } else {
+                            // add size of "Cues"-element
+                            segment.totalDataSize += segment.cuesUpdater.totalSize();
                         }
-                        // all "Tags"- and "Attachments"-elements are written in either the first or the last segment
-                        // and either before "Cues"- and "Cluster"-elements or after these elements
-                        // depending on the desired tag position (at the front/at the end)
-                        if(fileInfo().tagPosition() == TagPosition::BeforeData && segmentIndex == 0) {
-                            // pretend writing "Tags"-element
-                            if(tagsSize) {
-                                // update offsets in "SeekHead"-element
-                                if(seekInfo.push(0, MatroskaIds::Tags, currentOffset + elementSize)) {
-                                    goto calculateSegmentSize;
-                                } else {
-                                    // add size of "Tags"-element
-                                    elementSize += tagsSize;
-                                }
-                            }
-                            // pretend writing "Attachments"-element
-                            if(attachmentsSize) {
-                                // update offsets in "SeekHead"-element
-                                if(seekInfo.push(0, MatroskaIds::Attachments, currentOffset + elementSize)) {
-                                    goto calculateSegmentSize;
-                                } else {
-                                    // add size of "Attachments"-element
-                                    elementSize += attachmentsSize;
-                                }
-                            }
-                        }
-                        // pretend writing "Cues"-element
-                        if(cuesPresent) {
-                            offset = elementSize; // save current offset
-                            // update offset of "Cues"-element in "SeekHead"-element
-                            if(seekInfo.push(0, MatroskaIds::Cues, currentOffset + elementSize)) {
+                    }
+
+                    // "Tags"- and "Attachments"-element are written in either the first or the last segment
+                    // and either before "Cues"- and "Cluster"-elements or after these elements
+                    // depending on the desired tag position (at the front/at the end)
+                    if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                        // pretend writing "Tags"-element
+                        if(tagsSize) {
+                            // update offsets in "SeekHead"-element
+                            if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
                                 goto calculateSegmentSize;
                             } else {
-                                // add size of "Cues"-element
-                                addCuesElementSize:
-                                elementSize += cuesUpdater.totalSize();
+                                // add size of "Tags"-element
+                                segment.totalDataSize += tagsSize;
                             }
                         }
-                        // pretend writing "Cluster"-element
-                        clusterSizes.clear();
-                        for(level1Element = level0Element->childById(MatroskaIds::Cluster), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index) {
-                            // update offset of "Cluster"-element in "Cues"-element
-                            //if(cuesPresent && cuesUpdater.updatePositions(currentOffset + level1Element->startOffset() - level0Element->dataOffset(), elementSize)) {
-                            clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
-                            if(cuesPresent && cuesUpdater.updateOffsets(clusterReadOffset, currentOffset + elementSize)) {
-                                elementSize = offset; // reset element size to previously saved offset of "Cues"-element
-                                goto addCuesElementSize;
+                        // pretend writing "Attachments"-element
+                        if(attachmentsSize) {
+                            // update offsets in "SeekHead"-element
+                            if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                                goto calculateSegmentSize;
                             } else {
-                                if(index == 0 && seekInfo.push(index, MatroskaIds::Cluster, currentOffset + elementSize)) {
-                                    goto calculateSegmentSize;
-                                } else {
-                                    // add size of "Cluster"-element
-                                    clusterSize = 0;
-                                    clusterReadSize = 0;
-                                    for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
-                                        level2Element->parse();
-                                        if(cuesPresent && cuesUpdater.updateRelativeOffsets(clusterReadOffset, clusterReadSize, clusterSize)) {
-                                            elementSize = offset;
-                                            goto addCuesElementSize;
-                                        }
-                                        switch(level2Element->id()) {
-                                        case EbmlIds::Void:
-                                        case EbmlIds::Crc32:
-                                            break;
-                                        case MatroskaIds::Position:
-                                            clusterSize += 1 + 1 + EbmlElement::calculateUIntegerLength(currentOffset + elementSize);
-                                            break;
-                                        default:
-                                            clusterSize += level2Element->totalSize();
-                                        }
-                                        clusterReadSize += level2Element->totalSize();
-                                    }
-                                    clusterSizes.push_back(clusterSize);
-                                    elementSize += 4 + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
-                                }
+                                // add size of "Attachments"-element
+                                segment.totalDataSize += attachmentsSize;
                             }
                         }
-                        if(fileInfo().tagPosition() == TagPosition::AfterData && segmentIndex == lastSegmentIndex) {
-                            // pretend writing "Tags"-element
-                            if(tagsSize) {
-                                // update offsets in "SeekHead"-element
-                                if(seekInfo.push(0, MatroskaIds::Tags, currentOffset + elementSize)) {
-                                    goto calculateSegmentSize;
-                                } else {
-                                    // add size of "Tags"-element
-                                    elementSize += tagsSize;
-                                }
-                            }
-                            // pretend writing "Attachments"-element
-                            if(attachmentsSize) {
-                                // update offsets in "SeekHead"-element
-                                if(seekInfo.push(0, MatroskaIds::Attachments, currentOffset + elementSize)) {
-                                    goto calculateSegmentSize;
-                                } else {
-                                    // add size of "Attachments"-element
-                                    elementSize += attachmentsSize;
-                                }
-                            }
-                        }
-                        // start the actual writing
-                        if(!segmentIndex) {
-                            // nothing written so far (just prepared)
-                            // -> decided whether it is necessary to rewrite the entire file
-                            // TODO
-                            // write EBML header (before writing the first segment)
-                            updateStatus("Writing EBML header ...");
-                            outputWriter.writeUInt32BE(EbmlIds::Header);
-                            sizeLength = EbmlElement::makeSizeDenotation(ebmlHeaderSize, buff);
-                            outputStream.write(buff, sizeLength);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::Version, m_version);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::ReadVersion, m_readVersion);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxIdLength, m_maxIdLength);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxSizeLength, m_maxSizeLength);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocType, m_doctype);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeVersion, m_doctypeVersion);
-                            EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeReadVersion, m_doctypeReadVersion);
-                        }
-                        // write "Segment"-element actually
-                        updateStatus("Writing segment header ...");
-                        outputWriter.writeUInt32BE(MatroskaIds::Segment);
-                        sizeLength = EbmlElement::makeSizeDenotation(elementSize, buff);
-                        outputStream.write(buff, sizeLength);
-                        offset = outputStream.tellp(); // store segment data offset here
-                        // write CRC-32 element ...
-                        if(elementHasCrc32) {
-                            // ... if the original element had a CRC-32 element
-                            *buff = EbmlIds::Crc32;
-                            *(buff + 1) = 0x84; // length denotation: 4 byte
-                            // set the value after writing the element
-                            crc32Offsets.emplace_back(outputStream.tellp(), elementSize);
-                            outputStream.write(buff, 6);
-                        }
-                        // write "SeekHead"-element (except there is no seek information for the current segment)
-                        seekInfo.invalidateNotifications();
-                        seekInfo.make(outputStream);
-                        addNotifications(seekInfo);
-                        // write "SegmentInfo"-element
-                        for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo); level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo)) {
-                            // -> write ID and size
-                            outputWriter.writeUInt32BE(MatroskaIds::SegmentInfo);
-                            sizeLength = EbmlElement::makeSizeDenotation(segmentInfoElementDataSize, buff);
-                            outputStream.write(buff, sizeLength);
-                            // -> write childs
-                            for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
-                                switch(level2Element->id()) {
-                                case EbmlIds::Void: // skipped
-                                case EbmlIds::Crc32: // skipped
-                                case MatroskaIds::Title: // written separately
-                                case MatroskaIds::MuxingApp: // written separately
-                                case MatroskaIds::WrittingApp: // written separately
-                                    break;
-                                default:
-                                    level2Element->copyEntirely(outputStream);
-                                }
-                            }
-                            // -> write "Title"-element
-                            if(segmentIndex < m_titles.size()) {
-                                const auto &title = m_titles[segmentIndex];
-                                if(!title.empty()) {
-                                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::Title, title);
-                                }
-                            }
-                            // -> write "MuxingApp"- and "WritingApp"-element
-                            EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, appInfo, appInfoElementDataSize);
-                            EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp, appInfo, appInfoElementDataSize);
-                        }
-                        // write "Tracks"- and "Chapters"-element
-                        for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
-                            for(level1Element = level0Element->childById(id); level1Element; level1Element = level1Element->siblingById(id)) {
-                                level1Element->copyEntirely(outputStream);
-                            }
-                        }
-                        if(fileInfo().tagPosition() == TagPosition::BeforeData && segmentIndex == 0) {
-                            // write "Tags"-element
-                            if(tagsSize) {
-                                outputWriter.writeUInt32BE(MatroskaIds::Tags);
-                                sizeLength = EbmlElement::makeSizeDenotation(tagElementsSize, buff);
-                                outputStream.write(buff, sizeLength);
-                                for(auto &maker : tagMaker) {
-                                    maker.make(outputStream);
-                                }
-                                // no need to add notifications; this has been done when creating the make
-                            }
-                            // write "Attachments"-element
-                            if(attachmentsSize) {
-                                outputWriter.writeUInt32BE(MatroskaIds::Attachments);
-                                sizeLength = EbmlElement::makeSizeDenotation(attachedFileElementsSize, buff);
-                                outputStream.write(buff, sizeLength);
-                                for(auto &maker : attachmentMaker) {
-                                    maker.make(outputStream);
-                                }
-                                // no need to add notifications; this has been done when creating the make
-                            }
-                        }
-                        // write "Cues"-element
-                        if(cuesPresent) {
-                            try {
-                                cuesUpdater.make(outputStream);
-                            } catch(Failure &) {
-                                addNotifications(cuesUpdater);
-                                throw;
-                            }
-                        }
-                        // update status, check whether the operation has been aborted
-                        if(isAborted()) {
-                            throw OperationAbortedException();
-                        } else {
-                            addNotifications(cuesUpdater);
-                            updateStatus("Writing segment data ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / elementSize);
-                        }
-                        // write "Cluster"-element
-                        for(level1Element = level0Element->childById(MatroskaIds::Cluster), clusterSizesIterator = clusterSizes.cbegin();
-                            level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++clusterSizesIterator) {
-                            // calculate position of cluster in segment
-                            clusterSize = currentOffset + (static_cast<uint64>(outputStream.tellp()) - offset);
-                            // write header; checking whether clusterSizesIterator is valid shouldn't be necessary
-                            outputWriter.writeUInt32BE(MatroskaIds::Cluster);
-                            sizeLength = EbmlElement::makeSizeDenotation(*clusterSizesIterator, buff);
-                            outputStream.write(buff, sizeLength);
-                            // write childs
-                            for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
-                                switch(level2Element->id()) {
-                                case EbmlIds::Void:
-                                case EbmlIds::Crc32:
-                                    break;
-                                case MatroskaIds::Position:
-                                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::Position, clusterSize);
-                                    break;
-                                default:
-                                    level2Element->copyEntirely(outputStream);
-                                }
-                            }
-                            // update percentage, check whether the operation has been aborted
-                            if(isAborted()) {
-                                throw OperationAbortedException();
-                            } else {
-                                updatePercentage(static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / elementSize);
-                            }
-                        }
-                        if(fileInfo().tagPosition() == TagPosition::AfterData && segmentIndex == lastSegmentIndex) {
-                            // write "Tags"-element
-                            if(tagsSize) {
-                                outputWriter.writeUInt32BE(MatroskaIds::Tags);
-                                sizeLength = EbmlElement::makeSizeDenotation(tagElementsSize, buff);
-                                outputStream.write(buff, sizeLength);
-                                for(auto &maker : tagMaker) {
-                                    maker.make(outputStream);
-                                }
-                                // no need to add notifications; this has been done when creating the make
-                            }
-                            // write "Attachments"-element
-                            if(attachmentsSize) {
-                                outputWriter.writeUInt32BE(MatroskaIds::Attachments);
-                                sizeLength = EbmlElement::makeSizeDenotation(attachedFileElementsSize, buff);
-                                outputStream.write(buff, sizeLength);
-                                for(auto &maker : attachmentMaker) {
-                                    maker.make(outputStream);
-                                }
-                                // no need to add notifications; this has been done when creating the make
-                            }
-                        }
-                        ++segmentIndex; // increase the current segment index
-                        currentOffset += 4 + sizeLength + elementSize; // increase current write offset by the size of the segment which has just been written
-                        readOffset = level0Element->totalSize(); // increase the read offset by the size of the segment read from the orignial file
-                        break;
-                    default:
-                        // just copy any unknown top-level elements
-                        addNotification(NotificationType::Warning, "The top-level element \"" + level0Element->idToString() + "\" of the original file is unknown and will just be copied.", context);
-                        level0Element->copyEntirely(outputStream);
                     }
                 }
-            } catch(OperationAbortedException &) {
-                throw;
-            } catch(Failure &) {
-                // any failures here are caused because the original faile could not be parsed correctly (except OperationAbortedException which is handled above)
-                addNotifications(cuesUpdater);
-                addNotification(NotificationType::Critical, "Unable to parse content in top-level element at " + numberToString(level0Element->startOffset()) + " of original file.", context);
-                throw;
+
+                // increase the current segment index
+                ++segmentIndex;
+
+                // increase write offsets by the size of the segment which size has just been computed
+                segment.totalSize = 4 + EbmlElement::calculateSizeDenotationLength(segment.totalDataSize) + segment.totalDataSize;
+                currentPosition += segment.totalSize;
+                currentOffset += segment.totalSize;
+
+                // increase the read offset by the size of the segment read from the orignial file
+                readOffset += level0Element->totalSize();
+
+                break;
+
+            } default:
+                // just copy any unknown top-level elements
+                addNotification(NotificationType::Warning, "The top-level element \"" + level0Element->idToString() + "\" of the original file is unknown and will just be copied.", context);
+                currentOffset += level0Element->totalSize();
+                readOffset += level0Element->totalSize();
             }
-            // reparse what is written so far
-            updateStatus("Reparsing output file ...");
-            outputStream.close(); // the outputStream needs to be reopened to be able to read again
-            outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
-            setStream(outputStream);
-            reset();
-            try {
-                parseHeader();
-            } catch(Failure &) {
-                addNotification(NotificationType::Critical, "Unable to reparse the header of the new file.", context);
-                throw;
-            }
-            // update CRC-32 checksums
-            if(!crc32Offsets.empty()) {
-                updateStatus("Updating CRC-32 checksums ...");
-                for(const auto &crc32Offset : crc32Offsets) {
-                    outputStream.seekg(get<0>(crc32Offset) + 6);
-                    outputStream.seekp(get<0>(crc32Offset) + 2);
-                    writer().writeUInt32LE(reader().readCrc32(get<1>(crc32Offset) - 6));
-                }
-            }
-            updatePercentage(100.0);
-            // flush output stream
-            outputStream.flush();
-        // handle errors which occured after renaming/creating backup file
-        } catch(OperationAbortedException &) {
-            setStream(outputStream);
-            reset();
-            addNotification(NotificationType::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
-            BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
-            throw;
-        } catch(Failure &) {
-            setStream(outputStream);
-            reset();
-            addNotification(NotificationType::Critical, "Rewriting the file to apply changed tag information failed.", context);
-            BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
-            throw;
-        } catch(ios_base::failure &) {
-            setStream(outputStream);
-            reset();
-            addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
-            BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
-            throw;
         }
-    // handle errors which occured before renaming/creating backup file
+
+        if(!rewriteRequired) {
+            // check whether the new padding is ok according to specifications
+            if((rewriteRequired = (newPadding > fileInfo().maxPadding() || newPadding < fileInfo().minPadding()))) {
+                // need to recalculate segment data for rewrite
+                goto calculateSegmentData;
+            }
+        }
+
     } catch(Failure &) {
         addNotification(NotificationType::Critical, "Parsing the original file failed.", context);
         throw;
@@ -1249,6 +1311,378 @@ void MatroskaContainer::internalMakeFile()
         addNotification(NotificationType::Critical, "An IO error occured when parsing the original file.", context);
         throw;
     }
+
+
+    // define variables needed to handle output stream and backup stream (required when rewriting the file)
+    string backupPath;
+    fstream &outputStream = fileInfo().stream();
+    fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
+    BinaryWriter outputWriter(&outputStream);
+    char buff[8]; // buffer used to make size denotations
+
+    if(isAborted()) {
+        throw OperationAbortedException();
+    }
+
+    // setup stream(s) for writing
+    if(rewriteRequired) {
+        // update status
+        updateStatus("Preparing streams ...");
+
+        // move current file to temp dir and reopen it as backupStream, recreate original file
+        try {
+            // ensure the file is close before moving
+            fileInfo().close();
+            BackupHelper::createBackupFile(fileInfo().path(), backupPath, backupStream);
+            // set backup stream as associated input stream since we need the original elements to write the new file
+            setStream(backupStream);
+            // recreate original file, define buffer variables
+            outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
+        } catch(const ios_base::failure &) {
+            addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+            throw;
+        }
+
+    } else { // !rewriteRequired
+
+        // buffer currently assigned attachments
+        for(auto &maker : attachmentMaker) {
+            maker.bufferCurrentAttachments();
+        }
+
+        // reopen original file to ensure it is opened for writing
+        try {
+            fileInfo().close();
+            outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
+        } catch(const ios_base::failure &) {
+            addNotification(NotificationType::Critical, "Opening the file with write permissions failed.", context);
+            throw;
+        }
+    }
+
+    try {
+        // write EBML header
+        updateStatus("Writing EBML header ...");
+        outputWriter.writeUInt32BE(EbmlIds::Header);
+        sizeLength = EbmlElement::makeSizeDenotation(ebmlHeaderDataSize, buff);
+        outputStream.write(buff, sizeLength);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::Version, m_version);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::ReadVersion, m_readVersion);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxIdLength, m_maxIdLength);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::MaxSizeLength, m_maxSizeLength);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocType, m_doctype);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeVersion, m_doctypeVersion);
+        EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeReadVersion, m_doctypeReadVersion);
+
+        // iterates through all level 0 elements of the original file
+        for(level0Element = firstElement(), segmentIndex = 0, currentPosition = 0; level0Element; level0Element = level0Element->nextSibling()) {
+
+            // write all level 0 elements of the original file
+            switch(level0Element->id()) {
+            case EbmlIds::Header:
+                // header has already been written -> skip it here
+                break;
+
+            case EbmlIds::Void:
+            case EbmlIds::Crc32:
+                // level 0 "Void"- and "Checksum"-elements are omitted
+                break;
+
+            case MatroskaIds::Segment: {
+                // get reference to the current segment data instance
+                SegmentData &segment = segmentData[segmentIndex];
+
+                // write "Segment"-element actually
+                updateStatus("Writing segment header ...");
+                outputWriter.writeUInt32BE(MatroskaIds::Segment);
+                sizeLength = EbmlElement::makeSizeDenotation(segment.totalDataSize, buff);
+                outputStream.write(buff, sizeLength);
+                offset = outputStream.tellp(); // store segment data offset here
+
+                // write CRC-32 element ...
+                if(segment.hasCrc32) {
+                    // ... if the original element had a CRC-32 element
+                    *buff = EbmlIds::Crc32;
+                    *(buff + 1) = 0x84; // length denotation: 4 byte
+                    // set the value after writing the element
+                    crc32Offsets.emplace_back(outputStream.tellp(), segment.totalDataSize);
+                    outputStream.write(buff, 6);
+                }
+
+                // write "SeekHead"-element (except there is no seek information for the current segment)
+                segment.seekInfo.invalidateNotifications();
+                segment.seekInfo.make(outputStream);
+                addNotifications(segment.seekInfo);
+
+                // write "SegmentInfo"-element
+                for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo); level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo)) {
+                    // -> write ID and size
+                    outputWriter.writeUInt32BE(MatroskaIds::SegmentInfo);
+                    sizeLength = EbmlElement::makeSizeDenotation(segment.infoDataSize, buff);
+                    outputStream.write(buff, sizeLength);
+                    // -> write childs
+                    for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                        switch(level2Element->id()) {
+                        case EbmlIds::Void: // skipped
+                        case EbmlIds::Crc32: // skipped
+                        case MatroskaIds::Title: // written separately
+                        case MatroskaIds::MuxingApp: // written separately
+                        case MatroskaIds::WrittingApp: // written separately
+                            break;
+                        default:
+                            level2Element->copyBuffer(outputStream);
+                            level2Element->releaseBuffer();
+                            //level2Element->copyEntirely(outputStream);
+                        }
+                    }
+                    // -> write "Title"-element
+                    if(segmentIndex < m_titles.size()) {
+                        const auto &title = m_titles[segmentIndex];
+                        if(!title.empty()) {
+                            EbmlElement::makeSimpleElement(outputStream, MatroskaIds::Title, title);
+                        }
+                    }
+                    // -> write "MuxingApp"- and "WritingApp"-element
+                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, appInfo, appInfoElementDataSize);
+                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp, appInfo, appInfoElementDataSize);
+                }
+
+                // write "Tracks"- and "Chapters"-element
+                for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
+                    for(level1Element = level0Element->childById(id); level1Element; level1Element = level1Element->siblingById(id)) {
+                        level1Element->copyBuffer(outputStream);
+                        level1Element->releaseBuffer();
+                        //level1Element->copyEntirely(outputStream);
+                    }
+                }
+
+                if(newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
+                    // write "Tags"-element
+                    if(tagsSize) {
+                        outputWriter.writeUInt32BE(MatroskaIds::Tags);
+                        sizeLength = EbmlElement::makeSizeDenotation(tagElementsSize, buff);
+                        outputStream.write(buff, sizeLength);
+                        for(auto &maker : tagMaker) {
+                            maker.make(outputStream);
+                        }
+                        // no need to add notifications; this has been done when creating the make
+                    }
+                    // write "Attachments"-element
+                    if(attachmentsSize) {
+                        outputWriter.writeUInt32BE(MatroskaIds::Attachments);
+                        sizeLength = EbmlElement::makeSizeDenotation(attachedFileElementsSize, buff);
+                        outputStream.write(buff, sizeLength);
+                        for(auto &maker : attachmentMaker) {
+                            maker.make(outputStream);
+                        }
+                        // no need to add notifications; this has been done when creating the make
+                    }
+                }
+
+                // write "Cues"-element
+                if(newCuesPos == ElementPosition::BeforeData && segment.cuesElement) {
+                    try {
+                        segment.cuesUpdater.make(outputStream);
+                        addNotifications(segment.cuesUpdater);
+                    } catch(Failure &) {
+                        addNotifications(segment.cuesUpdater);
+                        throw;
+                    }
+                }
+
+                // write padding / "Void"-element
+                if(segment.newPadding) {
+
+                    // -> calculate length
+                    uint64 voidLength;
+                    if(segment.newPadding < 64) {
+                        sizeLength = 1;
+                        *buff = (voidLength = segment.newPadding - 2) | 0x80;
+                    } else {
+                        sizeLength = 8;
+                        BE::getBytes(static_cast<uint64>((voidLength = segment.newPadding - 9) | 0x100000000000000), buff);
+                    }
+                    // -> write header
+                    outputWriter.writeByte(EbmlIds::Void);
+                    outputStream.write(buff, sizeLength);
+                    // -> write zeroes
+                    for(; voidLength; --voidLength) {
+                        outputStream.put(0);
+                    }
+                }
+
+                if(rewriteRequired) {
+
+                    // update status, check whether the operation has been aborted
+                    if(isAborted()) {
+                        throw OperationAbortedException();
+                    }
+                    updateStatus("Writing clusters ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
+                    // write "Cluster"-element
+                    level1Element = level0Element->childById(MatroskaIds::Cluster);
+                    for(auto clusterSizesIterator = segment.clusterSizes.cbegin();
+                        level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++clusterSizesIterator) {
+                        // calculate position of cluster in segment
+                        clusterSize = currentPosition + (static_cast<uint64>(outputStream.tellp()) - offset);
+                        // write header; checking whether clusterSizesIterator is valid shouldn't be necessary
+                        outputWriter.writeUInt32BE(MatroskaIds::Cluster);
+                        sizeLength = EbmlElement::makeSizeDenotation(*clusterSizesIterator, buff);
+                        outputStream.write(buff, sizeLength);
+                        // write childs
+                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                            switch(level2Element->id()) {
+                            case EbmlIds::Void:
+                            case EbmlIds::Crc32:
+                                break;
+                            case MatroskaIds::Position:
+                                EbmlElement::makeSimpleElement(outputStream, MatroskaIds::Position, clusterSize);
+                                break;
+                            default:
+                                level2Element->copyEntirely(outputStream);
+                            }
+                        }
+                        // update percentage, check whether the operation has been aborted
+                        if(isAborted()) {
+                            throw OperationAbortedException();
+                        } else {
+                            updatePercentage(static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
+                        }
+                    }
+                } else {
+                    // skip existing "Cluster"-elements
+                    outputStream.seekp(segment.clusterEndOffset);
+                }
+
+                // write "Cues"-element
+                if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                    try {
+                        segment.cuesUpdater.make(outputStream);
+                        addNotifications(segment.cuesUpdater);
+                    } catch(Failure &) {
+                        addNotifications(segment.cuesUpdater);
+                        throw;
+                    }
+                }
+
+                if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                    // write "Tags"-element
+                    if(tagsSize) {
+                        outputWriter.writeUInt32BE(MatroskaIds::Tags);
+                        sizeLength = EbmlElement::makeSizeDenotation(tagElementsSize, buff);
+                        outputStream.write(buff, sizeLength);
+                        for(auto &maker : tagMaker) {
+                            maker.make(outputStream);
+                        }
+                        // no need to add notifications; this has been done when creating the make
+                    }
+                    // write "Attachments"-element
+                    if(attachmentsSize) {
+                        outputWriter.writeUInt32BE(MatroskaIds::Attachments);
+                        sizeLength = EbmlElement::makeSizeDenotation(attachedFileElementsSize, buff);
+                        outputStream.write(buff, sizeLength);
+                        for(auto &maker : attachmentMaker) {
+                            maker.make(outputStream);
+                        }
+                        // no need to add notifications; this has been done when creating the make
+                    }
+                }
+
+                // increase the current segment index
+                ++segmentIndex;
+
+                // increase write offsets by the size of the segment which has just been written
+                currentPosition += segment.totalSize;
+
+                break;
+
+           } default:
+                // just copy any unknown top-level elements
+                level0Element->copyEntirely(outputStream);
+                currentPosition += level0Element->totalSize();
+            }
+        }
+
+        // reparse what is written so far
+        updateStatus("Reparsing output file ...");
+        if(rewriteRequired) {
+            outputStream.close(); // the outputStream needs to be reopened to be able to read again
+            outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
+            setStream(outputStream);
+        }
+        reset();
+        try {
+            parseHeader();
+        } catch(Failure &) {
+            addNotification(NotificationType::Critical, "Unable to reparse the header of the new file.", context);
+            throw;
+        }
+
+        // update CRC-32 checksums
+        if(!crc32Offsets.empty()) {
+            updateStatus("Updating CRC-32 checksums ...");
+            for(const auto &crc32Offset : crc32Offsets) {
+                outputStream.seekg(get<0>(crc32Offset) + 6);
+                outputStream.seekp(get<0>(crc32Offset) + 2);
+                writer().writeUInt32LE(reader().readCrc32(get<1>(crc32Offset) - 6));
+            }
+        }
+
+        updatePercentage(100.0);
+
+        // flush output stream
+        outputStream.flush();
+
+        // handle errors (which might have been occured after renaming/creating backup file)
+    } catch(OperationAbortedException &) {
+        reset();
+        if(&stream() != &outputStream) {
+            // a temp/backup file has been created -> restore original file
+            setStream(outputStream);
+            addNotification(NotificationType::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
+            try {
+                BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
+                addNotification(NotificationType::Information, "The original file has been restored.", context);
+            } catch(const ios_base::failure &ex) {
+                addNotification(NotificationType::Critical, ex.what(), context);
+            }
+        } else {
+            addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
+        }
+        throw;
+    } catch(Failure &) {
+        reset();
+        if(&stream() != &outputStream) {
+            // a temp/backup file has been created -> restore original file
+            setStream(outputStream);
+            addNotification(NotificationType::Critical, "Rewriting the file to apply changed tag information failed.", context);
+            try {
+                BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
+                addNotification(NotificationType::Information, "The original file has been restored.", context);
+            } catch(const ios_base::failure &ex) {
+                addNotification(NotificationType::Critical, ex.what(), context);
+            }
+        } else {
+            addNotification(NotificationType::Information, "Applying new tag information failed.", context);
+        }
+        throw;
+    } catch(ios_base::failure &) {
+        reset();
+        if(&stream() != &outputStream) {
+            // a temp/backup file has been created -> restore original file
+            setStream(outputStream);
+            addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
+            try {
+                BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
+                addNotification(NotificationType::Information, "The original file has been restored.", context);
+            } catch(const ios_base::failure &ex) {
+                addNotification(NotificationType::Critical, ex.what(), context);
+            }
+        } else {
+            addNotification(NotificationType::Information, "An IO error occured when applying tag information.", context);
+        }
+        throw;
+    }
+    // TODO: reduce code duplication
 }
 
 }

@@ -87,7 +87,7 @@ inline uint64 MatroskaContainer::maxSizeLength() const
 }
 
 /*!
- * \brief Returns seek information read from "SeekHead" elements when parsing segment info.
+ * \brief Returns seek information read from "SeekHead"-elements when parsing segment info.
  */
 inline const std::vector<std::unique_ptr<MatroskaSeekInfo> > &MatroskaContainer::seekInfos() const
 {
