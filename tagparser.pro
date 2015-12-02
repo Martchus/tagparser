@@ -3,7 +3,7 @@ appname = "Tag Parser"
 appauthor = Martchus
 appurl = "https://github.com/$${appauthor}/$${projectname}"
 QMAKE_TARGET_DESCRIPTION = "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags."
-VERSION = 3.0.0
+VERSION = 3.0.1
 
 # include ../../common.pri when building as part of a subdirs project; otherwise include general.pri
 !include(../../common.pri) {
