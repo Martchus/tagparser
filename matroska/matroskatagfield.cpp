@@ -157,7 +157,8 @@ void MatroskaTagField::make(ostream &stream)
 
 /*!
  * \class Media::MatroskaTagFieldMaker
- * \brief The MatroskaTagFieldMaker class helps making tag fields. It allows to calculate the
+ * \brief The MatroskaTagFieldMaker class helps making tag fields.
+ *        It allows to calculate the required size.
  * \sa See MatroskaTagField::prepareMaking() for more information.
  */
 

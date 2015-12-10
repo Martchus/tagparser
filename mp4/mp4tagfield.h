@@ -4,6 +4,8 @@
 #include "../generictagfield.h"
 #include "../statusprovider.h"
 
+#include <c++utilities/io/binarywriter.h>
+
 #include <vector>
 
 namespace Media
@@ -71,6 +73,42 @@ public:
 
 class Mp4Atom;
 
+class LIB_EXPORT Mp4TagFieldMaker
+{
+    friend class Mp4TagField;
+
+public:
+    void make(std::ostream &stream);
+    const Mp4TagField &field() const;
+    uint64 requiredSize() const;
+
+private:
+    Mp4TagFieldMaker(Mp4TagField &field);
+
+    Mp4TagField &m_field;
+    std::stringstream m_convertedData;
+    IoUtilities::BinaryWriter m_writer;
+    uint32 m_rawDataType;
+    uint64 m_dataSize;
+    uint64 m_totalSize;
+};
+
+/*!
+ * \brief Returns the associated field.
+ */
+inline const Mp4TagField &Mp4TagFieldMaker::field() const
+{
+    return m_field;
+}
+
+/*!
+ * \brief Returns number of bytes which will be written when making the field.
+ */
+inline uint64 Mp4TagFieldMaker::requiredSize() const
+{
+   return m_totalSize;
+}
+
 class LIB_EXPORT Mp4TagField : public TagField<Mp4TagField>, public StatusProvider
 {
     friend class TagField<Mp4TagField>;
@@ -81,6 +119,7 @@ public:
     Mp4TagField(const std::string &mean, const std::string &name, const TagValue &value);
 
     void reparse(Mp4Atom &ilstChild);
+    Mp4TagFieldMaker prepareMaking();
     void make(std::ostream &stream);
 
     bool isAdditionalTypeInfoUsed() const;

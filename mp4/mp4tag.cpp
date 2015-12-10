@@ -229,6 +229,21 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
 }
 
 /*!
+ * \brief Prepares making.
+ * \returns Returns a Mp4TagMaker object which can be used to actually make the tag.
+ * \remarks The tag must NOT be mutated after making is prepared when it is intended to actually
+ *          make the tag using the make method of the returned object.
+ * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ *
+ * This method might be useful when it is necessary to know the size of the tag before making it.
+ * \sa make()
+ */
+Mp4TagMaker Mp4Tag::prepareMaking()
+{
+    return Mp4TagMaker(*this);
+}
+
+/*!
  * \brief Writes tag information to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
@@ -237,14 +252,49 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
  */
 void Mp4Tag::make(ostream &stream)
 {
-    invalidateStatus();
-    static const string context("making MP4 tag");
-    // write meta atom
-    ostream::pos_type metaOff = stream.tellp();
-    static const byte metaData[8] = {
-        0x00, 0x00, 0x00, 0x00, 0x6D, 0x65, 0x74, 0x61
-    };
-    stream.write(reinterpret_cast<const char *>(metaData), sizeof(metaData));
+    prepareMaking().make(stream);
+}
+
+/*!
+ * \brief Prepares making the specified \a tag.
+ * \sa See Mp4Tag::prepareMaking() for more information.
+ */
+Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag) :
+    m_tag(tag),
+    // meta head, hdlr atom
+    m_metaSize(8 + 37),
+    // ilst head
+    m_ilstSize(8),
+    // ensure there only one genre atom is written (prefer genre as string)
+    m_omitPreDefinedGenre(m_tag.fields().count(Mp4TagAtomIds::PreDefinedGenre) && m_tag.fields().count(Mp4TagAtomIds::Genre))
+{
+    m_tag.invalidateStatus();
+    m_makers.reserve(m_tag.fields().size());
+    for(auto &field : m_tag.fields()) {
+        if(!field.second.value().isEmpty() &&
+                (!m_omitPreDefinedGenre || field.first == Mp4TagAtomIds::PreDefinedGenre)) {
+            m_makers.emplace_back(field.second.prepareMaking());
+            m_ilstSize += m_makers.back().requiredSize();
+        }
+    }
+    if(m_ilstSize != 8) {
+        m_metaSize += m_ilstSize;
+    }
+}
+
+/*!
+ * \brief Saves the tag (specified when constructing the object) to the
+ *        specified \a stream.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Assumes the data is already validated and thus does NOT
+ *                throw Media::Failure or a derived exception.
+ */
+void Mp4TagMaker::make(ostream &stream)
+{
+    // write meta head
+    BinaryWriter writer(&stream);
+    writer.writeUInt32BE(m_metaSize);
+    writer.writeUInt32BE(Mp4AtomIds::Meta);
     // write hdlr atom
     static const byte hdlrData[37] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x68, 0x64, 0x6C, 0x72, 0x00, 0x00,
@@ -252,37 +302,18 @@ void Mp4Tag::make(ostream &stream)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
     stream.write(reinterpret_cast<const char *>(hdlrData), sizeof(hdlrData));
-    // write ilst atom
-    ostream::pos_type ilstOff = stream.tellp();
-    static const byte ilstData[8] = {
-          0x00, 0x00, 0x00, 0x00, 0x69, 0x6C, 0x73, 0x74
-    };
-    stream.write(reinterpret_cast<const char *>(ilstData), sizeof(ilstData));
-    // ensure there is only one genre atom (prefer genre as string)
-    if(fields().count(Mp4TagAtomIds::PreDefinedGenre)
-            && fields().count(Mp4TagAtomIds::Genre)) {
-        fields().erase(Mp4TagAtomIds::PreDefinedGenre);
-    }
-    // write actual tag data
-    int tagFieldsWritten = 0;
-    for(auto i = fields().begin(), end = fields().end(); i != end; ++i) {
-        Mp4TagField &field = i->second;
-        if(!field.value().isEmpty()) {
-            field.invalidateNotifications();
-            try {
-                field.make(stream);
-                ++tagFieldsWritten;
-            } catch(Failure &) {
-                // nothing to do since notifications will be added anyways
-            }
-            addNotifications(context, field);
+    if(m_ilstSize != 8) {
+        // write ilst head
+        writer.writeUInt32BE(m_ilstSize);
+        writer.writeUInt32BE(Mp4AtomIds::ItunesList);
+        // write fields
+        for(auto &maker : m_makers) {
+            maker.make(stream);
         }
+    } else {
+        // no fields to be written -> no ilst to be written
+        m_tag.addNotification(NotificationType::Warning, "Tag is empty.", "making MP4 tag");
     }
-    if(!tagFieldsWritten) {
-        addNotification(NotificationType::Warning, "No tag atoms have be written.", context);
-    }
-    Mp4Atom::seekBackAndWriteAtomSize(stream, ilstOff);
-    Mp4Atom::seekBackAndWriteAtomSize(stream, metaOff);
 }
 
 }

@@ -255,6 +255,21 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
 }
 
 /*!
+ * \brief Prepares making.
+ * \returns Returns a Mp4TagFieldMaker object which can be used to actually make the field.
+ * \remarks The field must NOT be mutated after making is prepared when it is intended to actually
+ *          make the field using the make method of the returned object.
+ * \throws Throws Media::Failure or a derived exception when a making
+ *                error occurs.
+ *
+ * This method might be useful when it is necessary to know the size of the field before making it.
+ */
+Mp4TagFieldMaker Mp4TagField::prepareMaking()
+{
+    return Mp4TagFieldMaker(*this);
+}
+
+/*!
  * \brief Saves the field to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
@@ -263,127 +278,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
  */
 void Mp4TagField::make(ostream &stream)
 {
-    invalidateStatus();
-    if(!id()) {
-        addNotification(NotificationType::Warning, "Invalid tag atom id.", "making MP4 tag field");
-        throw InvalidDataException();
-    }
-    const string context("making MP4 tag field " + ConversionUtilities::interpretIntegerAsString<identifierType>(id()));
-    // there might be only mean and name info, but no data
-    if(value().isEmpty() && (!m_mean.empty() || !m_name.empty())) {
-        addNotification(NotificationType::Critical, "No tag value assigned.", context);
-        throw InvalidDataException();
-    }
-    uint32 rawDataType = 0;
-    try {
-        // try to use appropriate raw data type
-        rawDataType = appropriateRawDataType();
-    } catch(Failure &) {
-        // unable to obtain appropriate raw data type
-        // assume utf-8 text
-        rawDataType = RawDataType::Utf8;
-        addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
-    }
-    stringstream convertedData(stringstream::in | stringstream::out | stringstream::binary);
-    BinaryWriter writer(&convertedData);
-    try {
-        if(!value().isEmpty()) { // there might be only mean and name info, but no data
-            convertedData.exceptions(std::stringstream::failbit | std::stringstream::badbit);
-            switch(rawDataType) {
-            case RawDataType::Utf8:
-            case RawDataType::Utf16:
-                writer.writeString(value().toString());
-                break;
-            case RawDataType::BeSignedInt: {
-                int number = value().toInteger();
-                if(number <= numeric_limits<int16>::max()
-                        && number >= numeric_limits<int16>::min()) {
-                    writer.writeInt16BE(static_cast<int16>(number));
-                } else {
-                    writer.writeInt32BE(number);
-                }
-                break;
-            } case RawDataType::BeUnsignedInt: {
-                int number = value().toInteger();
-                if(number <= numeric_limits<uint16>::max()
-                        && number >= numeric_limits<uint16>::min()) {
-                    writer.writeUInt16BE(static_cast<uint16>(number));
-                } else if(number > 0) {
-                    writer.writeUInt32BE(number);
-                } else {
-                    throw ConversionException("Negative integer can not be assigned to the field with the id \"" + interpretIntegerAsString<uint32>(id()) + "\".");
-                }
-                break;
-            } case RawDataType::Bmp: case RawDataType::Jpeg: case RawDataType::Png:
-                break; // leave converted data empty to write original data later
-            default:
-                switch(id()) {
-                // track number and disk number are exceptions
-                // raw data type 0 is used, information is stored as pair of unsigned integers
-                case Mp4TagAtomIds::TrackPosition: case Mp4TagAtomIds::DiskPosition: {
-                    PositionInSet pos = value().toPositionIntSet();
-                    writer.writeInt32BE(pos.position());
-                    if(pos.total() <= numeric_limits<int16>::max()) {
-                        writer.writeInt16BE(static_cast<int16>(pos.total()));
-                    } else {
-                        throw ConversionException("Integer can not be assigned to the field with the id \"" + interpretIntegerAsString<uint32>(id()) + "\" because it is to big.");
-                    }
-                    writer.writeUInt16BE(0);
-                    break;
-                }
-                case Mp4TagAtomIds::PreDefinedGenre:
-                    writer.writeUInt16BE(value().toStandardGenreIndex());
-                    break;
-                default:
-                    ; // leave converted data empty to write original data later
-                }
-            }
-        }
-    } catch (ConversionException &ex) {
-        // it was not possible to perform required conversions
-        if(char_traits<char>::length(ex.what())) {
-            addNotification(NotificationType::Critical, ex.what(), context);
-        } else {
-            addNotification(NotificationType::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
-        }
-        throw InvalidDataException();
-    }
-    // data could be converted successfully
-    // write data to output stream
-    writer.setStream(&stream);
-    uint32 dataSize = value().isEmpty()           // calculate data size
-            ? 0 : (convertedData.tellp() ? static_cast<size_t>(convertedData.tellp()) : value().dataSize());
-    uint32 entireSize = 8                       // calculate entire size
-            + (name().empty() ? 0 : (12 + name().length()))
-            + (mean().empty() ? 0 : (12 + mean().length()))
-            + (dataSize ? (16 + dataSize) : 0);
-    writer.writeUInt32BE(entireSize);             // size of entire tag atom
-    writer.writeUInt32BE(id());                // id of tag atom
-    if(!mean().empty()) {             // write "mean"
-        writer.writeUInt32BE(12 + mean().length());
-        writer.writeUInt32BE(Mp4AtomIds::Mean);
-        writer.writeUInt32BE(0);
-        writer.writeString(mean());
-    }
-    if(!name().empty()) {             // write "name"
-        writer.writeUInt32BE(12 + name().length());
-        writer.writeUInt32BE(Mp4AtomIds::Name);
-        writer.writeUInt32BE(0);
-        writer.writeString(name());
-    }
-    if(!value().isEmpty()) {                      // write data
-        writer.writeUInt32BE(16 + dataSize);      // size of data atom
-        writer.writeUInt32BE(Mp4AtomIds::Data);   // id of data atom
-        writer.writeByte(0);                    // version
-        writer.writeUInt24BE(rawDataType);
-        writer.writeUInt16BE(m_countryIndicator);
-        writer.writeUInt16BE(m_langIndicator);
-        if(convertedData.tellp()) {
-            stream << convertedData.rdbuf();    // write converted data
-        } else { // no conversion was needed, write data directly from tag value
-            stream.write(value().dataPointer(), value().dataSize());
-        }
-    }
+    prepareMaking().make(stream);
 }
 
 /*!
@@ -485,6 +380,158 @@ void Mp4TagField::cleared()
     m_parsedRawDataType = RawDataType::Reserved;
     m_countryIndicator = 0;
     m_langIndicator = 0;
+}
+
+/*!
+ * \class Media::Mp4TagFieldMaker
+ * \brief The Mp4TagFieldMaker class helps making tag fields.
+ *        It allows to calculate the required size.
+ * \sa See Mp4TagFieldMaker::prepareMaking() for more information.
+ */
+
+/*!
+ * \brief Prepares making the specified \a field.
+ * \sa See Mp4TagFieldMaker::prepareMaking() for more information.
+ */
+Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
+    m_field(field),
+    m_convertedData(stringstream::in | stringstream::out | stringstream::binary),
+    m_writer(&m_convertedData),
+    m_rawDataType(0)
+{
+    m_field.invalidateStatus();
+    if(!m_field.id()) {
+        m_field.addNotification(NotificationType::Warning, "Invalid tag atom id.", "making MP4 tag field");
+        throw InvalidDataException();
+    }
+    const string context("making MP4 tag field " + ConversionUtilities::interpretIntegerAsString<Mp4TagField::identifierType>(m_field.id()));
+    if(m_field.value().isEmpty() && (!m_field.mean().empty() || !m_field.name().empty())) {
+        m_field.addNotification(NotificationType::Critical, "No tag value assigned.", context);
+        throw InvalidDataException();
+    }
+    try {
+        // try to use appropriate raw data type
+        m_rawDataType = m_field.appropriateRawDataType();
+    } catch(Failure &) {
+        // unable to obtain appropriate raw data type
+        // assume utf-8 text
+        m_rawDataType = RawDataType::Utf8;
+        m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
+    }
+    try {
+        if(!m_field.value().isEmpty()) { // there might be only mean and name info, but no data
+            m_convertedData.exceptions(std::stringstream::failbit | std::stringstream::badbit);
+            switch(m_rawDataType) {
+            case RawDataType::Utf8:
+            case RawDataType::Utf16:
+                m_writer.writeString(m_field.value().toString());
+                break;
+            case RawDataType::BeSignedInt: {
+                int number = m_field.value().toInteger();
+                if(number <= numeric_limits<int16>::max()
+                        && number >= numeric_limits<int16>::min()) {
+                    m_writer.writeInt16BE(static_cast<int16>(number));
+                } else {
+                    m_writer.writeInt32BE(number);
+                }
+                break;
+            } case RawDataType::BeUnsignedInt: {
+                int number = m_field.value().toInteger();
+                if(number <= numeric_limits<uint16>::max()
+                        && number >= numeric_limits<uint16>::min()) {
+                    m_writer.writeUInt16BE(static_cast<uint16>(number));
+                } else if(number > 0) {
+                    m_writer.writeUInt32BE(number);
+                } else {
+                    throw ConversionException("Negative integer can not be assigned to the field with the id \"" + interpretIntegerAsString<uint32>(m_field.id()) + "\".");
+                }
+                break;
+            } case RawDataType::Bmp: case RawDataType::Jpeg: case RawDataType::Png:
+                break; // leave converted data empty to write original data later
+            default:
+                switch(m_field.id()) {
+                // track number and disk number are exceptions
+                // raw data type 0 is used, information is stored as pair of unsigned integers
+                case Mp4TagAtomIds::TrackPosition: case Mp4TagAtomIds::DiskPosition: {
+                    PositionInSet pos = m_field.value().toPositionIntSet();
+                    m_writer.writeInt32BE(pos.position());
+                    if(pos.total() <= numeric_limits<int16>::max()) {
+                        m_writer.writeInt16BE(static_cast<int16>(pos.total()));
+                    } else {
+                        throw ConversionException("Integer can not be assigned to the field with the id \"" + interpretIntegerAsString<uint32>(m_field.id()) + "\" because it is to big.");
+                    }
+                    m_writer.writeUInt16BE(0);
+                    break;
+                }
+                case Mp4TagAtomIds::PreDefinedGenre:
+                    m_writer.writeUInt16BE(m_field.value().toStandardGenreIndex());
+                    break;
+                default:
+                    ; // leave converted data empty to write original data later
+                }
+            }
+        }
+    } catch (ConversionException &ex) {
+        // it was not possible to perform required conversions
+        if(char_traits<char>::length(ex.what())) {
+            m_field.addNotification(NotificationType::Critical, ex.what(), context);
+        } else {
+            m_field.addNotification(NotificationType::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
+        }
+        throw InvalidDataException();
+    }
+    // calculate data size
+    m_dataSize = m_field.value().isEmpty()
+            ? 0 : (m_convertedData.tellp() ? static_cast<size_t>(m_convertedData.tellp()) : m_field.value().dataSize());
+    m_totalSize = 8                       // calculate entire size
+            + (m_field.name().empty() ? 0 : (12 + m_field.name().length()))
+            + (m_field.mean().empty() ? 0 : (12 + m_field.mean().length()))
+            + (m_dataSize ? (16 + m_dataSize) : 0);
+}
+
+/*!
+ * \brief Saves the field (specified when constructing the object) to the
+ *        specified \a stream. *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Assumes the data is already validated and thus does NOT
+ *                throw Media::Failure or a derived exception.
+ */
+void Mp4TagFieldMaker::make(ostream &stream)
+{
+    m_writer.setStream(&stream);
+    // size of entire tag atom
+    m_writer.writeUInt32BE(m_totalSize);
+    // id of tag atom
+    m_writer.writeUInt32BE(m_field.id());
+    if(!m_field.mean().empty()) {
+        // write "mean"
+        m_writer.writeUInt32BE(12 + m_field.mean().size());
+        m_writer.writeUInt32BE(Mp4AtomIds::Mean);
+        m_writer.writeUInt32BE(0);
+        m_writer.writeString(m_field.mean());
+    }
+    if(!m_field.name().empty()) {
+        // write "name"
+        m_writer.writeUInt32BE(12 + m_field.name().length());
+        m_writer.writeUInt32BE(Mp4AtomIds::Name);
+        m_writer.writeUInt32BE(0);
+        m_writer.writeString(m_field.name());
+    }
+    if(!m_field.value().isEmpty()) { // write data
+        m_writer.writeUInt32BE(16 + m_dataSize); // size of data atom
+        m_writer.writeUInt32BE(Mp4AtomIds::Data); // id of data atom
+        m_writer.writeByte(0); // version
+        m_writer.writeUInt24BE(m_rawDataType);
+        m_writer.writeUInt16BE(m_field.countryIndicator());
+        m_writer.writeUInt16BE(m_field.languageIndicator());
+        if(m_convertedData.tellp()) {
+            // write converted data
+            stream << m_convertedData.rdbuf();
+        } else {
+            // no conversion was needed, write data directly from tag value
+            stream.write(m_field.value().dataPointer(), m_field.value().dataSize());
+        }
+    }
 }
 
 }
