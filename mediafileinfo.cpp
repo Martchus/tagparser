@@ -32,6 +32,7 @@
 #include <c++utilities/misc/memory.h>
 
 #include <unistd.h>
+
 #include <cstdio>
 #include <algorithm>
 #include <iomanip>
@@ -629,7 +630,9 @@ void MediaFileInfo::applyChanges()
         m_tagsParsingStatus = ParsingStatus::NotParsedYet;
         try {
             m_container->makeFile();
+            addNotifications(*m_container);
         } catch(...) {
+            addNotifications(*m_container);
             clearParsingResults();
             throw;
         }
