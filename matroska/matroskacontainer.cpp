@@ -17,6 +17,8 @@
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>
 
+#include <unistd.h>
+
 #include <functional>
 #include <initializer_list>
 #include <unordered_set>
@@ -804,8 +806,9 @@ void MatroskaContainer::internalMakeFile()
     ElementPosition currentCuesPos = ElementPosition::Keep;
     // -> index of the last segment
     unsigned int lastSegmentIndex = static_cast<unsigned int>(-1);
-
+    // -> holds new padding
     uint64 newPadding;
+    // -> whether rewrite is required (always required when forced to rewrite)
     bool rewriteRequired = fileInfo().isForcingRewrite();
 
     // calculate EBML header size
@@ -831,7 +834,7 @@ void MatroskaContainer::internalMakeFile()
                     // a tag of 3 bytes size is empty and can be skipped
                     tagElementsSize += tagMaker.back().requiredSize();
                 }
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 // nothing to do because notifications will be added anyways
             }
             addNotifications(*tag);
@@ -848,7 +851,7 @@ void MatroskaContainer::internalMakeFile()
                         // an attachment of 3 bytes size is empty and can be skipped
                         attachedFileElementsSize += attachmentMaker.back().requiredSize();
                     }
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     // nothing to do because notifications will be added anyways
                 }
                 addNotifications(*attachment);
@@ -902,11 +905,11 @@ void MatroskaContainer::internalMakeFile()
 
 calculateSegmentData:
         // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
-        // current "pretent" write offset
+        // -> current "pretent" write offset
         uint64 currentOffset = ebmlHeaderSize;
-        // current read offset (used to calculate positions)
+        // -> current read offset (used to calculate positions)
         uint64 readOffset = 0;
-        // index of current element during iteration
+        // -> index of current element during iteration
         unsigned int index;
 
         // if rewriting is required always use the preferred tag/cue position
@@ -1330,10 +1333,9 @@ nonRewriteCalculations:
     }
 
     // setup stream(s) for writing
+    // -> update status
+    updateStatus("Preparing streams ...");
     if(rewriteRequired) {
-        // update status
-        updateStatus("Preparing streams ...");
-
         // move current file to temp dir and reopen it as backupStream, recreate original file
         try {
             // ensure the file is close before moving
@@ -1365,6 +1367,7 @@ nonRewriteCalculations:
         }
     }
 
+    // start actual writing
     try {
         // write EBML header
         updateStatus("Writing EBML header ...");
@@ -1436,7 +1439,7 @@ nonRewriteCalculations:
                             break;
                         default:
                             level2Element->copyBuffer(outputStream);
-                            level2Element->releaseBuffer();
+                            level2Element->discardBuffer();
                             //level2Element->copyEntirely(outputStream);
                         }
                     }
@@ -1456,7 +1459,7 @@ nonRewriteCalculations:
                 for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
                     for(level1Element = level0Element->childById(id); level1Element; level1Element = level1Element->siblingById(id)) {
                         level1Element->copyBuffer(outputStream);
-                        level1Element->releaseBuffer();
+                        level1Element->discardBuffer();
                         //level1Element->copyEntirely(outputStream);
                     }
                 }
@@ -1498,7 +1501,7 @@ nonRewriteCalculations:
                 // write padding / "Void"-element
                 if(segment.newPadding) {
 
-                    // -> calculate length
+                    // calculate length
                     uint64 voidLength;
                     if(segment.newPadding < 64) {
                         sizeLength = 1;
@@ -1507,10 +1510,10 @@ nonRewriteCalculations:
                         sizeLength = 8;
                         BE::getBytes(static_cast<uint64>((voidLength = segment.newPadding - 9) | 0x100000000000000), buff);
                     }
-                    // -> write header
+                    // write header
                     outputWriter.writeByte(EbmlIds::Void);
                     outputStream.write(buff, sizeLength);
-                    // -> write zeroes
+                    // write zeroes
                     for(; voidLength; --voidLength) {
                         outputStream.put(0);
                     }
@@ -1613,6 +1616,8 @@ nonRewriteCalculations:
             outputStream.close(); // the outputStream needs to be reopened to be able to read again
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
             setStream(outputStream);
+        } else {
+            // TODO: truncate file
         }
         reset();
         try {
@@ -1638,7 +1643,7 @@ nonRewriteCalculations:
         outputStream.flush();
 
         // handle errors (which might have been occured after renaming/creating backup file)
-    } catch(OperationAbortedException &) {
+    } catch(const OperationAbortedException &) {
         reset();
         if(&stream() != &outputStream) {
             // a temp/backup file has been created -> restore original file
@@ -1654,7 +1659,7 @@ nonRewriteCalculations:
             addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
         }
         throw;
-    } catch(Failure &) {
+    } catch(const Failure &) {
         reset();
         if(&stream() != &outputStream) {
             // a temp/backup file has been created -> restore original file
@@ -1667,10 +1672,10 @@ nonRewriteCalculations:
                 addNotification(NotificationType::Critical, ex.what(), context);
             }
         } else {
-            addNotification(NotificationType::Information, "Applying new tag information failed.", context);
+            addNotification(NotificationType::Critical, "Applying new tag information failed.", context);
         }
         throw;
-    } catch(ios_base::failure &) {
+    } catch(const ios_base::failure &) {
         reset();
         if(&stream() != &outputStream) {
             // a temp/backup file has been created -> restore original file
@@ -1683,7 +1688,7 @@ nonRewriteCalculations:
                 addNotification(NotificationType::Critical, ex.what(), context);
             }
         } else {
-            addNotification(NotificationType::Information, "An IO error occured when applying tag information.", context);
+            addNotification(NotificationType::Critical, "An IO error occured when applying tag information.", context);
         }
         throw;
     }

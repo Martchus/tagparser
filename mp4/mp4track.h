@@ -149,6 +149,7 @@ public:
 
     // methods to make the track header
     void makeTrack();
+    uint64 requiredSize() const;
     void makeTrackHeader();
     void makeMedia();
     void makeMediaInfo();

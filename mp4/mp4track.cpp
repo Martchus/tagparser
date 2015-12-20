@@ -946,6 +946,14 @@ void Mp4Track::makeTrack()
 }
 
 /*!
+ * \brief Returns the number of bytes written when calling makeTrack().
+ */
+uint64 Mp4Track::requiredSize() const
+{
+    return m_trakAtom->totalSize();
+}
+
+/*!
  * \brief Makes the track header (tkhd atom) for the track. The data is written to the assigned output stream
  *        at the current position.
  */

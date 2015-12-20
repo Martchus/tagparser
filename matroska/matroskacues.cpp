@@ -242,7 +242,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                     case MatroskaIds::CueTime:
                         // write "CueTime"-element
                         cuePointChild->copyBuffer(stream);
-                        cuePointChild->releaseBuffer();
+                        cuePointChild->discardBuffer();
                         //cuePointChild->copyEntirely(stream);
                         break;
                     case MatroskaIds::CueTrackPositions:
@@ -258,7 +258,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                             case MatroskaIds::CueBlockNumber:
                                 // write unchanged childs of "CueTrackPositions"-element
                                 cueTrackPositionsChild->copyBuffer(stream);
-                                cueTrackPositionsChild->releaseBuffer();
+                                cueTrackPositionsChild->discardBuffer();
                                 //cueTrackPositionsChild->copyEntirely(stream);
                                 break;
                             case MatroskaIds::CueRelativePosition:
@@ -289,7 +289,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                                     case MatroskaIds::CueRefNumber:
                                         // write unchanged childs of "CueReference"-element
                                         cueReferenceChild->copyBuffer(stream);
-                                        cueReferenceChild->releaseBuffer();
+                                        cueReferenceChild->discardBuffer();
                                         cueReferenceChild->copyEntirely(stream);
                                         break;
                                     case MatroskaIds::CueRefCluster:
