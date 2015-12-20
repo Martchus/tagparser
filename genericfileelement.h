@@ -192,7 +192,7 @@ public:
     void copyWithoutChilds(std::ostream &targetStream);
     void copyEntirely(std::ostream &targetStream);
     void makeBuffer();
-    void releaseBuffer();
+    void discardBuffer();
     void copyBuffer(std::ostream &targetStream);
     const std::unique_ptr<char[]> &buffer();
     implementationType *denoteFirstChild(uint32 offset);
@@ -816,6 +816,10 @@ void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetSt
     copyInternal(targetStream, startOffset(), totalSize());
 }
 
+/*!
+ * \brief Buffers the element (header and data).
+ * \remarks The element must have been parsed.
+ */
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::makeBuffer()
 {
@@ -824,18 +828,29 @@ void GenericFileElement<ImplementationType>::makeBuffer()
     container().stream().read(m_buffer.get(), totalSize());
 }
 
+/*!
+ * \brief Discards buffered data.
+ */
 template <class ImplementationType>
-inline void GenericFileElement<ImplementationType>::releaseBuffer()
+inline void GenericFileElement<ImplementationType>::discardBuffer()
 {
-    m_buffer.release();
+    m_buffer.reset();
 }
 
+/*!
+ * \brief Copies buffered data to \a targetStream.
+ * \remarks Data must have been buffered using the makeBuffer() method.
+ */
 template <class ImplementationType>
 inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
 {
     targetStream.write(m_buffer.get(), totalSize());
 }
 
+/*!
+ * \brief Returns buffered data. The returned array is totalSize() bytes long.
+ * \remarks Data must have been buffered using the makeBuffer() method.
+ */
 template <class ImplementationType>
 inline const std::unique_ptr<char[]> &GenericFileElement<ImplementationType>::buffer()
 {

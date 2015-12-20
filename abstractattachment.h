@@ -26,7 +26,7 @@ public:
     std::istream::pos_type size() const;
     const std::unique_ptr<char[]> &buffer() const;
     void makeBuffer() const;
-    void releaseBuffer();
+    void discardBuffer();
 
 protected:
     StreamDataBlock();
@@ -80,11 +80,11 @@ inline const std::unique_ptr<char[]> &StreamDataBlock::buffer() const
 }
 
 /*!
- * \brief Releases buffered data.
+ * \brief Discards buffered data.
  */
-inline void StreamDataBlock::releaseBuffer()
+inline void StreamDataBlock::discardBuffer()
 {
-    m_buffer.release();
+    m_buffer.reset();
 }
 
 class LIB_EXPORT FileDataBlock : public StreamDataBlock
