@@ -63,7 +63,6 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     case Divx3Decoder1: case Divx3Decoder2: case Divx3Decoder3: case Divx3Decoder4: case Divx3Decoder5:
     case Divx3Decoder6: case Divx3Decoder7: case Divx3Decoder8: case Divx3Decoder9: case Divx3Decoder10:
     case Divx3Decoder11: case Divx3Decoder12: case Divx3Decoder13: case Divx3Decoder14: case Divx3Decoder15:
-    case Divx3Decoder16: case Divx3Decoder17:
         return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4SimpleProfile0);
     case Tiff:
         return GeneralMediaFormat::Tiff;
@@ -114,6 +113,18 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     case WindowsMediaAudio: case WindowsMediaAudio7:
     case WindowsMediaAudio9Professional: case WindowsMediaAudio9Standard:
         return MediaFormat(GeneralMediaFormat::WindowsMediaAudio);
+    case MsMpeg4V1Decoder1: case MsMpeg4V1Decoder2: case MsMpeg4V1Decoder3:
+    case MsMpeg4V1Decoder4: case MsMpeg4V1Decoder5: case MsMpeg4V1Decoder6:
+        return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 1);
+    case MsMpeg4V2Decoder1: case MsMpeg4V2Decoder2: case MsMpeg4V2Decoder3:
+    case MsMpeg4V2Decoder4:
+        return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 2);
+    case MsMpeg4V3Decoder1: case MsMpeg4V3Decoder2:
+        return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 3);
+    case WindowsMediaVideoV17:
+        return MediaFormat(GeneralMediaFormat::WindowsMediaVideo, 1);
+    case WindowsMediaVideoV2: case WindowsMediaVideoV8:
+        return MediaFormat(GeneralMediaFormat::WindowsMediaVideo, 2);
     // TODO: map more FOURCCs
     default:
         return GeneralMediaFormat::Unknown;

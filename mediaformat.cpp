@@ -85,6 +85,13 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::Jpeg: return "JPEG";
     case GeneralMediaFormat::OggKate: return "Karaoke And Text Encapsulation";
     case GeneralMediaFormat::MicrosoftAudioCodecManager: return "Microsoft Audio Codec Manager";
+    case GeneralMediaFormat::MicrosoftMpeg4:
+        switch(sub) {
+        case 1: return "Microsoft MPEG-4 version 1";
+        case 2: return "Microsoft MPEG-4 version 2";
+        case 3: return "Microsoft MPEG-4 version 3";
+        default: return "Microsoft MPEG-4";
+        }
     case GeneralMediaFormat::MicrosoftVideoCodecManager: return "Microsoft Video Codec Manager";
     case GeneralMediaFormat::DolbyMlp: return "Dolby TrueHD";
     case GeneralMediaFormat::Mpeg1Audio:
@@ -220,6 +227,12 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::Vp9: return "VP9";
     case GeneralMediaFormat::WavPack: return "WavPack";
     case GeneralMediaFormat::WindowsMediaAudio: return "Windows Media Audio";
+    case GeneralMediaFormat::WindowsMediaVideo:
+        switch(sub) {
+        case 1: return "Windows Media Video v1/v7";
+        case 2: return "Windows Media Video v2/v8";
+        default: return "Windows Media Video";
+        }
     default: return "unknown";
     }
 }
@@ -288,6 +301,13 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::Jpeg: return "JPEG";
     case GeneralMediaFormat::OggKate: return "OggKate";
     case GeneralMediaFormat::MicrosoftAudioCodecManager: return "MS ACM";
+    case GeneralMediaFormat::MicrosoftMpeg4:
+        switch(sub) {
+        case 1: return "MS MPEG-4 v1";
+        case 2: return "MS MPEG-4 v2";
+        case 3: return "MS MPEG-4 v3";
+        default: return "MS MPEG-4";
+        }
     case GeneralMediaFormat::MicrosoftVideoCodecManager: return "MS VCM";
     case GeneralMediaFormat::DolbyMlp: return "Dolby TrueHD";
     case GeneralMediaFormat::Mpeg1Audio:
@@ -379,6 +399,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::Vp9: return "VP9";
     case GeneralMediaFormat::WavPack: return "WavPack";
     case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
+    case GeneralMediaFormat::WindowsMediaVideo: return "WMV";
     default: return "";
     }
 }

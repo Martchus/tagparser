@@ -51,6 +51,7 @@ enum class GeneralMediaFormat
     Jpeg, /**< JPEG */
     OggKate, /**< Karaoke And Text Encapsulation */
     MicrosoftAudioCodecManager, /**< Microsoft Audio Codec Manager (ACM) */
+    MicrosoftMpeg4, /**< Microsoft MPEG-4 */
     MicrosoftVideoCodecManager, /**< Microsoft Video Codec Manager (VCM) */
     DolbyMlp, /** < Dolby MLP */
     Mpeg1Audio, /**< MPEG-1 Audio */
@@ -85,7 +86,8 @@ enum class GeneralMediaFormat
     Vp8, /** < VP8 */
     Vp9, /** < VP9 */
     WavPack, /**< WavPack */
-    WindowsMediaAudio /**< Windows Media Audio */
+    WindowsMediaAudio, /**< Windows Media Audio */
+    WindowsMediaVideo, /**< Windows Media Video */
 };
 
 /*!
