@@ -19,7 +19,6 @@ class LIB_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComparer>
 {
 public:
     Id3v2Tag();
-    ~Id3v2Tag();
 
     TagType type() const;
     const char *typeName() const;
@@ -69,12 +68,6 @@ inline Id3v2Tag::Id3v2Tag() :
     m_sizeExcludingHeader(0),
     m_extendedHeaderSize(0),
     m_paddingSize(0)
-{}
-
-/*!
- * \brief Destroys the tag.
- */
-inline Id3v2Tag::~Id3v2Tag()
 {}
 
 inline TagType Id3v2Tag::type() const

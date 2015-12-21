@@ -23,12 +23,6 @@ namespace Media {
 Id3v1Tag::Id3v1Tag()
 {}
 
-/*!
- * \brief Destroys the tag.
- */
-Id3v1Tag::~Id3v1Tag()
-{}
-
 TagType Id3v1Tag::type() const
 {
     return TagType::Id3v1Tag;

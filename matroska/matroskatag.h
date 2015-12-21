@@ -50,14 +50,12 @@ class LIB_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTagField>
 {
 public:
     MatroskaTag();
-    ~MatroskaTag();
 
     TagType type() const;
     const char *typeName() const;
     TagTextEncoding proposedTextEncoding() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
     bool supportsTarget() const;
-//    bool supportsNestedTags() const;
 
     std::string fieldId(KnownField field) const;
     KnownField knownField(const std::string &id) const;
@@ -75,21 +73,10 @@ inline bool MatroskaTag::supportsTarget() const
     return true;
 }
 
-//inline bool MatroskaTag::supportsNestedTags() const
-//{
-//    return true;
-//}
-
 /*!
  * \brief Constructs a new tag.
  */
 inline MatroskaTag::MatroskaTag()
-{}
-
-/*!
- * \brief Destroys the tag.
- */
-inline MatroskaTag::~MatroskaTag()
 {}
 
 inline TagType MatroskaTag::type() const

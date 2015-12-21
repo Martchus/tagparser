@@ -26,7 +26,6 @@ class FieldMapBasedTag : public Tag
 {
 public:
     FieldMapBasedTag();
-    virtual ~FieldMapBasedTag();
 
     virtual const TagValue &value(KnownField field) const;
     virtual const TagValue &value(const typename FieldType::identifierType &id) const;
@@ -71,13 +70,6 @@ private:
  */
 template <class FieldType, class Compare>
 FieldMapBasedTag<FieldType, Compare>::FieldMapBasedTag()
-{}
-
-/*!
- * \brief Destroys the tag.
- */
-template <class FieldType, class Compare>
-FieldMapBasedTag<FieldType, Compare>::~FieldMapBasedTag()
 {}
 
 template <class FieldType, class Compare>

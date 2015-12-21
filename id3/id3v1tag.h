@@ -10,7 +10,6 @@ class LIB_EXPORT Id3v1Tag : public Tag
 {
 public:
     Id3v1Tag();
-    virtual ~Id3v1Tag();
 
     virtual TagType type() const;
     virtual const char *typeName() const;

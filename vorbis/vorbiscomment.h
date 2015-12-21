@@ -14,7 +14,6 @@ class LIB_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField, Cas
 {
 public:
     VorbisComment();
-    ~VorbisComment();
 
     TagType type() const;
     const char *typeName() const;
@@ -40,12 +39,6 @@ private:
  * \brief Constructs a new Vorbis comment.
  */
 inline VorbisComment::VorbisComment()
-{}
-
-/*!
- * \brief Destroys the Vorbis comment.
- */
-inline VorbisComment::~VorbisComment()
 {}
 
 inline TagType VorbisComment::type() const

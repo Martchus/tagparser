@@ -50,7 +50,6 @@ class LIB_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4TagField>
 {
 public:
     Mp4Tag();
-    ~Mp4Tag();
 
     TagType type() const;
     const char *typeName() const;
@@ -77,12 +76,6 @@ public:
  * \brief Constructs a new tag.
  */
 inline Mp4Tag::Mp4Tag()
-{}
-
-/*!
- * \brief Destroys the tag.
- */
-inline Mp4Tag::~Mp4Tag()
 {}
 
 inline TagType Mp4Tag::type() const
