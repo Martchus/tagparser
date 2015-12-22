@@ -680,23 +680,29 @@ calculatePadding:
         // reparse what is written so far
         updateStatus("Reparsing output file ...");
         if(rewriteRequired) {
-            outputStream.close(); // the outputStream needs to be reopened to be able to read again
+            // report new size
+            fileInfo().reportSizeChanged(outputStream.tellp());
+            // the outputStream needs to be reopened to be able to read again
+            outputStream.close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
             setStream(outputStream);
         } else {
-            // ensure invalid bytes at the end are truncated (if the modified file is smaller then the original file)
             const auto newSize = static_cast<uint64>(outputStream.tellp());
             if(newSize < fileInfo().size()) {
-                // close stream before truncating
+                // file is smaller after the modification -> truncate
+                // -> close stream before truncating
                 outputStream.close();
-                // truncate file
+                // -> truncate file
                 if(truncate(fileInfo().path().c_str(), newSize) == 0) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
                     addNotification(NotificationType::Critical, "Unable to truncate the file.", context);
                 }
-                // reopen the stream again
+                // -> reopen the stream again
                 outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
+            } else {
+                // file is longer after the modification -> just report new size
+                fileInfo().reportSizeChanged(newSize);
             }
         }
 

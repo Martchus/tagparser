@@ -261,6 +261,43 @@ byte EbmlElement::makeId(GenericFileElement::identifierType id, char *buff)
  * \brief Makes the size denotation for the specified \a size and stores it to \a buff.
  * \param size Specifies the size to be denoted.
  * \param buff Specifies the buffer to store the denotation. Must be at least 8 bytes long.
+ * \returns Returns the number of bytes written to \a buff.
+ * \throws Throws InvalidDataException() if \a size can not be represented.
+ */
+byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
+{
+    if(size < 126) {
+        *buff = static_cast<byte>(size | 0x80);
+        return 1;
+    } else if(size <= 16382ul) {
+        BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
+        return 2;
+    } else if(size <= 2097150ul) {
+        BE::getBytes(static_cast<uint32>((size | 0x200000) << 0x08), buff);
+        return 3;
+    } else if(size <= 268435454ul) {
+        BE::getBytes(static_cast<uint32>(size | 0x10000000), buff);
+        return 4;
+    } else if(size <= 34359738366ul) {
+        BE::getBytes(static_cast<uint64>((size | 0x800000000) << 0x18), buff);
+        return 5;
+    } else if(size <= 4398046511102ul) {
+        BE::getBytes(static_cast<uint64>((size | 0x40000000000) << 0x10), buff);
+        return 6;
+    } else if(size <= 562949953421310ul) {
+        BE::getBytes(static_cast<uint64>((size | 0x2000000000000) << 0x08), buff);
+        return 7;
+    } else if(size <= 72057594037927934ul) {
+        BE::getBytes(static_cast<uint64>(size | 0x100000000000000), buff);
+        return 8;
+    }
+    throw InvalidDataException();
+}
+
+/*!
+ * \brief Makes the size denotation for the specified \a size and stores it to \a buff.
+ * \param size Specifies the size to be denoted.
+ * \param buff Specifies the buffer to store the denotation. Must be at least 8 bytes long.
  * \param minBytes Specifies the minimum number of bytes to use. Might be use allow subsequent element growth.
  * \returns Returns the number of bytes written to \a buff. Always in the range of \a minBytes and 8.
  * \throws Throws InvalidDataException() if \a size can not be represented.
@@ -345,6 +382,40 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff)
         BE::getBytes(static_cast<uint64>(value << 0x10), buff);
         return 6;
     } else if(value <= 0xFFFFFFFFFFFFFFul) {
+        BE::getBytes(static_cast<uint64>(value << 0x08), buff);
+        return 7;
+    } else {
+        BE::getBytes(static_cast<uint64>(value), buff);
+        return 8;
+    }
+}
+
+/*!
+ * \brief Writes \a value to \a buff.
+ * \returns Returns the number of bytes written to \a buff.
+ * \param minBytes Specifies the minimum number of bytes to use.
+ */
+byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
+{
+    if(minBytes <= 1 && value <= 0xFFul) {
+        *buff = static_cast<char>(value);
+        return 1;
+    } else if(minBytes <= 2 && value <= 0xFFFFul) {
+        BE::getBytes(static_cast<uint16>(value), buff);
+        return 2;
+    } else if(minBytes <= 3 && value <= 0xFFFFFFul) {
+        BE::getBytes(static_cast<uint32>(value << 0x08), buff);
+        return 3;
+    } else if(minBytes <= 4 && value <= 0xFFFFFFFFul) {
+        BE::getBytes(static_cast<uint32>(value), buff);
+        return 4;
+    } else if(minBytes <= 5 && value <= 0xFFFFFFFFFFul) {
+        BE::getBytes(static_cast<uint64>(value << 0x18), buff);
+        return 5;
+    } else if(minBytes <= 6 && value <= 0xFFFFFFFFFFFFul) {
+        BE::getBytes(static_cast<uint64>(value << 0x10), buff);
+        return 6;
+    } else if(minBytes <= 7 && value <= 0xFFFFFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x08), buff);
         return 7;
     } else {

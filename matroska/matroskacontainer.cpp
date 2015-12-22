@@ -705,7 +705,6 @@ void MatroskaContainer::internalParseAttachments()
 struct SegmentData
 {
     SegmentData() :
-        element(nullptr),
         hasCrc32(false),
         cuesElement(nullptr),
         infoDataSize(0),
@@ -715,11 +714,10 @@ struct SegmentData
         newPadding(0),
         sizeDenotationLength(0),
         totalDataSize(0),
-        totalSize(0)
+        totalSize(0),
+        newDataOffset(0)
     {}
 
-    // "Segment"-element object (original file)
-    EbmlElement *element;
     // whether CRC-32 checksum is present
     bool hasCrc32;
     // used to make "SeekHead"-element
@@ -746,6 +744,8 @@ struct SegmentData
     uint64 totalDataSize;
     // total size of the segment data (in the new file, including header)
     uint64 totalSize;
+    // data offset of the segment in the new file
+    uint64 newDataOffset;
 };
 
 void MatroskaContainer::internalMakeFile()
@@ -861,8 +861,7 @@ void MatroskaContainer::internalMakeFile()
 
         // inspect layout of original file
         //  - number of segments
-        //  - media data / first cluster offset
-        //  - last level 0 element and last "Segment"-element
+        //  - position of tags relative to the media data
         try {
             for(bool firstClusterFound = false, firstTagFound = false; level0Element; level0Element = level0Element->nextSibling()) {
                 level0Element->parse();
@@ -1098,7 +1097,7 @@ addCuesElementSize:
                                 segment.sizeDenotationLength = level0Element->headerSize() - 4;
 
 nonRewriteCalculations:
-                                // pretend writing "Cluster"-elements assuming there is not rewrite required
+                                // pretend writing "Cluster"-elements assuming there is no rewrite required
                                 // -> update offset in "SeakHead"-element
                                 if(segment.seekInfo.push(0, MatroskaIds::Cluster, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)) {
                                     goto calculateSegmentSize;
@@ -1153,6 +1152,7 @@ nonRewriteCalculations:
                                 if(segment.sizeDenotationLength != (sizeLength = EbmlElement::calculateSizeDenotationLength(segment.totalDataSize))) {
                                     // assumption was wrong -> recalculate with new length
                                     segment.sizeDenotationLength = sizeLength;
+                                    level1Element = segment.firstClusterElement;
                                     goto nonRewriteCalculations;
                                 }
 
@@ -1405,7 +1405,7 @@ nonRewriteCalculations:
                 outputWriter.writeUInt32BE(MatroskaIds::Segment);
                 sizeLength = EbmlElement::makeSizeDenotation(segment.totalDataSize, buff);
                 outputStream.write(buff, sizeLength);
-                offset = outputStream.tellp(); // store segment data offset here
+                segment.newDataOffset = offset = outputStream.tellp(); // store segment data offset here
 
                 // write CRC-32 element ...
                 if(segment.hasCrc32) {
@@ -1519,6 +1519,8 @@ nonRewriteCalculations:
                     }
                 }
 
+                // write media data / "Cluster"-elements
+                level1Element = level0Element->childById(MatroskaIds::Cluster);
                 if(rewriteRequired) {
 
                     // update status, check whether the operation has been aborted
@@ -1527,7 +1529,6 @@ nonRewriteCalculations:
                     }
                     updateStatus("Writing clusters ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
                     // write "Cluster"-element
-                    level1Element = level0Element->childById(MatroskaIds::Cluster);
                     for(auto clusterSizesIterator = segment.clusterSizes.cbegin();
                         level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++clusterSizesIterator) {
                         // calculate position of cluster in segment
@@ -1557,6 +1558,29 @@ nonRewriteCalculations:
                         }
                     }
                 } else {
+                    // can't just skip existing "Cluster"-elements: "Position"-elements must be updated
+                    for(; level1Element; level1Element = level1Element->nextSibling()) {
+                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                            switch(level2Element->id()) {
+                            case MatroskaIds::Position:
+                                // calculate new position
+                                sizeLength = EbmlElement::makeUInteger(level1Element->startOffset() - segmentData.front().newDataOffset, buff, level2Element->dataSize());
+                                // new position can only applied if it doesn't need more bytes than the previous position
+                                if(level2Element->dataSize() < sizeLength) {
+                                    // can't update position -> void position elements ("Position"-elements seem a bit useless anyways)
+                                    outputStream.seekp(level2Element->startOffset());
+                                    outputStream.put(EbmlIds::Void);
+                                } else {
+                                    // update position
+                                    outputStream.seekp(level2Element->dataOffset());
+                                    outputStream.write(buff, sizeLength);
+                                }
+                                break;
+                            default:
+                                ;
+                            }
+                        }
+                    }
                     // skip existing "Cluster"-elements
                     outputStream.seekp(segment.clusterEndOffset);
                 }
@@ -1612,12 +1636,33 @@ nonRewriteCalculations:
 
         // reparse what is written so far
         updateStatus("Reparsing output file ...");
+        // -> report new size
+        fileInfo().reportSizeChanged(outputStream.tellp());
         if(rewriteRequired) {
-            outputStream.close(); // the outputStream needs to be reopened to be able to read again
+            // report new size
+            fileInfo().reportSizeChanged(outputStream.tellp());
+            // the outputStream needs to be reopened to be able to read again
+            outputStream.close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
             setStream(outputStream);
         } else {
-            // TODO: truncate file
+            const auto newSize = static_cast<uint64>(outputStream.tellp());
+            if(newSize < fileInfo().size()) {
+                // file is smaller after the modification -> truncate
+                // -> close stream before truncating
+                outputStream.close();
+                // -> truncate file
+                if(truncate(fileInfo().path().c_str(), newSize) == 0) {
+                    fileInfo().reportSizeChanged(newSize);
+                } else {
+                    addNotification(NotificationType::Critical, "Unable to truncate the file.", context);
+                }
+                // -> reopen the stream again
+                outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
+            } else {
+                // file is longer after the modification -> just report new size
+                fileInfo().reportSizeChanged(newSize);
+            }
         }
         reset();
         try {

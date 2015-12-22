@@ -67,9 +67,7 @@ void BasicFileInfo::open(bool readonly)
 void BasicFileInfo::reopen(bool readonly)
 {
     close();
-    m_file.open(m_path.c_str(), readonly
-               ? ios_base::in | ios_base::binary
-               : ios_base::in | ios_base::out | ios_base::binary);
+    m_file.open(m_path, readonly ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
     m_file.seekg(0, ios_base::end);
     m_size = m_file.tellg();
     m_file.seekg(0, ios_base::beg);

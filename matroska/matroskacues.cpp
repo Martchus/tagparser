@@ -196,7 +196,7 @@ bool MatroskaCuePositionUpdater::updateSize(EbmlElement *element, int shift)
         // apply new size
         size = newSize;
         return updated;
-    } catch(out_of_range &) {
+    } catch(const out_of_range &) {
         // the element is out of the scope of the cue position updater (likely the Segment element)
         return shift;
     }

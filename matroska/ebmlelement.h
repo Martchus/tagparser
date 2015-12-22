@@ -65,9 +65,11 @@ public:
     static byte calculateIdLength(identifierType id);
     static byte calculateSizeDenotationLength(uint64 size);
     static byte makeId(identifierType id, char *buff);
-    static byte makeSizeDenotation(uint64 size, char *buff, byte minBytes = 1);
+    static byte makeSizeDenotation(uint64 size, char *buff);
+    static byte makeSizeDenotation(uint64 size, char *buff, byte minBytes);
     static byte calculateUIntegerLength(uint64 integer);
     static byte makeUInteger(uint64 value, char *buff);
+    static byte makeUInteger(uint64 value, char *buff, byte minBytes);
     static void makeSimpleElement(std::ostream &stream, identifierType id, uint64 content);
     static void makeSimpleElement(std::ostream &stream, identifierType id, const std::string &content);
     static void makeSimpleElement(std::ostream &stream, GenericFileElement::identifierType id, const char *data, std::size_t dataSize);
