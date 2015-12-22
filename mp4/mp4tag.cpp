@@ -269,12 +269,17 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag) :
     m_omitPreDefinedGenre(m_tag.fields().count(Mp4TagAtomIds::PreDefinedGenre) && m_tag.fields().count(Mp4TagAtomIds::Genre))
 {
     m_tag.invalidateStatus();
-    m_makers.reserve(m_tag.fields().size());
+    m_maker.reserve(m_tag.fields().size());
     for(auto &field : m_tag.fields()) {
         if(!field.second.value().isEmpty() &&
                 (!m_omitPreDefinedGenre || field.first == Mp4TagAtomIds::PreDefinedGenre)) {
-            m_makers.emplace_back(field.second.prepareMaking());
-            m_ilstSize += m_makers.back().requiredSize();
+            try {
+                m_maker.emplace_back(field.second.prepareMaking());
+                m_ilstSize += m_maker.back().requiredSize();
+            } catch(const Failure &) {
+                // nothing to do here; notifications will be added anyways
+            }
+            m_tag.addNotifications(field.second);
         }
     }
     if(m_ilstSize != 8) {
@@ -307,7 +312,7 @@ void Mp4TagMaker::make(ostream &stream)
         writer.writeUInt32BE(m_ilstSize);
         writer.writeUInt32BE(Mp4AtomIds::ItunesList);
         // write fields
-        for(auto &maker : m_makers) {
+        for(auto &maker : m_maker) {
             maker.make(stream);
         }
     } else {

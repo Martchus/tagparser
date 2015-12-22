@@ -436,15 +436,16 @@ calculatePadding:
         throw OperationAbortedException();
     }
 
-    // define variables needed to handle output stream and backup stream (required when rewriting the file)
+    // setup stream(s) for writing
+    // -> update status
+    updateStatus("Preparing streams ...");
+
+    // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
     string backupPath;
     fstream &outputStream = fileInfo().stream();
     fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
     BinaryWriter outputWriter(&outputStream);
 
-    // setup stream(s) for writing
-    // -> update status
-    updateStatus("Preparing streams ...");
     if(rewriteRequired) {
         // move current file to temp dir and reopen it as backupStream, recreate original file
         try {
@@ -461,7 +462,6 @@ calculatePadding:
         }
 
     } else { // !rewriteRequired
-
         // reopen original file to ensure it is opened for writing
         try {
             fileInfo().close();

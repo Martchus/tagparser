@@ -10,10 +10,47 @@
 namespace Media
 {
 
+class Id3v2Tag;
+
 struct LIB_EXPORT FrameComparer
 {
-    bool operator()(const uint32& lhs, const uint32& rhs) const;
+    bool operator()(const uint32 &lhs, const uint32 &rhs) const;
 };
+
+class LIB_EXPORT Id3v2TagMaker
+{
+    friend class Id3v2Tag;
+
+public:
+    void make(std::ostream &stream, uint32 padding);
+    const Id3v2Tag &tag() const;
+    uint64 requiredSize() const;
+
+private:
+    Id3v2TagMaker(Id3v2Tag &tag);
+
+    Id3v2Tag &m_tag;
+    uint32 m_framesSize;
+    uint32 m_requiredSize;
+    std::vector<Id3v2FrameMaker> m_maker;
+};
+
+/*!
+ * \brief Returns the associated tag.
+ */
+inline const Id3v2Tag &Id3v2TagMaker::tag() const
+{
+    return m_tag;
+}
+
+/*!
+ * \brief Returns the number of bytes which will be written when making the tag.
+ * \remarks Excludes padding!
+ */
+inline uint64 Id3v2TagMaker::requiredSize() const
+{
+    return m_requiredSize;
+}
 
 class LIB_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComparer>
 {
@@ -34,8 +71,9 @@ public:
     bool supportsDescription(KnownField field) const;
     bool supportsMimeType(KnownField field) const;
 
-    void parse(std::istream &sourceStream, uint64 maximalSize = 0);
-    void make(std::ostream &targetStream);
+    void parse(std::istream &sourceStream, const uint64 maximalSize = 0);
+    Id3v2TagMaker prepareMaking();
+    void make(std::ostream &targetStream, uint32 padding);
 
     byte majorVersion() const;
     byte revisionVersion() const;

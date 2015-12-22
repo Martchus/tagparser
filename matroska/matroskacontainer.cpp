@@ -1320,14 +1320,6 @@ nonRewriteCalculations:
         throw;
     }
 
-
-    // define variables needed to handle output stream and backup stream (required when rewriting the file)
-    string backupPath;
-    fstream &outputStream = fileInfo().stream();
-    fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
-    BinaryWriter outputWriter(&outputStream);
-    char buff[8]; // buffer used to make size denotations
-
     if(isAborted()) {
         throw OperationAbortedException();
     }
@@ -1335,6 +1327,14 @@ nonRewriteCalculations:
     // setup stream(s) for writing
     // -> update status
     updateStatus("Preparing streams ...");
+
+    // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
+    string backupPath;
+    fstream &outputStream = fileInfo().stream();
+    fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
+    BinaryWriter outputWriter(&outputStream);
+    char buff[8]; // buffer used to make size denotations
+
     if(rewriteRequired) {
         // move current file to temp dir and reopen it as backupStream, recreate original file
         try {
@@ -1351,7 +1351,6 @@ nonRewriteCalculations:
         }
 
     } else { // !rewriteRequired
-
         // buffer currently assigned attachments
         for(auto &maker : attachmentMaker) {
             maker.bufferCurrentAttachments();
@@ -1636,8 +1635,6 @@ nonRewriteCalculations:
 
         // reparse what is written so far
         updateStatus("Reparsing output file ...");
-        // -> report new size
-        fileInfo().reportSizeChanged(outputStream.tellp());
         if(rewriteRequired) {
             // report new size
             fileInfo().reportSizeChanged(outputStream.tellp());

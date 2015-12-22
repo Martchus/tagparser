@@ -362,7 +362,7 @@ void MediaFileInfo::parseTags()
         auto id3v2Tag = make_unique<Id3v2Tag>();
         stream().seekg(offset, ios_base::beg);
         try {
-            id3v2Tag->parse(stream());
+            id3v2Tag->parse(stream(), size() - offset);
             m_paddingSize += id3v2Tag->paddingSize();
         } catch(NoDataFoundException &) {
             continue;
@@ -622,22 +622,6 @@ void MediaFileInfo::applyChanges()
         previousParsingSuccessful = false;
         addNotification(NotificationType::Critical, "Tracks have to be parsed without critical errors before changes can be applied.", context);
     }
-//    switch(chaptersParsingStatus()) {
-//    case ParsingStatus::Ok:
-//    case ParsingStatus::NotSupported:
-//        break;
-//    default:
-//        previousParsingSuccessful = false;
-//        addNotification(NotificationType::Critical, "Chapters have to be parsed without critical errors before changes can be applied.", context);
-//    }
-//    switch(attachmentsParsingStatus()) {
-//    case ParsingStatus::Ok:
-//    case ParsingStatus::NotSupported:
-//        break;
-//    default:
-//        previousParsingSuccessful = false;
-//        addNotification(NotificationType::Critical, "Attachments have to be parsed without critical errors before changes can be applied.", context);
-//    }
     if(!previousParsingSuccessful) {
         throw InvalidDataException();
     }
@@ -1359,12 +1343,12 @@ void MediaFileInfo::makeMp3File()
 {
     const string context("making MP3 file");
     // there's no need to rewrite the complete file if there is just are not ID3v2 tags present or to be written
-    if(m_id3v2Tags.size() == 0 && m_actualId3v2TagOffsets.size() == 0) {
+    if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty()) {
         if(m_actualExistingId3v1Tag) {
             // there is currently an ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
                 // the file shall still have an ID3v1 tag
-                updateStatus("No need to rewrite the whole file, just writing ID3v1 tag ...");
+                updateStatus("Updating ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(-128, ios_base::end);
@@ -1375,7 +1359,7 @@ void MediaFileInfo::makeMp3File()
                 }
             } else {
                 // the currently existing ID3v1 tag shall be removed
-                updateStatus("No need to rewrite the whole file, just truncating it to remove ID3v1 tag ...");
+                updateStatus("Removing ID3v1 tag ...");
                 stream().close();
                 if(truncate(path().c_str(), size() - 128) == 0) {
                     reportSizeChanged(size() - 128);
@@ -1388,7 +1372,7 @@ void MediaFileInfo::makeMp3File()
         } else {
             // there is currently no ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
-                updateStatus("No need to rewrite the whole file, just writing ID3v1 tag.");
+                updateStatus("Adding ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(0, ios_base::end);
@@ -1403,49 +1387,110 @@ void MediaFileInfo::makeMp3File()
         }
 
     } else {
-        // ID3v2 needs to be modified -> file needs to be rewritten
-        // TODO: take advantage of possibly available padding
+        // ID3v2 needs to be modified
+        updateStatus("Updating ID3v2 tags ...");
 
-        // prepare for rewriting
-        updateStatus("Prepareing for rewriting MP3 file ...");
+        // prepare ID3v2 tags
+        vector<Id3v2TagMaker> makers;
+        makers.reserve(m_id3v2Tags.size());
+        uint32 tagsSize = 0;
+        for(auto &tag : m_id3v2Tags) {
+            try {
+                makers.emplace_back(tag->prepareMaking());
+                tagsSize += makers.back().requiredSize();
+            } catch(const Failure &) {
+                // nothing to do: notifications added anyways
+            }
+            addNotifications(*tag);
+        }
+
+        // determine padding, check whether rewrite is required
+        bool rewriteRequired = isForcingRewrite() || (tagsSize > static_cast<uint32>(m_containerOffset));
+        uint32 padding;
+        if(!rewriteRequired) {
+            padding = static_cast<uint32>(m_containerOffset) - tagsSize;
+            // check whether padding matches specifications
+            if(padding < minPadding() || padding > maxPadding()) {
+                rewriteRequired = true;
+            }
+        }
+        if(rewriteRequired) {
+            // use preferred padding when rewriting
+            padding = preferredPadding();
+            updateStatus("Preparing streams for rewriting ...");
+        } else {
+            updateStatus("Preparing streams for updating ...");
+        }
+
+        // setup stream(s) for writing
+        // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
         string backupPath;
-        fstream backupStream;
+        fstream &outputStream = stream();
+        fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
+
+        if(rewriteRequired) {
+            // move current file to temp dir and reopen it as backupStream, recreate original file
+            try {
+                // ensure the file is close before moving
+                close();
+                BackupHelper::createBackupFile(path(), backupPath, backupStream);
+                // recreate original file, define buffer variables
+                outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
+            } catch(const ios_base::failure &) {
+                addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+                throw;
+            }
+
+        } else { // !rewriteRequired
+            // reopen original file to ensure it is opened for writing
+            try {
+                close();
+                outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
+            } catch(const ios_base::failure &) {
+                addNotification(NotificationType::Critical, "Opening the file with write permissions failed.", context);
+                throw;
+            }
+        }
+
+        // start actual writing
         try {
-            close();
-            BackupHelper::createBackupFile(path(), backupPath, backupStream);
-            backupStream.seekg(m_containerOffset);
-
-            // recreate original file with new/changed ID3 tags
-            stream().open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            updateStatus("Writing ID3v2 tag ...");
-
-            // write ID3v2 tags
-            unsigned int counter = 1;
-            for(auto &id3v2Tag : m_id3v2Tags) {
-                try {
-                    id3v2Tag->make(stream());
-                } catch(const Failure &) {
-                    if(m_id3v2Tags.size()) {
-                        addNotification(NotificationType::Warning, "Unable to write " + ConversionUtilities::numberToString(counter) + ". ID3v2 tag.", context);
-                    } else {
-                        addNotification(NotificationType::Warning, "Unable to write ID3v2 tag.", context);
-                    }
+            if(!makers.empty()) {
+                // write ID3v2 tags
+                updateStatus("Writing ID3v2 tag ...");
+                for(auto i = makers.begin(), end = makers.end() - 1; i != end; ++i) {
+                    i->make(outputStream, 0);
                 }
-                ++counter;
+                // include padding into the last ID3v2 tag
+                makers.back().make(outputStream, padding);
+            } else {
+                // no ID3v2 tags assigned -> just write padding
+                for(; padding; --padding) {
+                    outputStream.put(0);
+                }
             }
 
-            // write media data
-            updateStatus("Writing MPEG audio frames ...");
-            uint64 bytesRemaining = size() - m_containerOffset;
+            // copy / skip media data
+            // -> determine media data size
+            uint64 mediaDataSize = size() - m_containerOffset;
             if(m_actualExistingId3v1Tag) {
-                bytesRemaining -= 128;
+                mediaDataSize -= 128;
             }
-            CopyHelper<0x4000> copyHelper;
-            copyHelper.callbackCopy(backupStream, stream(), bytesRemaining, bind(&StatusProvider::isAborted, this), bind(&StatusProvider::updatePercentage, this, _1));
+
+            if(rewriteRequired) {
+                // copy data from original file
+                updateStatus("Writing MPEG audio frames ...");
+                backupStream.seekg(m_containerOffset);
+                CopyHelper<0x4000> copyHelper;
+                copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&StatusProvider::isAborted, this), bind(&StatusProvider::updatePercentage, this, _1));
+                updatePercentage(100.0);
+            } else {
+                // just skip media data
+                outputStream.seekp(mediaDataSize, ios_base::cur);
+            }
 
             // write ID3v1 tag
-            updateStatus("Writing ID3v1 tag ...");
             if(m_id3v1Tag) {
+                updateStatus("Writing ID3v1 tag ...");
                 try {
                     m_id3v1Tag->make(stream());
                 } catch(Failure &) {
@@ -1453,22 +1498,74 @@ void MediaFileInfo::makeMp3File()
                 }
             }
 
-            // ensure everything has been actually written
-            stream().flush();
-            // report new size
-            reportSizeChanged(stream().tellp());
-            // stream is useless for further usage because it is write-only
-            close();
+            // handle streams
+            if(rewriteRequired) {
+                // report new size
+                reportSizeChanged(outputStream.tellp());
+                // stream is useless for further usage because it is write-only
+                outputStream.close();
+            } else {
+                const auto newSize = static_cast<uint64>(outputStream.tellp());
+                if(newSize < size()) {
+                    // file is smaller after the modification -> truncate
+                    // -> close stream before truncating
+                    outputStream.close();
+                    // -> truncate file
+                    if(truncate(path().c_str(), newSize) == 0) {
+                        reportSizeChanged(newSize);
+                    } else {
+                        addNotification(NotificationType::Critical, "Unable to truncate the file.", context);
+                    }
+                } else {
+                    // file is longer after the modification -> just report new size
+                    reportSizeChanged(newSize);
+                }
+            }
 
         } catch(const OperationAbortedException &) {
-            addNotification(NotificationType::Information, "Rewriting file to apply new tag information has been aborted.", context);
-            BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, stream(), backupStream);
+            if(&stream() != &outputStream) {
+                // a temp/backup file has been created -> restore original file
+                addNotification(NotificationType::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
+                try {
+                    BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, outputStream, backupStream);
+                    addNotification(NotificationType::Information, "The original file has been restored.", context);
+                } catch(const ios_base::failure &ex) {
+                    addNotification(NotificationType::Critical, ex.what(), context);
+                }
+            } else {
+                addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
+            }
             throw;
-        } catch(const ios_base::failure &ex) {
-            addNotification(NotificationType::Critical, "IO error occured when rewriting file to apply new tag information.\n" + string(ex.what()), context);
-            BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, stream(), backupStream);
+        } catch(const Failure &) {
+            if(&stream() != &outputStream) {
+                // a temp/backup file has been created -> restore original file
+                addNotification(NotificationType::Critical, "Rewriting the file to apply changed tag information failed.", context);
+                try {
+                    BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, outputStream, backupStream);
+                    addNotification(NotificationType::Information, "The original file has been restored.", context);
+                } catch(const ios_base::failure &ex) {
+                    addNotification(NotificationType::Critical, ex.what(), context);
+                }
+            } else {
+                addNotification(NotificationType::Critical, "Applying new tag information failed.", context);
+            }
+            throw;
+        } catch(const ios_base::failure &) {
+            if(&stream() != &outputStream) {
+                // a temp/backup file has been created -> restore original file
+                addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
+                try {
+                    BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, outputStream, backupStream);
+                    addNotification(NotificationType::Information, "The original file has been restored.", context);
+                } catch(const ios_base::failure &ex) {
+                    addNotification(NotificationType::Critical, ex.what(), context);
+                }
+            } else {
+                addNotification(NotificationType::Critical, "An IO error occured when applying tag information.", context);
+            }
             throw;
         }
+        // TODO: reduce code duplication
     }
 }
 

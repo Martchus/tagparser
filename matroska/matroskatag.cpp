@@ -232,13 +232,13 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag) :
     }
     m_tagSize = 2 + EbmlElement::calculateSizeDenotationLength(m_targetsSize) + m_targetsSize;
     // calculate size of "SimpleTag" elements
-    m_makers.reserve(m_tag.fields().size());
+    m_maker.reserve(m_tag.fields().size());
     m_simpleTagsSize = 0; // including ID and size
     for(auto &pair : m_tag.fields()) {
         try {
-            m_makers.emplace_back(pair.second.prepareMaking());
-            m_simpleTagsSize += m_makers.back().requiredSize();
-        } catch(Failure &) {
+            m_maker.emplace_back(pair.second.prepareMaking());
+            m_simpleTagsSize += m_maker.back().requiredSize();
+        } catch(const Failure &) {
             // nothing to do here; notifications will be added anyways
         }
         m_tag.addNotifications(pair.second);
@@ -298,7 +298,7 @@ void MatroskaTagMaker::make(ostream &stream) const
         }
     }
     // write "SimpleTag" elements using maker objects prepared previously
-    for(const auto &maker : m_makers) {
+    for(const auto &maker : m_maker) {
         maker.make(stream);
     }
 }
