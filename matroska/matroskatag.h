@@ -25,7 +25,7 @@ private:
     MatroskaTag &m_tag;
     uint64 m_targetsSize;
     uint64 m_simpleTagsSize;
-    std::vector<MatroskaTagFieldMaker> m_makers;
+    std::vector<MatroskaTagFieldMaker> m_maker;
     uint64 m_tagSize;
     uint64 m_totalSize;
 };

@@ -391,7 +391,7 @@ void Mp4TagField::cleared()
 
 /*!
  * \brief Prepares making the specified \a field.
- * \sa See Mp4TagFieldMaker::prepareMaking() for more information.
+ * \sa See Mp4TagField::prepareMaking() for more information.
  */
 Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
     m_field(field),
@@ -409,6 +409,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
         m_field.addNotification(NotificationType::Critical, "No tag value assigned.", context);
         throw InvalidDataException();
     }
+
     try {
         // try to use appropriate raw data type
         m_rawDataType = m_field.appropriateRawDataType();
@@ -418,6 +419,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
         m_rawDataType = RawDataType::Utf8;
         m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
     }
+
     try {
         if(!m_field.value().isEmpty()) { // there might be only mean and name info, but no data
             m_convertedData.exceptions(std::stringstream::failbit | std::stringstream::badbit);
@@ -480,6 +482,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
         }
         throw InvalidDataException();
     }
+
     // calculate data size
     m_dataSize = m_field.value().isEmpty()
             ? 0 : (m_convertedData.tellp() ? static_cast<size_t>(m_convertedData.tellp()) : m_field.value().dataSize());
@@ -491,7 +494,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
 
 /*!
  * \brief Saves the field (specified when constructing the object) to the
- *        specified \a stream. *
+ *        specified \a stream.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
  *                throw Media::Failure or a derived exception.

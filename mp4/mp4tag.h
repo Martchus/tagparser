@@ -24,7 +24,7 @@ private:
     Mp4TagMaker(Mp4Tag &tag);
 
     Mp4Tag &m_tag;
-    std::vector<Mp4TagFieldMaker> m_makers;
+    std::vector<Mp4TagFieldMaker> m_maker;
     uint64 m_metaSize;
     uint64 m_ilstSize;
     bool m_omitPreDefinedGenre;

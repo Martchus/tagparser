@@ -81,7 +81,7 @@ inline bool isShortId(uint32 id)
 /*!
  * \brief Returns an indication whether the specified \a id is a text frame id.
  */
-inline bool isTextfield(uint32 id)
+inline bool isTextFrame(uint32 id)
 {
     if(isShortId(id)) {
         return (id & 0x00FF0000u) == 0x00540000u;

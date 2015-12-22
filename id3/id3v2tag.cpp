@@ -138,7 +138,7 @@ TagDataType Id3v2Tag::proposedDataType(const uint32 &id) const
     case lCover: case sCover:
         return TagDataType::Picture;
     default:
-        if(Id3v2FrameIds::isTextfield(id)) {
+        if(Id3v2FrameIds::isTextFrame(id)) {
             return TagDataType::Text;
         } else {
             return TagDataType::Undefined;
@@ -181,7 +181,7 @@ bool Id3v2Tag::setValue(const typename Id3v2Frame::identifierType &id, const Tag
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Tag::parse(istream &stream, uint64 maximalSize)
+void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
 {
     // prepare parsing
     invalidateStatus();
@@ -229,7 +229,7 @@ void Id3v2Tag::parse(istream &stream, uint64 maximalSize)
 
             // how many bytes remain for frames and padding?
             uint32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
-            if(bytesRemaining > maximalSize) {
+            if(maximalSize && bytesRemaining > maximalSize) {
                 bytesRemaining = maximalSize;
                 addNotification(NotificationType::Critical, "Frames are truncated.", context);
             }
@@ -245,7 +245,7 @@ void Id3v2Tag::parse(istream &stream, uint64 maximalSize)
                     frame.parse(reader, majorVersion, bytesRemaining);
                     if(frame.id()) {
                         // add frame if parsing was successfull
-                        if(Id3v2FrameIds::isTextfield(frame.id()) && fields().count(frame.id()) == 1) {
+                        if(Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
                             addNotification(NotificationType::Warning, "The text frame " + frame.frameIdString() + " exists more than once.", context);
                         }
                         fields().insert(pair<fieldType::identifierType, fieldType>(frame.id(), frame));
@@ -264,13 +264,18 @@ void Id3v2Tag::parse(istream &stream, uint64 maximalSize)
                 frame.invalidateNotifications();
 
                 // calculate next frame offset
-                bytesRemaining -= frame.totalSize();
-                pos += frame.totalSize();
+                if(frame.totalSize() <= bytesRemaining) {
+                    pos += frame.totalSize();
+                    bytesRemaining -= frame.totalSize();
+                } else {
+                    pos += bytesRemaining;
+                    bytesRemaining = 0;
+                }
             }
 
             // check for extended header
             if(hasFooter()) {
-                if(m_size + 10 < maximalSize) {
+                if(maximalSize && m_size + 10 < maximalSize) {
                     // the footer does not provide additional information, just check the signature
                     stream.seekg(startOffset + (m_size += 10));
                     if(reader.readUInt24LE() != 0x494433u) {
@@ -291,56 +296,30 @@ void Id3v2Tag::parse(istream &stream, uint64 maximalSize)
 }
 
 /*!
+ * \brief Prepares making.
+ * \returns Returns a Id3v2TagMaker object which can be used to actually make the tag.
+ * \remarks The tag must NOT be mutated after making is prepared when it is intended to actually
+ *          make the tag using the make method of the returned object.
+ * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ *
+ * This method might be useful when it is necessary to know the size of the tag before making it.
+ * \sa make()
+ */
+Id3v2TagMaker Id3v2Tag::prepareMaking()
+{
+    return Id3v2TagMaker(*this);
+}
+
+/*!
  * \brief Writes tag information to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Tag::make(ostream &stream)
+void Id3v2Tag::make(ostream &stream, uint32 padding)
 {
-    // prepare making
-    invalidateStatus();
-    const string context("making ID3v2 tag");
-    // check if version is supported
-    // (the version could have been changed using setVersion(...)
-    if(!isVersionSupported()) {
-        addNotification(NotificationType::Critical, "The ID3v2 tag couldn't be created, because the target version isn't supported.", context);
-        throw VersionNotSupportedException();
-    }
-    // prepare for writing
-    BinaryWriter writer(&stream);
-    // write header
-    writer.writeUInt24BE(0x494433u); // signature
-    writer.writeByte(m_majorVersion); // major version
-    writer.writeByte(m_revisionVersion); // revision version
-    writer.writeByte(m_flags & 0xBF); // flags, but without extended header or compression bit set
-    stream.seekp(4, ios_base::cur); // size currently unknown, write it later
-    streamoff framesOffset = stream.tellp();
-    int framesWritten = 0;
-    for(auto i : fields()) {
-        Id3v2Frame &frame = i.second;
-        // write only valid frames
-        if(frame.isValid()) {
-            // make the frame
-            try {
-                frame.make(writer, m_majorVersion);
-                ++framesWritten;
-            } catch(Failure &) {
-                // nothing to do here since notifications will be added anyways
-            }
-            // add making notifications
-            addNotifications(context, frame);
-        }
-    }
-    // calculate and write size
-    streamoff endOffset = stream.tellp();
-    stream.seekp(framesOffset - 4, ios_base::beg);
-    writer.writeSynchsafeUInt32BE(endOffset - framesOffset);
-    stream.seekp(endOffset, ios_base::beg);
-    if(framesWritten <= 0) { // add a warning notification if an empty ID3v2 tag has been written
-        addNotification(NotificationType::Warning, "No frames could be written, an empty ID3v2 tag has been written.", context);
-    }
+    prepareMaking().make(stream, padding);
 }
 
 /*!
@@ -383,8 +362,8 @@ bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
     if(rhs == Id3v2FrameIds::lTitle || rhs == Id3v2FrameIds::sTitle) {
         return false;
     }
-    bool lhstextfield = Id3v2FrameIds::isTextfield(lhs);
-    bool rhstextfield = Id3v2FrameIds::isTextfield(rhs);
+    bool lhstextfield = Id3v2FrameIds::isTextFrame(lhs);
+    bool rhstextfield = Id3v2FrameIds::isTextFrame(rhs);
     if(lhstextfield && !rhstextfield) {
         return true;
     }
@@ -398,6 +377,74 @@ bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
         return true;
     }
     return lhs < rhs;
+}
+
+/*!
+ * \brief Prepares making the specified \a tag.
+ * \sa See Id3v2Tag::prepareMaking() for more information.
+ */
+Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag) :
+    m_tag(tag),
+    m_framesSize(0)
+{
+    tag.invalidateStatus();
+    const string context("making ID3v2 tag");
+
+    // check if version is supported
+    // (the version could have been changed using setVersion())
+    if(!tag.isVersionSupported()) {
+        tag.addNotification(NotificationType::Critical, "The ID3v2 tag version isn't supported.", context);
+        throw VersionNotSupportedException();
+    }
+
+    // prepare frames
+    m_maker.reserve(tag.fields().size());
+    for(auto &pair : tag.fields()) {
+        try {
+            m_maker.emplace_back(pair.second.prepareMaking(tag.majorVersion()));
+            m_framesSize += m_maker.back().requiredSize();
+        } catch(const Failure &) {
+            // nothing to do here; notifications will be added anyways
+        }
+        m_tag.addNotifications(pair.second);
+    }
+
+    // calculate required size
+    // -> header + size of frames
+    m_requiredSize = 10 + m_framesSize;
+}
+
+/*!
+ * \brief Saves the tag (specified when constructing the object) to the
+ *        specified \a stream.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Assumes the data is already validated and thus does NOT
+ *                throw Media::Failure or a derived exception.
+ */
+void Id3v2TagMaker::make(std::ostream &stream, uint32 padding)
+{
+    BinaryWriter writer(&stream);
+
+    // write header
+    // -> signature
+    writer.writeUInt24BE(0x494433u);
+    // -> version
+    writer.writeByte(m_tag.majorVersion());
+    writer.writeByte(m_tag.revisionVersion());
+    // -> flags, but without extended header or compression bit set
+    writer.writeByte(m_tag.flags() & 0xBF);
+    // -> size (excluding header)
+    writer.writeSynchsafeUInt32BE(m_framesSize + padding);
+
+    // write frames
+    for(auto &maker : m_maker) {
+        maker.make(writer);
+    }
+
+    // write padding
+    for(; padding; --padding) {
+        stream.put(0);
+    }
 }
 
 }

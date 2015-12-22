@@ -39,7 +39,7 @@ Id3v2Frame::Id3v2Frame() :
 /*!
  * \brief Constructs a new Id3v2Frame with the specified \a id, \a value, \a group and \a flag.
  */
-Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, byte group, int16 flag) :
+Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, const byte group, const int16 flag) :
     TagField<Id3v2Frame>(id, value),
     m_flag(flag),
     m_group(group),
@@ -59,41 +59,57 @@ Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, byte gro
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
+void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 maximalSize)
 {
     invalidateStatus();
     string context("parsing ID3v2 frame");
-    Id3v2FrameHelper helper(frameIdString(), *this);
+
+    // parse header
     if(version < 3) {
         // parse header for ID3v2.1 and ID3v2.2
+        // -> read ID
         setId(reader.readUInt24BE());
         if((id() & 0xFFFF0000u) == 0) {
+            // padding reached
             m_padding = true;
             addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", context);
             throw NoDataFoundException();
         } else {
             m_padding = false;
         }
-        context = "parsing " + helper.id() + " frame";
+
+        // -> update context
+        context = "parsing " + frameIdString() + " frame";
+
+        // -> read size, check whether frame is truncated
         m_dataSize = reader.readUInt24BE();
         m_totalSize = m_dataSize + 6;
         if(m_totalSize > maximalSize) {
             addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", "parsing " + frameIdString() + " frame");
             throw TruncatedDataException();
         }
+
+        // -> no flags/group in ID3v2.2
         m_flag = 0;
         m_group = 0;
+
     } else {
         // parse header for ID3v2.3 and ID3v2.4
+        // -> read ID
         setId(reader.readUInt32BE());
         if((id() & 0xFF000000u) == 0) {
+            // padding reached
             m_padding = true;
             addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", context);
             throw NoDataFoundException();
         } else {
             m_padding = false;
         }
-        context = "parsing " + helper.id() + " frame";
+
+        // -> update context
+        context = "parsing " + frameIdString() + " frame";
+
+        // -> read size, check whether frame is truncated
         m_dataSize = version >= 4
                 ? reader.readSynchsafeUInt32BE()
                 : reader.readUInt32BE();
@@ -102,27 +118,34 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
             addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", context);
             throw TruncatedDataException();
         }
+
+        // -> read flags and group
         m_flag = reader.readUInt16BE();
         m_group = hasGroupInformation() ? reader.readByte() : 0;
         if(isEncrypted()) {
+            // encryption is not implemented
             addNotification(NotificationType::Critical, "Encrypted frames aren't supported.", context);
             throw VersionNotSupportedException();
         }
     }
+
+    // frame size mustn't be 0
     if(m_dataSize <= 0) {
         addNotification(NotificationType::Critical, "The frame size is 0.", context);
         throw InvalidDataException();
     }
+
     // parse the data
     unique_ptr<char[]> buffer;
+
+    // -> decompress data if compressed; otherwise just read it
     if(isCompressed()) {
-        // decompress compressed data
         uLongf decompressedSize = version >= 4 ? reader.readSynchsafeUInt32BE() : reader.readUInt32BE();
         if(decompressedSize < m_dataSize) {
             addNotification(NotificationType::Critical, "The decompressed size is smaller then the compressed size.", context);
             throw InvalidDataException();
         }
-        unique_ptr<char[]> bufferCompressed = make_unique<char[]>(m_dataSize);;
+        auto bufferCompressed = make_unique<char[]>(m_dataSize);;
         reader.read(bufferCompressed.get(), m_dataSize);
         buffer = make_unique<char[]>(decompressedSize);
         switch(uncompress(reinterpret_cast<Bytef *>(buffer.get()), &decompressedSize, reinterpret_cast<Bytef *>(bufferCompressed.get()), m_dataSize)) {
@@ -136,16 +159,21 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
             addNotification(NotificationType::Critical, "Decompressing failed. The input data was corrupted or incomplete.", context);
             throw InvalidDataException();
         case Z_OK:
-            ;
+            break;
+        default:
+            addNotification(NotificationType::Critical, "Decompressing failed (unknown reason).", context);
+            throw InvalidDataException();
         }
         m_dataSize = decompressedSize;
     } else {
         buffer = make_unique<char[]>(m_dataSize);
         reader.read(buffer.get(), m_dataSize);
     }
-    if(Id3v2FrameIds::isTextfield(id())) {
+
+    // -> get tag value depending of field type
+    if(Id3v2FrameIds::isTextFrame(id())) {
         // frame contains text
-        TagTextEncoding dataEncoding = helper.parseTextEncodingByte(*buffer.get()); // the first byte stores the encoding
+        TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer.get()); // the first byte stores the encoding
         if((version >= 3 &&
             (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && id() == Id3v2FrameIds::sTrackPosition)) {
@@ -153,40 +181,42 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
             try {
                 PositionInSet position;
                 if(characterSize(dataEncoding) > 1) {
-                    position = PositionInSet(helper.parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
+                    position = PositionInSet(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
                 } else {
-                    position = PositionInSet(helper.parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
+                    position = PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
                 }
                 value().assignPosition(position);
             } catch(ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
             }
+
         } else if((version >= 3 && id() == Id3v2FrameIds::lLength) || (version < 3 && id() == Id3v2FrameIds::sLength)) {
             // frame contains length
             double milliseconds;
             try {
                 if(characterSize(dataEncoding) > 1) {
-                    wstring millisecondsStr = helper.parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                    wstring millisecondsStr = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                     milliseconds = ConversionUtilities::stringToNumber<double, wstring>(millisecondsStr, 10);
                 } else {
-                    milliseconds = ConversionUtilities::stringToNumber<double>(helper.parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
+                    milliseconds = ConversionUtilities::stringToNumber<double>(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
                 }
                 value().assignTimeSpan(TimeSpan::fromMilliseconds(milliseconds));
             } catch (ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of the length frame is not numeric and will be ignored.", context);
             }
+
         } else if((version >= 3 && id() == Id3v2FrameIds::lGenre) || (version < 3 && id() == Id3v2FrameIds::sGenre)) {
             // genre/content type
             int genreIndex;
             try {
                 if(characterSize(dataEncoding) > 1) {
-                    wstring indexStr = helper.parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                    wstring indexStr = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                     if(indexStr.front() == L'(' && indexStr.back() == L')') {
                         indexStr = indexStr.substr(1, indexStr.length() - 2);
                     }
                     genreIndex = ConversionUtilities::stringToNumber<int, wstring>(indexStr, 10);
                 } else {
-                    string indexStr = helper.parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                    string indexStr = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                     if(indexStr.front() == '(' && indexStr.back() == ')') {
                         indexStr = indexStr.substr(1, indexStr.length() - 2);
                     }
@@ -196,28 +226,32 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
             } catch(ConversionException &) {
                 // genre is specified as string
                 // string might be null terminated
-                auto substr = helper.parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                 value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
             }
         } else { // any other text frame
             // string might be null terminated
-            auto substr = helper.parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+            auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
             value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
         }
+
     } else if(version >= 3 && id() == Id3v2FrameIds::lCover) {
         // frame stores picture
         byte type;
-        helper.parsePicture(buffer.get(), m_dataSize, value(), type);
+        parsePicture(buffer.get(), m_dataSize, value(), type);
         setTypeInfo(type);
+
     } else if(version < 3 && id() == Id3v2FrameIds::sCover) {
         // frame stores legacy picutre
         byte type;
-        helper.parseLegacyPicture(buffer.get(), m_dataSize, value(), type);
+        parseLegacyPicture(buffer.get(), m_dataSize, value(), type);
         setTypeInfo(type);
+
     } else if(((version >= 3 && id() == Id3v2FrameIds::lComment) || (version < 3 && id() == Id3v2FrameIds::sComment))
               || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics) || (version < 3 && id() == Id3v2FrameIds::sUnsynchronizedLyrics))) {
         // comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
-        helper.parseComment(buffer.get(), m_dataSize, value());
+        parseComment(buffer.get(), m_dataSize, value());
+
     } else {
         // unknown frame
         value().assignData(buffer.get(), m_dataSize, TagDataType::Undefined);
@@ -225,140 +259,31 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
 }
 
 /*!
+ * \brief Prepares making.
+ * \returns Returns a Id3v2FrameMaker object which can be used to actually make the frame.
+ * \remarks The field must NOT be mutated after making is prepared when it is intended to actually
+ *          make the field using the make method of the returned object.
+ * \throws Throws Media::Failure or a derived exception when a making
+ *                error occurs.
+ *
+ * This method might be useful when it is necessary to know the size of the field before making it.
+ */
+Id3v2FrameMaker Id3v2Frame::prepareMaking(const uint32 version)
+{
+    return Id3v2FrameMaker(*this, version);
+}
+
+/*!
  * \brief Writes the frame to a stream using the specified \a writer and the
- *        specified ID3v2 version.
+ *        specified ID3v2 \a version.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Frame::make(IoUtilities::BinaryWriter &writer, int32 version)
+void Id3v2Frame::make(BinaryWriter &writer, const uint32 version)
 {
-    invalidateStatus();
-    Id3v2FrameHelper helper(frameIdString(), *this);
-    const string context("making " + helper.id() + " frame");
-    // check if a valid frame can be build from the data
-    if(value().isEmpty()) {
-        addNotification(NotificationType::Critical, "Cannot make an empty frame.", context);
-        throw InvalidDataException();
-    }
-    if(isEncrypted()) {
-        addNotification(NotificationType::Critical, "Cannot make an encrypted frame (isn't supported by this tagging library).", context);
-        throw InvalidDataException();
-    }
-    if(m_padding) {
-        addNotification(NotificationType::Critical, "Cannot make a frame which is marked as padding.", context);
-        throw InvalidDataException();
-    }
-    uint32 frameId = id();
-    if(version >= 3) {
-        if(Id3v2FrameIds::isShortId(frameId)) {
-            // try to convert the short frame id to its long equivalent
-            frameId = Id3v2FrameIds::convertToLongId(frameId);
-            if(frameId == 0) {
-                addNotification(NotificationType::Critical, "The short frame ID can't be converted to its long equivalent which is needed to use the frame in a newer version of ID3v2.", context);
-                throw InvalidDataException();
-            }
-        }
-    } else {
-        if(Id3v2FrameIds::isLongId(frameId)) {
-            // try to convert the long frame id to its short equivalent
-            frameId = Id3v2FrameIds::convertToShortId(frameId);
-            if(frameId == 0) {
-                addNotification(NotificationType::Critical, "The long frame ID can't be converted to its short equivalent which is needed to use the frame in the old version of ID3v2.", context);
-                throw InvalidDataException();
-            }
-        }
-    }
-    if(version < 3 && (m_flag != 0 || m_group != 0)) {
-        addNotification(NotificationType::Warning, "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
-    }
-    // create actual data, depending on the frame type
-    unique_ptr<char[]> buffer;
-    uint32 decompressedSize;
-    // check if the frame to be written is a text frame
-    try {
-        if(Id3v2FrameIds::isTextfield(frameId)) {
-            if((version >= 3 && (frameId == Id3v2FrameIds::lTrackPosition || frameId == Id3v2FrameIds::lDiskPosition))
-                    || (version < 3 && frameId == Id3v2FrameIds::sTrackPosition)) {
-                // the track number or the disk number frame
-                helper.makeString(buffer, decompressedSize, value().toString(), TagTextEncoding::Latin1);
-            } else if((version >= 3 && frameId == Id3v2FrameIds::lLength)
-                      || (version < 3 && frameId == Id3v2FrameIds::sLength)) {
-                // the length
-                    helper.makeString(buffer, decompressedSize, ConversionUtilities::numberToString(value().toTimeSpan().totalMilliseconds()), TagTextEncoding::Latin1);
-            } else if(value().type() == TagDataType::StandardGenreIndex && ((version >= 3 && frameId == Id3v2FrameIds::lGenre)
-                      || (version < 3 && frameId == Id3v2FrameIds::sGenre))) {
-                // genre/content type as standard genre index
-                helper.makeString(buffer, decompressedSize, ConversionUtilities::numberToString(value().toStandardGenreIndex()), TagTextEncoding::Latin1);
-            } else {
-                // any other text frame
-                helper.makeString(buffer, decompressedSize, value().toString(), value().dataEncoding()); // the same as a normal text frame
-            }
-        } else if(version >= 3 && frameId == Id3v2FrameIds::lCover) {
-            // picture frame
-            helper.makePicture(buffer, decompressedSize, value(), isTypeInfoAssigned() ? typeInfo() : 0);
-        } else if(version < 3 && frameId == Id3v2FrameIds::sCover) {
-            // legacy picture frame
-            helper.makeLegacyPicture(buffer, decompressedSize, value(), isTypeInfoAssigned() ? typeInfo() : 0);
-        } else if(((version >= 3 && id() == Id3v2FrameIds::lComment)
-                   || (version < 3 && id() == Id3v2FrameIds::sComment))
-                  || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics)
-                      || (version < 3 && id() == Id3v2FrameIds::sUnsynchronizedLyrics))) {
-            // the comment frame or the unsynchronized lyrics frame
-            helper.makeComment(buffer, decompressedSize, value());
-        } else  {
-            // an unknown frame
-            // create buffer
-            buffer = make_unique<char[]>(decompressedSize = value().dataSize());
-            // just write the data
-            copy(value().dataPointer(), value().dataPointer() + value().dataSize(), buffer.get());
-        }
-    } catch(ConversionException &) {
-        addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
-        throw InvalidDataException();
-    }
-    unsigned long actualSize;
-    if(version >= 3 && isCompressed()) {
-        actualSize = compressBound(decompressedSize);
-        auto compressedBuffer = make_unique<char[]>(actualSize);
-        switch(compress(reinterpret_cast<Bytef *>(compressedBuffer.get()), &actualSize, reinterpret_cast<Bytef *>(buffer.get()), decompressedSize)) {
-        case Z_MEM_ERROR:
-            addNotification(NotificationType::Critical, "Decompressing failed. The source buffer was too small.", context);
-            throw InvalidDataException();
-        case Z_BUF_ERROR:
-            addNotification(NotificationType::Critical, "Decompressing failed. The destination buffer was too small.", context);
-            throw InvalidDataException();
-        case Z_OK:
-            ;
-        }
-        buffer.swap(compressedBuffer);
-    } else {
-        actualSize = decompressedSize;
-    }
-    if(version < 3) {
-        writer.writeUInt24BE(frameId);
-        writer.writeUInt24BE(actualSize);
-    } else {
-        writer.writeUInt32BE(frameId);
-        if(version >= 4) {
-            writer.writeSynchsafeUInt32BE(actualSize);
-        } else {
-            writer.writeUInt32BE(actualSize);
-        }
-        writer.writeUInt16BE(m_flag);
-        if(hasGroupInformation()) {
-            writer.writeByte(m_group);
-        }
-        if(isCompressed()) {
-            if(version >= 4) {
-                writer.writeSynchsafeUInt32BE(decompressedSize);
-            } else {
-                writer.writeUInt32BE(decompressedSize);
-            }
-        }
-    }
-    writer.write(buffer.get(), actualSize);
+    prepareMaking(version).make(writer);
 }
 
 /*!
@@ -375,19 +300,183 @@ void Id3v2Frame::cleared()
 }
 
 /*!
- * \class Media::Id3v2FrameHelper
- * \brief The Id3v2FrameHelper class helps parsing and making ID3v2 frames.
+ * \class Media::Id3v2FrameMaker
+ * \brief The Id3v2FrameMaker class helps making ID3v2 frames.
+ *        It allows to calculate the required size.
+ * \sa See Id3v2FrameMaker::prepareMaking() for more information.
  */
 
 /*!
- * \brief The Id3v2FrameHelper class helps parsing and making ID3v2 frames.
- * \param id Specifies the identifier of the current frame (used to print warnings).
- * \param provider Specifies the status provider to store warnings.
+ * \brief Prepares making the specified \a frame.
+ * \sa See Id3v2Frame::prepareMaking() for more information.
  */
-Id3v2FrameHelper::Id3v2FrameHelper(const std::string &id, StatusProvider &provider) :
-    m_id(id),
-    m_statusProvider(provider)
-{}
+Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
+    m_frame(frame),
+    m_frameId(m_frame.id()),
+    m_version(version)
+{
+    m_frame.invalidateStatus();
+    const string context("making " + m_frame.frameIdString() + " frame");
+
+    // validate assigned data
+    if(m_frame.value().isEmpty()) {
+        m_frame.addNotification(NotificationType::Critical, "Cannot make an empty frame.", context);
+        throw InvalidDataException();
+    }
+    if(m_frame.isEncrypted()) {
+        m_frame.addNotification(NotificationType::Critical, "Cannot make an encrypted frame (isn't supported by this tagging library).", context);
+        throw InvalidDataException();
+    }
+    if(m_frame.hasPaddingReached()) {
+        m_frame.addNotification(NotificationType::Critical, "Cannot make a frame which is marked as padding.", context);
+        throw InvalidDataException();
+    }
+    if(version < 3 && m_frame.isCompressed()) {
+        m_frame.addNotification(NotificationType::Warning, "Compression is not supported by the version of ID3v2 and won't be applied.", context);
+    }
+    if(version < 3 && (m_frame.flag() || m_frame.group())) {
+        m_frame.addNotification(NotificationType::Warning, "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
+    }
+
+    // convert frame ID if necessary
+    if(version >= 3) {
+        if(Id3v2FrameIds::isShortId(m_frameId)) {
+            // try to convert the short frame ID to its long equivalent
+            if(!(m_frameId = Id3v2FrameIds::convertToLongId(m_frameId))) {
+                m_frame.addNotification(NotificationType::Critical, "The short frame ID can't be converted to its long equivalent which is needed to use the frame in a newer version of ID3v2.", context);
+                throw InvalidDataException();
+            }
+        }
+    } else {
+        if(Id3v2FrameIds::isLongId(m_frameId)) {
+            // try to convert the long frame ID to its short equivalent
+            if(!(m_frameId = Id3v2FrameIds::convertToShortId(m_frameId))) {
+                m_frame.addNotification(NotificationType::Critical, "The long frame ID can't be converted to its short equivalent which is needed to use the frame in the old version of ID3v2.", context);
+                throw InvalidDataException();
+            }
+        }
+    }
+
+    // make actual data depending on the frame ID
+    try {
+        if(Id3v2FrameIds::isTextFrame(m_frameId)) {
+            // it is a text frame
+            if((version >= 3 && (m_frameId == Id3v2FrameIds::lTrackPosition || m_frameId == Id3v2FrameIds::lDiskPosition))
+                    || (version < 3 && m_frameId == Id3v2FrameIds::sTrackPosition)) {
+                // track number or the disk number frame
+                m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(), TagTextEncoding::Latin1);
+            } else if((version >= 3 && m_frameId == Id3v2FrameIds::lLength)
+                      || (version < 3 && m_frameId == Id3v2FrameIds::sLength)) {
+                // length frame
+                m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toTimeSpan().totalMilliseconds()), TagTextEncoding::Latin1);
+            } else if(m_frame.value().type() == TagDataType::StandardGenreIndex && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre)
+                      || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
+                // pre-defined genre frame
+                m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toStandardGenreIndex()), TagTextEncoding::Latin1);
+            } else {
+                // any other text frame
+                m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(), m_frame.value().dataEncoding()); // the same as a normal text frame
+            }
+
+        } else if(version >= 3 && m_frameId == Id3v2FrameIds::lCover) {
+            // picture frame
+            m_frame.makePicture(m_data, m_decompressedSize, m_frame.value(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0);
+
+        } else if(version < 3 && m_frameId == Id3v2FrameIds::sCover) {
+            // legacy picture frame
+            m_frame.makeLegacyPicture(m_data, m_decompressedSize, m_frame.value(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0);
+
+        } else if(((version >= 3 && m_frameId == Id3v2FrameIds::lComment)
+                   || (version < 3 && m_frameId == Id3v2FrameIds::sComment))
+                  || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
+                      || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
+            // the comment frame or the unsynchronized lyrics frame
+            m_frame.makeComment(m_data, m_decompressedSize, m_frame.value());
+
+        } else  {
+            // an unknown frame
+            // create buffer
+            m_data = make_unique<char[]>(m_decompressedSize = m_frame.value().dataSize());
+            // just write the data
+            copy(m_frame.value().dataPointer(), m_frame.value().dataPointer() + m_decompressedSize, m_data.get());
+        }
+    } catch(ConversionException &) {
+        m_frame.addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
+        throw InvalidDataException();
+    }
+
+    // apply compression if frame should be compressed
+    if(version >= 3 && m_frame.isCompressed()) {
+        m_dataSize = compressBound(m_decompressedSize);
+        auto compressedData = make_unique<char[]>(m_decompressedSize);
+        switch(compress(reinterpret_cast<Bytef *>(compressedData.get()), reinterpret_cast<uLongf *>(&m_dataSize), reinterpret_cast<Bytef *>(m_data.get()), m_decompressedSize)) {
+        case Z_MEM_ERROR:
+            m_frame.addNotification(NotificationType::Critical, "Decompressing failed. The source buffer was too small.", context);
+            throw InvalidDataException();
+        case Z_BUF_ERROR:
+            m_frame.addNotification(NotificationType::Critical, "Decompressing failed. The destination buffer was too small.", context);
+            throw InvalidDataException();
+        case Z_OK:
+            ;
+        }
+        m_data.swap(compressedData);
+    } else {
+        m_dataSize = m_decompressedSize;
+    }
+
+    // calculate required size
+    // -> data size
+    m_requiredSize = m_dataSize;
+    if(version < 3) {
+        // -> header size
+        m_requiredSize += 3;
+    } else {
+        // -> header size
+        m_requiredSize += 10;
+        // -> group byte
+        if(m_frame.hasGroupInformation()) {
+            m_requiredSize += 1;
+        }
+        // -> decompressed size
+        if(version >= 3 && m_frame.isCompressed()) {
+            m_requiredSize += 4;
+        }
+    }
+}
+
+/*!
+ * \brief Saves the frame (specified when constructing the object) using
+ *        the specified \a writer.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Assumes the data is already validated and thus does NOT
+ *                throw Media::Failure or a derived exception.
+ */
+void Id3v2FrameMaker::make(BinaryWriter &writer)
+{
+    if(m_version < 3) {
+        writer.writeUInt24BE(m_frameId);
+        writer.writeUInt24BE(m_dataSize);
+    } else {
+        writer.writeUInt32BE(m_frameId);
+        if(m_version >= 4) {
+            writer.writeSynchsafeUInt32BE(m_dataSize);
+        } else {
+            writer.writeUInt32BE(m_dataSize);
+        }
+        writer.writeUInt16BE(m_frame.flag());
+        if(m_frame.hasGroupInformation()) {
+            writer.writeByte(m_frame.group());
+        }
+        if(m_version >= 3 && m_frame.isCompressed()) {
+            if(m_version >= 4) {
+                writer.writeSynchsafeUInt32BE(m_decompressedSize);
+            } else {
+                writer.writeUInt32BE(m_decompressedSize);
+            }
+        }
+    }
+    writer.write(m_data.get(), m_dataSize);
+}
 
 /*!
  * \brief Returns the text encoding for the specified \a textEncodingByte.
@@ -395,7 +484,7 @@ Id3v2FrameHelper::Id3v2FrameHelper(const std::string &id, StatusProvider &provid
  * If the \a textEncodingByte doesn't match any encoding TagTextEncoding::Latin1 is
  * returned and a parsing notification is added.
  */
-TagTextEncoding Id3v2FrameHelper::parseTextEncodingByte(byte textEncodingByte)
+TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte)
 {
     switch(textEncodingByte) {
     case 0: // Ascii
@@ -407,7 +496,7 @@ TagTextEncoding Id3v2FrameHelper::parseTextEncodingByte(byte textEncodingByte)
     case 3: // Utf 8
         return TagTextEncoding::Utf8;
     default:
-        m_statusProvider.addNotification(NotificationType::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + m_id);
+        addNotification(NotificationType::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + frameIdString());
         return TagTextEncoding::Latin1;
     }
 }
@@ -415,7 +504,7 @@ TagTextEncoding Id3v2FrameHelper::parseTextEncodingByte(byte textEncodingByte)
 /*!
  * \brief Returns a text encoding byte for the specified \a textEncoding.
  */
-byte Id3v2FrameHelper::makeTextEncodingByte(TagTextEncoding textEncoding)
+byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
 {
     switch(textEncoding) {
     case TagTextEncoding::Latin1:
@@ -445,7 +534,7 @@ byte Id3v2FrameHelper::makeTextEncodingByte(TagTextEncoding textEncoding)
  * \remarks The length is always returned as the number of bytes, not as the number of characters (makes a difference for
  *          UTF-16 encodings).
  */
-tuple<const char *, size_t, const char *> Id3v2FrameHelper::parseSubstring(const char *buffer, size_t bufferSize, TagTextEncoding &encoding, bool addWarnings)
+tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char *buffer, size_t bufferSize, TagTextEncoding &encoding, bool addWarnings)
 {
     tuple<const char *, size_t, const char *> res(buffer, 0, buffer + bufferSize);
     switch(encoding) {
@@ -466,7 +555,7 @@ tuple<const char *, size_t, const char *> Id3v2FrameHelper::parseSubstring(const
                     get<1>(res) += 2;
                 } else {
                     if(addWarnings) {
-                        m_statusProvider.addNotification(NotificationType::Warning, "Wide string in frame is not terminated proberly.", "parsing termination of frame " + m_id);
+                        addNotification(NotificationType::Warning, "Wide string in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
                     }
                     break;
                 }
@@ -485,7 +574,7 @@ tuple<const char *, size_t, const char *> Id3v2FrameHelper::parseSubstring(const
                     ++get<1>(res);
                 } else {
                     if(addWarnings) {
-                        m_statusProvider.addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + m_id);
+                        addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
                     }
                     break;
                 }
@@ -500,9 +589,9 @@ tuple<const char *, size_t, const char *> Id3v2FrameHelper::parseSubstring(const
 /*!
  * \brief Parses a substring in the specified \a buffer.
  *
- * Same as Id3v2FrameHelper::parseSubstring() but returns the substring as string object.
+ * Same as Id3v2Frame::parseSubstring() but returns the substring as string object.
  */
-string Id3v2FrameHelper::parseString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
+string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
 {
     auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
     return string(get<0>(substr), get<1>(substr));
@@ -511,9 +600,9 @@ string Id3v2FrameHelper::parseString(const char *buffer, size_t dataSize, TagTex
 /*!
  * \brief Parses a substring in the specified \a buffer.
  *
- * Same as Id3v2FrameHelper::parseSubstring() but returns the substring as wstring object.
+ * Same as Id3v2Frame::parseSubstring() but returns the substring as wstring object.
  */
-wstring Id3v2FrameHelper::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
+wstring Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
 {
     auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
     return wstring(reinterpret_cast<wstring::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
@@ -528,7 +617,7 @@ wstring Id3v2FrameHelper::parseWideString(const char *buffer, size_t dataSize, T
  *
  * \remarks This method is not used anymore and might be deleted.
  */
-void Id3v2FrameHelper::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &encoding)
+void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &encoding)
 {
     switch(encoding) {
     case TagTextEncoding::Utf16BigEndian:
@@ -542,7 +631,7 @@ void Id3v2FrameHelper::parseBom(const char *buffer, size_t maxSize, TagTextEncod
     default:
         if((maxSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
             encoding = TagTextEncoding::Utf8;
-            m_statusProvider.addNotification(NotificationType::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + m_id);
+            addNotification(NotificationType::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + frameIdString());
         }
     }
 }
@@ -554,11 +643,11 @@ void Id3v2FrameHelper::parseBom(const char *buffer, size_t maxSize, TagTextEncod
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2FrameHelper::parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
+void Id3v2Frame::parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
 {
     static const string context("parsing ID3v2.2 picture frame");
     if(maxSize < 6) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete.", context);
+        addNotification(NotificationType::Critical, "Picture frame is incomplete.", context);
         throw TruncatedDataException();
     }
     const char *end = buffer + maxSize;
@@ -568,7 +657,7 @@ void Id3v2FrameHelper::parseLegacyPicture(const char *buffer, size_t maxSize, Ta
     auto substr = parseSubstring(buffer + 5, end - 5 - buffer, dataEncoding, true);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) >= end) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
+        addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
         throw TruncatedDataException();
     }
     tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
@@ -581,7 +670,7 @@ void Id3v2FrameHelper::parseLegacyPicture(const char *buffer, size_t maxSize, Ta
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2FrameHelper::parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
+void Id3v2Frame::parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
 {
     static const string context("parsing ID3v2.3 picture frame");
     const char *end = buffer + maxSize;
@@ -592,18 +681,18 @@ void Id3v2FrameHelper::parsePicture(const char *buffer, size_t maxSize, TagValue
         tagValue.setMimeType(string(get<0>(substr), get<1>(substr)));
     }
     if(get<2>(substr) >= end) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete (type info, description and actual data are missing).", context);
+        addNotification(NotificationType::Critical, "Picture frame is incomplete (type info, description and actual data are missing).", context);
         throw TruncatedDataException();
     }
     typeInfo = static_cast<unsigned char>(*get<2>(substr));
     if(++get<2>(substr) >= end) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete (description and actual data are missing).", context);
+        addNotification(NotificationType::Critical, "Picture frame is incomplete (description and actual data are missing).", context);
         throw TruncatedDataException();
     }
     substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, true);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) >= end) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
+        addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
         throw TruncatedDataException();
     }
     tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
@@ -615,12 +704,12 @@ void Id3v2FrameHelper::parsePicture(const char *buffer, size_t maxSize, TagValue
  * \param dataSize Specifies the maximal number of bytes to read from the buffer.
  * \param tagValue Specifies the tag value used to store the results.
  */
-void Id3v2FrameHelper::parseComment(const char *buffer, size_t dataSize, TagValue &tagValue)
+void Id3v2Frame::parseComment(const char *buffer, size_t dataSize, TagValue &tagValue)
 {
     static const string context("parsing comment frame");
     const char *end = buffer + dataSize;
     if(dataSize < 6) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Comment frame is incomplete.", context);
+        addNotification(NotificationType::Critical, "Comment frame is incomplete.", context);
         throw TruncatedDataException();
     }
     TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer);
@@ -628,7 +717,7 @@ void Id3v2FrameHelper::parseComment(const char *buffer, size_t dataSize, TagValu
     auto substr = parseSubstring(buffer += 3, dataSize -= 4, dataEncoding, true);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) >= end) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Comment frame is incomplete (description not terminated?).", context);
+        addNotification(NotificationType::Critical, "Comment frame is incomplete (description not terminated?).", context);
         throw TruncatedDataException();
     }
     substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, false);
@@ -641,9 +730,9 @@ void Id3v2FrameHelper::parseComment(const char *buffer, size_t dataSize, TagValu
  * \param value Specifies the string to make.
  * \param encoding Specifies the encoding of the string to make.
  */
-void Id3v2FrameHelper::makeString(unique_ptr<char[]> &buffer, uint32 &bufferSize, const string &value, TagTextEncoding encoding)
+void Id3v2Frame::makeString(unique_ptr<char[]> &buffer, uint32 &bufferSize, const string &value, TagTextEncoding encoding)
 {
-    makeEncodingAndData(buffer, bufferSize, encoding, value.c_str(), value.length());
+    makeEncodingAndData(buffer, bufferSize, encoding, value.data(), value.size());
 }
 
 /*!
@@ -653,7 +742,7 @@ void Id3v2FrameHelper::makeString(unique_ptr<char[]> &buffer, uint32 &bufferSize
  * \param data Specifies the data.
  * \param dataSize Specifies the data size.
  */
-void Id3v2FrameHelper::makeEncodingAndData(unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t dataSize)
+void Id3v2Frame::makeEncodingAndData(unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t dataSize)
 {
     // calculate buffer size
     if(!data) {
@@ -681,7 +770,7 @@ void Id3v2FrameHelper::makeEncodingAndData(unique_ptr<char[]> &buffer, uint32 &b
 /*!
  * \brief Writes the specified picture to the specified buffer (ID3v2.2).
  */
-void Id3v2FrameHelper::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
+void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
     // calculate needed buffer size and create buffer
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
@@ -724,7 +813,7 @@ void Id3v2FrameHelper::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &buf
 /*!
  * \brief Writes the specified picture to the specified buffer (ID3v2.3).
  */
-void Id3v2FrameHelper::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
+void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
     // calculate needed buffer size and create buffer
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
@@ -760,18 +849,18 @@ void Id3v2FrameHelper::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
 /*!
  * \brief Writes the specified comment to the specified buffer.
  */
-void Id3v2FrameHelper::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment)
+void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment)
 {
     static const string context("making comment frame");
     // check type and other values are valid
     TagTextEncoding encoding = comment.dataEncoding();
     if(!comment.description().empty() && encoding != comment.descriptionEncoding()) {
-        m_statusProvider.addNotification(NotificationType::Critical, "Data enoding and description encoding aren't equal.", context);
+        addNotification(NotificationType::Critical, "Data enoding and description encoding aren't equal.", context);
         throw InvalidDataException();
     }
     const string &lng = comment.language();
     if(lng.length() > 3) {
-        m_statusProvider.addNotification(NotificationType::Critical, "The language must be 3 bytes long (ISO-639-2).", context);
+        addNotification(NotificationType::Critical, "The language must be 3 bytes long (ISO-639-2).", context);
         throw InvalidDataException();
     }
     // calculate needed buffer size and create buffer

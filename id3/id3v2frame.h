@@ -19,35 +19,61 @@
 namespace Media
 {
 
-class LIB_EXPORT Id3v2FrameHelper
+class Id3v2Frame;
+
+class LIB_EXPORT Id3v2FrameMaker
 {
+    friend class Id3v2Frame;
+
 public:
-    Id3v2FrameHelper(const std::string &id, StatusProvider &provider);
-
-    const std::string &id() const;
-
-    TagTextEncoding parseTextEncodingByte(byte textEncodingByte);    
-    std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
-    std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
-    std::wstring parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings = false);
-    void parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
-    void parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
-    void parseComment(const char *buffer, size_t maxSize, TagValue &tagValue);
-    void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding);
-
-    byte makeTextEncodingByte(TagTextEncoding textEncoding);
-    void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
-    void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t m_dataSize);
-    void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
-    void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
-    void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
+    void make(IoUtilities::BinaryWriter &writer);
+    const Id3v2Frame &field() const;
+    const std::unique_ptr<char[]> &data() const;
+    uint32 dataSize() const;
+    uint32 requiredSize() const;
 
 private:
-    std::string m_id;
-    StatusProvider &m_statusProvider;
+    Id3v2FrameMaker(Id3v2Frame &frame, const byte version);
+    Id3v2Frame &m_frame;
+    uint32 m_frameId;
+    const byte m_version;
+    std::unique_ptr<char[]> m_data;
+    uint32 m_dataSize;
+    uint32 m_decompressedSize;
+    uint32 m_requiredSize;
 };
 
-class Id3v2Frame;
+/*!
+ * \brief Returns the associated frame.
+ */
+inline const Id3v2Frame &Id3v2FrameMaker::field() const
+{
+    return m_frame;
+}
+
+/*!
+ * \brief Returns the frame data.
+ */
+inline const std::unique_ptr<char[]> &Id3v2FrameMaker::data() const
+{
+    return m_data;
+}
+
+/*!
+ * \brief Returns the size of the array returned by data().
+ */
+inline uint32 Id3v2FrameMaker::dataSize() const
+{
+    return m_dataSize;
+}
+
+/*!
+ * \brief Returns number of bytes which will be written when making the frame.
+ */
+inline uint32 Id3v2FrameMaker::requiredSize() const
+{
+    return m_requiredSize;
+}
 
 /*!
  * \brief Defines traits for the TagField implementation of the Id3v2Frame class.
@@ -72,31 +98,26 @@ public:
     typedef Id3v2Frame implementationType;
 };
 
-/*!
- * \brief Returns the ID of the current frame.
- */
-inline const std::string &Id3v2FrameHelper::id() const
-{
-    return m_id;
-}
-
 class LIB_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
 {
     friend class TagField<Id3v2Frame>;
 
 public:
     Id3v2Frame();
-    Id3v2Frame(const identifierType &id, const TagValue &value, byte group = 0, int16 flag = 0);
+    Id3v2Frame(const identifierType &id, const TagValue &value, const byte group = 0, const int16 flag = 0);
 
-    void parse(IoUtilities::BinaryReader &reader, int32 version, uint32 maximalSize = 0);
-    void make(IoUtilities::BinaryWriter &writer, int32 version);
+    // parsing/making
+    void parse(IoUtilities::BinaryReader &reader, const uint32 version, const uint32 maximalSize = 0);
+    Id3v2FrameMaker prepareMaking(const uint32 version);
+    void make(IoUtilities::BinaryWriter &writer, const uint32 version);
 
+    // member access
     bool isAdditionalTypeInfoUsed() const;
     bool isValid() const;
     bool hasPaddingReached() const;
     std::string frameIdString() const;
-    int16 flag() const;
-    void setFlag(int16 value);
+    uint16 flag() const;
+    void setFlag(uint16 value);
     uint32 totalSize() const;
     uint32 dataSize() const;
     bool toDiscardWhenUnknownAndTagIsAltered() const;
@@ -112,13 +133,31 @@ public:
     int32 parsedVersion() const;
     bool supportsNestedFields() const;
 
+    // parsing helper
+    TagTextEncoding parseTextEncodingByte(byte textEncodingByte);
+    std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
+    std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
+    std::wstring parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings = false);
+    void parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
+    void parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
+    void parseComment(const char *buffer, size_t maxSize, TagValue &tagValue);
+    void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding);
+
+    // making helper
+    byte makeTextEncodingByte(TagTextEncoding textEncoding);
+    void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
+    void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t m_dataSize);
+    void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
+    void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
+    void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
+
 protected:
     void cleared();
 
 private:
     uint16 m_flag;
     byte m_group;
-    int32 m_parsedVersion;
+    uint32 m_parsedVersion;
     uint32 m_dataSize;
     uint32 m_totalSize;
     bool m_padding;
@@ -163,7 +202,7 @@ inline std::string Id3v2Frame::frameIdString() const
 /*!
  * \brief Returns the flags.
  */
-inline int16 Id3v2Frame::flag() const
+inline uint16 Id3v2Frame::flag() const
 {
     return m_flag;
 }
@@ -171,7 +210,7 @@ inline int16 Id3v2Frame::flag() const
 /*!
  * \brief Sets the flags.
  */
-inline void Id3v2Frame::setFlag(int16 value)
+inline void Id3v2Frame::setFlag(uint16 value)
 {
     m_flag = value;
 }
