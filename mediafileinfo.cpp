@@ -38,8 +38,10 @@
 #include <iomanip>
 #include <ios>
 #include <system_error>
+#include <functional>
 
 using namespace std;
+using namespace std::placeholders;
 using namespace IoUtilities;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
@@ -144,13 +146,16 @@ void MediaFileInfo::parseContainerFormat()
         // there's no need to read the container format twice
         return;
     }
+
     invalidateStatus();
     static const string context("parsing file header");
     open(); // ensure the file is open
     m_containerFormat = ContainerFormat::Unknown;
+
     // file size
     m_paddingSize = 0;
     m_containerOffset = 0;
+
     // read signatrue
     char buff[16];
     const char *const buffEnd = buff + sizeof(buff), *buffOffset;
@@ -158,34 +163,50 @@ startParsingSignature:
     if(size() - m_containerOffset >= 16) {
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
+
         // skip zero bytes/padding
         size_t bytesSkipped = 0;
         for(buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped);
         if(bytesSkipped >= 4) {
             m_containerOffset += bytesSkipped;
+
             // give up after 0x100 bytes
             if((m_paddingSize += bytesSkipped) >= 0x100u) {
                 m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
                 return;
             }
+
+            // try again
             goto startParsingSignature;
         }
         if(m_paddingSize) {
             addNotification(NotificationType::Warning, ConversionUtilities::numberToString(m_paddingSize) + " zero-bytes skipped at the beginning of the file.", context);
         }
+
         // parse signature
-        switch(m_containerFormat = parseSignature(buff, sizeof(buff))) {
+        switch((m_containerFormat = parseSignature(buff, sizeof(buff)))) {
         case ContainerFormat::Id2v2Tag:
+            // save position of ID3v2 tag
             m_actualId3v2TagOffsets.push_back(m_containerOffset);
             if(m_actualId3v2TagOffsets.size() == 2) {
                 addNotification(NotificationType::Warning, "There is more then just one ID3v2 header at the beginning of the file.", context);
             }
-            stream().seekg(m_containerOffset + 6, ios_base::beg);
-            stream().read(buff, 4);
+
+            // read ID3v2 header
+            stream().seekg(m_containerOffset + 5, ios_base::beg);
+            stream().read(buff, 5);
+
             // set the container offset to skip ID3v2 header
-            m_containerOffset += ConversionUtilities::toNormalInt(ConversionUtilities::BE::toUInt32(buff)) + 10;
-            goto startParsingSignature; // read signature again
+            m_containerOffset += ConversionUtilities::toNormalInt(ConversionUtilities::BE::toUInt32(buff + 1)) + 10;
+            if((*buff) & 0x10) {
+                // footer present
+                m_containerOffset += 10;
+            }
+
+            // continue reading signature
+            goto startParsingSignature;
+
         case ContainerFormat::Mp4: {
             m_container = make_unique<Mp4Container>(*this, m_containerOffset);
             NotificationList notifications;
@@ -196,6 +217,7 @@ startParsingSignature:
             }
             addNotifications(notifications);
             break;
+
         } case ContainerFormat::Ebml: {
             auto container = make_unique<MatroskaContainer>(*this, m_containerOffset);
             NotificationList notifications;
@@ -226,6 +248,8 @@ startParsingSignature:
             ;
         }
     }
+
+    // set parsing status
     if(m_containerParsingStatus == ParsingStatus::NotParsedYet) {
         if(m_containerFormat == ContainerFormat::Unknown) {
             m_containerParsingStatus = ParsingStatus::NotSupported;
@@ -1334,19 +1358,23 @@ void MediaFileInfo::invalidated()
 void MediaFileInfo::makeMp3File()
 {
     const string context("making MP3 file");
-    // there's no need to rewrite the complete file
+    // there's no need to rewrite the complete file if there is just are not ID3v2 tags present or to be written
     if(m_id3v2Tags.size() == 0 && m_actualId3v2TagOffsets.size() == 0) {
-        if(m_actualExistingId3v1Tag) { // there is currently an ID3v1 tag at the end of the file
-            if(m_id3v1Tag) { // the file shall still have an ID3v1 tag
+        if(m_actualExistingId3v1Tag) {
+            // there is currently an ID3v1 tag at the end of the file
+            if(m_id3v1Tag) {
+                // the file shall still have an ID3v1 tag
                 updateStatus("No need to rewrite the whole file, just writing ID3v1 tag ...");
-                open(); // ensure the file is still open
+                // ensure the file is still open / not readonly
+                open();
                 stream().seekp(-128, ios_base::end);
                 try {
                     m_id3v1Tag->make(stream());
                 } catch(Failure &) {
                     addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
                 }
-            } else { // the currently existing id3v1 tag shall be removed
+            } else {
+                // the currently existing ID3v1 tag shall be removed
                 updateStatus("No need to rewrite the whole file, just truncating it to remove ID3v1 tag ...");
                 stream().close();
                 if(truncate(path().c_str(), size() - 128) == 0) {
@@ -1356,10 +1384,13 @@ void MediaFileInfo::makeMp3File()
                     throw ios_base::failure("Unable to truncate file to remove ID3v1 tag.");
                 }
             }
-        } else { // the doesn't file need to be rewritten
+
+        } else {
+            // there is currently no ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
                 updateStatus("No need to rewrite the whole file, just writing ID3v1 tag.");
-                open(); // ensure the file is still open
+                // ensure the file is still open / not readonly
+                open();
                 stream().seekp(0, ios_base::end);
                 try {
                     m_id3v1Tag->make(stream());
@@ -1370,23 +1401,30 @@ void MediaFileInfo::makeMp3File()
                 addNotification(NotificationType::Information, "Nothing to be changed.", context);
             }
         }
-    } else { // the file needs to be rewritten
+
+    } else {
+        // ID3v2 needs to be modified -> file needs to be rewritten
+        // TODO: take advantage of possibly available padding
+
+        // prepare for rewriting
         updateStatus("Prepareing for rewriting MP3 file ...");
-        close(); // close the file (if its opened)
         string backupPath;
         fstream backupStream;
         try {
+            close();
             BackupHelper::createBackupFile(path(), backupPath, backupStream);
             backupStream.seekg(m_containerOffset);
+
             // recreate original file with new/changed ID3 tags
             stream().open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
             updateStatus("Writing ID3v2 tag ...");
-            // write id3v2 tags
-            int counter = 1;
+
+            // write ID3v2 tags
+            unsigned int counter = 1;
             for(auto &id3v2Tag : m_id3v2Tags) {
                 try {
                     id3v2Tag->make(stream());
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     if(m_id3v2Tags.size()) {
                         addNotification(NotificationType::Warning, "Unable to write " + ConversionUtilities::numberToString(counter) + ". ID3v2 tag.", context);
                     } else {
@@ -1395,25 +1433,17 @@ void MediaFileInfo::makeMp3File()
                 }
                 ++counter;
             }
-            // recopy backup
-            updateStatus("Writing mpeg audio frames ...");
-            uint64 remainingBytes = size() - backupStream.tellg(), read;
+
+            // write media data
+            updateStatus("Writing MPEG audio frames ...");
+            uint64 bytesRemaining = size() - m_containerOffset;
             if(m_actualExistingId3v1Tag) {
-                remainingBytes -= 128;
+                bytesRemaining -= 128;
             }
-            const unsigned int bufferSize = 0x4000;
-            char buffer[bufferSize];
-            while(remainingBytes > 0) {
-                if(isAborted()) {
-                    throw OperationAbortedException();
-                }
-                backupStream.read(buffer, remainingBytes > bufferSize ? bufferSize : remainingBytes);
-                read = backupStream.gcount();
-                stream().write(buffer, read);
-                remainingBytes -= read;
-                updatePercentage(static_cast<double>(backupStream.tellg()) / static_cast<double>(size()));
-            }
-            // write id3v1 tag
+            CopyHelper<0x4000> copyHelper;
+            copyHelper.callbackCopy(backupStream, stream(), bytesRemaining, bind(&StatusProvider::isAborted, this), bind(&StatusProvider::updatePercentage, this, _1));
+
+            // write ID3v1 tag
             updateStatus("Writing ID3v1 tag ...");
             if(m_id3v1Tag) {
                 try {
@@ -1422,14 +1452,19 @@ void MediaFileInfo::makeMp3File()
                     addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
                 }
             }
-            stream().flush(); // ensure everything has been actually written
-            reportSizeChanged(stream().tellp()); // report new size
-            close(); // stream is useless for further usage because it is write only
-        } catch(OperationAbortedException &) {
+
+            // ensure everything has been actually written
+            stream().flush();
+            // report new size
+            reportSizeChanged(stream().tellp());
+            // stream is useless for further usage because it is write-only
+            close();
+
+        } catch(const OperationAbortedException &) {
             addNotification(NotificationType::Information, "Rewriting file to apply new tag information has been aborted.", context);
             BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, stream(), backupStream);
             throw;
-        } catch(ios_base::failure &ex) {
+        } catch(const ios_base::failure &ex) {
             addNotification(NotificationType::Critical, "IO error occured when rewriting file to apply new tag information.\n" + string(ex.what()), context);
             BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, stream(), backupStream);
             throw;

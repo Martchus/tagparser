@@ -181,13 +181,20 @@ bool Id3v2Tag::setValue(const typename Id3v2Frame::identifierType &id, const Tag
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Tag::parse(istream &stream)
+void Id3v2Tag::parse(istream &stream, uint64 maximalSize)
 {
     // prepare parsing
     invalidateStatus();
     const string context("parsing ID3v2 tag");
     BinaryReader reader(&stream);
     uint64 startOffset = stream.tellg();
+
+    // check whether the header is truncated
+    if(maximalSize && maximalSize < 10) {
+        addNotification(NotificationType::Critical, "ID3v2 header is truncated (at least 10 bytes expected).", context);
+        throw TruncatedDataException();
+    }
+
     // read signature: ID3
     if(reader.readUInt24BE() == 0x494433u) {
         // read header data
@@ -196,7 +203,7 @@ void Id3v2Tag::parse(istream &stream)
         setVersion(majorVersion, revisionVersion);
         m_flags = reader.readByte();
         m_sizeExcludingHeader = reader.readSynchsafeUInt32BE();
-        m_size = m_sizeExcludingHeader + 10;
+        m_size = 10 + m_sizeExcludingHeader;
         if(m_sizeExcludingHeader == 0) {
             addNotification(NotificationType::Warning, "ID3v2 tag seems to be empty.", context);
         } else {
@@ -205,50 +212,77 @@ void Id3v2Tag::parse(istream &stream)
                 addNotification(NotificationType::Critical, "The ID3v2 tag couldn't be parsed, because its version is not supported.", context);
                 throw VersionNotSupportedException();
             }
+
             // read extended header (if present)
             if(hasExtendedHeader()) {
+                if(maximalSize && maximalSize < 14) {
+                    addNotification(NotificationType::Critical, "Extended header denoted but not present.", context);
+                    throw TruncatedDataException();
+                }
                 m_extendedHeaderSize = reader.readSynchsafeUInt32BE();
-                if(m_extendedHeaderSize < 6 || m_extendedHeaderSize > m_sizeExcludingHeader) {
-                    addNotification(NotificationType::Critical, "Extended header is invalid.", context);
-                    throw InvalidDataException();
+                if(m_extendedHeaderSize < 6 || m_extendedHeaderSize > m_sizeExcludingHeader || (maximalSize && maximalSize < (10 + m_extendedHeaderSize))) {
+                    addNotification(NotificationType::Critical, "Extended header is invalid/truncated.", context);
+                    throw TruncatedDataException();
                 }
                 stream.seekg(m_extendedHeaderSize - 4, ios_base::cur);
             }
+
+            // how many bytes remain for frames and padding?
+            uint32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
+            if(bytesRemaining > maximalSize) {
+                bytesRemaining = maximalSize;
+                addNotification(NotificationType::Critical, "Frames are truncated.", context);
+            }
+
             // read frames
-            istream::pos_type pos = stream.tellg();
-            uint32 frameSize;
-            int32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
+            auto pos = stream.tellg();
             Id3v2Frame frame;
-            const uint32 &frameId = frame.id();
-            do {
+            while(bytesRemaining) {
                 // seek to next frame
                 stream.seekg(pos);
                 // parse frame
                 try {
                     frame.parse(reader, majorVersion, bytesRemaining);
-                    if(frameId) {
+                    if(frame.id()) {
                         // add frame if parsing was successfull
-                        if(Id3v2FrameIds::isTextfield(frameId) && fields().count(frame.id()) == 1) {
+                        if(Id3v2FrameIds::isTextfield(frame.id()) && fields().count(frame.id()) == 1) {
                             addNotification(NotificationType::Warning, "The text frame " + frame.frameIdString() + " exists more than once.", context);
                         }
-                        fields().insert(pair<fieldType::identifierType, fieldType>(frameId, frame));
+                        fields().insert(pair<fieldType::identifierType, fieldType>(frame.id(), frame));
                     }
-                } catch(NoDataFoundException &) {
+                } catch(const NoDataFoundException &) {
                     if(frame.hasPaddingReached()) {
-                        m_paddingSize = (startOffset + m_size) - pos;
+                        m_paddingSize = startOffset + m_size - pos;
                         break;
                     }
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     // nothing to do here since notifications will be added anyways
                 }
+
                 // add parsing notifications of frame
                 addNotifications(context, frame);
                 frame.invalidateNotifications();
+
                 // calculate next frame offset
-                frameSize = frame.frameSize();
-                bytesRemaining -= frameSize;
-                pos += frameSize;
-            } while (bytesRemaining > 0);
+                bytesRemaining -= frame.totalSize();
+                pos += frame.totalSize();
+            }
+
+            // check for extended header
+            if(hasFooter()) {
+                if(m_size + 10 < maximalSize) {
+                    // the footer does not provide additional information, just check the signature
+                    stream.seekg(startOffset + (m_size += 10));
+                    if(reader.readUInt24LE() != 0x494433u) {
+                        addNotification(NotificationType::Critical, "Footer signature is invalid.", context);
+                    }
+                    // skip remaining footer
+                    stream.seekg(7, ios_base::cur);
+                } else {
+                    addNotification(NotificationType::Critical, "Footer denoted but not present.", context);
+                    throw TruncatedDataException();
+                }
+            }
         }
     } else {
         addNotification(NotificationType::Critical, "Signature is invalid.", context);

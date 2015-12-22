@@ -32,7 +32,7 @@ Id3v2Frame::Id3v2Frame() :
     m_group(0),
     m_parsedVersion(0),
     m_dataSize(0),
-    m_frameSize(0),
+    m_totalSize(0),
     m_padding(false)
 {}
 
@@ -45,7 +45,7 @@ Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, byte gro
     m_group(group),
     m_parsedVersion(0),
     m_dataSize(0),
-    m_frameSize(0),
+    m_totalSize(0),
     m_padding(false)
 {}
 
@@ -76,8 +76,8 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
         }
         context = "parsing " + helper.id() + " frame";
         m_dataSize = reader.readUInt24BE();
-        m_frameSize = m_dataSize + 6;
-        if(m_frameSize > maximalSize) {
+        m_totalSize = m_dataSize + 6;
+        if(m_totalSize > maximalSize) {
             addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", "parsing " + frameIdString() + " frame");
             throw TruncatedDataException();
         }
@@ -97,8 +97,8 @@ void Id3v2Frame::parse(BinaryReader &reader, int32 version, uint32 maximalSize)
         m_dataSize = version >= 4
                 ? reader.readSynchsafeUInt32BE()
                 : reader.readUInt32BE();
-        m_frameSize = m_dataSize + 10;
-        if(m_frameSize > maximalSize) {
+        m_totalSize = m_dataSize + 10;
+        if(m_totalSize > maximalSize) {
             addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", context);
             throw TruncatedDataException();
         }
@@ -370,7 +370,7 @@ void Id3v2Frame::cleared()
     m_group = 0;
     m_parsedVersion = 0;
     m_dataSize = 0;
-    m_frameSize = 0;
+    m_totalSize = 0;
     m_padding = false;
 }
 

@@ -34,7 +34,7 @@ public:
     bool supportsDescription(KnownField field) const;
     bool supportsMimeType(KnownField field) const;
 
-    void parse(std::istream &sourceStream);
+    void parse(std::istream &sourceStream, uint64 maximalSize = 0);
     void make(std::ostream &targetStream);
 
     byte majorVersion() const;
@@ -140,7 +140,7 @@ inline byte Id3v2Tag::flags() const
  */
 inline bool Id3v2Tag::isUnsynchronisationUsed() const
 {
-    return (m_flags & 0x80) == 0x80;
+    return m_flags & 0x80;
 }
 
 /*!
@@ -148,7 +148,7 @@ inline bool Id3v2Tag::isUnsynchronisationUsed() const
  */
 inline bool Id3v2Tag::hasExtendedHeader() const
 {
-    return (m_majorVersion >= 3) && ((m_flags & 0x40) == 0x40);
+    return (m_majorVersion >= 3) && (m_flags & 0x40);
 }
 
 /*!
@@ -156,7 +156,7 @@ inline bool Id3v2Tag::hasExtendedHeader() const
  */
 inline bool Id3v2Tag::isExperimental() const
 {
-    return (m_majorVersion >= 3) && ((m_flags & 0x20) == 0x20);
+    return (m_majorVersion >= 3) && (m_flags & 0x20);
 }
 
 /*!
@@ -164,7 +164,7 @@ inline bool Id3v2Tag::isExperimental() const
  */
 inline bool Id3v2Tag::hasFooter() const
 {
-    return (m_majorVersion >= 3) && ((m_flags & 0x10) == 0x10);
+    return (m_majorVersion >= 3) && (m_flags & 0x10);
 }
 
 /*!

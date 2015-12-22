@@ -25,8 +25,8 @@ public:
     Id3v2FrameHelper(const std::string &id, StatusProvider &provider);
 
     const std::string &id() const;
-    TagTextEncoding parseTextEncodingByte(byte textEncodingByte);
-    byte makeTextEncodingByte(TagTextEncoding textEncoding);
+
+    TagTextEncoding parseTextEncodingByte(byte textEncodingByte);    
     std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
     std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
     std::wstring parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings = false);
@@ -34,6 +34,8 @@ public:
     void parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
     void parseComment(const char *buffer, size_t maxSize, TagValue &tagValue);
     void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding);
+
+    byte makeTextEncodingByte(TagTextEncoding textEncoding);
     void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
     void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t m_dataSize);
     void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
@@ -95,7 +97,7 @@ public:
     std::string frameIdString() const;
     int16 flag() const;
     void setFlag(int16 value);
-    uint32 frameSize() const;
+    uint32 totalSize() const;
     uint32 dataSize() const;
     bool toDiscardWhenUnknownAndTagIsAltered() const;
     bool toDiscardWhenUnknownAndFileIsAltered() const;
@@ -118,7 +120,7 @@ private:
     byte m_group;
     int32 m_parsedVersion;
     uint32 m_dataSize;
-    uint32 m_frameSize;
+    uint32 m_totalSize;
     bool m_padding;
 };
 
@@ -175,11 +177,11 @@ inline void Id3v2Frame::setFlag(int16 value)
 }
 
 /*!
- * \brief Returns the size of the frame in bytes.
+ * \brief Returns the total size of the frame in bytes.
  */
-inline uint32 Id3v2Frame::frameSize() const
+inline uint32 Id3v2Frame::totalSize() const
 {
-    return m_frameSize;
+    return m_totalSize;
 }
 
 /*!
@@ -195,7 +197,7 @@ inline uint32 Id3v2Frame::dataSize() const
  */
 inline bool Id3v2Frame::toDiscardWhenUnknownAndTagIsAltered() const
 {
-    return (m_flag & 0x8000) == 0x8000;
+    return m_flag & 0x8000;
 }
 
 /*!
@@ -203,7 +205,7 @@ inline bool Id3v2Frame::toDiscardWhenUnknownAndTagIsAltered() const
  */
 inline bool Id3v2Frame::toDiscardWhenUnknownAndFileIsAltered() const
 {
-    return (m_flag & 0x4000) == 0x4000;
+    return m_flag & 0x4000;
 }
 
 /*!
@@ -211,7 +213,7 @@ inline bool Id3v2Frame::toDiscardWhenUnknownAndFileIsAltered() const
  */
 inline bool Id3v2Frame::isReadOnly() const
 {
-    return (m_flag & 0x2000) == 0x2000;
+    return m_flag & 0x2000;
 }
 
 /*!
@@ -219,7 +221,7 @@ inline bool Id3v2Frame::isReadOnly() const
  */
 inline bool Id3v2Frame::isCompressed() const
 {
-    return m_parsedVersion >= 4 ? (m_flag & 0x8) == 0x8 : (m_flag & 0x80) == 0x80;
+    return m_parsedVersion >= 4 ? m_flag & 0x8 : m_flag & 0x80;
 }
 
 /*!
@@ -228,7 +230,7 @@ inline bool Id3v2Frame::isCompressed() const
  */
 inline bool Id3v2Frame::isEncrypted() const
 {
-    return m_parsedVersion >= 4 ? (m_flag & 0x4) == 0x8 : (m_flag & 0x40) == 0x40;
+    return m_parsedVersion >= 4 ? m_flag & 0x4 : m_flag & 0x40;
 }
 
 /*!
@@ -236,7 +238,7 @@ inline bool Id3v2Frame::isEncrypted() const
  */
 inline bool Id3v2Frame::hasGroupInformation() const
 {
-    return m_parsedVersion >= 4 ? (m_flag & 0x40) == 0x40 : (m_flag & 0x20) == 0x20;
+    return m_parsedVersion >= 4 ? m_flag & 0x40 : m_flag & 0x20;
 }
 
 /*!
@@ -244,7 +246,7 @@ inline bool Id3v2Frame::hasGroupInformation() const
  */
 inline bool Id3v2Frame::isUnsynchronized() const
 {
-    return m_parsedVersion >= 4 ? (m_flag & 0x2) == 0x2 : false;
+    return m_parsedVersion >= 4 ? m_flag & 0x2 : false;
 }
 
 /*!
@@ -252,7 +254,7 @@ inline bool Id3v2Frame::isUnsynchronized() const
  */
 inline bool Id3v2Frame::hasDataLengthIndicator() const
 {
-    return m_parsedVersion >= 4 ? (m_flag & 0x1) == 0x1 : isCompressed();
+    return m_parsedVersion >= 4 ? m_flag & 0x1 : isCompressed();
 }
 
 /*!
