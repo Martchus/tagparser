@@ -18,6 +18,7 @@ Padding allows adding additional tag information without rewriting the entire fi
 or appending the tag. Usage of padding can be configured:
 - minimum/maximum padding: The file is rewritten if the padding would fall below/exceed the specifed limits.
 - preferred padding: If the file needs to be rewritten the preferred padding is used.
+
 However, it is also possible to force rewriting the entire file.
 
 ## Additional features
@@ -27,7 +28,7 @@ duration, size, timestamps, sampling frequency, FPS and other information of the
 It also allows to inspect and validate the element structure of MP4 and Matroska files.
 
 ## Usage
-For examples check out the CLI interface of my Tag Editor (which is also on Git).
+For examples check out the command line interface of my Tag Editor (which is also on Git).
 
 ## Build instructions
 The tagparser library depends on c++utilities and is built in the same way.
