@@ -220,8 +220,10 @@ void Mp4Container::internalMakeFile()
     ElementPosition newTagPos = fileInfo().tagPosition();
     // -> current tag position (determined later)
     ElementPosition currentTagPos;
-    // -> holds new padding
+    // -> holds new padding (before actual data)
     uint64 newPadding;
+    // -> holds new padding (after actual data)
+    uint64 newPaddingEnd;
     // -> holds current offset
     uint64 currentOffset;
     // -> holds track information, used when writing chunk-by-chunk
@@ -236,8 +238,8 @@ void Mp4Container::internalMakeFile()
     const auto trackCount = this->trackCount();
 
     // find relevant atoms in original file
-    Mp4Atom *fileTypeAtom, *progressiveDownloadInfoAtom, *movieAtom, *firstMediaDataAtom, *userDataAtom, *metaAtom;
-    Mp4Atom *level0Atom, *level1Atom, *level2Atom, *movieNextSibling;
+    Mp4Atom *fileTypeAtom, *progressiveDownloadInfoAtom, *movieAtom, *firstMediaDataAtom, *firstMovieFragmentAtom, *userDataAtom, *metaAtom;
+    Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten;
     try {
         // file type atom (mandatory)
         if((fileTypeAtom = firstElement()->siblingById(Mp4AtomIds::FileType, true))) {
@@ -255,26 +257,42 @@ void Mp4Container::internalMakeFile()
             progressiveDownloadInfoAtom->makeBuffer();
         }
 
-        // movie atom (mandatory) and next sibling
+        // movie atom (mandatory)
         if(!(movieAtom = firstElement()->siblingById(Mp4AtomIds::Movie, true))) {
             // throw error if missing
             addNotification(NotificationType::Critical, "Mandatory \"moov\"-atom not in the source file found.", context);
             throw InvalidDataException();
         }
-        for(movieNextSibling = movieAtom->nextSibling(); movieNextSibling; movieNextSibling = movieNextSibling->nextSibling()) {
-            movieNextSibling->parse();
-            switch(movieNextSibling->id()) {
+
+        // movie fragment atom (indicates dash file)
+        if((firstMovieFragmentAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment))) {
+            // there is at least one movie fragment atom -> consider file being dash
+            // -> can not write chunk-by-chunk (currently)
+            if(writeChunkByChunk) {
+                addNotification(NotificationType::Critical, "Writing chunk-by-chunk is not implemented for DASH files.", context);
+                throw NotImplementedException();
+            }
+            // -> tags must be placed at the beginning
+            newTagPos = ElementPosition::BeforeData;
+        }
+
+        // media data atom (mandatory?)
+        // -> consider not only mdat as media data atom; consider everything not handled otherwise as media data
+        for(firstMediaDataAtom = nullptr, level0Atom = firstElement(); level0Atom; level0Atom = level0Atom->nextSibling()) {
+            level0Atom->parse();
+            switch(level0Atom->id()) {
             case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation:
             case Mp4AtomIds::Movie: case Mp4AtomIds::Free: case Mp4AtomIds::Skip:
                 continue;
+            default:
+                firstMediaDataAtom = level0Atom;
             }
             break;
         }
 
-        // media data atom (mandatory?)
-        // -> determine current tag position
-        // -> since tags are nested in the move atom its position is relevant here
-        if((firstMediaDataAtom = firstElement()->siblingById(Mp4AtomIds::MediaData, true))) {
+        // determine current tag position
+        // -> since tags are nested in the movie atom its position is relevant here
+        if(firstMediaDataAtom) {
             currentTagPos = firstMediaDataAtom->startOffset() < movieAtom->startOffset()
                     ? ElementPosition::AfterData : ElementPosition::BeforeData;
             if(newTagPos == ElementPosition::Keep) {
@@ -288,6 +306,9 @@ void Mp4Container::internalMakeFile()
         if((userDataAtom = movieAtom->childById(Mp4AtomIds::UserData))) {
             metaAtom = userDataAtom->childById(Mp4AtomIds::Meta);
         }
+
+    } catch (const NotImplementedException &) {
+        throw;
 
     } catch (const Failure &) {
         // can't ignore parsing errors here
@@ -382,6 +403,26 @@ void Mp4Container::internalMakeFile()
         throw OperationAbortedException();
     }
 
+    // check whether there are atoms to be voided after movie next sibling (only relevant when not rewriting)
+    if(!rewriteRequired) {
+        newPaddingEnd = 0;
+        uint64 currentSum = 0;
+        for(Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
+            level0Atom->parse();
+            switch(level0Atom->id()) {
+            case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation:
+            case Mp4AtomIds::Movie: case Mp4AtomIds::Free: case Mp4AtomIds::Skip:
+                // must void these if they occur "between" the media data
+                currentSum += level0Atom->totalSize();
+                break;
+            default:
+                newPaddingEnd += currentSum;
+                currentSum = 0;
+                lastAtomToBeWritten = level0Atom;
+            }
+        }
+    }
+
     // calculate padding if no rewrite is required; otherwise use the preferred padding
 calculatePadding:
     if(rewriteRequired) {
@@ -406,15 +447,18 @@ calculatePadding:
         }
 
         // check whether there is sufficiant space before the next atom
-        if(!(rewriteRequired = movieNextSibling && currentOffset > movieNextSibling->startOffset())) {
+        if(!(rewriteRequired = firstMediaDataAtom && currentOffset > firstMediaDataAtom->startOffset())) {
             // there is sufficiant space
             // -> check whether the padding matches specifications
-            newPadding = movieNextSibling->startOffset() - currentOffset;
-            rewriteRequired = (newPadding > 0 && newPadding < 8) || newPadding < fileInfo().minPadding() || newPadding > fileInfo().maxPadding();
+            //    min padding: says "at least ... byte should be reserved to prepend further tag info", so the padding at the end
+            //                 shouldn't be tanken into account (it can't be used to prepend further tag info)
+            //    max padding: says "do not waste more then ... byte", so here all padding should be taken into account
+            newPadding = firstMediaDataAtom->startOffset() - currentOffset;
+            rewriteRequired = (newPadding > 0 && newPadding < 8) || newPadding < fileInfo().minPadding() || (newPadding + newPaddingEnd) > fileInfo().maxPadding();
         }
         if(rewriteRequired) {
             // can't put the tags before media data
-            if(!fileInfo().forceTagPosition() || newTagPos == ElementPosition::Keep) {
+            if(!firstMovieFragmentAtom && (!fileInfo().forceTagPosition() || newTagPos == ElementPosition::Keep)) {
                 // writing tag before media data is not forced -> just put the tags at the end
                 newTagPos = ElementPosition::AfterData;
                 rewriteRequired = false;
@@ -571,7 +615,7 @@ calculatePadding:
 
                 // write media data
                 if(rewriteRequired) {
-                    for(level0Atom = firstElement(); level0Atom; level0Atom = level0Atom->nextSibling()) {
+                    for(level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
                         level0Atom->parse();
                         switch(level0Atom->id()) {
                         case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation:
@@ -672,7 +716,22 @@ calculatePadding:
                     }
 
                 } else {
-                    outputStream.seekp(movieNextSibling->totalSize(), ios_base::cur);
+                    // can't just skip next movie sibling
+                    for(Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
+                        level0Atom->parse();
+                        switch(level0Atom->id()) {
+                        case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation: case Mp4AtomIds::Movie:
+                            // must void these if they occur "between" the media data
+                            outputStream.seekp(4, ios_base::cur);
+                            outputWriter.writeUInt32BE(Mp4AtomIds::Free);
+                            break;
+                        default:
+                            outputStream.seekp(level0Atom->totalSize(), ios_base::cur);
+                        }
+                        if(level0Atom == lastAtomToBeWritten) {
+                            break;
+                        }
+                    }
                 }
             }
         }
