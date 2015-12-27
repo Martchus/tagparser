@@ -48,7 +48,8 @@ uint64 MatroskaContainer::m_maxFullParseSize = 0x3200000;
 MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset) :
     GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>(fileInfo, startOffset),
     m_maxIdLength(4),
-    m_maxSizeLength(8)
+    m_maxSizeLength(8),
+    m_segmentCount(0)
 {
     m_version = 1;
     m_readVersion = 1;
@@ -81,6 +82,7 @@ void MatroskaContainer::reset()
     m_seekInfos.clear();
     m_editionEntries.clear();
     m_attachments.clear();
+    m_segmentCount = 0;
 }
 
 /*!
@@ -345,6 +347,7 @@ void MatroskaContainer::internalParseHeader()
     m_segmentInfoElements.clear();
     m_tagsElements.clear();
     m_seekInfos.clear();
+    m_segmentCount = 0;
     uint64 currentOffset = 0;
     vector<MatroskaSeekInfo>::size_type seekInfosIndex = 0;
     // loop through all top level elements
@@ -402,6 +405,7 @@ void MatroskaContainer::internalParseHeader()
             }
             break;
         case MatroskaIds::Segment:
+            ++m_segmentCount;
             for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
                     subElement->parse();

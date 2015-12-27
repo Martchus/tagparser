@@ -412,6 +412,23 @@ size_t AbstractContainer::attachmentCount() const
 {
     return 0;
 }
+
+/*!
+ * \brief Returns whether the title property is supported.
+ */
+bool AbstractContainer::supportsTitle() const
+{
+    return false;
+}
+
+/*!
+ * \brief Returns the number of segments.
+ */
+size_t AbstractContainer::segmentCount() const
+{
+    return 1;
+}
+
 /*!
  * \brief Discards all parsing results.
  */

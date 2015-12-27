@@ -76,6 +76,8 @@ public:
     uint64 doctypeReadVersion() const;
     const std::vector<std::string> &titles() const;
     void setTitle(const std::string &title, std::size_t segmentIndex = 0);
+    virtual bool supportsTitle() const;
+    virtual std::size_t segmentCount() const;
     ChronoUtilities::TimeSpan duration() const;
     ChronoUtilities::DateTime creationTime() const;
     ChronoUtilities::DateTime modificationTime() const;

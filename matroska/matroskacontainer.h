@@ -42,6 +42,9 @@ public:
     MatroskaAttachment *attachment(std::size_t index);
     std::size_t attachmentCount() const;
 
+    virtual bool supportsTitle() const;
+    virtual std::size_t segmentCount() const;
+
     void reset();
 
 protected:
@@ -67,6 +70,7 @@ private:
     std::vector<std::unique_ptr<MatroskaSeekInfo> > m_seekInfos;
     std::vector<std::unique_ptr<MatroskaEditionEntry> > m_editionEntries;
     std::vector<std::unique_ptr<MatroskaAttachment> > m_attachments;
+    std::size_t m_segmentCount;
     static uint64 m_maxFullParseSize;
 };
 
@@ -137,6 +141,16 @@ inline MatroskaAttachment *MatroskaContainer::attachment(std::size_t index)
 inline std::size_t MatroskaContainer::attachmentCount() const
 {
     return m_attachments.size();
+}
+
+inline bool MatroskaContainer::supportsTitle() const
+{
+    return true;
+}
+
+inline std::size_t MatroskaContainer::segmentCount() const
+{
+    return m_segmentInfoElements.size();
 }
 
 }
