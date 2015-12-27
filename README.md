@@ -27,8 +27,19 @@ duration, size, timestamps, sampling frequency, FPS and other information of the
 
 It also allows to inspect and validate the element structure of MP4 and Matroska files.
 
+## Text encoding, Unicode support
+The library does not do any conversions for you (eg. converting Latin1 to UTF-8). However the
+API provides a way to check which encoding is present (when reading) and which encoding(s)
+can be used (when writing).
+
 ## Usage
 For examples check out the command line interface of my Tag Editor (which is also on Git).
+
+## Bugs, stability
+- Matroska files composed of more than one segment aren't tested yet and might not work.
+- To add new features I've had to revise a lot of code since the last release. I always test the library with
+  files produced by mkvmerge and ffmpeg and several other file but can't verify that it will work with all
+  files. Hence I recommend you to create backups of your files.
 
 ## Build instructions
 The tagparser library depends on c++utilities and is built in the same way.
