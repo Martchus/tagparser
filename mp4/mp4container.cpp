@@ -458,12 +458,15 @@ calculatePadding:
         }
         if(rewriteRequired) {
             // can't put the tags before media data
-            if(!firstMovieFragmentAtom && (!fileInfo().forceTagPosition() || newTagPos == ElementPosition::Keep)) {
-                // writing tag before media data is not forced -> just put the tags at the end
+            if(!firstMovieFragmentAtom && !fileInfo().forceTagPosition() && newTagPos != ElementPosition::AfterData) {
+                // writing tag before media data is not forced, its not a DASH file and tags aren't already at the end
+                // -> try to put the tags at the end
                 newTagPos = ElementPosition::AfterData;
                 rewriteRequired = false;
             } else {
                 // writing tag before media data is forced -> rewrite the file
+                // when rewriting anyways, ensure the preferred tag position is used
+                newTagPos = fileInfo().tagPosition() == ElementPosition::Keep ? currentTagPos : fileInfo().tagPosition();
             }
             // in any case: recalculate padding
             goto calculatePadding;
