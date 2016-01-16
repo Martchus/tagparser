@@ -84,6 +84,7 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::InteractionStream: return "Interaction Stream";
     case GeneralMediaFormat::Jpeg: return "JPEG";
     case GeneralMediaFormat::OggKate: return "Karaoke And Text Encapsulation";
+    case GeneralMediaFormat::Opus: return "Opus";
     case GeneralMediaFormat::MicrosoftAudioCodecManager: return "Microsoft Audio Codec Manager";
     case GeneralMediaFormat::MicrosoftMpeg4:
         switch(sub) {
@@ -300,6 +301,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::InteractionStream: return "Interaction Stream";
     case GeneralMediaFormat::Jpeg: return "JPEG";
     case GeneralMediaFormat::OggKate: return "OggKate";
+    case GeneralMediaFormat::Opus: return "Opus";
     case GeneralMediaFormat::MicrosoftAudioCodecManager: return "MS ACM";
     case GeneralMediaFormat::MicrosoftMpeg4:
         switch(sub) {

@@ -50,7 +50,8 @@ enum class GeneralMediaFormat
     InteractionStream, /**< Interaction Stream */
     Jpeg, /**< JPEG */
     OggKate, /**< Karaoke And Text Encapsulation */
-    MicrosoftAudioCodecManager, /**< Microsoft Audio Codec Manager (ACM) */
+    Opus = 64, /**< Opus */
+    MicrosoftAudioCodecManager = 26, /**< Microsoft Audio Codec Manager (ACM) */
     MicrosoftMpeg4, /**< Microsoft MPEG-4 */
     MicrosoftVideoCodecManager, /**< Microsoft Video Codec Manager (VCM) */
     DolbyMlp, /** < Dolby MLP */

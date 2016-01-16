@@ -61,7 +61,6 @@ set(HEADER_FILES
     matroska/ebmlid.h
     matroska/matroskaattachment.h
     matroska/matroskachapter.h
-    matroska/matroskacodecid.h
     matroska/matroskacontainer.h
     matroska/matroskacues.h
     matroska/matroskaeditionentry.h
@@ -121,7 +120,6 @@ set(SRC_FILES
     matroska/ebmlelement.cpp
     matroska/matroskaattachment.cpp
     matroska/matroskachapter.cpp
-    matroska/matroskacodecid.cpp
     matroska/matroskacontainer.cpp
     matroska/matroskacues.cpp
     matroska/matroskaeditionentry.cpp
@@ -143,7 +141,7 @@ set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
 set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags.")
 set(META_VERSION_MAJOR 4)
 set(META_VERSION_MINOR 0)
-set(META_VERSION_PATCH 1)
+set(META_VERSION_PATCH 2)
 
 # stringification of meta data
 set(META_PROJECT_NAME_STR "\"${META_PROJECT_NAME}\"")

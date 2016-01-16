@@ -126,6 +126,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::Vorbis;
     } else if(part1 == "A_FLAC") {
         fmt.general = GeneralMediaFormat::Flac;
+    } else if(part1 == "A_OPUS") {
+        fmt.general = GeneralMediaFormat::Opus;
     } else if(part1 == "A_REAL") {
         fmt.general = GeneralMediaFormat::RealAudio;
     } else if(part1 == "A_MS" && part2 == "ACM") {
