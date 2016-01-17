@@ -238,12 +238,17 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
         default:
             return "mp4";
         }
-    case ContainerFormat::Ogg: return "ogg";
+    case ContainerFormat::Ogg:
         switch(mediaType) {
         case MediaType::Video:
             return "ogv";
         default:
-            return "ogg";
+            switch(version) {
+            case static_cast<unsigned int>(GeneralMediaFormat::Opus):
+                return "opus";
+            default:
+                return "ogg";
+            }
         }
     case ContainerFormat::PhotoshopDocument: return "psd";
     case ContainerFormat::Png: return "png";

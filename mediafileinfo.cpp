@@ -674,6 +674,14 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
     unsigned int version = 0;
     switch(m_containerFormat) {
     case ContainerFormat::Ogg:
+        // check whether only Opus tracks are present
+        version = static_cast<unsigned int>(GeneralMediaFormat::Opus);
+        for(const auto &track : static_cast<OggContainer *>(m_container.get())->tracks()) {
+            if(track->format().general != GeneralMediaFormat::Opus) {
+                version = 0;
+                break;
+            }
+        }
     case ContainerFormat::Matroska:
     case ContainerFormat::Mp4:
         mediaType = hasTracksOfType(MediaType::Video) ? MediaType::Video : MediaType::Audio;
