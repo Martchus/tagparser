@@ -55,46 +55,51 @@ void VorbisCommentField::parse(OggIterator &iterator)
     char buff[4];
     iterator.read(buff, 4);
     if(auto size = LE::toUInt32(buff)) { // read size
-        // read data
-        auto data = make_unique<char []>(size);
-        iterator.read(data.get(), size);
-        uint32 idSize = 0;
-        for(const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize);
-        // extract id
-        setId(string(data.get(), idSize));
-        if(!idSize) {
-            // empty field ID
-            addNotification(NotificationType::Critical, "The field ID is empty.", context);
-            throw InvalidDataException();
-        } else if(id() == VorbisCommentIds::cover()) {
-            // extract cover value
-            try {
-                auto decoded = decodeBase64(data.get() + idSize + 1, size - idSize - 1);
-                stringstream ss(ios_base::in | ios_base::out | ios_base::binary);
-                ss.exceptions(ios_base::failbit | ios_base::badbit);
-                ss.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
-                BinaryReader reader(&ss);
-                setTypeInfo(reader.readUInt32BE());
-                auto size = reader.readUInt32BE();
-                value().setMimeType(reader.readString(size));
-                size = reader.readUInt32BE();
-                value().setDescription(reader.readString(size));
-                // skip width, height, color depth, number of colors used
-                ss.seekg(4 * 4, ios_base::cur);
-                size = reader.readUInt32BE();
-                auto data = make_unique<char[]>(size);
-                ss.read(data.get(), size);
-                value().assignData(move(data), size, TagDataType::Picture);
-            } catch (const ios_base::failure &) {
-                addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
-                throw Failure();
-            } catch (const ConversionException &) {
-                addNotification(NotificationType::Critical, "Base64 data from METADATA_BLOCK_PICTURE is invalid.", context);
+        if(iterator.currentCharacterOffset() + size <= iterator.streamSize()) {
+            // read data
+            auto data = make_unique<char []>(size);
+            iterator.read(data.get(), size);
+            uint32 idSize = 0;
+            for(const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize);
+            // extract id
+            setId(string(data.get(), idSize));
+            if(!idSize) {
+                // empty field ID
+                addNotification(NotificationType::Critical, "The field ID is empty.", context);
                 throw InvalidDataException();
+            } else if(id() == VorbisCommentIds::cover()) {
+                // extract cover value
+                try {
+                    auto decoded = decodeBase64(data.get() + idSize + 1, size - idSize - 1);
+                    stringstream ss(ios_base::in | ios_base::out | ios_base::binary);
+                    ss.exceptions(ios_base::failbit | ios_base::badbit);
+                    ss.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
+                    BinaryReader reader(&ss);
+                    setTypeInfo(reader.readUInt32BE());
+                    auto size = reader.readUInt32BE();
+                    value().setMimeType(reader.readString(size));
+                    size = reader.readUInt32BE();
+                    value().setDescription(reader.readString(size));
+                    // skip width, height, color depth, number of colors used
+                    ss.seekg(4 * 4, ios_base::cur);
+                    size = reader.readUInt32BE();
+                    auto data = make_unique<char[]>(size);
+                    ss.read(data.get(), size);
+                    value().assignData(move(data), size, TagDataType::Picture);
+                } catch (const ios_base::failure &) {
+                    addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
+                    throw Failure();
+                } catch (const ConversionException &) {
+                    addNotification(NotificationType::Critical, "Base64 data from METADATA_BLOCK_PICTURE is invalid.", context);
+                    throw InvalidDataException();
+                }
+            } else if(id().size() + 1 < size) {
+                // extract other values (as string)
+                setValue(string(data.get() + idSize + 1, size - idSize - 1));
             }
-        } else if(id().size() + 1 < size) {
-            // extract other values (as string)
-            setValue(string(data.get() + idSize + 1, size - idSize - 1));
+        } else {
+            addNotification(NotificationType::Critical, "Field is truncated.", context);
+            throw TruncatedDataException();
         }
     }
 }

@@ -18,21 +18,23 @@ class MediaFileInfo;
 
 struct LIB_EXPORT VorbisCommentInfo
 {
-    VorbisCommentInfo(std::vector<OggPage>::size_type firstPageIndex, std::vector<OggPage>::size_type firstSegmentIndex, std::vector<OggPage>::size_type tagIndex);
+    VorbisCommentInfo(std::vector<OggPage>::size_type firstPageIndex, std::vector<OggPage>::size_type firstSegmentIndex, std::vector<OggPage>::size_type tagIndex, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
 
     std::vector<OggPage>::size_type firstPageIndex;
     std::vector<OggPage>::size_type firstSegmentIndex;
     std::vector<OggPage>::size_type lastPageIndex;
     std::vector<OggPage>::size_type lastSegmentIndex;
     std::vector<std::unique_ptr<VorbisComment> >::size_type tagIndex;
+    GeneralMediaFormat streamFormat;
 };
 
-inline VorbisCommentInfo::VorbisCommentInfo(std::vector<OggPage>::size_type firstPageIndex, std::vector<OggPage>::size_type firstSegmentIndex, std::vector<OggPage>::size_type tagIndex) :
+inline VorbisCommentInfo::VorbisCommentInfo(std::vector<OggPage>::size_type firstPageIndex, std::vector<OggPage>::size_type firstSegmentIndex, std::vector<OggPage>::size_type tagIndex, GeneralMediaFormat mediaFormat) :
     firstPageIndex(firstPageIndex),
     firstSegmentIndex(firstSegmentIndex),
     lastPageIndex(0),
     lastSegmentIndex(0),
-    tagIndex(tagIndex)
+    tagIndex(tagIndex),
+    streamFormat(mediaFormat)
 {}
 
 class LIB_EXPORT OggContainer : public GenericContainer<MediaFileInfo, VorbisComment, OggStream, OggPage>
@@ -54,7 +56,7 @@ protected:
     void internalMakeFile();
 
 private:
-    void ariseComment(std::vector<OggPage>::size_type pageIndex, std::vector<uint32>::size_type segmentIndex);
+    void ariseComment(std::vector<OggPage>::size_type pageIndex, std::vector<uint32>::size_type segmentIndex, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
 
     std::unordered_map<uint32, std::vector<std::unique_ptr<OggStream> >::size_type> m_streamsBySerialNo;
 

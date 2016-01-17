@@ -25,8 +25,8 @@ public:
     std::string fieldId(KnownField field) const;
     KnownField knownField(const std::string &id) const;
 
-    void parse(OggIterator &iterator);
-    void make(std::ostream &stream);
+    void parse(OggIterator &iterator, bool skipSignature = false);
+    void make(std::ostream &stream, bool noSignature = false);
 
     const TagValue &vendor() const;
     void setVendor(const TagValue &vendor);

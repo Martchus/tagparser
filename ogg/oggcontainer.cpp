@@ -25,9 +25,6 @@ OggContainer::OggContainer(MediaFileInfo &fileInfo, uint64 startOffset) :
     m_validateChecksums(false)
 {}
 
-/*!
- * \brief Destroys the container.
- */
 OggContainer::~OggContainer()
 {}
 
@@ -42,7 +39,6 @@ void OggContainer::internalParseHeader()
     static const string context("parsing OGG bitstream header");
     // iterate through pages using OggIterator helper class
     try {
-        uint32 pageSequenceNumber = 0;
         // ensure iterator is setup properly
         for(m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const OggPage &page = m_iterator.currentPage();
@@ -51,25 +47,29 @@ void OggContainer::internalParseHeader()
                     addNotification(NotificationType::Warning, "The denoted checksum of the OGG page at " + ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " does not match the computed checksum.", context);
                 }
             }
-            if(!m_streamsBySerialNo.count(page.streamSerialNumber())) {
+            OggStream *stream;
+            try {
+                stream = m_tracks[m_streamsBySerialNo.at(page.streamSerialNumber())].get();
+            } catch(const out_of_range &) {
                 // new stream serial number recognized -> add new stream
                 m_streamsBySerialNo[page.streamSerialNumber()] = m_tracks.size();
-                m_tracks.emplace_back(new OggStream(*this, m_iterator.currentPageIndex()));
+                m_tracks.emplace_back(make_unique<OggStream>(*this, m_iterator.currentPageIndex()));
+                stream = m_tracks.back().get();
             }
-            if(pageSequenceNumber != page.sequenceNumber()) {
-                if(pageSequenceNumber != 0) {
+            if(stream->m_currentSequenceNumber != page.sequenceNumber()) {
+                if(stream->m_currentSequenceNumber) {
                     addNotification(NotificationType::Warning, "Page is missing (page sequence number omitted).", context);
-                    pageSequenceNumber = page.sequenceNumber();
                 }
+                stream->m_currentSequenceNumber = page.sequenceNumber() + 1;
             } else {
-                ++pageSequenceNumber;
+                ++stream->m_currentSequenceNumber;
             }
         }
-    } catch(TruncatedDataException &) {
+    } catch(const TruncatedDataException &) {
         // thrown when page exceeds max size
         addNotification(NotificationType::Critical, "The OGG file is truncated.", context);
         throw;
-    } catch(InvalidDataException &) {
+    } catch(const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
         addNotification(NotificationType::Critical, "Capture pattern \"OggS\" at " + ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " expected.", context);
         throw;
@@ -79,19 +79,28 @@ void OggContainer::internalParseHeader()
 void OggContainer::internalParseTags()
 {
     parseTracks(); // tracks needs to be parsed because tags are stored at stream level
-    for(auto &i : m_commentTable) {
-        //fileInfo().stream().seekg(get<1>(i));
-        m_iterator.setPageIndex(i.firstPageIndex);
-        m_iterator.setSegmentIndex(i.firstSegmentIndex);
-        m_tags[i.tagIndex]->parse(m_iterator);
-        i.lastPageIndex = m_iterator.currentPageIndex();
-        i.lastSegmentIndex = m_iterator.currentSegmentIndex();
+    for(VorbisCommentInfo &vorbisCommentInfo : m_commentTable) {
+        m_iterator.setPageIndex(vorbisCommentInfo.firstPageIndex);
+        m_iterator.setSegmentIndex(vorbisCommentInfo.firstSegmentIndex);
+        switch(vorbisCommentInfo.streamFormat) {
+        case GeneralMediaFormat::Vorbis:
+            m_tags[vorbisCommentInfo.tagIndex]->parse(m_iterator);
+            break;
+        case GeneralMediaFormat::Opus:
+            m_iterator.seekForward(8); // skip header (has already been detected by OggStream)
+            m_tags[vorbisCommentInfo.tagIndex]->parse(m_iterator, true);
+            break;
+        default:
+            addNotification(NotificationType::Critical, "Stream format not supported.", "parsing tags from OGG streams");
+        }
+        vorbisCommentInfo.lastPageIndex = m_iterator.currentPageIndex();
+        vorbisCommentInfo.lastSegmentIndex = m_iterator.currentSegmentIndex();
     }
 }
 
-void OggContainer::ariseComment(vector<OggPage>::size_type pageIndex, vector<uint32>::size_type segmentIndex)
+void OggContainer::ariseComment(vector<OggPage>::size_type pageIndex, vector<uint32>::size_type segmentIndex, GeneralMediaFormat mediaFormat)
 {
-    m_commentTable.emplace_back(pageIndex, segmentIndex, m_tags.size());
+    m_commentTable.emplace_back(pageIndex, segmentIndex, m_tags.size(), mediaFormat);
     m_tags.emplace_back(make_unique<VorbisComment>());
 }
 
@@ -99,14 +108,14 @@ void OggContainer::internalParseTracks()
 {
     if(!areTracksParsed()) {
         parseHeader();
-        static const string context("parsing OGG bit streams");
+        static const string context("parsing OGG stream");
         for(auto &stream : m_tracks) {
             try { // try to parse header
                 stream->parseHeader();
                 if(stream->duration() > m_duration) {
                     m_duration = stream->duration();
                 }
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 addNotification(NotificationType::Critical, "Unable to parse stream at " + ConversionUtilities::numberToString(stream->startOffset()) + ".", context);
             }
         }
@@ -154,7 +163,18 @@ void OggContainer::internalMakeFile()
                             if(m_iterator.currentPageIndex() == commentTableIterator->firstPageIndex) {
                                 // make Vorbis Comment segment
                                 auto offset = buffer.tellp();
-                                m_tags[commentTableIterator->tagIndex]->make(buffer);
+                                switch(commentTableIterator->streamFormat) {
+                                case GeneralMediaFormat::Vorbis:
+                                    m_tags[commentTableIterator->tagIndex]->make(buffer);
+                                    break;
+                                case GeneralMediaFormat::Opus:
+                                    ConversionUtilities::BE::getBytes(0x4F70757354616773u, copy.buffer());
+                                    buffer.write(copy.buffer(), 8);
+                                    m_tags[commentTableIterator->tagIndex]->make(buffer, true);
+                                    break;
+                                default:
+                                    ;
+                                }
                                 newSegmentSizes.push_back(buffer.tellp() - offset);
                             }
                             if(m_iterator.currentPageIndex() > commentTableIterator->lastPageIndex

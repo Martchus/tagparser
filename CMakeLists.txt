@@ -32,6 +32,7 @@ set(HEADER_FILES
     ogg/oggiterator.h
     ogg/oggpage.h
     ogg/oggstream.h
+    opus/opusidentificationheader.h
     positioninset.h
     signature.h
     size.h
@@ -101,6 +102,7 @@ set(SRC_FILES
     ogg/oggiterator.cpp
     ogg/oggpage.cpp
     ogg/oggstream.cpp
+    opus/opusidentificationheader.cpp
     signature.cpp
     statusprovider.cpp
     tag.cpp
@@ -139,9 +141,9 @@ set(META_APP_NAME "Tag Parser")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
 set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags.")
-set(META_VERSION_MAJOR 4)
+set(META_VERSION_MAJOR 5)
 set(META_VERSION_MINOR 0)
-set(META_VERSION_PATCH 2)
+set(META_VERSION_PATCH 0)
 
 # stringification of meta data
 set(META_PROJECT_NAME_STR "\"${META_PROJECT_NAME}\"")
