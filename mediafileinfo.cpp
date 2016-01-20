@@ -181,7 +181,7 @@ startParsingSignature:
             goto startParsingSignature;
         }
         if(m_paddingSize) {
-            addNotification(NotificationType::Warning, ConversionUtilities::numberToString(m_paddingSize) + " zero-bytes skipped at the beginning of the file.", context);
+            addNotification(NotificationType::Warning, numberToString(m_paddingSize) + " zero-bytes skipped at the beginning of the file.", context);
         }
 
         // parse signature
@@ -198,7 +198,7 @@ startParsingSignature:
             stream().read(buff, 5);
 
             // set the container offset to skip ID3v2 header
-            m_containerOffset += ConversionUtilities::toNormalInt(ConversionUtilities::BE::toUInt32(buff + 1)) + 10;
+            m_containerOffset += toNormalInt(BE::toUInt32(buff + 1)) + 10;
             if((*buff) & 0x10) {
                 // footer present
                 m_containerOffset += 10;
@@ -208,17 +208,19 @@ startParsingSignature:
             goto startParsingSignature;
 
         case ContainerFormat::Mp4: {
+            // EBML/Matroska is handled using Mp4Container instance
             m_container = make_unique<Mp4Container>(*this, m_containerOffset);
             NotificationList notifications;
             try {
                 static_cast<Mp4Container *>(m_container.get())->validateElementStructure(notifications, &m_paddingSize);
-            } catch (Failure &) {
+            } catch(const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             addNotifications(notifications);
             break;
 
         } case ContainerFormat::Ebml: {
+            // EBML/Matroska is handled using MatroskaContainer instance
             auto container = make_unique<MatroskaContainer>(*this, m_containerOffset);
             NotificationList notifications;
             try {
@@ -234,16 +236,28 @@ startParsingSignature:
                     container->validateElementStructure(notifications, &m_paddingSize);
                     container->validateIndex();
                 }
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             m_container = move(container);
             addNotifications(notifications);
             break;
         } case ContainerFormat::Ogg:
+            // Ogg is handled using OggContainer instance
             m_container = make_unique<OggContainer>(*this, m_containerOffset);
             static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
             break;
+        case ContainerFormat::Unknown:
+            // container format is still unknown -> check for magic numbers at odd offsets
+            // -> check for tar (magic number at offset 0x101)
+            if(size() > 0x107) {
+                stream().seekg(0x101);
+                stream().read(buff, 6);
+                if(buff[0] == 0x75 && buff[1] == 0x73 && buff[2] == 0x74 && buff[3] == 0x61 && buff[4] == 0x72 && buff[5] == 0x00) {
+                    m_containerFormat = ContainerFormat::Tar;
+                    break;
+                }
+            }
         default:
             ;
         }
@@ -306,10 +320,10 @@ void MediaFileInfo::parseTracks()
             m_singleTrack->parseHeader();
         }
         m_tracksParsingStatus = ParsingStatus::Ok;
-    } catch (NotImplementedException &) {
+    } catch(const NotImplementedException &) {
         addNotification(NotificationType::Information, "Parsing tracks is not implemented for the container format of the file.", context);
         m_tracksParsingStatus = ParsingStatus::NotSupported;
-    } catch (Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse tracks.", context);
         m_tracksParsingStatus = ParsingStatus::CriticalFailure;
     }
@@ -349,9 +363,9 @@ void MediaFileInfo::parseTags()
         try {
             m_id3v1Tag->parse(stream(), true);
             m_actualExistingId3v1Tag = true;
-        } catch(NoDataFoundException &) {
+        } catch(const NoDataFoundException &) {
             m_id3v1Tag.reset(); // no ID3v1 tag found
-        } catch(Failure &) {
+        } catch(const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             addNotification(NotificationType::Critical, "Unable to parse ID3v1 tag.", context);
         }
@@ -364,9 +378,9 @@ void MediaFileInfo::parseTags()
         try {
             id3v2Tag->parse(stream(), size() - offset);
             m_paddingSize += id3v2Tag->paddingSize();
-        } catch(NoDataFoundException &) {
+        } catch(const NoDataFoundException &) {
             continue;
-        } catch(Failure &) {
+        } catch(const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             addNotification(NotificationType::Critical, "Unable to parse ID3v2 tag.", context);
         }
@@ -375,13 +389,13 @@ void MediaFileInfo::parseTags()
     if(m_container) {
         try {
             m_container->parseTags();
-        } catch (NotImplementedException &) {
+        } catch(const NotImplementedException &) {
             if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
                 // do not override parsing status from ID3 tags here
                 m_tagsParsingStatus = ParsingStatus::NotSupported;
             }
             addNotification(NotificationType::Information, "Parsing tags is not implemented for the container format of the file.", context);
-        } catch (Failure &) {
+        } catch(const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             addNotification(NotificationType::Critical, "Unable to parse tag.", context);
         }

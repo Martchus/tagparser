@@ -21,7 +21,7 @@ or appending the tag. Usage of padding can be configured:
 
 However, it is also possible to force rewriting the entire file.
 
-Taking advantage of padding is currently not supported when dealing with Ogg stream.
+Taking advantage of padding is currently not supported when dealing with Ogg streams.
 
 ## Additional features
 The library can also display technical information such as the ID, format, language, bitrate,
