@@ -215,21 +215,31 @@ foreach(HEADER_FILE ${HEADER_FILES})
         COMPONENT header
     )
 endforeach()
-add_custom_target(install-binary
-    DEPENDS ${META_PROJECT_NAME}
-    COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
-add_custom_target(install-header
-    DEPENDS ${META_PROJECT_NAME}
-    COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=header -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
-add_custom_target(install-mingw-w64
-    DEPENDS install-binary install-header
-)
-add_custom_target(install-binary-strip
-    DEPENDS ${META_PROJECT_NAME}
-    COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_DO_STRIP=1 -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
-add_custom_target(install-mingw-w64-strip
-    DEPENDS install-binary-strip install-header
-)
+if(NOT TARGET install-binary)
+    add_custom_target(install-binary
+        DEPENDS ${META_PROJECT_NAME}
+        COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    )
+endif()
+if(NOT TARGET install-header)
+    add_custom_target(install-header
+        DEPENDS ${META_PROJECT_NAME}
+        COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=header -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    )
+endif()
+if(NOT TARGET install-mingw-w64)
+    add_custom_target(install-mingw-w64
+        DEPENDS install-binary install-header
+    )
+endif()
+if(NOT TARGET install-binary-strip)
+    add_custom_target(install-binary-strip
+        DEPENDS ${META_PROJECT_NAME}
+        COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_DO_STRIP=1 -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    )
+endif()
+if(NOT TARGET install-mingw-w64-strip)
+    add_custom_target(install-mingw-w64-strip
+        DEPENDS install-binary-strip install-header
+    )
+endif()
