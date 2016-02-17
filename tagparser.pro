@@ -30,6 +30,9 @@ forcefullparsedefault {
 HEADERS  += \
     abstractcontainer.h \
     abstracttrack.h \
+    aspectratio.h \
+    avc/avcinfo.h \
+    avc/avcconfiguration.h \
     backuphelper.h \
     basicfileinfo.h \
     exceptions.h \
@@ -98,6 +101,9 @@ HEADERS  += \
 SOURCES += \
     abstractcontainer.cpp \
     abstracttrack.cpp \
+    aspectratio.cpp \
+    avc/avcinfo.cpp \
+    avc/avcconfiguration.cpp
     backuphelper.cpp \
     basicfileinfo.cpp \
     exceptions.cpp \
@@ -154,15 +160,11 @@ SOURCES += \
 underconstruction {
 HEADERS += \
     aac/aacframe.h \
-    aac/aaccodebook.h \
-    avc/avcinfo.h \
-    avc/avcconfiguration.h
+    aac/aaccodebook.h
 
 SOURCES += \
     aac/aacframe.cpp \
-    aac/aaccodebook.cpp \
-    avc/avcinfo.cpp \
-    avc/avcconfiguration.cpp
+    aac/aaccodebook.cpp
 }
 
 OTHER_FILES += \

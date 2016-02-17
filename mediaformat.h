@@ -195,6 +195,7 @@ enum Mpeg4VideoProfile : unsigned char {
 };
 
 enum AvcProfile : unsigned char {
+    AvcCavlc444IntraProfile = 0x2C,
     AvcBaselineProfile = 0x42,
     AvcMainProfile = 0x4D,
     AvcScalableBaselineProfile = 0x53,
@@ -202,8 +203,12 @@ enum AvcProfile : unsigned char {
     AvcExtendedProfile = 0x58,
     AvcHighProfile = 0x64,
     AvcHigh10Profile = 0x6E,
+    AvcHighMultiviewProfile = 0x76,
     AvcHigh422Profile = 0x7A,
-    AvcHigh444Profile = 0x90
+    AvcStereoHighProfile = 0x80,
+    AvcHighMultiviewDepthProfile = 0x8A,
+    AvcHigh444Profile = 0x90,
+    AvcHigh444PredictiveProfile = 0xF4
 };
 
 enum DtsSpecifier : unsigned char {

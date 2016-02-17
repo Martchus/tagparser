@@ -4,6 +4,8 @@
 #include "./mp4ids.h"
 #include "./mpeg4descriptor.h"
 
+#include "../avc/avcconfiguration.h"
+
 #include "../mpegaudio/mpegaudioframe.h"
 #include "../mpegaudio/mpegaudioframestream.h"
 
@@ -48,7 +50,8 @@ Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
     epConfig(0)
 {}
 
-Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig()
+Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig() :
+    profile(0)
 {}
 
 /*!
@@ -423,63 +426,6 @@ vector<uint64> Mp4Track::readChunkSizes()
     return chunkSizes;
 }
 
-#ifdef UNDER_CONSTRUCTION
-/*!
- * \brief Reads the AVC configuration for the track.
- * \remarks
- *  - Returns an empty configuration for non-AVC tracks.
- *  - Notifications might be added.
- */
-AvcConfiguration Mp4Track::parseAvcConfiguration(StatusProvider &statusProvider, BinaryReader &reader, uint64 startOffset, uint64 size)
-{
-    AvcConfiguration config;
-    try {
-        if(size >= 5) {
-            // skip first byte (is always 1)
-            reader.stream()->seekg(startOffset + 1);
-            // read profile, IDC level, NALU size length
-            config.profileIdc = reader.readByte();
-            config.profileCompat = reader.readByte();
-            config.levelIdc = reader.readByte();
-            config.naluSizeLength = reader.readByte() & 0x03;
-            // read SPS infos
-            if((size -= 5) >= 3) {
-                byte entryCount = reader.readByte() & 0x0f;
-                uint16 entrySize;
-                while(entryCount && size) {
-                    if((entrySize = reader.readUInt16BE()) <= size) {
-                        // TODO: read entry
-                        size -= entrySize;
-                    } else {
-                        throw TruncatedDataException();
-                    }
-                    --entryCount;
-                }
-                // read PPS infos
-                if((size -= 5) >= 3) {
-                    entryCount = reader.readByte();
-                    while(entryCount && size) {
-                        if((entrySize = reader.readUInt16BE()) <= size) {
-                            // TODO: read entry
-                            size -= entrySize;
-                        } else {
-                            throw TruncatedDataException();
-                        }
-                        --entryCount;
-                    }
-                    // TODO: read trailer
-                    return config;
-                }
-            }
-        }
-        throw TruncatedDataException();
-    } catch (TruncatedDataException &) {
-        statusProvider.addNotification(NotificationType::Critical, "AVC configuration is truncated.", "parsing AVC configuration");
-    }
-    return config;
-}
-#endif
-
 /*!
  * \brief Reads the MPEG-4 elementary stream descriptor for the track.
  * \remarks
@@ -761,8 +707,7 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Sta
             default:
                 ;
             }
-            // skip stuff we're not interested in to get the start of the
-            // next video object
+            // skip remainging values to get the start of the next video object
             while(size >= 3) {
                 if(reader.readUInt24BE() != 1) {
                     reader.stream()->seekg(-2, ios_base::cur);
@@ -913,6 +858,41 @@ void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
     default:
         throw InvalidDataException();
     }
+}
+
+/*!
+ * \brief Adds the information from the specified \a avcConfig to the specified \a track.
+ */
+void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
+{
+    if(!avcConfig.spsInfos.empty()) {
+        const SpsInfo &spsInfo = avcConfig.spsInfos.back();
+        track.m_format.sub = spsInfo.profileIndication;
+        track.m_version = static_cast<double>(spsInfo.levelIndication) / 10;
+        track.m_cropping = spsInfo.cropping;
+        track.m_pixelSize = spsInfo.pictureSize;
+        switch(spsInfo.chromaFormatIndication) {
+        case 0:
+            track.m_chromaFormat = "monochrome";
+            break;
+        case 1:
+            track.m_chromaFormat = "YUV 4:2:0";
+            break;
+        case 2:
+            track.m_chromaFormat = "YUV 4:2:2";
+            break;
+        case 3:
+            track.m_chromaFormat = "YUV 4:4:4";
+            break;
+        default:
+            ;
+        }
+        track.m_pixelAspectRatio = spsInfo.pixelAspectRatio;
+    } else {
+        track.m_format.sub = avcConfig.profileIndication;
+        track.m_version = static_cast<double>(avcConfig.levelIndication) / 10;
+    }
+
 }
 
 /*!
@@ -1380,7 +1360,7 @@ void Mp4Track::internalParseHeader()
                     }
                     break;
                 case FourccIds::Mpeg4Sample:
-                    //m_istream->seekg(6 + 2, ios_base::cur); // skip reserved bytes and data reference index
+                    // skip reserved bytes and data reference index
                     codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 8);
                     if(!esDescParentAtom) {
                         esDescParentAtom = codecConfigContainerAtom;
@@ -1394,10 +1374,23 @@ void Mp4Track::internalParseHeader()
                     ;
                 }
             }
-            // parse AVC configuration
-            //codecConfigContainerAtom->childById(Mp4AtomIds::AvcConfiguration);
-            // parse MPEG-4 elementary stream descriptor
+
             if(esDescParentAtom) {
+                // parse AVC configuration
+                if(Mp4Atom *avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration)) {
+                    m_istream->seekg(avcConfigAtom->dataOffset());
+                    m_avcConfig = make_unique<Media::AvcConfiguration>();
+                    try {
+                        m_avcConfig->parse(reader, avcConfigAtom->dataSize());
+                        addInfo(*m_avcConfig, *this);
+                    } catch(const TruncatedDataException &) {
+                        addNotification(NotificationType::Critical, "AVC configuration is truncated.", context);
+                    } catch(const Failure &) {
+                        addNotification(NotificationType::Critical, "AVC configuration is invalid.", context);
+                    }
+                }
+
+                // parse MPEG-4 elementary stream descriptor
                 Mp4Atom *esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor);
                 if(!esDescAtom) {
                     esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2);

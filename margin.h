@@ -123,7 +123,7 @@ inline std::string Margin::toString() const
 {
     std::stringstream res;
     res << "top: " << m_top << "; left: " << m_left;
-    res << "bottom: " << m_bottom << "; right: " << m_right;
+    res << "; bottom: " << m_bottom << "; right: " << m_right;
     return std::string(res.str());
 }
 

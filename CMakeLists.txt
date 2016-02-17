@@ -18,8 +18,9 @@ set(HEADER_FILES
     abstracttrack.h
     adts/adtsframe.h
     adts/adtsstream.h
-#    avc/avcconfiguration.h
-#    avc/avcinfo.h
+    aspectratio.h
+    avc/avcconfiguration.h
+    avc/avcinfo.h
     avi/bitmapinfoheader.h
     backuphelper.h
     basicfileinfo.h
@@ -89,8 +90,9 @@ set(SRC_FILES
     abstracttrack.cpp
     adts/adtsframe.cpp
     adts/adtsstream.cpp
-#    avc/avcconfiguration.cpp
-#    avc/avcinfo.cpp
+    aspectratio.cpp
+    avc/avcconfiguration.cpp
+    avc/avcinfo.cpp
     avi/bitmapinfoheader.cpp
     backuphelper.cpp
     basicfileinfo.cpp
@@ -133,6 +135,13 @@ set(SRC_FILES
     matroska/matroskatrack.cpp
     mediafileinfo.cpp
     mediaformat.cpp
+)
+set(TEST_HEADER_FILES
+
+)
+set(TEST_SRC_FILES
+    tests/cppunit.cpp
+    tests/matroska.cpp
 )
 
 # meta data
@@ -188,6 +197,18 @@ endif(MINGW)
 add_definitions(
     -D_GLIBCXX_USE_CXX11_ABI=0
 )
+
+# add check target
+if(NOT TARGET check)
+    set(CMAKE_CTEST_COMMAND ctest -V)
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+    enable_testing()
+endif()
+add_executable(${META_PROJECT_NAME}_tests EXCLUDE_FROM_ALL ${TEST_HEADER_FILES} ${TEST_SRC_FILES})
+target_link_libraries(${META_PROJECT_NAME}_tests ${META_PROJECT_NAME} c++utilities cppunit)
+set_target_properties(${META_PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 11)
+add_test(NAME ${META_PROJECT_NAME}_cppunit COMMAND ${META_PROJECT_NAME}_tests -p "${CMAKE_CURRENT_SOURCE_DIR}/testfiles")
+add_dependencies(check ${META_PROJECT_NAME}_tests)
 
 # executable and linking
 add_library(${META_PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} ${RES_FILES} ${WINDOWS_ICON_PATH})

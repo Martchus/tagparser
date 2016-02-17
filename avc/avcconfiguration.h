@@ -7,21 +7,25 @@
 
 namespace Media {
 
+class MediaFormat;
+
 struct LIB_EXPORT AvcConfiguration
 {
     AvcConfiguration();
-    byte profileIdc;
+    byte profileIndication;
     byte profileCompat;
-    byte levelIdc;
+    byte levelIndication;
     byte naluSizeLength;
     std::vector<SpsInfo> spsInfos;
     std::vector<PpsInfo> ppsInfos;
+
+    void parse(IoUtilities::BinaryReader &reader, uint64 maxSize);
 };
 
 inline AvcConfiguration::AvcConfiguration() :
-    profileIdc(0),
+    profileIndication(0),
     profileCompat(0),
-    levelIdc(0),
+    levelIndication(0),
     naluSizeLength(0)
 {}
 

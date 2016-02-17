@@ -55,6 +55,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64
     m_quality(0),
     m_depth(0),
     m_fps(0),
+    m_chromaFormat(nullptr),
     m_interlaced(false),
     m_timeScale(0),
     m_enabled(true),

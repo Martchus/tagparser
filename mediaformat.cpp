@@ -42,6 +42,7 @@ const char *MediaFormat::name() const
     case GeneralMediaFormat::Amr: return "Adaptive Multi-Rate audio codec";
     case GeneralMediaFormat::Avc:
         switch(sub) {
+        case AvcCavlc444IntraProfile: return "Advanced Video Coding CAVLC 4:4:4 Intra Profile";
         case AvcBaselineProfile: return "Advanced Video Coding Basline Profile";
         case AvcMainProfile: return "Advanced Video Coding Main Profile";
         case AvcScalableBaselineProfile: return "Advanced Video Coding Scalable Basline Profile";
@@ -49,8 +50,12 @@ const char *MediaFormat::name() const
         case AvcExtendedProfile: return "Advanced Video Coding Extended Profile";
         case AvcHighProfile: return "Advanced Video Coding High Profile";
         case AvcHigh10Profile: return "Advanced Video Coding High 10 Profile";
+        case AvcHighMultiviewProfile: return "Advanced Video Coding Multiview Profile";
         case AvcHigh422Profile: return "Advanced Video Coding High 4:2:2 Profile";
+        case AvcStereoHighProfile: return "Advanced Video Coding Stereo High Profile";
+        case AvcHighMultiviewDepthProfile: return "Advanced Video Coding Multiview Depth High Profile";
         case AvcHigh444Profile: return "Advanced Video Coding High 4:4:4 Profile";
+        case AvcHigh444PredictiveProfile: return "Advanced Video Coding High 4:4:4 Predictive Profile";
         default: return "Advanced Video Coding";
         }
     case GeneralMediaFormat::Bitmap: return "Windows Bitmap";

@@ -3,23 +3,39 @@
 
 #include "../margin.h"
 #include "../size.h"
+#include "../aspectratio.h"
+
+namespace IoUtilities {
+class BinaryReader;
+class BitReader;
+}
 
 namespace Media {
+
+/*!
+ * \brief Type used to store unsigned integer values using golomb coding.
+ */
+typedef uint32 ugolomb;
+
+/*!
+ * \brief Type used to store signed integer values using golomb coding.
+ */
+typedef int32 sgolomb;
 
 struct LIB_EXPORT TimingInfo {
     TimingInfo();
     uint32 unitsInTick;
     uint32 timeScale;
-    bool isPresent;
-    bool fixedFrameRate;
+    byte isPresent;
+    byte fixedFrameRate;
     int64 defaultDuration() const;
 };
 
 inline TimingInfo::TimingInfo() :
     unitsInTick(0),
     timeScale(0),
-    isPresent(false),
-    fixedFrameRate(false)
+    isPresent(0),
+    fixedFrameRate(0)
 {}
 
 inline int64 TimingInfo::defaultDuration() const
@@ -27,61 +43,93 @@ inline int64 TimingInfo::defaultDuration() const
     return 1000000000ll * unitsInTick / timeScale;
 }
 
+struct LIB_EXPORT HrdParameters {
+    HrdParameters();
+    ugolomb cpbCount;
+    byte bitRateScale;
+    byte cpbSizeScale;
+    byte initialCpbRemovalDelayLength;
+    byte cpbRemovalDelayLength;
+    byte cpbOutputDelayLength;
+    byte timeOffsetLength;
+
+    void parse(IoUtilities::BitReader &reader);
+};
+
+inline HrdParameters::HrdParameters() :
+    cpbCount(0),
+    bitRateScale(0),
+    cpbSizeScale(0),
+    initialCpbRemovalDelayLength(0),
+    cpbRemovalDelayLength(0),
+    cpbOutputDelayLength(0),
+    timeOffsetLength(0)
+{}
+
 struct LIB_EXPORT SpsInfo {
     SpsInfo();
-    uint32 id;
-    uint32 profileIndication;
-    uint32 profileCompat;
-    uint32 levelIdc;
-    uint32 chromatFormatIndication;
-    uint32 log2MaxFrameNum;
-    uint32 offsetForNonRefPic;
-    uint32 offsetForTopToBottomField;
-    uint32 numRefFramesInPicOrderCntCycle;
-    bool deltaPicOrderAlwaysZeroFlag;
-    bool frameMbsOnly;
-    bool vuiPresent;
-    bool arFound;
-    uint32 parNum;
-    uint32 parDen;
+    ugolomb id;
+    byte profileIndication;
+    byte profileConstraints;
+    byte levelIndication;
+    ugolomb chromaFormatIndication;
+    ugolomb pictureOrderCountType;
+    ugolomb log2MaxFrameNum;
+    ugolomb log2MaxPictureOrderCountLsb;
+    sgolomb offsetForNonRefPic;
+    sgolomb offsetForTopToBottomField;
+    ugolomb numRefFramesInPicOrderCntCycle;
+    byte deltaPicOrderAlwaysZeroFlag;
+    byte frameMbsOnly;
+    byte vuiPresent;
+    AspectRatio pixelAspectRatio;
     TimingInfo timingInfo;
     Margin cropping;
-    Size size;
-    uint32 checksum;
+    Size pictureSize;
+    byte hrdParametersPresent;
+    HrdParameters nalHrdParameters;
+    HrdParameters vclHrdParameters;
+    byte pictureStructPresent;
+    uint16 size;
 
-    void parse(std::istream &stream);
+    void parse(IoUtilities::BinaryReader &reader, uint32 maxSize);
 };
 
 inline SpsInfo::SpsInfo() :
     id(0),
     profileIndication(0),
-    profileCompat(0),
-    levelIdc(0),
-    chromatFormatIndication(0),
+    profileConstraints(0),
+    levelIndication(0),
+    chromaFormatIndication(0),
+    pictureOrderCountType(0),
     log2MaxFrameNum(0),
+    log2MaxPictureOrderCountLsb(0),
     offsetForNonRefPic(0),
     offsetForTopToBottomField(0),
     numRefFramesInPicOrderCntCycle(0),
-    deltaPicOrderAlwaysZeroFlag(false),
-    frameMbsOnly(false),
-    vuiPresent(false),
-    arFound(false),
-    parNum(0),
-    parDen(0),
-    checksum(0)
+    deltaPicOrderAlwaysZeroFlag(0),
+    frameMbsOnly(0),
+    vuiPresent(0),
+    hrdParametersPresent(0),
+    pictureStructPresent(0),
+    size(0)
 {}
 
 struct PpsInfo {
     PpsInfo();
-    uint32 id;
-    uint32 spsId;
-    bool picOrderPresent;
+    ugolomb id;
+    ugolomb spsId;
+    byte picOrderPresent;
+    uint16 size;
+
+    void parse(IoUtilities::BinaryReader &reader, uint32 maxSize);
 };
 
 inline PpsInfo::PpsInfo() :
     id(0),
     spsId(0),
-    picOrderPresent(false)
+    picOrderPresent(false),
+    size(0)
 {}
 
 struct SliceInfo {
@@ -99,7 +147,7 @@ struct SliceInfo {
     uint32 deltaPicOrderCnt[2];
     uint32 firstMbInSlice;
     uint32 sps;
-    uint32 pps;
+    uint32 pps;    
 };
 
 inline SliceInfo::SliceInfo() :
