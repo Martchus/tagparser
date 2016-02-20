@@ -318,6 +318,7 @@ enum KnownValue : uint32 {
     Mpeg4Decoder2 = 0x53454447,
     Mpeg4Decoder3 = 0x57563146,
     Mpeg4Sample = 0x6d703473, /**< MPEG-4 stream (other then video/audio) */
+    Mpeg4TimedText = 0x74783367, /**< MPEG-4 Timed Text / Streaming text format / Part 17 */
     Mpeg4Video = 0x6d703476, /**< MPEG-4 video */
     MsMpeg4V1Decoder1 = 0x44495631,
     MsMpeg4V1Decoder2 = 0x64697631,

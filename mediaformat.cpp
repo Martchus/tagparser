@@ -188,6 +188,7 @@ const char *MediaFormat::name() const
         case Mpeg4FineGranularityScalableProfile5: return "MPEG-4 Fine Granularity Scalable Profile L5";
         default: return "MPEG-4 Visual";
         }
+    case GeneralMediaFormat::Mpeg4TimedText: return "MPEG-4 Timed Text";
     case GeneralMediaFormat::Mpc: return "Musepack SV8";
     case GeneralMediaFormat::Pcm:
         switch(sub) {

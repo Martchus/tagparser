@@ -1265,23 +1265,28 @@ void Mp4Track::internalParseHeader()
     buff[2] = ((rawLanguage & 0x001F) >> 0x0) + 0x60;
     m_language = string(buff, 3);
     // read hdlr atom
-    //  track type
-    m_istream->seekg(m_hdlrAtom->startOffset() + 16); // seek to beg, skip size, name, version, flags and reserved bytes
-    string trackTypeStr = reader.readString(4);
-    if(trackTypeStr == "soun") {
-        m_mediaType = MediaType::Audio;
-    } else if(trackTypeStr == "vide") {
+    // -> seek to begin skipping size, name, version, flags and reserved bytes
+    m_istream->seekg(m_hdlrAtom->dataOffset() + 8);
+    // -> track type
+    switch(reader.readUInt32BE()) {
+    case 0x76696465:
         m_mediaType = MediaType::Video;
-    } else if(trackTypeStr == "hint") {
+        break;
+    case 0x736F756E:
+        m_mediaType = MediaType::Audio;
+        break;
+    case 0x68696E74:
         m_mediaType = MediaType::Hint;
-    } else if(trackTypeStr == "meta") {
+        break;
+    case 0x6D657461: case 0x74657874:
         m_mediaType = MediaType::Text;
-    } else {
+        break;
+    default:
         m_mediaType = MediaType::Unknown;
     }
+
     //  name
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
-    //name = reader.readString(hdlrAtom->size - 16 - 4 - 12);
     m_name = reader.readTerminatedString(m_hdlrAtom->totalSize() - 12 - 4 - 12, 0);
     // read stco atom (only chunk count)
     m_chunkOffsetSize = (m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64) ? 8 : 4;
