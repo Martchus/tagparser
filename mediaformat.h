@@ -12,11 +12,11 @@ namespace Media {
  */
 enum class MediaType
 {
-    Unknown,
-    Audio,
-    Video,
-    Text,
-    Hint
+    Unknown, /**< the type is unknown */
+    Audio, /**< audio/sound */
+    Video, /**< video */
+    Text, /**< text/subtitle */
+    Hint /**< hint */
 };
 
 /*!
@@ -24,7 +24,7 @@ enum class MediaType
  */
 enum class GeneralMediaFormat
 {
-    Unknown,
+    Unknown, /**< the format is unknown */
     Aac, /**< Advanced Video Coding */
     Ac3, /**< Dolby Digital */
     Ac4, /**< AC-4 */
@@ -50,16 +50,17 @@ enum class GeneralMediaFormat
     InteractionStream, /**< Interaction Stream */
     Jpeg, /**< JPEG */
     OggKate, /**< Karaoke And Text Encapsulation */
-    Opus = 64, /**< Opus */
-    MicrosoftAudioCodecManager = 26, /**< Microsoft Audio Codec Manager (ACM) */
+    Opus, /**< Opus */
+    MicrosoftAudioCodecManager, /**< Microsoft Audio Codec Manager (ACM) */
     MicrosoftMpeg4, /**< Microsoft MPEG-4 */
     MicrosoftVideoCodecManager, /**< Microsoft Video Codec Manager (VCM) */
     DolbyMlp, /** < Dolby MLP */
     Mpeg1Audio, /**< MPEG-1 Audio */
     Mpeg1Video, /**< MPEG-1 Vudio */
     Mpeg2Audio, /**< MPEG-2 Audio */
-    Mpeg2Video, /**< MPEG-2 Vudio */
-    Mpeg4Video, /**< MPEG-4 */
+    Mpeg2Video, /**< MPEG-2 Video */
+    Mpeg4Video, /**< MPEG-4 Video */
+    Mpeg4TimedText, /**< MPEG-4 Timed Text / Streaming text format / Part 17 */
     Mpc, /**< Musepack */
     Pcm, /**< Pulse Code Modulation */
     Png, /**< PNG */
@@ -195,6 +196,7 @@ enum Mpeg4VideoProfile : unsigned char {
 };
 
 enum AvcProfile : unsigned char {
+    AvcCavlc444IntraProfile = 0x2C,
     AvcBaselineProfile = 0x42,
     AvcMainProfile = 0x4D,
     AvcScalableBaselineProfile = 0x53,
@@ -202,8 +204,12 @@ enum AvcProfile : unsigned char {
     AvcExtendedProfile = 0x58,
     AvcHighProfile = 0x64,
     AvcHigh10Profile = 0x6E,
+    AvcHighMultiviewProfile = 0x76,
     AvcHigh422Profile = 0x7A,
-    AvcHigh444Profile = 0x90
+    AvcStereoHighProfile = 0x80,
+    AvcHighMultiviewDepthProfile = 0x8A,
+    AvcHigh444Profile = 0x90,
+    AvcHigh444PredictiveProfile = 0xF4
 };
 
 enum DtsSpecifier : unsigned char {

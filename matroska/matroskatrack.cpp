@@ -7,6 +7,8 @@
 
 #include "../wav/waveaudiostream.h"
 
+#include "../avc/avcconfiguration.h"
+
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4track.h"
 
@@ -411,6 +413,19 @@ void MatroskaTrack::internalParseHeader()
             m_extensionChannelConfig = audioSpecificConfig->extensionChannelConfiguration;
         }
         break;
+    case GeneralMediaFormat::Avc:
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+            auto avcConfig = make_unique<Media::AvcConfiguration>();
+            try {
+                m_istream->seekg(codecPrivateElement->dataOffset());
+                avcConfig->parse(m_reader, codecPrivateElement->dataSize());
+                Mp4Track::addInfo(*avcConfig, *this);
+            } catch(const TruncatedDataException &) {
+                addNotification(NotificationType::Critical, "AVC configuration is truncated.", context);
+            } catch(const Failure &) {
+                addNotification(NotificationType::Critical, "AVC configuration is invalid.", context);
+            }
+        }
     default:
         ;
     }

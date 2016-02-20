@@ -26,6 +26,7 @@ protected:
 private:
     std::vector<OggPage>::size_type m_startPage;
     OggContainer &m_container;
+    uint32 m_currentSequenceNumber;
 };
 
 inline TrackType OggStream::type() const

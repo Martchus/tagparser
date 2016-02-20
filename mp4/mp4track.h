@@ -1,10 +1,6 @@
 #ifndef MP4TRACK_H
 #define MP4TRACK_H
 
-#ifdef UNDER_CONSTRUCTION
-#include "../avc/avcconfiguration.h"
-#endif
-
 #include "../abstracttrack.h"
 
 #include <vector>
@@ -15,6 +11,7 @@ namespace Media
 
 class Mp4Atom;
 class Mpeg4Descriptor;
+class AvcConfiguration;
 
 class LIB_EXPORT Mpeg4AudioSpecificConfig
 {
@@ -133,11 +130,9 @@ public:
     uint32 chunkCount() const;
     uint32 sampleToChunkEntryCount() const;
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
+    const AvcConfiguration *avcConfiguration() const;
 
     // methods to parse configuration details from the track header
-#ifdef UNDER_CONSTRUCTION
-    static AvcConfiguration parseAvcConfiguration(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);
-#endif
     static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom);
     static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(StatusProvider &statusProvider, std::istream &stream, uint64 startOffset, uint64 size);
     static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);
@@ -159,6 +154,8 @@ public:
     void updateChunkOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets);
     void updateChunkOffsets(const std::vector<uint64> &chunkOffsets);
     void updateChunkOffset(uint32 chunkIndex, uint64 offset);
+
+    static void addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track);
 
 protected:
     void internalParseHeader();
@@ -187,6 +184,7 @@ private:
     uint32 m_chunkCount;
     uint32 m_sampleToChunkEntryCount;
     std::unique_ptr<Mpeg4ElementaryStreamInfo> m_esInfo;
+    std::unique_ptr<AvcConfiguration> m_avcConfig;
 };
 
 /*!
@@ -238,18 +236,24 @@ inline uint32 Mp4Track::sampleToChunkEntryCount() const
 /*!
  * \brief Returns information about the MPEG-4 elementary stream.
  * \remarks
- *  - The Mp4Track::readMpeg4ElementaryStreamInfo() method must be called before
- *    to parse the information. This is done when parsing the track.
- *  - The information is only available, if the track has an MPEG-4 elementary stream
- *    descriptor atom.
+ *  - The track must be parsed before this information becomes available.
+ *  - The information is only available, if the track has an MPEG-4 elementary stream descriptor atom.
  *  - The track keeps ownership over the returned object.
- * \sa
- *  - readMpeg4ElementaryStreamInfo()
- *  - hasMpeg4ElementaryStreamDesc()
  */
 inline const Mpeg4ElementaryStreamInfo *Mp4Track::mpeg4ElementaryStreamInfo() const
 {
     return m_esInfo.get();
+}
+
+/*!
+ * \brief Returns the AVC configuration.
+ * \remarks
+ *  - The track must be parsed before this information becomes available.
+ *  - The track keeps ownership over the returned object.
+ */
+inline const AvcConfiguration *Mp4Track::avcConfiguration() const
+{
+    return m_avcConfig.get();
 }
 
 }

@@ -7,6 +7,7 @@
 #include <c++utilities/io/binarywriter.h>
 
 #include <vector>
+#include <sstream>
 
 namespace Media
 {

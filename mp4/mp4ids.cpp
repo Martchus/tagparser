@@ -51,6 +51,8 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return GeneralMediaFormat::Mpeg2Video;
     case Mpeg4Video:
         return GeneralMediaFormat::Mpeg4Video;
+    case Mpeg4TimedText:
+        return GeneralMediaFormat::Mpeg4TimedText;
     case Hevc1: case Hevc2:
         return MediaFormat(GeneralMediaFormat::Hevc);
     case Avc1: case Avc2: case Avc3: case Avc4: case H264Decoder1: case H264Decoder2:

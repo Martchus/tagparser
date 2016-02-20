@@ -15,6 +15,11 @@
 using namespace std;
 using namespace IoUtilities;
 
+/*!
+ * \remarks Nothing of this code has been tested yet. These classes are
+ *          not used by the rest of the library (currently).
+ */
+
 namespace Media {
 
 /*!

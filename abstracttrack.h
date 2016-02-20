@@ -4,6 +4,7 @@
 #include "./statusprovider.h"
 #include "./size.h"
 #include "./margin.h"
+#include "./aspectratio.h"
 #include "./mediaformat.h"
 
 #include <c++utilities/conversion/types.h>
@@ -21,6 +22,7 @@ enum class MediaType;
 enum class GeneralMediaFormat;
 class MpegAudioFrameStream;
 class WaveAudioStream;
+class Mp4Track;
 
 /*!
  * \brief Specifies the track type.
@@ -40,6 +42,7 @@ class LIB_EXPORT AbstractTrack : public StatusProvider
 {
     friend class MpegAudioFrameStream;
     friend class WaveAudioStream;
+    friend class Mp4Track;
 
 public:
     virtual ~AbstractTrack();
@@ -85,6 +88,8 @@ public:
     const std::string &compressorName() const;
     uint16 depth() const;
     uint32 fps() const;
+    const char *chromaFormat() const;
+    const AspectRatio &pixelAspectRatio() const;
     bool isInterlaced() const;
     uint32 timeScale() const;
     bool isEnabled() const;
@@ -141,6 +146,8 @@ protected:
     std::string m_compressorName;
     uint16 m_depth;
     uint32 m_fps;
+    const char *m_chromaFormat;
+    AspectRatio m_pixelAspectRatio;
     bool m_interlaced;
     uint32 m_timeScale;
     bool m_enabled;
@@ -241,7 +248,7 @@ inline MediaFormat AbstractTrack::format() const
 }
 
 /*!
- * \brief Returns the version of the track if known; otherwise returns 0.
+ * \brief Returns the version/level of the track if known; otherwise returns 0.
  */
 inline double AbstractTrack::version() const
 {
@@ -487,6 +494,24 @@ inline uint16 AbstractTrack::depth() const
 inline uint32 AbstractTrack::fps() const
 {
     return m_fps;
+}
+
+/*!
+ * \brief Returns the chroma subsampling format if known; otherwise returns nullptr.
+ *
+ * This value only makes sense for video tracks.
+ */
+inline const char *AbstractTrack::chromaFormat() const
+{
+    return m_chromaFormat;
+}
+
+/*!
+ * \brief Returns the pixel aspect ratio (PAR).
+ */
+inline const AspectRatio &AbstractTrack::pixelAspectRatio() const
+{
+    return m_pixelAspectRatio;
 }
 
 /*!

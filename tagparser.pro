@@ -4,7 +4,7 @@ appname = "Tag Parser"
 appauthor = Martchus
 appurl = "https://github.com/$${appauthor}/$${projectname}"
 QMAKE_TARGET_DESCRIPTION = "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags."
-VERSION = 4.0.2
+VERSION = 5.0.0
 
 # include ../../common.pri when building as part of a subdirs project; otherwise include general.pri
 !include(../../common.pri) {
@@ -30,6 +30,9 @@ forcefullparsedefault {
 HEADERS  += \
     abstractcontainer.h \
     abstracttrack.h \
+    aspectratio.h \
+    avc/avcinfo.h \
+    avc/avcconfiguration.h \
     backuphelper.h \
     basicfileinfo.h \
     exceptions.h \
@@ -78,6 +81,7 @@ HEADERS  += \
     ogg/oggcontainer.h \
     vorbis/vorbispackagetypes.h \
     vorbis/vorbisidentificationheader.h \
+    opus/opusidentificationheader.h \
     ogg/oggiterator.h \
     vorbis/vorbiscommentids.h \
     abstractchapter.h \
@@ -97,6 +101,9 @@ HEADERS  += \
 SOURCES += \
     abstractcontainer.cpp \
     abstracttrack.cpp \
+    aspectratio.cpp \
+    avc/avcinfo.cpp \
+    avc/avcconfiguration.cpp
     backuphelper.cpp \
     basicfileinfo.cpp \
     exceptions.cpp \
@@ -136,6 +143,7 @@ SOURCES += \
     ogg/oggstream.cpp \
     ogg/oggcontainer.cpp \
     vorbis/vorbisidentificationheader.cpp \
+    opus/opusidentificationheader.cpp \
     ogg/oggiterator.cpp \
     vorbis/vorbiscommentids.cpp \
     abstractchapter.cpp \
@@ -152,15 +160,11 @@ SOURCES += \
 underconstruction {
 HEADERS += \
     aac/aacframe.h \
-    aac/aaccodebook.h \
-    avc/avcinfo.h \
-    avc/avcconfiguration.h
+    aac/aaccodebook.h
 
 SOURCES += \
     aac/aacframe.cpp \
-    aac/aaccodebook.cpp \
-    avc/avcinfo.cpp \
-    avc/avcconfiguration.cpp
+    aac/aaccodebook.cpp
 }
 
 OTHER_FILES += \

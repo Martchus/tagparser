@@ -40,6 +40,9 @@ inline LIB_EXPORT const char *label() {
 inline LIB_EXPORT const char *labelNo() {
     return "LABELNO";
 }
+inline LIB_EXPORT const char *language() {
+    return "LANGUAGE";
+}
 inline LIB_EXPORT const char *performer() {
     return "PERFORMER";
 }

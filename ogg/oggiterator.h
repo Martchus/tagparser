@@ -15,6 +15,8 @@ public:
 
     std::istream &stream();
     void setStream(std::istream &stream);
+    uint64 startOffset() const;
+    uint64 streamSize() const;
     void reset();
     void nextPage();
     void nextSegment();
@@ -34,6 +36,7 @@ public:
     bool areAllPagesFetched() const;
     void read(char *buffer, size_t count);
     void seekForward(size_t count);
+    bool bytesRemaining(size_t atLeast) const;
 
     operator bool() const;
     OggIterator &operator ++();
@@ -90,6 +93,22 @@ inline std::istream &OggIterator::stream()
 inline void OggIterator::setStream(std::istream &stream)
 {
     m_stream = &stream;
+}
+
+/*!
+ * \brief Returns the start offset (which has been specified when constructing the iterator).
+ */
+inline uint64 OggIterator::startOffset() const
+{
+    return m_startOffset;
+}
+
+/*!
+ * \brief Returns the stream size (which has been specified when constructing the iterator).
+ */
+inline uint64 OggIterator::streamSize() const
+{
+    return m_streamSize;
 }
 
 /*!
@@ -224,6 +243,14 @@ inline void OggIterator::removeFilter()
 inline bool OggIterator::areAllPagesFetched() const
 {
     return (m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize()) >= m_streamSize;
+}
+
+/*!
+ * \brief Returns whether there are \a atLeast bytes remaining.
+ */
+inline bool OggIterator::bytesRemaining(size_t atLeast) const
+{
+    return *this && currentCharacterOffset() + atLeast <= streamSize();
 }
 
 /*!

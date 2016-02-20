@@ -64,6 +64,7 @@ string VorbisComment::fieldId(KnownField field) const
     case KnownField::Description: return description();
     case KnownField::RecordLabel: return label();
     case KnownField::Performers: return performer();
+    case KnownField::Language: return language();
     case KnownField::Lyricist: return lyricist();
     default: return string();
     }
@@ -105,7 +106,7 @@ KnownField VorbisComment::knownField(const string &id) const
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisComment::parse(OggIterator &iterator)
+void VorbisComment::parse(OggIterator &iterator, bool skipSignature)
 {
     // prepare parsing
     invalidateStatus();
@@ -115,15 +116,23 @@ void VorbisComment::parse(OggIterator &iterator)
     try {
         // read signature: 0x3 + "vorbis"
         char sig[8];
-        iterator.read(sig, 7);
-        if((ConversionUtilities::BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u) {
+        if(!skipSignature) {
+            iterator.read(sig, 7);
+            skipSignature = (ConversionUtilities::BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
+        }
+        if(skipSignature) {
             // read vendor (length prefixed string)
             {
                 iterator.read(sig, 4);
                 auto vendorSize = LE::toUInt32(sig);
-                auto buff = make_unique<char []>(vendorSize);
-                iterator.read(buff.get(), vendorSize);
-                m_vendor = string(buff.get(), vendorSize);
+                if(iterator.currentCharacterOffset() + vendorSize <= iterator.streamSize()) {
+                    auto buff = make_unique<char []>(vendorSize);
+                    iterator.read(buff.get(), vendorSize);
+                    m_vendor = string(buff.get(), vendorSize);
+                } else {
+                    addNotification(NotificationType::Critical, "Vendor information is truncated.", context);
+                    throw TruncatedDataException();
+                }
             }
             // read field count
             iterator.read(sig, 4);
@@ -135,10 +144,10 @@ void VorbisComment::parse(OggIterator &iterator)
                 try {
                     field.parse(iterator);
                     fields().insert(pair<fieldType::identifierType, fieldType>(fieldId, field));
-                } catch(TruncatedDataException &) {
+                } catch(const TruncatedDataException &) {
                     addNotifications(field);
                     throw;
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     // nothing to do here since notifications will be added anyways
                 }
                 addNotifications(field);
@@ -150,7 +159,7 @@ void VorbisComment::parse(OggIterator &iterator)
             addNotification(NotificationType::Critical, "Signature is invalid.", context);
             throw InvalidDataException();
         }
-    } catch(TruncatedDataException &) {
+    } catch(const TruncatedDataException &) {
         m_size = static_cast<uint32>(static_cast<uint64>(iterator.currentCharacterOffset()) - startOffset);
         addNotification(NotificationType::Critical, "Vorbis comment is truncated.", context);
         throw;
@@ -164,7 +173,7 @@ void VorbisComment::parse(OggIterator &iterator)
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void VorbisComment::make(std::ostream &stream)
+void VorbisComment::make(std::ostream &stream, bool noSignature)
 {
     // prepare making
     invalidateStatus();
@@ -176,9 +185,11 @@ void VorbisComment::make(std::ostream &stream)
         addNotification(NotificationType::Warning, "Can not convert the assigned vendor to string.", context);
     }
     BinaryWriter writer(&stream);
-    // write signature
-    static const char sig[7] = {0x03, 0x76, 0x6F, 0x72, 0x62, 0x69, 0x73};
-    stream.write(sig, sizeof(sig));
+    if(!noSignature) {
+        // write signature
+        static const char sig[7] = {0x03, 0x76, 0x6F, 0x72, 0x62, 0x69, 0x73};
+        stream.write(sig, sizeof(sig));
+    }
     // write vendor
     writer.writeUInt32LE(vendor.size());
     writer.writeString(vendor);

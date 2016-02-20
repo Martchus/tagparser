@@ -11,6 +11,7 @@ namespace Media {
  */
 enum Sig64 : uint64
 {
+    Ar = 0x213C617263683E0A,
     Asf1 = 0x3026B2758E66CF11ul,
     Asf2 = 0xA6D900AA0062CE6Cul,
     Png = 0x89504E470D0A1A0Aul,
@@ -109,6 +110,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     }
     // return corresponding container format
     switch(sig) { // check 64-bit signatures
+    case Ar:
+        return ContainerFormat::Ar;
     case Asf1:
         return ContainerFormat::Asf;
     case Asf2:
@@ -223,6 +226,7 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
 const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType, unsigned int version)
 {
     switch(containerFormat) {
+    case ContainerFormat::Ar: return "a";
     case ContainerFormat::Asf: return "asf";
     case ContainerFormat::Elf: return "elf";
     case ContainerFormat::Gif87a:
@@ -273,6 +277,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Riff: return "riff";
     case ContainerFormat::RiffWave: return "wav";
     case ContainerFormat::RiffAvi: return "avi";
+    case ContainerFormat::Tar: return "tar";
     case ContainerFormat::TiffBigEndian:
     case ContainerFormat::TiffLittleEndian: return "tiff";
     case ContainerFormat::WindowsBitmap: return "bmp";
@@ -296,6 +301,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
     switch(containerFormat) {
     case ContainerFormat::Adts:
         return "Audio Data Transport Stream";
+    case ContainerFormat::Ar:
+        return "Archive (GNU ar)";
     case ContainerFormat::Asf:
         return "Advanced Systems Format";
     case ContainerFormat::Elf:
@@ -337,6 +344,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "RIFF/WAVE";
     case ContainerFormat::RiffAvi:
         return "RIFF/Audio Video Interleave";
+    case ContainerFormat::Tar:
+        return "TAR archive";
     case ContainerFormat::TiffBigEndian:
     case ContainerFormat::TiffLittleEndian:
         return "Tagged Image File Format";
@@ -356,10 +365,10 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "gzip compressed file";
     case ContainerFormat::Lzip:
         return "lzip compressed file";
-    case ContainerFormat::Zip:
-        return "ZIP archive";
     case ContainerFormat::SevenZ:
         return "7z archive";
+    case ContainerFormat::Zip:
+        return "ZIP archive";
     default:
         return "unknown";
     }

@@ -18,8 +18,9 @@ set(HEADER_FILES
     abstracttrack.h
     adts/adtsframe.h
     adts/adtsstream.h
-#    avc/avcconfiguration.h
-#    avc/avcinfo.h
+    aspectratio.h
+    avc/avcconfiguration.h
+    avc/avcinfo.h
     avi/bitmapinfoheader.h
     backuphelper.h
     basicfileinfo.h
@@ -32,6 +33,7 @@ set(HEADER_FILES
     ogg/oggiterator.h
     ogg/oggpage.h
     ogg/oggstream.h
+    opus/opusidentificationheader.h
     positioninset.h
     signature.h
     size.h
@@ -88,8 +90,9 @@ set(SRC_FILES
     abstracttrack.cpp
     adts/adtsframe.cpp
     adts/adtsstream.cpp
-#    avc/avcconfiguration.cpp
-#    avc/avcinfo.cpp
+    aspectratio.cpp
+    avc/avcconfiguration.cpp
+    avc/avcinfo.cpp
     avi/bitmapinfoheader.cpp
     backuphelper.cpp
     basicfileinfo.cpp
@@ -101,6 +104,7 @@ set(SRC_FILES
     ogg/oggiterator.cpp
     ogg/oggpage.cpp
     ogg/oggstream.cpp
+    opus/opusidentificationheader.cpp
     signature.cpp
     statusprovider.cpp
     tag.cpp
@@ -132,6 +136,13 @@ set(SRC_FILES
     mediafileinfo.cpp
     mediaformat.cpp
 )
+set(TEST_HEADER_FILES
+
+)
+set(TEST_SRC_FILES
+    tests/cppunit.cpp
+    tests/matroska.cpp
+)
 
 # meta data
 set(META_PROJECT_NAME tagparser)
@@ -139,9 +150,9 @@ set(META_APP_NAME "Tag Parser")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
 set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags.")
-set(META_VERSION_MAJOR 4)
+set(META_VERSION_MAJOR 5)
 set(META_VERSION_MINOR 0)
-set(META_VERSION_PATCH 2)
+set(META_VERSION_PATCH 0)
 
 # stringification of meta data
 set(META_PROJECT_NAME_STR "\"${META_PROJECT_NAME}\"")
@@ -187,6 +198,18 @@ add_definitions(
     -D_GLIBCXX_USE_CXX11_ABI=0
 )
 
+# add check target
+if(NOT TARGET check)
+    set(CMAKE_CTEST_COMMAND ctest -V)
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+    enable_testing()
+endif()
+add_executable(${META_PROJECT_NAME}_tests EXCLUDE_FROM_ALL ${TEST_HEADER_FILES} ${TEST_SRC_FILES})
+target_link_libraries(${META_PROJECT_NAME}_tests ${META_PROJECT_NAME} c++utilities cppunit)
+set_target_properties(${META_PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 11)
+add_test(NAME ${META_PROJECT_NAME}_cppunit COMMAND ${META_PROJECT_NAME}_tests -p "${CMAKE_CURRENT_SOURCE_DIR}/testfiles")
+add_dependencies(check ${META_PROJECT_NAME}_tests)
+
 # executable and linking
 add_library(${META_PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} ${RES_FILES} ${WINDOWS_ICON_PATH})
 target_link_libraries(${META_PROJECT_NAME} c++utilities z)
@@ -213,21 +236,31 @@ foreach(HEADER_FILE ${HEADER_FILES})
         COMPONENT header
     )
 endforeach()
-add_custom_target(install-binary
-    DEPENDS ${META_PROJECT_NAME}
-    COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
-add_custom_target(install-header
-    DEPENDS ${META_PROJECT_NAME}
-    COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=header -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
-add_custom_target(install-mingw-w64
-    DEPENDS install-binary install-header
-)
-add_custom_target(install-binary-strip
-    DEPENDS ${META_PROJECT_NAME}
-    COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_DO_STRIP=1 -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
-add_custom_target(install-mingw-w64-strip
-    DEPENDS install-binary-strip install-header
-)
+if(NOT TARGET install-binary)
+    add_custom_target(install-binary
+        DEPENDS ${META_PROJECT_NAME}
+        COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    )
+endif()
+if(NOT TARGET install-header)
+    add_custom_target(install-header
+        DEPENDS ${META_PROJECT_NAME}
+        COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=header -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    )
+endif()
+if(NOT TARGET install-mingw-w64)
+    add_custom_target(install-mingw-w64
+        DEPENDS install-binary install-header
+    )
+endif()
+if(NOT TARGET install-binary-strip)
+    add_custom_target(install-binary-strip
+        DEPENDS ${META_PROJECT_NAME}
+        COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_DO_STRIP=1 -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    )
+endif()
+if(NOT TARGET install-mingw-w64-strip)
+    add_custom_target(install-mingw-w64-strip
+        DEPENDS install-binary-strip install-header
+    )
+endif()
