@@ -16,8 +16,9 @@ using namespace std;
 using namespace IoUtilities;
 
 /*!
- * \remarks Nothing of this code has been tested yet. These classes are
- *          not used by the rest of the library (currently).
+ * \file aacframe.cpp
+ * \remarks Nothing of this code has been tested yet. It is currently not used
+ *          in the rest of the library.
  */
 
 namespace Media {
