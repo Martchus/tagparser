@@ -218,8 +218,28 @@ set_target_properties(${META_PROJECT_NAME} PROPERTIES
     SOVERSION ${META_VERSION_MAJOR}
     CXX_STANDARD 11
 )
+if(MINGW)
+    # enable static library when building with mingw-w64
+    add_library(${META_PROJECT_NAME}_static STATIC ${HEADER_FILES} ${SRC_FILES} ${RES_FILES} ${WINDOWS_ICON_PATH})
+    set_target_properties(${META_PROJECT_NAME}_static PROPERTIES
+        VERSION ${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}
+        SOVERSION ${META_VERSION_MAJOR}
+        OUTPUT_NAME ${META_PROJECT_NAME}
+        CXX_STANDARD 11
+    )
+endif(MINGW)
 
 # add install target
+if(MINGW)
+    install(TARGETS ${META_PROJECT_NAME}_static
+        RUNTIME DESTINATION bin
+        COMPONENT binary
+        LIBRARY DESTINATION lib
+        COMPONENT binary
+        ARCHIVE DESTINATION lib
+        COMPONENT binary
+    )
+endif(MINGW)
 install(TARGETS ${META_PROJECT_NAME}
     RUNTIME DESTINATION bin
     COMPONENT binary
@@ -259,8 +279,20 @@ if(NOT TARGET install-binary-strip)
         COMMAND "${CMAKE_COMMAND}" -DCMAKE_INSTALL_DO_STRIP=1 -DCMAKE_INSTALL_COMPONENT=binary -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
     )
 endif()
+if(NOT TARGET install-mingw-w64-importlib-strip)
+    add_custom_target(install-mingw-w64-importlib-strip
+        DEPENDS install-binary-strip
+        COMMAND "${CMAKE_FIND_ROOT_PATH}/bin/strip" --strip-unneeded "${CMAKE_INSTALL_PREFIX}/lib/lib${META_PROJECT_NAME}.dll.a"
+    )
+endif()
+if(NOT TARGET install-mingw-w64-staticlib-strip)
+    add_custom_target(install-mingw-w64-staticlib-strip
+        DEPENDS install-binary-strip
+        COMMAND "${CMAKE_FIND_ROOT_PATH}/bin/strip" -g "${CMAKE_INSTALL_PREFIX}/lib/lib${META_PROJECT_NAME}.a"
+    )
+endif()
 if(NOT TARGET install-mingw-w64-strip)
     add_custom_target(install-mingw-w64-strip
-        DEPENDS install-binary-strip install-header
+        DEPENDS install-binary-strip install-mingw-w64-importlib-strip install-mingw-w64-staticlib-strip install-header
     )
 endif()
