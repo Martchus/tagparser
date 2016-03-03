@@ -50,6 +50,52 @@ Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, const by
 {}
 
 /*!
+ * \brief Helper function to parse the genre index.
+ * \returns Returns the genre index or -1 if the specified string does not denote a genre index.
+ */
+template<class stringtype>
+int parseGenreIndex(const stringtype &denotation, bool isBigEndian = false)
+{
+    int index = -1;
+    for(auto c : denotation) {
+        if(sizeof(typename stringtype::value_type) == 2 && isBigEndian != CONVERSION_UTILITIES_IS_BYTE_ORDER_BIG_ENDIAN) {
+            c = swapOrder(static_cast<uint16>(c));
+        }
+        if(index == -1) {
+            switch(c) {
+            case ' ':
+                break;
+            case '(':
+                index = 0;
+                break;
+            case '\0':
+                return -1;
+            default:
+                if(c >= '0' && c <= '9') {
+                    index = c - '0';
+                } else {
+                    return -1;
+                }
+            }
+        } else {
+            switch(c) {
+            case ')':
+                return index;
+            case '\0':
+                return index;
+            default:
+                if(c >= '0' && c <= '9') {
+                    index = index * 10 + c - '0';
+                } else {
+                    return -1;
+                }
+            }
+        }
+    }
+    return index;
+}
+
+/*!
  * \brief Parses a frame from the stream read using the specified \a reader.
  *
  * The position of the current character in the input stream is expected to be
@@ -195,8 +241,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
             double milliseconds;
             try {
                 if(characterSize(dataEncoding) > 1) {
-                    wstring millisecondsStr = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
-                    milliseconds = ConversionUtilities::stringToNumber<double, wstring>(millisecondsStr, 10);
+                    milliseconds = ConversionUtilities::stringToNumber<double>(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
                 } else {
                     milliseconds = ConversionUtilities::stringToNumber<double>(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
                 }
@@ -208,22 +253,17 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         } else if((version >= 3 && id() == Id3v2FrameIds::lGenre) || (version < 3 && id() == Id3v2FrameIds::sGenre)) {
             // genre/content type
             int genreIndex;
-            try {
-                if(characterSize(dataEncoding) > 1) {
-                    wstring indexStr = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
-                    if(indexStr.front() == L'(' && indexStr.back() == L')') {
-                        indexStr = indexStr.substr(1, indexStr.length() - 2);
-                    }
-                    genreIndex = ConversionUtilities::stringToNumber<int, wstring>(indexStr, 10);
-                } else {
-                    string indexStr = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
-                    if(indexStr.front() == '(' && indexStr.back() == ')') {
-                        indexStr = indexStr.substr(1, indexStr.length() - 2);
-                    }
-                    genreIndex = ConversionUtilities::stringToNumber<int>(indexStr, 10);
-                }
-                value().assignStandardGenreIndex(genreIndex); // genre is specified as ID3 genre number
-            } catch(ConversionException &) {
+            if(characterSize(dataEncoding) > 1) {
+                auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                genreIndex = parseGenreIndex(genreDenotation, dataEncoding == TagTextEncoding::Utf16BigEndian);
+            } else {
+                auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                genreIndex = parseGenreIndex(genreDenotation);
+            }
+            if(genreIndex != -1) {
+                // genre is specified as ID3 genre number
+                value().assignStandardGenreIndex(genreIndex);
+            } else {
                 // genre is specified as string
                 // string might be null terminated
                 auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
@@ -600,12 +640,12 @@ string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncod
 /*!
  * \brief Parses a substring in the specified \a buffer.
  *
- * Same as Id3v2Frame::parseSubstring() but returns the substring as wstring object.
+ * Same as Id3v2Frame::parseSubstring() but returns the substring as u16string object.
  */
-wstring Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
+u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
 {
     auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
-    return wstring(reinterpret_cast<wstring::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
+    return u16string(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
 }
 
 /*!

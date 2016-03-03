@@ -14,8 +14,8 @@ class LIB_EXPORT Id3Genres
 public:
     static const char *stringFromIndex(int index);
     static int indexFromString(const std::string &genre);
-    static bool isIndexSupported(int index);
-    static int genreCount();
+    static constexpr int genreCount();
+    static constexpr bool isIndexSupported(int index);
 
 private:
     static const char **genreNames();
@@ -30,20 +30,20 @@ inline const char *Id3Genres::stringFromIndex(int index)
 }
 
 /*!
- * \brief Returns an indication whether the specified numerical denotation is
- *        supported by this class.
+ * \brief Returns the number of supported genres.
  */
-inline bool Id3Genres::isIndexSupported(int index)
+constexpr int Id3Genres::genreCount()
 {
-    return index >= 0 && index < genreCount();
+    return 192;
 }
 
 /*!
- * \brief Returns the number of supported genres.
+ * \brief Returns an indication whether the specified numerical denotation is
+ *        supported by this class.
  */
-inline int Id3Genres::genreCount()
+constexpr bool Id3Genres::isIndexSupported(int index)
 {
-    return 126;
+    return index >= 0 && index < genreCount();
 }
 
 }

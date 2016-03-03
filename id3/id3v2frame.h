@@ -137,7 +137,7 @@ public:
     TagTextEncoding parseTextEncodingByte(byte textEncodingByte);
     std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
     std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
-    std::wstring parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings = false);
+    std::u16string parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings = false);
     void parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
     void parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo);
     void parseComment(const char *buffer, size_t maxSize, TagValue &tagValue);
