@@ -171,7 +171,7 @@ void MatroskaContainer::validateIndex()
                                             if(clusterElement->id() != MatroskaIds::Cluster) {
                                                 addNotification(NotificationType::Critical, "\"CueClusterPosition\" element at " + numberToString(subElement->startOffset()) + " does not point to \"Cluster\"-element (points to " + numberToString(clusterElement->startOffset()) + ").", context);
                                             }
-                                        } catch(Failure &) {
+                                        } catch(const Failure &) {
                                                 addNotifications(context, *clusterElement);
                                             }
                                             break;
@@ -211,7 +211,7 @@ void MatroskaContainer::validateIndex()
                                                 default:
                                                     addNotification(NotificationType::Critical, "\"CueRelativePosition\" element does not point to \"Block\"-, \"BlockGroup\", or \"SimpleBlock\"-element (points to " + numberToString(referenceElement.startOffset()) + ").", context);
                                                 }
-                                            } catch(Failure &) {
+                                            } catch(const Failure &) {
                                                 addNotifications(context, referenceElement);
                                             }
                                         }
@@ -493,7 +493,7 @@ void MatroskaContainer::internalParseHeader()
                                     default:
                                         ;
                                     }
-                                } catch(Failure &) {
+                                } catch(const Failure &) {
                                     addNotification(NotificationType::Critical, "Can not parse element at " + numberToString(offset) + " (denoted using \"SeekHead\" element).", context);
                                 }
                             }
@@ -586,7 +586,7 @@ void MatroskaContainer::internalParseTags()
                     m_tags.back()->parse(*subElement);
                 } catch(NoDataFoundException &) {
                         m_tags.pop_back();
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse tag " + ConversionUtilities::numberToString(m_tags.size()) + ".", context);
                     }
                     break;
@@ -597,7 +597,7 @@ void MatroskaContainer::internalParseTags()
                     addNotification(NotificationType::Warning, "\"Tags\"-element contains unknown child. It will be ignored.", context);
                 }
             }
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Element structure seems to be invalid.", context);
             throw;
         }
@@ -620,7 +620,7 @@ void MatroskaContainer::internalParseTracks()
                     m_tracks.back()->parseHeader();
                 } catch(NoDataFoundException &) {
                         m_tracks.pop_back();
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse track " + ConversionUtilities::numberToString(m_tracks.size()) + ".", context);
                     }
                     break;
@@ -631,7 +631,7 @@ void MatroskaContainer::internalParseTracks()
                     addNotification(NotificationType::Warning, "\"Tracks\"-element contains unknown child element \"" + subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Element structure seems to be invalid.", context);
             throw;
         }
@@ -654,7 +654,7 @@ void MatroskaContainer::internalParseChapters()
                     m_editionEntries.back()->parseNested();
                 } catch(NoDataFoundException &) {
                         m_editionEntries.pop_back();
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse edition entry " + ConversionUtilities::numberToString(m_editionEntries.size()) + ".", context);
                     }
                     break;
@@ -665,7 +665,7 @@ void MatroskaContainer::internalParseChapters()
                     addNotification(NotificationType::Warning, "\"Chapters\"-element contains unknown child element \"" + subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Element structure seems to be invalid.", context);
             throw;
         }
@@ -688,7 +688,7 @@ void MatroskaContainer::internalParseAttachments()
                     m_attachments.back()->parse(subElement);
                 } catch(NoDataFoundException &) {
                         m_attachments.pop_back();
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse attached file " + ConversionUtilities::numberToString(m_attachments.size()) + ".", context);
                     }
                     break;
@@ -699,7 +699,7 @@ void MatroskaContainer::internalParseAttachments()
                     addNotification(NotificationType::Warning, "\"Attachments\"-element contains unknown child element \"" + subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Element structure seems to be invalid.", context);
             throw;
         }
@@ -901,7 +901,7 @@ void MatroskaContainer::internalMakeFile()
                 }
             }
 
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Unable to parse content in top-level element at " + numberToString(level0Element->startOffset()) + " of original file.", context);
             throw;
         }
@@ -948,7 +948,7 @@ calculateSegmentData:
                     if((segment.cuesElement = level0Element->childById(MatroskaIds::Cues))) {
                         try {
                             segment.cuesUpdater.parse(segment.cuesElement);
-                        } catch(Failure &) {
+                        } catch(const Failure &) {
                             addNotifications(segment.cuesUpdater);
                             throw;
                         }
@@ -1316,10 +1316,10 @@ nonRewriteCalculations:
             }
         }
 
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Parsing the original file failed.", context);
         throw;
-    } catch(ios_base::failure &) {
+    } catch(const ios_base::failure &) {
         addNotification(NotificationType::Critical, "An IO error occured when parsing the original file.", context);
         throw;
     }
@@ -1495,7 +1495,7 @@ nonRewriteCalculations:
                     try {
                         segment.cuesUpdater.make(outputStream);
                         addNotifications(segment.cuesUpdater);
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                         addNotifications(segment.cuesUpdater);
                         throw;
                     }
@@ -1593,7 +1593,7 @@ nonRewriteCalculations:
                     try {
                         segment.cuesUpdater.make(outputStream);
                         addNotifications(segment.cuesUpdater);
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                         addNotifications(segment.cuesUpdater);
                         throw;
                     }
@@ -1668,7 +1668,7 @@ nonRewriteCalculations:
         reset();
         try {
             parseHeader();
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Unable to reparse the header of the new file.", context);
             throw;
         }

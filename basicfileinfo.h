@@ -12,15 +12,15 @@ namespace Media {
 class LIB_EXPORT BasicFileInfo
 {
 public:
-    BasicFileInfo();
-    BasicFileInfo(const std::string &path);
+    BasicFileInfo(const std::string &path = std::string());
     BasicFileInfo(const BasicFileInfo &) = delete;
     BasicFileInfo &operator=(const BasicFileInfo &) = delete;
     virtual ~BasicFileInfo();
 
-    void open(bool readonly = false);
+    void open(bool readOnly = false);
     void reopen(bool readonly = false);
-    bool isOpen();
+    bool isOpen() const;
+    bool isReadOnly() const;
     void close();
 
     const std::string &path() const;
@@ -45,6 +45,7 @@ private:
     std::string m_path;
     std::fstream m_file;
     uint64 m_size;
+    bool m_readOnly;
 };
 
 /*!
@@ -52,9 +53,17 @@ private:
  *
  * \sa stream()
  */
-inline bool BasicFileInfo::isOpen()
+inline bool BasicFileInfo::isOpen() const
 {
     return m_file.is_open();
+}
+
+/*!
+ * \brief Indicates whether the last open()/reopen() call was read-only.
+ */
+inline bool BasicFileInfo::isReadOnly() const
+{
+    return m_readOnly;
 }
 
 /*!

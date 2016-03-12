@@ -72,7 +72,7 @@ KnownField MatroskaTag::knownField(const std::string &id) const
     });
     try {
         return map.at(id);
-    } catch(out_of_range &) {
+    } catch(const out_of_range &) {
         return KnownField::Invalid;
     }
 }
@@ -100,7 +100,7 @@ void MatroskaTag::parse(EbmlElement &tagElement)
                 field.invalidateNotifications();
                 field.reparse(*child, true);
                 fields().insert(pair<string, MatroskaTagField>(field.id(), field));
-            } catch(Failure &) {
+            } catch(const Failure &) {
             }
             addNotifications(context, field);
             break;
