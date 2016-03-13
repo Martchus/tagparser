@@ -354,171 +354,177 @@ void MatroskaContainer::internalParseHeader()
     for(EbmlElement *topLevelElement = m_firstElement.get(); topLevelElement; topLevelElement = topLevelElement->nextSibling()) {
         try {
             topLevelElement->parse();
-        } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse top-level element at " + numberToString(topLevelElement->startOffset()) + ".", context);
-            break;
-        }
-        switch(topLevelElement->id()) {
-        case EbmlIds::Header:
-            for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
-                try {
-                    subElement->parse();
-                } catch (Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse all childs of EBML header.", context);
-                    break;
+            switch(topLevelElement->id()) {
+            case EbmlIds::Header:
+                for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+                    try {
+                        subElement->parse();
+                        switch(subElement->id()) {
+                        case EbmlIds::Version:
+                            m_version = subElement->readUInteger();
+                            break;
+                        case EbmlIds::ReadVersion:
+                            m_readVersion = subElement->readUInteger();
+                            break;
+                        case EbmlIds::DocType:
+                            m_doctype = subElement->readString();
+                            break;
+                        case EbmlIds::DocTypeVersion:
+                            m_doctypeVersion = subElement->readUInteger();
+                            break;
+                        case EbmlIds::DocTypeReadVersion:
+                            m_doctypeReadVersion = subElement->readUInteger();
+                            break;
+                        case EbmlIds::MaxIdLength:
+                            m_maxIdLength = subElement->readUInteger();
+                            if(m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
+                                addNotification(NotificationType::Critical, "Maximum EBML element ID length greather then "
+                                                + numberToString<uint32>(EbmlElement::maximumIdLengthSupported())
+                                                + " bytes is not supported.", context);
+                                throw InvalidDataException();
+                            }
+                            break;
+                        case EbmlIds::MaxSizeLength:
+                            m_maxSizeLength = subElement->readUInteger();
+                            if(m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
+                                addNotification(NotificationType::Critical, "Maximum EBML element size length greather then "
+                                                + numberToString<uint32>(EbmlElement::maximumSizeLengthSupported())
+                                                + " bytes is not supported.", context);
+                                throw InvalidDataException();
+                            }
+                            break;
+                        }
+                        addNotifications(*subElement);
+                    } catch(const Failure &) {
+                        addNotifications(*subElement);
+                        addNotification(NotificationType::Critical, "Unable to parse all childs of EBML header.", context);
+                        break;
+                    }
                 }
-                switch(subElement->id()) {
-                case EbmlIds::Version:
-                    m_version = subElement->readUInteger();
-                    break;
-                case EbmlIds::ReadVersion:
-                    m_readVersion = subElement->readUInteger();
-                    break;
-                case EbmlIds::DocType:
-                    m_doctype = subElement->readString();
-                    break;
-                case EbmlIds::DocTypeVersion:
-                    m_doctypeVersion = subElement->readUInteger();
-                    break;
-                case EbmlIds::DocTypeReadVersion:
-                    m_doctypeReadVersion = subElement->readUInteger();
-                    break;
-                case EbmlIds::MaxIdLength:
-                    m_maxIdLength = subElement->readUInteger();
-                    if(m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
-                        addNotification(NotificationType::Critical, "Maximum EBML element ID length greather then "
-                                        + numberToString<uint32>(EbmlElement::maximumIdLengthSupported())
-                                        + " bytes is not supported.", context);
-                        throw InvalidDataException();
-                    }
-                    break;
-                case EbmlIds::MaxSizeLength:
-                    m_maxSizeLength = subElement->readUInteger();
-                    if(m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
-                        addNotification(NotificationType::Critical, "Maximum EBML element size length greather then "
-                                        + numberToString<uint32>(EbmlElement::maximumSizeLengthSupported())
-                                        + " bytes is not supported.", context);
-                        throw InvalidDataException();
-                    }
-                    break;
-                }
-            }
-            break;
-        case MatroskaIds::Segment:
-            ++m_segmentCount;
-            for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
-                try {
-                    subElement->parse();
-                } catch (Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse all childs of \"Segment\"-element.", context);
-                    break;
-                }
-                switch(subElement->id()) {
-                case MatroskaIds::SeekHead:
-                    m_seekInfos.emplace_back(make_unique<MatroskaSeekInfo>());
-                    m_seekInfos.back()->parse(subElement);
-                    addNotifications(*m_seekInfos.back());
-                    break;
-                case MatroskaIds::Tracks:
-                    if(excludesOffset(m_tracksElements, subElement->startOffset())) {
-                        m_tracksElements.push_back(subElement);
-                    }
-                    break;
-                case MatroskaIds::SegmentInfo:
-                    if(excludesOffset(m_segmentInfoElements, subElement->startOffset())) {
-                        m_segmentInfoElements.push_back(subElement);
-                    }
-                    break;
-                case MatroskaIds::Tags:
-                    if(excludesOffset(m_tagsElements, subElement->startOffset())) {
-                        m_tagsElements.push_back(subElement);
-                    }
-                    break;
-                case MatroskaIds::Chapters:
-                    if(excludesOffset(m_chaptersElements, subElement->startOffset())) {
-                        m_chaptersElements.push_back(subElement);
-                    }
-                    break;
-                case MatroskaIds::Attachments:
-                    if(excludesOffset(m_attachmentsElements, subElement->startOffset())) {
-                        m_attachmentsElements.push_back(subElement);
-                    }
-                    break;
-                case MatroskaIds::Cluster:
-                    // cluster reached
-                    // stop here if all relevant information has been gathered
-                    for(auto i = m_seekInfos.cbegin() + seekInfosIndex, end = m_seekInfos.cend(); i != end; ++i, ++seekInfosIndex) {
-                        for(const auto &infoPair : (*i)->info()) {
-                            uint64 offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
-                            if(offset >= fileInfo().size()) {
-                                addNotification(NotificationType::Critical, "Offset (" + numberToString(offset) + ") denoted by \"SeekHead\" element is invalid.", context);
-                            } else {
-                                auto element = make_unique<EbmlElement>(*this, offset);
-                                try {
-                                    element->parse();
-                                    if(element->id() != infoPair.first) {
-                                        addNotification(NotificationType::Critical, "ID of element " + element->idToString() + " at " + numberToString(offset) + " does not match the ID denoted in the \"SeekHead\" element (0x" + numberToString(infoPair.first, 16) + ").", context);
+                break;
+            case MatroskaIds::Segment:
+                ++m_segmentCount;
+                for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+                    try {
+                        subElement->parse();
+                        switch(subElement->id()) {
+                        case MatroskaIds::SeekHead:
+                            m_seekInfos.emplace_back(make_unique<MatroskaSeekInfo>());
+                            m_seekInfos.back()->parse(subElement);
+                            addNotifications(*m_seekInfos.back());
+                            break;
+                        case MatroskaIds::Tracks:
+                            if(excludesOffset(m_tracksElements, subElement->startOffset())) {
+                                m_tracksElements.push_back(subElement);
+                            }
+                            break;
+                        case MatroskaIds::SegmentInfo:
+                            if(excludesOffset(m_segmentInfoElements, subElement->startOffset())) {
+                                m_segmentInfoElements.push_back(subElement);
+                            }
+                            break;
+                        case MatroskaIds::Tags:
+                            if(excludesOffset(m_tagsElements, subElement->startOffset())) {
+                                m_tagsElements.push_back(subElement);
+                            }
+                            break;
+                        case MatroskaIds::Chapters:
+                            if(excludesOffset(m_chaptersElements, subElement->startOffset())) {
+                                m_chaptersElements.push_back(subElement);
+                            }
+                            break;
+                        case MatroskaIds::Attachments:
+                            if(excludesOffset(m_attachmentsElements, subElement->startOffset())) {
+                                m_attachmentsElements.push_back(subElement);
+                            }
+                            break;
+                        case MatroskaIds::Cluster:
+                            // cluster reached
+                            // stop here if all relevant information has been gathered
+                            for(auto i = m_seekInfos.cbegin() + seekInfosIndex, end = m_seekInfos.cend(); i != end; ++i, ++seekInfosIndex) {
+                                for(const auto &infoPair : (*i)->info()) {
+                                    uint64 offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
+                                    if(offset >= fileInfo().size()) {
+                                        addNotification(NotificationType::Critical, "Offset (" + numberToString(offset) + ") denoted by \"SeekHead\" element is invalid.", context);
+                                    } else {
+                                        auto element = make_unique<EbmlElement>(*this, offset);
+                                        try {
+                                            element->parse();
+                                            if(element->id() != infoPair.first) {
+                                                addNotification(NotificationType::Critical, "ID of element " + element->idToString() + " at " + numberToString(offset) + " does not match the ID denoted in the \"SeekHead\" element (0x" + numberToString(infoPair.first, 16) + ").", context);
+                                            }
+                                            switch(element->id()) {
+                                            case MatroskaIds::SegmentInfo:
+                                                if(excludesOffset(m_segmentInfoElements, offset)) {
+                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_segmentInfoElements.emplace_back(m_additionalElements.back().get());
+                                                }
+                                                break;
+                                            case MatroskaIds::Tracks:
+                                                if(excludesOffset(m_tracksElements, offset)) {
+                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_tracksElements.emplace_back(m_additionalElements.back().get());
+                                                }
+                                                break;
+                                            case MatroskaIds::Tags:
+                                                if(excludesOffset(m_tagsElements, offset)) {
+                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_tagsElements.emplace_back(m_additionalElements.back().get());
+                                                }
+                                                break;
+                                            case MatroskaIds::Chapters:
+                                                if(excludesOffset(m_chaptersElements, offset)) {
+                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_chaptersElements.emplace_back(m_additionalElements.back().get());
+                                                }
+                                                break;
+                                            case MatroskaIds::Attachments:
+                                                if(excludesOffset(m_attachmentsElements, offset)) {
+                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_attachmentsElements.emplace_back(m_additionalElements.back().get());
+                                                }
+                                                break;
+                                            default:
+                                                ;
+                                            }
+                                        } catch(const Failure &) {
+                                            addNotification(NotificationType::Critical, "Can not parse element at " + numberToString(offset) + " (denoted using \"SeekHead\" element).", context);
+                                        }
                                     }
-                                    switch(element->id()) {
-                                    case MatroskaIds::SegmentInfo:
-                                        if(excludesOffset(m_segmentInfoElements, offset)) {
-                                            m_additionalElements.emplace_back(move(element));
-                                            m_segmentInfoElements.emplace_back(m_additionalElements.back().get());
-                                        }
-                                        break;
-                                    case MatroskaIds::Tracks:
-                                        if(excludesOffset(m_tracksElements, offset)) {
-                                            m_additionalElements.emplace_back(move(element));
-                                            m_tracksElements.emplace_back(m_additionalElements.back().get());
-                                        }
-                                        break;
-                                    case MatroskaIds::Tags:
-                                        if(excludesOffset(m_tagsElements, offset)) {
-                                            m_additionalElements.emplace_back(move(element));
-                                            m_tagsElements.emplace_back(m_additionalElements.back().get());
-                                        }
-                                        break;
-                                    case MatroskaIds::Chapters:
-                                        if(excludesOffset(m_chaptersElements, offset)) {
-                                            m_additionalElements.emplace_back(move(element));
-                                            m_chaptersElements.emplace_back(m_additionalElements.back().get());
-                                        }
-                                        break;
-                                    case MatroskaIds::Attachments:
-                                        if(excludesOffset(m_attachmentsElements, offset)) {
-                                            m_additionalElements.emplace_back(move(element));
-                                            m_attachmentsElements.emplace_back(m_additionalElements.back().get());
-                                        }
-                                        break;
-                                    default:
-                                        ;
-                                    }
-                                } catch(const Failure &) {
-                                    addNotification(NotificationType::Critical, "Can not parse element at " + numberToString(offset) + " (denoted using \"SeekHead\" element).", context);
                                 }
                             }
+                            // not checking if m_tagsElements is empty avoids long parsing times when loading big files
+                            // but also has the disadvantage that the parser relies on the presence of a SeekHead element
+                            // (which is not mandatory) to detect tags at the end of the segment
+                            if(((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > m_maxFullParseSize) && !m_segmentInfoElements.empty()) {
+                                goto finish;
+                            }
+                            break;
                         }
+                        addNotifications(*subElement);
+                    } catch(const Failure &) {
+                        addNotifications(*subElement);
+                        addNotification(NotificationType::Critical, "Unable to parse all childs of \"Segment\"-element.", context);
+                        break;
                     }
-                    // not checking if m_tagsElements is empty avoids long parsing times when loading big files
-                    // but also has the disadvantage that the parser relies on the presence of a SeekHead element
-                    // (which is not mandatory) to detect tags at the end of the segment
-                    if(((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > m_maxFullParseSize) && !m_segmentInfoElements.empty()) {
-                        goto finish;
-                    }
-                    break;
                 }
+                currentOffset += topLevelElement->totalSize();
+                break;
+            default:
+                ;
             }
-            currentOffset += topLevelElement->totalSize();
+            addNotifications(*topLevelElement);
+        } catch(const Failure &) {
+            addNotifications(*topLevelElement);
+            addNotification(NotificationType::Critical, "Unable to parse top-level element at " + numberToString(topLevelElement->startOffset()) + ".", context);
             break;
-        default:
-            ;
         }
     }
     // finally parse the "Info"-element and fetch "EditionEntry"-elements
 finish:
     try {
         parseSegmentInfo();
-    } catch (Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse EBML (segment) \"Info\"-element.", context);
     }
 }

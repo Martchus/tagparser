@@ -136,6 +136,7 @@ inline bool EbmlElement::isPadding() const
 
 /*!
  * \brief Returns the offset of the first child of the element.
+ * \remarks The returned offset is relative to the start offset if this element.
  */
 inline uint64 EbmlElement::firstChildOffset() const
 {
