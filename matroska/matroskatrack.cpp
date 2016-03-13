@@ -358,6 +358,7 @@ void MatroskaTrack::internalParseHeader()
             ;
         }
     }
+
     // read further information from the CodecPrivate element for some codecs
     switch(m_format.general) {
     EbmlElement *codecPrivateElement;
@@ -429,6 +430,8 @@ void MatroskaTrack::internalParseHeader()
     default:
         ;
     }
+
+    // parse format name for unknown formats
     if(m_format.general == GeneralMediaFormat::Unknown && m_formatName.empty()) {
         if(startsWith<string>(m_formatId, "V_") || startsWith<string>(m_formatId, "A_") || startsWith<string>(m_formatId, "S_")) {
             m_formatName = m_formatId.substr(2);
@@ -436,6 +439,14 @@ void MatroskaTrack::internalParseHeader()
             m_formatName = m_formatId;
         }
         m_formatName.append(" (unknown)");
+    }
+
+    // use pixel size as display size if display size not specified
+    if(!m_displaySize.width()) {
+        m_displaySize.setWidth(m_pixelSize.width());
+    }
+    if(!m_displaySize.height()) {
+        m_displaySize.setHeight(m_pixelSize.height());
     }
 }
 
