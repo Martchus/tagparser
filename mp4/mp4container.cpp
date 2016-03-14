@@ -57,7 +57,7 @@ void Mp4Container::internalParseHeader()
         m_doctype = reader().readString(4);
         m_version = reader().readUInt32BE();
     } else {
-        m_doctype = "mp41";
+        m_doctype.clear();
         m_version = 0;
     }
 }

@@ -1165,6 +1165,7 @@ void Mp4Track::internalParseHeader()
         addNotification(NotificationType::Critical, "\"trak\"-atom is null.", context);
         throw InvalidDataException();
     }
+
     // get atoms
     try {
         if(!(m_tkhdAtom = m_trakAtom->childById(TrackHeader))) {
@@ -1207,11 +1208,13 @@ void Mp4Track::internalParseHeader()
             addNotification(NotificationType::Critical, "No \"stsz\"/\"stz2\"-atom found.", context);
             throw InvalidDataException();
         }
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse relevant atoms.", context);
         throw InvalidDataException();
     }
+
     BinaryReader &reader = m_trakAtom->reader();
+
     // read tkhd atom
     m_istream->seekg(m_tkhdAtom->startOffset() + 8); // seek to beg, skip size and name
     byte atomVersion = reader.readByte(); // read version
@@ -1236,8 +1239,9 @@ void Mp4Track::internalParseHeader()
         m_modificationTime = DateTime();
         m_id = 0;
     }
+
     // read mdhd atom
-    m_istream->seekg(m_mdhdAtom->startOffset() + 8); // seek to beg, skip size and name
+    m_istream->seekg(m_mdhdAtom->dataOffset()); // seek to beg, skip size and name
     atomVersion = reader.readByte(); // read version
     m_istream->seekg(3, ios_base::cur); // skip flags
     switch(atomVersion) {
@@ -1258,12 +1262,17 @@ void Mp4Track::internalParseHeader()
         m_timeScale = 0;
         m_duration = TimeSpan();
     }
-    uint16 rawLanguage = reader.readUInt16BE();
-    char buff[3];
-    buff[0] = ((rawLanguage & 0x7C00) >> 0xA) + 0x60;
-    buff[1] = ((rawLanguage & 0x03E0) >> 0x5) + 0x60;
-    buff[2] = ((rawLanguage & 0x001F) >> 0x0) + 0x60;
-    m_language = string(buff, 3);
+    uint16 tmp = reader.readUInt16BE();
+    if(tmp) {
+        char buff[3];
+        buff[0] = ((tmp & 0x7C00) >> 0xA) + 0x60;
+        buff[1] = ((tmp & 0x03E0) >> 0x5) + 0x60;
+        buff[2] = ((tmp & 0x001F) >> 0x0) + 0x60;
+        m_language = string(buff, 3);
+    } else {
+        m_language.clear();
+    }
+
     // read hdlr atom
     // -> seek to begin skipping size, name, version, flags and reserved bytes
     m_istream->seekg(m_hdlrAtom->dataOffset() + 8);
@@ -1284,19 +1293,26 @@ void Mp4Track::internalParseHeader()
     default:
         m_mediaType = MediaType::Unknown;
     }
-
-    //  name
+    // -> name
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
-    m_name = reader.readTerminatedString(m_hdlrAtom->totalSize() - 12 - 4 - 12, 0);
+    if((tmp = m_istream->peek()) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {
+        // assume size prefixed string (seems to appear in QuickTime files)
+        m_istream->seekg(1, ios_base::cur);
+        m_name = reader.readString(tmp);
+    } else {
+        // assume null terminated string (appears in MP4 files)
+        m_name = reader.readTerminatedString(m_hdlrAtom->dataSize() - 12 - 4 - 8, 0);
+    }
+
     // read stco atom (only chunk count)
     m_chunkOffsetSize = (m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64) ? 8 : 4;
     m_istream->seekg(m_stcoAtom->dataOffset() + 4);
     m_chunkCount = reader.readUInt32BE();
+
     // read stsd atom
     m_istream->seekg(m_stsdAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
     uint32 entryCount = reader.readUInt32BE();
     Mp4Atom *esDescParentAtom = nullptr;
-    uint16 tmp;
     if(entryCount > 0) {
         try {
             for(Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom; codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
@@ -1456,6 +1472,7 @@ void Mp4Track::internalParseHeader()
             addNotification(NotificationType::Critical, "Unable to parse child atoms of \"stsd\"-atom.", context);
         }
     }
+
     // read stsz atom which holds the sample size table
     m_sampleSizes.clear();
     m_size = m_sampleCount = 0;
@@ -1527,6 +1544,7 @@ void Mp4Track::internalParseHeader()
             }
         }
     }
+
     // no sample sizes found, search for trun atoms
     uint64 totalDuration = 0;
     for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(MovieFragment, true); moofAtom; moofAtom = moofAtom->siblingById(MovieFragment, false)) {
@@ -1654,6 +1672,7 @@ void Mp4Track::internalParseHeader()
             }
         }
     }
+
     // set duration from "trun-information" if the duration has not been determined yet
     if(m_duration.isNull() && totalDuration) {
         uint32 timeScale = m_timeScale;
@@ -1664,10 +1683,12 @@ void Mp4Track::internalParseHeader()
             m_duration = TimeSpan::fromSeconds(static_cast<double>(totalDuration) / static_cast<double>(timeScale));
         }
     }
+
     // caluculate average bitrate
     if(m_bitrate < 0.01 && m_bitrate > -0.01) {
         m_bitrate = (static_cast<double>(m_size) * 0.0078125) / m_duration.totalSeconds();
     }
+
     // read stsc atom (only number of entries)
     m_istream->seekg(m_stscAtom->dataOffset() + 4);
     m_sampleToChunkEntryCount = reader.readUInt32BE();

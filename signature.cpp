@@ -47,6 +47,7 @@ enum Sig32 : uint32
     Mp4 = 0x66747970u,
     Ogg = 0x4F676753u,
     PhotoshopDocument = 0x38425053u,
+    QuickTime = 0x6D6F6F76u,
     Riff = 0x52494646u,
     RiffWave =0x57415645u,
     TiffBigEndian = 0x4D4D002Au,
@@ -124,6 +125,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     switch(sig & 0x00000000FFFFFFFF) { // check 32-bit signatures @ bit 31
     case Mp4:
         return ContainerFormat::Mp4;
+    case QuickTime:
+        return ContainerFormat::QuickTime;
     default:
         ;
     }
@@ -285,6 +288,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Bzip2: return "bz";
     case ContainerFormat::Gzip: return "gz";
     case ContainerFormat::Lzip: return "lz";
+    case ContainerFormat::QuickTime: return "mov";
     case ContainerFormat::Zip: return "zip";
     case ContainerFormat::SevenZ: return "7z";
     default: return "";
@@ -367,6 +371,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "lzip compressed file";
     case ContainerFormat::SevenZ:
         return "7z archive";
+    case ContainerFormat::QuickTime:
+        return "Quick Time";
     case ContainerFormat::Zip:
         return "ZIP archive";
     default:
@@ -445,6 +451,8 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
         return "application/x-rar-compressed";
     case ContainerFormat::Lzip:
         return "application/x-lzip";
+    case ContainerFormat::QuickTime:
+        return "video/quicktime";
     case ContainerFormat::Zip:
         return "application/zip";
     case ContainerFormat::SevenZ:

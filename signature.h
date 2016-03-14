@@ -50,6 +50,7 @@ enum class ContainerFormat
     WindowsIcon, /**< Microsoft Windows Icon */
     SevenZ, /**< 7z archive */
     Lzip, /**< lz compressed file */
+    QuickTime, /**< QuickTime container */
     Zip /**< ZIP archive */
 };
 

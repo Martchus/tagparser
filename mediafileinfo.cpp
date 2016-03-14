@@ -207,8 +207,9 @@ startParsingSignature:
             // continue reading signature
             goto startParsingSignature;
 
-        case ContainerFormat::Mp4: {
-            // EBML/Matroska is handled using Mp4Container instance
+        case ContainerFormat::Mp4:
+        case ContainerFormat::QuickTime: {
+            // MP4/QuickTime is handled using Mp4Container instance
             m_container = make_unique<Mp4Container>(*this, m_containerOffset);
             NotificationList notifications;
             try {
@@ -512,7 +513,7 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
     // check if tags need to be created/adjusted/removed
     bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 && requiredTargets.front().isEmpty());
     bool targetsSupported = false;
-    if(m_container) {
+    if(areTagsSupported() && m_container) {
         // container object takes care of tag management
         if(targetsRequired) {
             // check whether container supports targets
@@ -723,54 +724,17 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
  */
 const char *MediaFileInfo::mimeType() const
 {
+    MediaType mediaType;
     switch(m_containerFormat) {
-    case ContainerFormat::Asf:
-        return "video/x-ms-asf";
-    case ContainerFormat::Gif87a:
-    case ContainerFormat::Gif89a:
-        return "image/gif";
-    case ContainerFormat::Jpeg:
-        return "image/jpeg";
-    case ContainerFormat::Png:
-        return "image/png";
-    case ContainerFormat::MpegAudioFrames:
-        return "audio/mpeg";
     case ContainerFormat::Mp4:
-        if(hasTracksOfType(MediaType::Video)) {
-            return "video/mp4";
-        }
-        return "audio/mp4";
     case ContainerFormat::Ogg:
-        if(hasTracksOfType(MediaType::Video)) {
-            return "video/ogg";
-        }
-        return "audio/ogg";
     case ContainerFormat::Matroska:
-        if(hasTracksOfType(MediaType::Video)) {
-            return "video/x-matroska";
-        }
-        return "audio/x-matroska";
-    case ContainerFormat::Bzip2:
-        return "application/x-bzip";
-    case ContainerFormat::Gzip:
-        return "application/gzip";
-    case ContainerFormat::Lha:
-        return "application/x-lzh-compressed";
-    case ContainerFormat::Rar:
-        return "application/x-rar-compressed";
-    case ContainerFormat::Lzip:
-        return "application/x-lzip";
-    case ContainerFormat::Zip:
-        return "application/zip";
-    case ContainerFormat::SevenZ:
-        return "application/x-7z-compressed";
-    case ContainerFormat::WindowsBitmap:
-        return "image/bmp";
-    case ContainerFormat::WindowsIcon:
-        return "image/vnd.microsoft.icon";
+        mediaType = hasTracksOfType(MediaType::Video) ? MediaType::Video : MediaType::Audio;
+        break;
     default:
-        return "";
+        mediaType = MediaType::Unknown;
     }
+    return Media::containerMimeType(m_containerFormat, mediaType);
 }
 
 /*!
@@ -781,7 +745,7 @@ const char *MediaFileInfo::mimeType() const
  *
  * \remarks The MediaFileInfo keeps the ownership over the returned
  *          pointers. The returned Tracks will be destroyed when the
- *          MediaFileInfo gets invalidated.
+ *          MediaFileInfo is invalidated.
  *
  * \sa parseTracks()
  */
@@ -950,7 +914,7 @@ bool MediaFileInfo::removeAllId3v2Tags()
  * \returns Returns the first ID3v2 tag of the current file.
  *
  * \remarks The MediaFileInfo keeps the ownership over the created tag. It will be
- *          destroyed when the MediaFileInfo gets invalidated.
+ *          destroyed when the MediaFileInfo is invalidated.
  *
  * \sa applyChanges()
  */
@@ -1066,9 +1030,6 @@ bool MediaFileInfo::areTracksSupported() const
  */
 bool MediaFileInfo::areTagsSupported() const
 {
-    if(hasAnyTag()) {
-        return true;
-    }
     switch(m_containerFormat) {
     case ContainerFormat::Mp4:
     case ContainerFormat::MpegAudioFrames:
@@ -1076,9 +1037,12 @@ bool MediaFileInfo::areTagsSupported() const
     case ContainerFormat::Matroska:
     case ContainerFormat::Webm:
     case ContainerFormat::Adts:
+        // these container formats are supported
         return true;
     default:
-        return false;
+        // the container format is unsupported
+        // -> an ID3 tag might be already present, in this case the tags are considered supported
+        return !m_container && (hasId3v1Tag() || hasId3v2Tag());
     }
 }
 
@@ -1087,12 +1051,12 @@ bool MediaFileInfo::areTagsSupported() const
  *
  * \remarks The MediaFileInfo keeps the ownership over the returned
  *          pointer. The returned MP4 tag will be destroyed when the
- *          MediaFileInfo gets invalidated.
+ *          MediaFileInfo is invalidated.
  */
 Mp4Tag *MediaFileInfo::mp4Tag() const
 {
     // simply return the first tag here since MP4 files never contain multiple tags
-    return m_containerFormat == ContainerFormat::Mp4 && m_container && m_container->tagCount() > 0 ? static_cast<Mp4Container *>(m_container.get())->tags().front().get() : nullptr;
+    return (m_containerFormat == ContainerFormat::Mp4 || m_containerFormat == ContainerFormat::QuickTime) && m_container && m_container->tagCount() > 0 ? static_cast<Mp4Container *>(m_container.get())->tags().front().get() : nullptr;
 }
 
 /*!
@@ -1100,7 +1064,7 @@ Mp4Tag *MediaFileInfo::mp4Tag() const
  *
  * \remarks The MediaFileInfo keeps the ownership over the returned
  *          pointers. The returned Matroska tags will be destroyed when the
- *          MediaFileInfo gets invalidated.
+ *          MediaFileInfo is invalidated.
  */
 const vector<unique_ptr<MatroskaTag> > &MediaFileInfo::matroskaTags() const
 {
@@ -1117,7 +1081,7 @@ const vector<unique_ptr<MatroskaTag> > &MediaFileInfo::matroskaTags() const
  * \brief Returns all chapters assigned to the current file.
  *
  * \remarks The MediaFileInfo keeps the ownership over the chapters which will be
- *          destroyed when the MediaFileInfo gets invalidated.
+ *          destroyed when the MediaFileInfo is invalidated.
  */
 vector<AbstractChapter *> MediaFileInfo::chapters() const
 {
@@ -1136,7 +1100,7 @@ vector<AbstractChapter *> MediaFileInfo::chapters() const
  * \brief Returns all attachments assigned to the current file.
  *
  * \remarks The MediaFileInfo keeps the ownership over the attachments which will be
- *          destroyed when the MediaFileInfo gets invalidated.
+ *          destroyed when the MediaFileInfo is invalidated.
  */
 vector<AbstractAttachment *> MediaFileInfo::attachments() const
 {
@@ -1318,7 +1282,7 @@ void MediaFileInfo::mergeId3v2Tags()
  * Previous elements of the vector will not be cleared.
  *
  * \remarks The MediaFileInfo keeps the ownership over the tags which will be
- *          destroyed when the MediaFileInfo gets invalidated.
+ *          destroyed when the MediaFileInfo is invalidated.
  */
 void MediaFileInfo::tags(vector<Tag *> &tags) const
 {
@@ -1338,7 +1302,7 @@ void MediaFileInfo::tags(vector<Tag *> &tags) const
  * \brief Returns all tags assigned to the current file.
  *
  * \remarks The MediaFileInfo keeps the ownership over the tags which will be
- *          destroyed when the MediaFileInfo gets invalidated.
+ *          destroyed when the MediaFileInfo is invalidated.
  */
 vector<Tag *> MediaFileInfo::tags() const
 {
@@ -1376,7 +1340,7 @@ void MediaFileInfo::makeMp3File()
                 stream().seekp(-128, ios_base::end);
                 try {
                     m_id3v1Tag->make(stream());
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
@@ -1400,7 +1364,7 @@ void MediaFileInfo::makeMp3File()
                 stream().seekp(0, ios_base::end);
                 try {
                     m_id3v1Tag->make(stream());
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
@@ -1515,7 +1479,7 @@ void MediaFileInfo::makeMp3File()
                 updateStatus("Writing ID3v1 tag ...");
                 try {
                     m_id3v1Tag->make(stream());
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
                 }
             }

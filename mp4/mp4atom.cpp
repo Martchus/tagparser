@@ -59,7 +59,7 @@ void Mp4Atom::internalParse()
     invalidateStatus();
     static const string context("parsing MP4 atom");
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid. The maximum size within the parent atom is " + numberToString(maxTotalSize()) + ".", context);
+        addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid. The remaining size within the parent atom is " + numberToString(maxTotalSize()) + ".", context);
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());

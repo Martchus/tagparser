@@ -180,7 +180,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
     Mp4Atom *subAtom = nullptr;
     try {
         metaAtom.childById(Mp4AtomIds::HandlerReference);
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if(subAtom) {
@@ -206,7 +206,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
     }
     try {
         subAtom = metaAtom.childById(Mp4AtomIds::ItunesList);
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if(subAtom) {
@@ -217,7 +217,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
                 tagField.invalidateNotifications();
                 tagField.reparse(*child);
                 fields().insert(pair<fieldType::identifierType, fieldType>(child->id(), tagField));
-            } catch(Failure &) {
+            } catch(const Failure &) {
             }
             addNotifications(context, *child);
             addNotifications(context, tagField);
