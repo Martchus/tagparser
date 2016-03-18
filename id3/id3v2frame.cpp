@@ -108,6 +108,7 @@ int parseGenreIndex(const stringtype &denotation, bool isBigEndian = false)
 void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 maximalSize)
 {
     invalidateStatus();
+    clear();
     string context("parsing ID3v2 frame");
 
     // parse header
@@ -115,13 +116,13 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         // parse header for ID3v2.1 and ID3v2.2
         // -> read ID
         setId(reader.readUInt24BE());
-        if((id() & 0xFFFF0000u) == 0) {
+        if(id() & 0xFFFF0000u) {
+            m_padding = false;
+        } else {
             // padding reached
             m_padding = true;
             addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", context);
             throw NoDataFoundException();
-        } else {
-            m_padding = false;
         }
 
         // -> update context
@@ -143,13 +144,13 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         // parse header for ID3v2.3 and ID3v2.4
         // -> read ID
         setId(reader.readUInt32BE());
-        if((id() & 0xFF000000u) == 0) {
+        if(id() & 0xFF000000u) {
+            m_padding = false;
+        } else {
             // padding reached
             m_padding = true;
             addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", context);
             throw NoDataFoundException();
-        } else {
-            m_padding = false;
         }
 
         // -> update context
@@ -232,7 +233,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
                     position = PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
                 }
                 value().assignPosition(position);
-            } catch(ConversionException &) {
+            } catch(const ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
             }
 
@@ -246,7 +247,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
                     milliseconds = ConversionUtilities::stringToNumber<double>(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
                 }
                 value().assignTimeSpan(TimeSpan::fromMilliseconds(milliseconds));
-            } catch (ConversionException &) {
+            } catch (const ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of the length frame is not numeric and will be ignored.", context);
             }
 
@@ -440,7 +441,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
             // just write the data
             copy(m_frame.value().dataPointer(), m_frame.value().dataPointer() + m_decompressedSize, m_data.get());
         }
-    } catch(ConversionException &) {
+    } catch(const ConversionException &) {
         m_frame.addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
         throw InvalidDataException();
     }
@@ -739,21 +740,23 @@ void Id3v2Frame::parsePicture(const char *buffer, size_t maxSize, TagValue &tagV
 }
 
 /*!
- * \brief Parses the comment from the specified \a buffer.
+ * \brief Parses the comment/unsynchronized lyrics from the specified \a buffer.
  * \param buffer Specifies the buffer holding the picture.
  * \param dataSize Specifies the maximal number of bytes to read from the buffer.
  * \param tagValue Specifies the tag value used to store the results.
  */
 void Id3v2Frame::parseComment(const char *buffer, size_t dataSize, TagValue &tagValue)
 {
-    static const string context("parsing comment frame");
+    static const string context("parsing comment/unsynchronized lyrics frame");
     const char *end = buffer + dataSize;
     if(dataSize < 6) {
         addNotification(NotificationType::Critical, "Comment frame is incomplete.", context);
         throw TruncatedDataException();
     }
     TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer);
-    tagValue.setLanguage(string(++buffer, 3));
+    if(*(++buffer)) {
+        tagValue.setLanguage(string(buffer, 3));
+    }
     auto substr = parseSubstring(buffer += 3, dataSize -= 4, dataEncoding, true);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) >= end) {

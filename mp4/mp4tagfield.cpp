@@ -455,7 +455,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
                 // track number and disk number are exceptions
                 // raw data type 0 is used, information is stored as pair of unsigned integers
                 case Mp4TagAtomIds::TrackPosition: case Mp4TagAtomIds::DiskPosition: {
-                    PositionInSet pos = m_field.value().toPositionIntSet();
+                    PositionInSet pos = m_field.value().toPositionInSet();
                     m_writer.writeInt32BE(pos.position());
                     if(pos.total() <= numeric_limits<int16>::max()) {
                         m_writer.writeInt16BE(static_cast<int16>(pos.total()));

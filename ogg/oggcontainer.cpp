@@ -280,12 +280,12 @@ void OggContainer::internalMakeFile()
         }
         // clear iterator
         m_iterator = OggIterator(fileInfo().stream(), startOffset(), fileInfo().size());
-    } catch(OperationAbortedException &) {
+    } catch(const OperationAbortedException &) {
         addNotification(NotificationType::Information, "Rewriting file to apply new tag information has been aborted.", context);
         BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
         m_iterator.setStream(fileInfo().stream());
         throw;
-    } catch(ios_base::failure &ex) {
+    } catch(const ios_base::failure &ex) {
         addNotification(NotificationType::Critical, "IO error occured when rewriting file to apply new tag information.\n" + string(ex.what()), context);
         BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
         m_iterator.setStream(fileInfo().stream());

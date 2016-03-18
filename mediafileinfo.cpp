@@ -920,7 +920,7 @@ bool MediaFileInfo::removeAllId3v2Tags()
  */
 Id3v2Tag *MediaFileInfo::createId3v2Tag()
 {
-    if(!m_id3v2Tags.size()) {
+    if(m_id3v2Tags.empty()) {
         m_id3v2Tags.emplace_back(make_unique<Id3v2Tag>());
     }
     return m_id3v2Tags.front().get();
@@ -1048,9 +1048,7 @@ bool MediaFileInfo::areTagsSupported() const
 
 /*!
  * \brief Returns a pointer to the assigned MP4 tag or nullptr if none is assigned.
- *
- * \remarks The MediaFileInfo keeps the ownership over the returned
- *          pointer. The returned MP4 tag will be destroyed when the
+ * \remarks The MediaFileInfo keeps the ownership over the object which will be destroyed when the
  *          MediaFileInfo is invalidated.
  */
 Mp4Tag *MediaFileInfo::mp4Tag() const
@@ -1061,7 +1059,6 @@ Mp4Tag *MediaFileInfo::mp4Tag() const
 
 /*!
  * \brief Returns pointers to the assigned Matroska tags.
- *
  * \remarks The MediaFileInfo keeps the ownership over the returned
  *          pointers. The returned Matroska tags will be destroyed when the
  *          MediaFileInfo is invalidated.
@@ -1078,10 +1075,19 @@ const vector<unique_ptr<MatroskaTag> > &MediaFileInfo::matroskaTags() const
 }
 
 /*!
+ * \brief Returns a pointer to the first assigned Vorbis comment or nullptr if none is assigned.
+ * \remarks The MediaFileInfo keeps the ownership over the object which will be destroyed when the
+ *          MediaFileInfo is invalidated.
+ */
+VorbisComment *MediaFileInfo::vorbisComment() const
+{
+    return m_containerFormat == ContainerFormat::Ogg && m_container && m_container->tagCount() > 0 ? static_cast<OggContainer *>(m_container.get())->tags().front().get() : nullptr;
+}
+
+/*!
  * \brief Returns all chapters assigned to the current file.
- *
- * \remarks The MediaFileInfo keeps the ownership over the chapters which will be
- *          destroyed when the MediaFileInfo is invalidated.
+ * \remarks The MediaFileInfo keeps the ownership over the object which will be destroyed when the
+ *          MediaFileInfo is invalidated.
  */
 vector<AbstractChapter *> MediaFileInfo::chapters() const
 {
@@ -1098,9 +1104,8 @@ vector<AbstractChapter *> MediaFileInfo::chapters() const
 
 /*!
  * \brief Returns all attachments assigned to the current file.
- *
- * \remarks The MediaFileInfo keeps the ownership over the attachments which will be
- *          destroyed when the MediaFileInfo is invalidated.
+ * \remarks The MediaFileInfo keeps the ownership over the object which will be destroyed when the
+ *          MediaFileInfo is invalidated.
  */
 vector<AbstractAttachment *> MediaFileInfo::attachments() const
 {
@@ -1184,7 +1189,6 @@ NotificationType MediaFileInfo::worstNotificationTypeIncludingRelatedObjects() c
 /*!
  * \brief Returns the notifications of the current instance and all related
  *        objects (tracks, tags, container, ...).
- *
  * \remarks The specified list is not cleared before notifications are added.
  */
 void MediaFileInfo::gatherRelatedNotifications(NotificationList &notifications) const
@@ -1390,23 +1394,32 @@ void MediaFileInfo::makeMp3File()
             addNotifications(*tag);
         }
 
-        // determine padding, check whether rewrite is required
+        // check whether rewrite is required
         bool rewriteRequired = isForcingRewrite() || (tagsSize > static_cast<uint32>(m_containerOffset));
-        uint32 padding;
+        uint32 padding = 0;
         if(!rewriteRequired) {
+            // rewriting is not forced and new tag is not too big for available space
+            // -> calculate new padding
             padding = static_cast<uint32>(m_containerOffset) - tagsSize;
-            // check whether padding matches specifications
+            // -> check whether the new padding matches specifications
             if(padding < minPadding() || padding > maxPadding()) {
                 rewriteRequired = true;
             }
         }
-        if(rewriteRequired) {
-            // use preferred padding when rewriting
+        if(makers.empty()) {
+            // an ID3v2 tag shouldn't be written
+            // -> can't include padding
+            if(padding) {
+                // but padding would be present -> need to rewrite
+                padding = 0;
+                rewriteRequired = true;
+            }
+        } else if(rewriteRequired) {
+            // rewriting is forced or new ID3v2 tag is too big for available space
+            // -> use preferred padding when rewriting anyways
             padding = preferredPadding();
-            updateStatus("Preparing streams for rewriting ...");
-        } else {
-            updateStatus("Preparing streams for updating ...");
         }
+        updateStatus(rewriteRequired ? "Preparing streams for rewriting ..." : "Preparing streams for updating ...");
 
         // setup stream(s) for writing
         // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
@@ -1449,7 +1462,7 @@ void MediaFileInfo::makeMp3File()
                 // include padding into the last ID3v2 tag
                 makers.back().make(outputStream, padding);
             } else {
-                // no ID3v2 tags assigned -> just write padding
+                // just write padding
                 for(; padding; --padding) {
                     outputStream.put(0);
                 }

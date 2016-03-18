@@ -39,10 +39,10 @@ public:
     bool bytesRemaining(size_t atLeast) const;
 
     operator bool() const;
-    OggIterator &operator ++();
-    OggIterator operator ++(int);
-    OggIterator &operator --();
-    OggIterator operator --(int);
+    OggIterator &operator++();
+    OggIterator operator++(int);
+    OggIterator &operator--();
+    OggIterator operator--(int);
 
 private:
     bool fetchNextPage();
@@ -256,7 +256,7 @@ inline bool OggIterator::bytesRemaining(size_t atLeast) const
 /*!
  * \brief Increments the current position by one segment if the iterator is valid; otherwise nothing happens.
  */
-inline OggIterator &OggIterator::operator ++()
+inline OggIterator &OggIterator::operator++()
 {
     nextSegment();
     return *this;
@@ -265,7 +265,7 @@ inline OggIterator &OggIterator::operator ++()
 /*!
  * \brief Increments the current position by one segment if the iterator is valid; otherwise nothing happens.
  */
-inline OggIterator OggIterator::operator ++(int)
+inline OggIterator OggIterator::operator++(int)
 {
     OggIterator tmp = *this;
     nextSegment();
@@ -275,7 +275,7 @@ inline OggIterator OggIterator::operator ++(int)
 /*!
  * \brief Decrements the current position by one segment if the iterator is valid; otherwise nothing happens.
  */
-inline OggIterator &OggIterator::operator --()
+inline OggIterator &OggIterator::operator--()
 {
     previousSegment();
     return *this;
@@ -284,7 +284,7 @@ inline OggIterator &OggIterator::operator --()
 /*!
  * \brief Decrements the current position by one segment if the iterator is valid; otherwise nothing happens.
  */
-inline OggIterator OggIterator::operator --(int)
+inline OggIterator OggIterator::operator--(int)
 {
     OggIterator tmp = *this;
     previousSegment();

@@ -22,6 +22,7 @@ public:
     bool isOpen() const;
     bool isReadOnly() const;
     void close();
+    void invalidate();
 
     const std::string &path() const;
     void setPath(const std::string &path);

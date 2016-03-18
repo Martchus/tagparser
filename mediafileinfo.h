@@ -26,6 +26,7 @@ class MatroskaTag;
 class AbstractTrack;
 class WaveAudioStream;
 class MpegAudioFrameStream;
+class VorbisComment;
 
 enum class MediaType;
 enum class TagType : unsigned int;
@@ -117,6 +118,7 @@ public:
     std::vector<Tag *> tags() const;
     Mp4Tag *mp4Tag() const;
     const std::vector<std::unique_ptr<MatroskaTag> > &matroskaTags() const;
+    VorbisComment *vorbisComment() const;
     bool areTagsSupported() const;
 
     // methods to create/remove tags
