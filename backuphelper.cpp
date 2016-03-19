@@ -45,12 +45,21 @@ string &backupDirectory()
  */
 void restoreOriginalFileFromBackupFile(const string &originalPath, const string &backupPath, fstream &originalStream, fstream &backupStream)
 {
+    // ensure the orignal stream is closed
     if(originalStream.is_open()) {
         originalStream.close();
     }
+    // check wether backup file actually exists and close the backup stream afterwards
+    backupStream.exceptions(ios_base::goodbit);
+    backupStream.close();
+    backupStream.clear();
+    backupStream.open(backupPath, ios_base::in | ios_base::out | ios_base::binary);
     if(backupStream.is_open()) {
         backupStream.close();
+    } else {
+        throw ios_base::failure("Backup/temporary file could not be created.");
     }
+    // remove original file and restore backup
     std::remove(originalPath.c_str());
     if(std::rename(backupPath.c_str(), originalPath.c_str()) != 0) { // restore backup
         throw ios_base::failure("Unable to restore original file from backup file \"" + backupPath + "\" after failure.");
@@ -107,9 +116,9 @@ void createBackupFile(const string &originalPath, string &backupPath, fstream &b
             backupStream.close();
         }
         // open backup stream
-        backupStream.exceptions(ifstream::failbit | ifstream::badbit);
+        backupStream.exceptions(ios_base::failbit | ios_base::badbit);
         backupStream.open(backupPath.c_str(), ios_base::in | ios_base::binary);
-    } catch(ios_base::failure &) {
+    } catch(const ios_base::failure &) {
         // try to re-rename backup file in the error case
         if(std::rename(backupPath.c_str(), originalPath.c_str()) != 0) {
             throw ios_base::failure("Unable to restore original file from backup file \"" + backupPath + "\" after failure.");
