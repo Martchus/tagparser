@@ -145,7 +145,6 @@ SOURCES += \
     vorbis/vorbisidentificationheader.cpp \
     opus/opusidentificationheader.cpp \
     ogg/oggiterator.cpp \
-    vorbis/vorbiscommentids.cpp \
     abstractchapter.cpp \
     matroska/matroskaeditionentry.cpp \
     matroska/matroskachapter.cpp \

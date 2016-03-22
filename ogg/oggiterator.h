@@ -13,6 +13,7 @@ class LIB_EXPORT OggIterator
 public:
     OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize);
 
+    void clear(std::istream &stream, uint64 startOffset, uint64 streamSize);
     std::istream &stream();
     void setStream(std::istream &stream);
     uint64 startOffset() const;

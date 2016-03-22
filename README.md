@@ -48,5 +48,6 @@ The tagparser library depends on c++utilities and is built in the same way.
 It also depends on zlib.
 
 ## TODO
-- Support more tag formats (EXIF, PDF metadata, ...).
+- Support more formats (EXIF, PDF metadata, Theora, ...).
+- Allow adding tags to specific streams when dealing with OGG.
 - Do tests with Matroska files which have multiple segments.

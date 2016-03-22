@@ -112,7 +112,6 @@ set(SRC_FILES
     tagvalue.cpp
     vorbis/vorbiscomment.cpp
     vorbis/vorbiscommentfield.cpp
-    vorbis/vorbiscommentids.cpp
     vorbis/vorbisidentificationheader.cpp
     wav/waveaudiostream.cpp
     id3/id3genres.cpp

@@ -64,8 +64,8 @@ inline LIB_EXPORT const char *author() {
 inline LIB_EXPORT const char *conductor() {
     return "CONDUCTOR";
 }
-inline LIB_EXPORT const char *encodedBy() {
-    return "ENCODED-BY";
+inline LIB_EXPORT const char *encoder() {
+    return "ENCODER";
 }
 inline LIB_EXPORT const char *publisher() {
     return "PUBLISHER";

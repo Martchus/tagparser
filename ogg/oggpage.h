@@ -14,6 +14,7 @@ class LIB_EXPORT OggPage
 {
 public:
     OggPage();
+    OggPage(std::istream &stream, uint64 startOffset, int32 maxSize);
 
     void parseHeader(std::istream &stream, uint64 startOffset, int32 maxSize);
     static uint32 computeChecksum(std::istream &stream, uint64 startOffset);
@@ -61,6 +62,16 @@ inline OggPage::OggPage() :
     m_checksum(0),
     m_segmentCount(0)
 {}
+
+/*!
+ * \brief Constructs a new OggPage and instantly parses the header read from the specified \a stream
+ *        at the specified \a startOffset.
+ */
+inline OggPage::OggPage(std::istream &stream, uint64 startOffset, int32 maxSize) :
+    OggPage()
+{
+    parseHeader(stream, startOffset, maxSize);
+}
 
 /*!
  * \brief Returns the start offset of the page.

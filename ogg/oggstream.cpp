@@ -43,24 +43,29 @@ OggStream::~OggStream()
 void OggStream::internalParseHeader()
 {
     static const string context("parsing OGG page header");
+
     // read basic information from first page
     OggIterator &iterator = m_container.m_iterator;
     const OggPage &firstPage = iterator.pages()[m_startPage];
     m_version = firstPage.streamStructureVersion();
     m_id = firstPage.streamSerialNumber();
+
     // ensure iterator is setup properly
     iterator.setFilter(m_id);
     iterator.setPageIndex(m_startPage);
+
     // iterate through segments using OggIterator
     bool hasIdentificationHeader = false;
     bool hasCommentHeader = false;
     for(; iterator; ++iterator) {
         const uint32 currentSize = iterator.currentSegmentSize();
         m_size += currentSize;
+
         if(currentSize >= 8) {
             // determine stream format
             inputStream().seekg(iterator.currentSegmentOffset());
             const uint64 sig = reader().readUInt64BE();
+
             if((sig & 0x00ffffffffffff00u) == 0x00766F7262697300u) {
                 // Vorbis header detected
                 // set Vorbis as format
@@ -124,6 +129,7 @@ void OggStream::internalParseHeader()
                 default:
                     ;
                 }
+
             } else if(sig == 0x4F70757348656164u) {
                 // Opus header detected
                 // set Opus as format
@@ -167,6 +173,7 @@ void OggStream::internalParseHeader()
                 } else {
                     addNotification(NotificationType::Critical, "Opus identification header appears more then once. Oversupplied occurrence will be ignored.", context);
                 }
+
             } else if(sig == 0x4F70757354616773u) {
                 // Opus comment detected
                 // set Opus as format
@@ -187,6 +194,7 @@ void OggStream::internalParseHeader()
                 } else {
                     addNotification(NotificationType::Critical, "Opus tags/comment header appears more then once. Oversupplied occurrence will be ignored.", context);
                 }
+
             } else if((sig & 0x00ffffffffffff00u) == 0x007468656F726100u) {
                 // Theora header detected
                 // set Theora as format
@@ -201,9 +209,10 @@ void OggStream::internalParseHeader()
                     addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
                 }
                 // TODO: read more information about Theora stream
-            } // currently only Vorbis, Opus and Theora can be detected
-        }
+            } // currently only Vorbis, Opus and Theora can be detected, TODO: detect more formats
+        } // TODO: reduce code duplication
     }
+
     if(m_duration.isNull() && m_size && m_bitrate) {
         // calculate duration from stream size and bitrate, assuming 1 % overhead
         m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 125.0) * 1.1);

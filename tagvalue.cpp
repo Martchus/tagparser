@@ -164,35 +164,46 @@ TagValue &TagValue::operator=(const TagValue &other)
  */
 bool TagValue::operator==(const TagValue &other) const
 {
-    if(m_type != other.m_type || m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding)
+    if(m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding)
             || m_mimeType != other.m_mimeType || m_lng != other.m_lng || m_labeledAsReadonly != other.m_labeledAsReadonly) {
         return false;
     }
-    switch(m_type) {
-    case TagDataType::Text:
-        if(m_size != other.m_size && m_encoding != other.m_encoding) {
+    if(m_type == other.m_type) {
+        switch(m_type) {
+        case TagDataType::Text:
+            if(m_size != other.m_size && m_encoding != other.m_encoding) {
+                return false;
+            }
+            return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
+        case TagDataType::PositionInSet:
+            return toPositionInSet() == other.toPositionInSet();
+        case TagDataType::Integer:
+            return toInteger() == other.toInteger();
+        case TagDataType::StandardGenreIndex:
+            return toStandardGenreIndex() == other.toStandardGenreIndex();
+        case TagDataType::TimeSpan:
+            return toTimeSpan() == other.toTimeSpan();
+        case TagDataType::DateTime:
+            return toDateTime() == other.toDateTime();
+        case TagDataType::Picture:
+        case TagDataType::Binary:
+        case TagDataType::Undefined:
+            if(m_size != other.m_size) {
+                return false;
+            }
+            return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
+        default:
             return false;
         }
-        return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
-    case TagDataType::PositionInSet:
-        return toPositionInSet() == other.toPositionInSet();
-    case TagDataType::Integer:
-        return toInteger() == other.toInteger();
-    case TagDataType::StandardGenreIndex:
-        return toStandardGenreIndex() == other.toStandardGenreIndex();
-    case TagDataType::TimeSpan:
-        return toTimeSpan() == other.toTimeSpan();
-    case TagDataType::DateTime:
-        return toDateTime() == other.toDateTime();
-    case TagDataType::Picture:
-    case TagDataType::Binary:
-    case TagDataType::Undefined:
-        if(m_size != other.m_size) {
+    } else {
+        // different types
+        try {
+            // try to convert both values to string
+            // if the string representations are equal, both values can also be considered equal
+            return toString() == other.toString();
+        } catch(const ConversionException &) {
             return false;
         }
-        return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
-    default:
-        return false;
     }
 }
 

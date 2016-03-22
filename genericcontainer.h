@@ -3,6 +3,8 @@
 
 #include "./abstractcontainer.h"
 
+#include <c++utilities/misc/memory.h>
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -202,7 +204,7 @@ inline const std::vector<std::unique_ptr<TagType> > &GenericContainer<FileInfoTy
  *
  * The tags need to be parsed before (see parseTags()).
  *
- * The container keeps ownership over the returned tags.
+ * The container keeps ownership over the returned tags. Do not push or remove elements to the returned vector.
  *
  * \sa areTagsParsed()
  */
@@ -232,7 +234,7 @@ inline const std::vector<std::unique_ptr<TrackType> > &GenericContainer<FileInfo
  *
  * The tags need to be parsed before (see parseTracks()).
  *
- * The container keeps ownership over the returned tracks.
+ * The container keeps ownership over the returned tracks. Do not push or remove elements to the returned vector.
  *
  * \sa areTracksParsed()
  */
@@ -243,7 +245,7 @@ inline std::vector<std::unique_ptr<TrackType> > &GenericContainer<FileInfoType, 
 }
 
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::createTag(const TagTarget &target)
+TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::createTag(const TagTarget &target)
 {
     if(!target.isEmpty()) {
         for(auto &tag : m_tags) {
@@ -254,7 +256,7 @@ inline TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>:
     } else if(!m_tags.empty()) {
         return m_tags.front().get();
     }
-    m_tags.emplace_back(new TagType());
+    m_tags.emplace_back(std::make_unique<TagType>());
     auto &tag = m_tags.back();
     tag->setTarget(target);
     return tag.get();
@@ -308,7 +310,7 @@ bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeTrac
     bool removed = false;
     if(areTracksParsed() && supportsTrackModifications() && !m_tracks.empty()) {
         for(auto i = m_tracks.end() - 1, begin = m_tracks.begin(); ; --i) {
-            if(static_cast<void *>(i->get()) == static_cast<void *>(track)) {
+            if(static_cast<AbstractTrack *>(i->get()) == track) {
                 i->release();
                 m_tracks.erase(i);
                 removed = true;
