@@ -26,6 +26,7 @@ public:
     constexpr int32 position() const;
     constexpr int32 total() const;
     constexpr bool isNull() const;
+    constexpr bool operator==(const PositionInSet &other) const;
 
     template <typename StringType = std::string>
     StringType toString() const;
@@ -89,6 +90,14 @@ constexpr inline int32 PositionInSet::total() const
 constexpr inline bool PositionInSet::isNull() const
 {
     return m_position == 0 && m_total == 0;
+}
+
+/*!
+ * \brief Returns whether this instance equals \a other.
+ */
+constexpr inline bool PositionInSet::operator==(const PositionInSet &other) const
+{
+    return m_position == other.m_position && m_total == other.m_total;
 }
 
 /*!

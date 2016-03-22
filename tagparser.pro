@@ -27,7 +27,7 @@ forcefullparsedefault {
 }
 
 # add project files
-HEADERS  += \
+HEADERS += \
     abstractcontainer.h \
     abstracttrack.h \
     aspectratio.h \
@@ -103,7 +103,7 @@ SOURCES += \
     abstracttrack.cpp \
     aspectratio.cpp \
     avc/avcinfo.cpp \
-    avc/avcconfiguration.cpp
+    avc/avcconfiguration.cpp \
     backuphelper.cpp \
     basicfileinfo.cpp \
     exceptions.cpp \
@@ -145,7 +145,6 @@ SOURCES += \
     vorbis/vorbisidentificationheader.cpp \
     opus/opusidentificationheader.cpp \
     ogg/oggiterator.cpp \
-    vorbis/vorbiscommentids.cpp \
     abstractchapter.cpp \
     matroska/matroskaeditionentry.cpp \
     matroska/matroskachapter.cpp \
@@ -158,13 +157,13 @@ SOURCES += \
     adts/adtsstream.cpp
 
 underconstruction {
-HEADERS += \
-    aac/aacframe.h \
-    aac/aaccodebook.h
+    HEADERS += \
+        aac/aacframe.h \
+        aac/aaccodebook.h
 
-SOURCES += \
-    aac/aacframe.cpp \
-    aac/aaccodebook.cpp
+    SOURCES += \
+        aac/aacframe.cpp \
+        aac/aaccodebook.cpp
 }
 
 OTHER_FILES += \

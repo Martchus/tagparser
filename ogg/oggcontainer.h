@@ -16,27 +16,6 @@ namespace Media {
 
 class MediaFileInfo;
 
-struct LIB_EXPORT VorbisCommentInfo
-{
-    VorbisCommentInfo(std::vector<OggPage>::size_type firstPageIndex, std::vector<OggPage>::size_type firstSegmentIndex, std::vector<OggPage>::size_type tagIndex, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
-
-    std::vector<OggPage>::size_type firstPageIndex;
-    std::vector<OggPage>::size_type firstSegmentIndex;
-    std::vector<OggPage>::size_type lastPageIndex;
-    std::vector<OggPage>::size_type lastSegmentIndex;
-    std::vector<std::unique_ptr<VorbisComment> >::size_type tagIndex;
-    GeneralMediaFormat streamFormat;
-};
-
-inline VorbisCommentInfo::VorbisCommentInfo(std::vector<OggPage>::size_type firstPageIndex, std::vector<OggPage>::size_type firstSegmentIndex, std::vector<OggPage>::size_type tagIndex, GeneralMediaFormat mediaFormat) :
-    firstPageIndex(firstPageIndex),
-    firstSegmentIndex(firstSegmentIndex),
-    lastPageIndex(0),
-    lastSegmentIndex(0),
-    tagIndex(tagIndex),
-    streamFormat(mediaFormat)
-{}
-
 class LIB_EXPORT OggContainer : public GenericContainer<MediaFileInfo, VorbisComment, OggStream, OggPage>
 {
     friend class OggStream;
@@ -49,6 +28,12 @@ public:
     void setChecksumValidationEnabled(bool enabled);
     void reset();
 
+    VorbisComment *createTag(const TagTarget &target);
+    VorbisComment *tag(std::size_t index);
+    std::size_t tagCount() const;
+    bool removeTag(Tag *tag);
+    void removeAllTags();
+
 protected:
     void internalParseHeader();
     void internalParseTags();
@@ -56,14 +41,9 @@ protected:
     void internalMakeFile();
 
 private:
-    void ariseComment(std::vector<OggPage>::size_type pageIndex, std::vector<uint32>::size_type segmentIndex, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
+    void ariseComment(std::size_t pageIndex, std::size_t segmentIndex, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
 
     std::unordered_map<uint32, std::vector<std::unique_ptr<OggStream> >::size_type> m_streamsBySerialNo;
-
-    /*!
-     * \brief Consists of first page index, first segment index, last page index, last segment index and tag index (in this order).
-     */
-    std::list<VorbisCommentInfo> m_commentTable;
 
     OggIterator m_iterator;
     bool m_validateChecksums;

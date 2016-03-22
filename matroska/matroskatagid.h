@@ -204,7 +204,7 @@ inline LIB_EXPORT const char *icra() {
 }
 
 inline LIB_EXPORT const char *dateRelease() {
-    return "DATE_RELEASE";
+    return "DATE_RELEASED";
 }
 inline LIB_EXPORT const char *dateRecorded() {
     return "DATE_RECORDED";

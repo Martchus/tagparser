@@ -62,6 +62,22 @@ download() {
     fi 
 }
 
+download_rsync() {
+    title="$1" cmd="$2"
+    
+    inform "Downloading \"$title\" ..."
+    if [[ ! -d $destdir ]]; then
+        # actual download
+        $cmd
+        if [[ $? != 0 ]]; then
+            fail "unable to download \"$title\" with rsync"
+            return
+        fi
+    else
+        skipping
+    fi 
+}
+
 # enter testfiles directory
 if [[ -d $testfilespath ]]; then
     cd "$testfilespath"
@@ -75,3 +91,7 @@ download \
     'http://downloads.sourceforge.net/project/matroska/test_files/matroska_test_w1_1.zip?r=&ts=1454982254&use_mirror=netix' \
     'matroska_test_w1_1.zip' \
     'matroska_wave1'
+
+download_rsync \
+    'MTX Test Data' \
+    'rsync -rv --links --delete belgarath.bunkus.org::mtx-test-data mtx-test-data'

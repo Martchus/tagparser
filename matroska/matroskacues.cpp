@@ -264,7 +264,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                             case MatroskaIds::CueRelativePosition:
                                 try {
                                     EbmlElement::makeSimpleElement(stream, cueTrackPositionsChild->id(), m_relativeOffsets.at(cueTrackPositionsChild).currentValue());
-                                } catch(out_of_range &) {
+                                } catch(const out_of_range &) {
                                     // we were not able parse the relative offset because the absolute offset is missing
                                     // continue anyways
                                 }
@@ -316,7 +316,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                 addNotification(NotificationType::Warning, "\"Cues\"-element contains a element which is not a \"CuePoint\"-element. It will be ignored.", context);
             }
         }
-    } catch(out_of_range &) {
+    } catch(const out_of_range &) {
         addNotification(NotificationType::Critical, "Unable to write the file index because the index of the original file could not be parsed correctly.", context);
         throw InvalidDataException();
     }

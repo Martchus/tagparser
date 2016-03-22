@@ -38,10 +38,6 @@ void MatroskaSeekInfo::shift(uint64 start, int64 amount)
 void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
 {
     static const string context("parsing \"SeekHead\"-element");
-    //if(!seekHeadElement->parent()) {
-    //    addNotification(NotificationType::Warning, "\"SeekHead\"-element without parent specified.", context);
-    //    throw InvalidDataException();
-    //}
     m_seekHeadElement = seekHeadElement;
     m_info.clear();
     EbmlElement *seekElement = seekHeadElement->firstChild();

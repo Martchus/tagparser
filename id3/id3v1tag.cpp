@@ -123,7 +123,7 @@ void Id3v1Tag::make(ostream &stream)
     // track
     try {
     if(!m_trackPos.isEmpty() && m_trackPos.type() == TagDataType::PositionInSet)
-        buffer[1] = m_trackPos.toPositionIntSet().position();
+        buffer[1] = m_trackPos.toPositionInSet().position();
     } catch(ConversionException &) {
         addNotification(NotificationType::Warning, "Track position field can not be set because given value can not be converted appropriately.", context);
     }

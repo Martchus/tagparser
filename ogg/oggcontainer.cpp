@@ -30,8 +30,124 @@ OggContainer::~OggContainer()
 
 void OggContainer::reset()
 {
-    m_commentTable.clear();
     m_iterator.reset();
+}
+
+/*!
+ * \brief Creates a new tag.
+ * \sa AbstractContainer::createTag()
+ * \remarks Tracks must be parsed before because tags are stored on track level!
+ */
+VorbisComment *OggContainer::createTag(const TagTarget &target)
+{
+    if(!target.isEmpty()) {
+        // targets are not supported here, so the specified target should be empty
+        // -> just be consistent with generic implementation here
+        for(auto &tag : m_tags) {
+            if(tag->target() == target && !tag->oggParams().removed) {
+                return tag.get();
+            }
+        }
+        for(auto &tag : m_tags) {
+            if(tag->target() == target) {
+                tag->oggParams().removed = false;
+                return tag.get();
+            }
+        }
+    } else if(VorbisComment *comment = tag(0)) {
+        comment->oggParams().removed = false;
+        return comment;
+    } else if(!m_tags.empty()) {
+        m_tags.front()->oggParams().removed = false;
+        return m_tags.front().get();
+    }
+
+    // a new tag needs to be created
+    // -> determine an appropriate track for the tag
+    // -> just use the first Vorbis/Opus track
+    // -> TODO: provide interface for specifying a specific track
+    for(const auto &track : m_tracks) {
+        switch(track->format().general) {
+        case GeneralMediaFormat::Vorbis:
+        case GeneralMediaFormat::Opus:
+            // check whether start page has a valid value
+            if(track->startPage() < m_iterator.pages().size()) {
+                ariseComment(track->startPage(), static_cast<size_t>(-1), track->format().general);
+                m_tags.back()->setTarget(target); // also for consistency
+                return m_tags.back().get();
+            } else {
+                // TODO: error handling?
+            }
+        default:
+            ;
+        }
+    }
+    return nullptr;
+}
+
+VorbisComment *OggContainer::tag(size_t index)
+{
+    size_t i = 0;
+    for(const auto &tag : m_tags) {
+        if(!tag->oggParams().removed) {
+            if(index == i) {
+                return tag.get();
+            }
+            ++i;
+        }
+    }
+    return nullptr;
+}
+
+size_t OggContainer::tagCount() const
+{
+    size_t count = 0;
+    for(const auto &tag : m_tags) {
+        if(!tag->oggParams().removed) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+/*!
+ * \brief Actually just flags the specified \a tag as removed and clears all assigned fields.
+ *
+ * This specialization is neccessary because completeley removing the tag whould also
+ * remove the OGG parameter which are needed when appying the changes.
+ *
+ * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
+ *          So do NOT use this method to remove tags from Vorbis, just call removeAllFields() on \a tag.
+ * \sa AbstractContainer::removeTag()
+ */
+bool OggContainer::removeTag(Tag *tag)
+{
+    for(auto &existingTag : m_tags) {
+        if(static_cast<Tag *>(existingTag.get()) == tag) {
+            existingTag->removeAllFields();
+            existingTag->oggParams().removed = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+/*!
+ * \brief Actually just flags all tags as removed and clears all assigned fields.
+ *
+ * This specialization is neccessary because completeley removing the tag whould also
+ * remove the OGG parameter which are needed when appying the changes.
+ *
+ * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
+ *          So do NOT use this method to remove tags from Vorbis, just call removeAllFields() on all tags.
+ * \sa AbstractContainer::removeAllTags()
+ */
+void OggContainer::removeAllTags()
+{
+    for(auto &existingTag : m_tags) {
+        existingTag->removeAllFields();
+        existingTag->oggParams().removed = true;
+    }
 }
 
 void OggContainer::internalParseHeader()
@@ -68,58 +184,78 @@ void OggContainer::internalParseHeader()
     } catch(const TruncatedDataException &) {
         // thrown when page exceeds max size
         addNotification(NotificationType::Critical, "The OGG file is truncated.", context);
-        throw;
     } catch(const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
         addNotification(NotificationType::Critical, "Capture pattern \"OggS\" at " + ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " expected.", context);
-        throw;
     }
 }
 
 void OggContainer::internalParseTags()
 {
-    parseTracks(); // tracks needs to be parsed because tags are stored at stream level
-    for(VorbisCommentInfo &vorbisCommentInfo : m_commentTable) {
-        m_iterator.setPageIndex(vorbisCommentInfo.firstPageIndex);
-        m_iterator.setSegmentIndex(vorbisCommentInfo.firstSegmentIndex);
-        switch(vorbisCommentInfo.streamFormat) {
+    // tracks needs to be parsed before because tags are stored at stream level
+    parseTracks();
+    for(auto &comment : m_tags) {
+        OggParameter &params = comment->oggParams();
+        m_iterator.setPageIndex(params.firstPageIndex);
+        m_iterator.setSegmentIndex(params.firstSegmentIndex);
+        switch(params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
-            m_tags[vorbisCommentInfo.tagIndex]->parse(m_iterator);
+            comment->parse(m_iterator);
             break;
         case GeneralMediaFormat::Opus:
-            m_iterator.seekForward(8); // skip header (has already been detected by OggStream)
-            m_tags[vorbisCommentInfo.tagIndex]->parse(m_iterator, true);
+            // skip header (has already been detected by OggStream)
+            m_iterator.seekForward(8);
+            comment->parse(m_iterator, true);
             break;
         default:
             addNotification(NotificationType::Critical, "Stream format not supported.", "parsing tags from OGG streams");
         }
-        vorbisCommentInfo.lastPageIndex = m_iterator.currentPageIndex();
-        vorbisCommentInfo.lastSegmentIndex = m_iterator.currentSegmentIndex();
+        params.lastPageIndex = m_iterator.currentPageIndex();
+        params.lastSegmentIndex = m_iterator.currentSegmentIndex();
     }
 }
 
-void OggContainer::ariseComment(vector<OggPage>::size_type pageIndex, vector<uint32>::size_type segmentIndex, GeneralMediaFormat mediaFormat)
+void OggContainer::ariseComment(std::size_t pageIndex, std::size_t segmentIndex, GeneralMediaFormat mediaFormat)
 {
-    m_commentTable.emplace_back(pageIndex, segmentIndex, m_tags.size(), mediaFormat);
     m_tags.emplace_back(make_unique<VorbisComment>());
+    m_tags.back()->oggParams().set(pageIndex, segmentIndex, mediaFormat);
 }
 
 void OggContainer::internalParseTracks()
 {
-    if(!areTracksParsed()) {
-        parseHeader();
-        static const string context("parsing OGG stream");
-        for(auto &stream : m_tracks) {
-            try { // try to parse header
-                stream->parseHeader();
-                if(stream->duration() > m_duration) {
-                    m_duration = stream->duration();
-                }
-            } catch(const Failure &) {
-                addNotification(NotificationType::Critical, "Unable to parse stream at " + ConversionUtilities::numberToString(stream->startOffset()) + ".", context);
+    static const string context("parsing OGG stream");
+    for(auto &stream : m_tracks) {
+        try { // try to parse header
+            stream->parseHeader();
+            if(stream->duration() > m_duration) {
+                m_duration = stream->duration();
             }
+        } catch(const Failure &) {
+            addNotification(NotificationType::Critical, "Unable to parse stream at " + ConversionUtilities::numberToString(stream->startOffset()) + ".", context);
         }
     }
+}
+
+/*!
+ * \brief Writes the specified \a comment with the given \a params to the specified \a buffer and
+ *        adds the number of bytes written to \a newSegmentSizes.
+ */
+void makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params)
+{
+    auto offset = buffer.tellp();
+    switch(params->streamFormat) {
+    case GeneralMediaFormat::Vorbis:
+        comment->make(buffer);
+        break;
+    case GeneralMediaFormat::Opus:
+        ConversionUtilities::BE::getBytes(0x4F70757354616773u, copyHelper.buffer());
+        buffer.write(copyHelper.buffer(), 8);
+        comment->make(buffer, true);
+        break;
+    default:
+        ;
+    }
+    newSegmentSizes.push_back(buffer.tellp() - offset);
 }
 
 void OggContainer::internalMakeFile()
@@ -134,18 +270,32 @@ void OggContainer::internalMakeFile()
         BackupHelper::createBackupFile(fileInfo().path(), backupPath, backupStream);
         // recreate original file
         fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-        CopyHelper<65307> copy;
-        auto commentTableIterator = m_commentTable.cbegin(), commentTableEnd = m_commentTable.cend();
+
+        // prepare iterating comments
+        VorbisComment *currentComment;
+        OggParameter *currentParams;
+        auto tagIterator = m_tags.cbegin(), tagEnd = m_tags.cend();
+        if(tagIterator != tagEnd) {
+            currentParams = &(currentComment = tagIterator->get())->oggParams();
+        } else {
+            currentComment = nullptr;
+            currentParams = nullptr;
+        }
+
+        // define misc variables
+        CopyHelper<65307> copyHelper;
         vector<uint64> updatedPageOffsets;
-        uint32 pageSequenceNumber = 0;
+        unordered_map<uint32, uint32> pageSequenceNumberBySerialNo;
+
+        // iterate through all pages of the original file
         for(m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
-            const auto &currentPage = m_iterator.currentPage();
-            auto pageSize = currentPage.totalSize();
+            const OggPage &currentPage = m_iterator.currentPage();
+            const auto pageSize = currentPage.totalSize();
+            uint32 &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
             // check whether the Vorbis Comment is present in this Ogg page
-            // -> then the page needs to be rewritten
-            if(commentTableIterator != commentTableEnd
-                    && m_iterator.currentPageIndex() >= commentTableIterator->firstPageIndex
-                    && m_iterator.currentPageIndex() <= commentTableIterator->lastPageIndex
+            if(currentComment
+                    && m_iterator.currentPageIndex() >= currentParams->firstPageIndex
+                    && m_iterator.currentPageIndex() <= currentParams->lastPageIndex
                     && !currentPage.segmentSizes().empty()) {
                 // page needs to be rewritten (not just copied)
                 // -> write segments to a buffer first
@@ -157,40 +307,48 @@ void OggContainer::internalMakeFile()
                 for(const auto segmentSize : currentPage.segmentSizes()) {
                     if(segmentSize) {
                         // check whether this segment contains the Vorbis Comment
-                        if((m_iterator.currentPageIndex() > commentTableIterator->firstPageIndex || segmentIndex >= commentTableIterator->firstSegmentIndex)
-                                && (m_iterator.currentPageIndex() < commentTableIterator->lastPageIndex || segmentIndex <= commentTableIterator->lastSegmentIndex)) {
-                            // prevent making the comment twice if it spreads over multiple pages
-                            if(m_iterator.currentPageIndex() == commentTableIterator->firstPageIndex) {
-                                // make Vorbis Comment segment
-                                auto offset = buffer.tellp();
-                                switch(commentTableIterator->streamFormat) {
-                                case GeneralMediaFormat::Vorbis:
-                                    m_tags[commentTableIterator->tagIndex]->make(buffer);
-                                    break;
-                                case GeneralMediaFormat::Opus:
-                                    ConversionUtilities::BE::getBytes(0x4F70757354616773u, copy.buffer());
-                                    buffer.write(copy.buffer(), 8);
-                                    m_tags[commentTableIterator->tagIndex]->make(buffer, true);
-                                    break;
-                                default:
-                                    ;
-                                }
-                                newSegmentSizes.push_back(buffer.tellp() - offset);
+                        if((m_iterator.currentPageIndex() >= currentParams->firstPageIndex && segmentIndex >= currentParams->firstSegmentIndex)
+                                && (m_iterator.currentPageIndex() <= currentParams->lastPageIndex && segmentIndex <= currentParams->lastSegmentIndex)) {
+                            // prevent making the comment twice if it spreads over multiple pages/segments
+                            if(!currentParams->removed
+                                    && ((m_iterator.currentPageIndex() == currentParams->firstPageIndex
+                                         && m_iterator.currentSegmentIndex() == currentParams->firstSegmentIndex))) {
+                                makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams);
                             }
-                            if(m_iterator.currentPageIndex() > commentTableIterator->lastPageIndex
-                                    || (m_iterator.currentPageIndex() == commentTableIterator->lastPageIndex && segmentIndex > commentTableIterator->lastSegmentIndex)) {
-                                ++commentTableIterator;
+
+                            // proceed with next comment?
+                            if(m_iterator.currentPageIndex() > currentParams->lastPageIndex
+                                    || (m_iterator.currentPageIndex() == currentParams->lastPageIndex && segmentIndex > currentParams->lastSegmentIndex)) {
+                                if(++tagIterator != tagEnd) {
+                                    currentParams = &(currentComment = tagIterator->get())->oggParams();
+                                } else {
+                                    currentComment = nullptr;
+                                    currentParams = nullptr;
+                                }
                             }
                         } else {
                             // copy other segments unchanged
                             backupStream.seekg(segmentOffset);
-                            copy.copy(backupStream, buffer, segmentSize);
+                            copyHelper.copy(backupStream, buffer, segmentSize);
                             newSegmentSizes.push_back(segmentSize);
+
+                            // check whether there is a new comment to be inserted into the current page
+                            if(m_iterator.currentPageIndex() == currentParams->lastPageIndex && currentParams->firstSegmentIndex == static_cast<size_t>(-1)) {
+                                makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams);
+                                // proceed with next comment
+                                if(++tagIterator != tagEnd) {
+                                    currentParams = &(currentComment = tagIterator->get())->oggParams();
+                                } else {
+                                    currentComment = nullptr;
+                                    currentParams = nullptr;
+                                }
+                            }
                         }
                         segmentOffset += segmentSize;
                     }
                     ++segmentIndex;
                 }
+
                 // write buffered data to actual stream
                 auto newSegmentSizesIterator = newSegmentSizes.cbegin(), newSegmentSizesEnd = newSegmentSizes.cend();
                 bool continuePreviousSegment = false;
@@ -201,7 +359,7 @@ void OggContainer::internalMakeFile()
                         // write header
                         backupStream.seekg(currentPage.startOffset());
                         updatedPageOffsets.push_back(stream().tellp()); // memorize offset to update checksum later
-                        copy.copy(backupStream, stream(), 27); // just copy header from original file
+                        copyHelper.copy(backupStream, stream(), 27); // just copy header from original file
                         // set continue flag
                         stream().seekp(-22, ios_base::cur);
                         stream().put(currentPage.headerTypeFlag() & (continuePreviousSegment ? 0xFF : 0xFE));
@@ -214,21 +372,21 @@ void OggContainer::internalMakeFile()
                         // write segment sizes as long as there are segment sizes to be written and
                         // the max number of segment sizes (255) is not exceeded
                         uint32 currentSize = 0;
-                        while(bytesLeft > 0 && segmentSizesWritten < 0xFF) {
+                        while(bytesLeft && segmentSizesWritten < 0xFF) {
                             while(bytesLeft >= 0xFF && segmentSizesWritten < 0xFF) {
                                 stream().put(0xFF);
                                 currentSize += 0xFF;
                                 bytesLeft -= 0xFF;
                                 ++segmentSizesWritten;
                             }
-                            if(bytesLeft > 0 && segmentSizesWritten < 0xFF) {
+                            if(bytesLeft && segmentSizesWritten < 0xFF) {
                                 // bytes left is here < 0xFF
                                 stream().put(bytesLeft);
                                 currentSize += bytesLeft;
                                 bytesLeft = 0;
                                 ++segmentSizesWritten;
                             }
-                            if(bytesLeft == 0) {
+                            if(!bytesLeft) {
                                 // sizes for the segment have been written
                                 // -> continue with next segment
                                 if(++newSegmentSizesIterator != newSegmentSizesEnd) {
@@ -237,10 +395,12 @@ void OggContainer::internalMakeFile()
                                 }
                             }
                         }
+
                         // there are no bytes left in the current segment; remove continue flag
-                        if(bytesLeft == 0) {
+                        if(!bytesLeft) {
                             continuePreviousSegment = false;
                         }
+
                         // page is full or all segment data has been covered
                         // -> write segment table size (segmentSizesWritten) and segment data
                         // -> seek back and write updated page segment number
@@ -248,44 +408,52 @@ void OggContainer::internalMakeFile()
                         stream().put(segmentSizesWritten);
                         stream().seekp(segmentSizesWritten, ios_base::cur);
                         // -> write actual page data
-                        copy.copy(buffer, stream(), currentSize);
+                        copyHelper.copy(buffer, stream(), currentSize);
                         ++pageSequenceNumber;
                     }
                 }
+
             } else {
                 if(pageSequenceNumber != m_iterator.currentPageIndex()) {
                     // just update page sequence number
                     backupStream.seekg(currentPage.startOffset());
                     updatedPageOffsets.push_back(stream().tellp()); // memorize offset to update checksum later
-                    copy.copy(backupStream, stream(), 27);
+                    copyHelper.copy(backupStream, stream(), 27);
                     stream().seekp(-9, ios_base::cur);
                     writer().writeUInt32LE(pageSequenceNumber);
                     stream().seekp(5, ios_base::cur);
-                    copy.copy(backupStream, stream(), pageSize - 27);
+                    copyHelper.copy(backupStream, stream(), pageSize - 27);
                 } else {
                     // copy page unchanged
                     backupStream.seekg(currentPage.startOffset());
-                    copy.copy(backupStream, stream(), pageSize);
+                    copyHelper.copy(backupStream, stream(), pageSize);
                 }
                 ++pageSequenceNumber;
             }
         }
+
+        fileInfo().reportSizeChanged(stream().tellp());
+
         // close backups stream; reopen new file as readable stream
         backupStream.close();
         fileInfo().close();
-        fileInfo().open();
+        fileInfo().stream().open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
+
         // update checksums of modified pages
         for(auto offset : updatedPageOffsets) {
             OggPage::updateChecksum(fileInfo().stream(), offset);
         }
+
         // clear iterator
-        m_iterator = OggIterator(fileInfo().stream(), startOffset(), fileInfo().size());
-    } catch(OperationAbortedException &) {
+        m_iterator.clear(fileInfo().stream(), startOffset(), fileInfo().size());
+
+    } catch(const OperationAbortedException &) {
         addNotification(NotificationType::Information, "Rewriting file to apply new tag information has been aborted.", context);
         BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
         m_iterator.setStream(fileInfo().stream());
         throw;
-    } catch(ios_base::failure &ex) {
+
+    } catch(const ios_base::failure &ex) {
         addNotification(NotificationType::Critical, "IO error occured when rewriting file to apply new tag information.\n" + string(ex.what()), context);
         BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
         m_iterator.setStream(fileInfo().stream());

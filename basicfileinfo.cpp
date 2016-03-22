@@ -16,22 +16,14 @@ using namespace std;
 namespace Media {
 
 /*!
- * \brief Constructs a new BasicFileInfo.
- */
-BasicFileInfo::BasicFileInfo() :
-    m_size(0)
-{
-    m_file.exceptions(fstream::failbit | fstream::badbit);
-}
-
-/*!
  * \brief Constructs a new BasicFileInfo for the specified file.
  *
  * \param path Specifies the absolute or relative path of the file.
  */
 BasicFileInfo::BasicFileInfo(const std::string &path) :
     m_path(path),
-    m_size(0)
+    m_size(0),
+    m_readOnly(false)
 {
     m_file.exceptions(fstream::failbit | fstream::badbit);
 }
@@ -48,26 +40,26 @@ BasicFileInfo::~BasicFileInfo()
 
 /*!
  * \brief Opens a std::fstream for the current file. Does nothing a stream is already open.
- * \param readonly Indicates whether the stream should be opend as read-only.
+ * \param readOnly Indicates whether the stream should be opend as read-only.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void BasicFileInfo::open(bool readonly)
+void BasicFileInfo::open(bool readOnly)
 {
     if(!isOpen()) {
-        reopen(readonly);
+        reopen(readOnly);
     }
 }
 
 /*!
  * \brief Opens a std::fstream for the current file. Closes a possibly already opened stream and
  *        clears all flags before.
- * \param readonly Indicates whether the stream should be opend as read-only.
+ * \param readOnly Indicates whether the stream should be opend as read-only.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void BasicFileInfo::reopen(bool readonly)
+void BasicFileInfo::reopen(bool readOnly)
 {
-    close();
-    m_file.open(m_path, readonly ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
+    invalidated();
+    m_file.open(m_path, (m_readOnly = readOnly) ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
     m_file.seekg(0, ios_base::end);
     m_size = m_file.tellg();
     m_file.seekg(0, ios_base::beg);
@@ -82,6 +74,14 @@ void BasicFileInfo::close()
         m_file.close();
     }
     m_file.clear();
+}
+
+/*!
+ * \brief Invalidates the file info manually.
+ */
+void BasicFileInfo::invalidate()
+{
+    invalidated();
 }
 
 /*!
@@ -210,7 +210,7 @@ string BasicFileInfo::containingDirectory() const
 
 /*!
  * \brief This function is called when the BasicFileInfo gets invalidated.
- *        This is the case when the current file changes.
+ *        This is the case when the current file changes or is reopened.
  *
  * When subclassing and overwriting this virtual method invoke the base
  * implementation by calling BasicFileInfo::invalidated() before the reimplemented code.
@@ -218,7 +218,6 @@ string BasicFileInfo::containingDirectory() const
 void BasicFileInfo::invalidated()
 {
     m_size = 0;
-    m_path.clear();
     close();
 }
 

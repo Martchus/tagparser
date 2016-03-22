@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <cstring>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -119,7 +120,7 @@ TagValue::TagValue(const PositionInSet &value) :
 TagValue::TagValue(const TagValue &other) :
     m_size(other.m_size),
     m_type(other.m_type),
-    m_dec(other.m_dec),
+    m_desc(other.m_desc),
     m_mimeType(other.m_mimeType),
     m_lng(other.m_lng),
     m_labeledAsReadonly(other.m_labeledAsReadonly),
@@ -140,7 +141,7 @@ TagValue &TagValue::operator=(const TagValue &other)
     if(this != &other) {
         m_size = other.m_size;
         m_type = other.m_type;
-        m_dec = other.m_dec;
+        m_desc = other.m_desc;
         m_mimeType = other.m_mimeType;
         m_lng = other.m_lng;
         m_labeledAsReadonly = other.m_labeledAsReadonly;
@@ -154,6 +155,56 @@ TagValue &TagValue::operator=(const TagValue &other)
         }
     }
     return *this;
+}
+
+/*!
+ * \brief Returns whether both instances are equal.
+ *
+ * Both instances are only considered equal, if the data type, encodings (if relevant for the type) and meta data are equal.
+ */
+bool TagValue::operator==(const TagValue &other) const
+{
+    if(m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding)
+            || m_mimeType != other.m_mimeType || m_lng != other.m_lng || m_labeledAsReadonly != other.m_labeledAsReadonly) {
+        return false;
+    }
+    if(m_type == other.m_type) {
+        switch(m_type) {
+        case TagDataType::Text:
+            if(m_size != other.m_size && m_encoding != other.m_encoding) {
+                return false;
+            }
+            return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
+        case TagDataType::PositionInSet:
+            return toPositionInSet() == other.toPositionInSet();
+        case TagDataType::Integer:
+            return toInteger() == other.toInteger();
+        case TagDataType::StandardGenreIndex:
+            return toStandardGenreIndex() == other.toStandardGenreIndex();
+        case TagDataType::TimeSpan:
+            return toTimeSpan() == other.toTimeSpan();
+        case TagDataType::DateTime:
+            return toDateTime() == other.toDateTime();
+        case TagDataType::Picture:
+        case TagDataType::Binary:
+        case TagDataType::Undefined:
+            if(m_size != other.m_size) {
+                return false;
+            }
+            return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
+        default:
+            return false;
+        }
+    } else {
+        // different types
+        try {
+            // try to convert both values to string
+            // if the string representations are equal, both values can also be considered equal
+            return toString() == other.toString();
+        } catch(const ConversionException &) {
+            return false;
+        }
+    }
 }
 
 /*!
@@ -171,7 +222,7 @@ TagValue::~TagValue()
  */
 void TagValue::clearMetadata()
 {
-    m_dec.clear();
+    m_desc.clear();
     m_mimeType.clear();
     m_lng.clear();
     m_labeledAsReadonly = false;
@@ -260,7 +311,7 @@ int TagValue::toStandardGenreIndex() const
  *        PositionInSet representation.
  * \throws Throws ConversionException an failure.
  */
-PositionInSet TagValue::toPositionIntSet() const
+PositionInSet TagValue::toPositionInSet() const
 {
     if(!isEmpty()) {
         switch(m_type) {
@@ -293,7 +344,7 @@ TimeSpan TagValue::toTimeSpan() const
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            return TimeSpan::fromSeconds(ConversionUtilities::stringToNumber<int64>(string(m_ptr.get(), m_size)));
+            return TimeSpan::fromString(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
         case TagDataType::TimeSpan:
             switch(m_size) {
@@ -366,7 +417,7 @@ void TagValue::toString(string &result) const
             result = ConversionUtilities::numberToString(toInteger());
             return;
         case TagDataType::PositionInSet:
-            result = toPositionIntSet().toString();
+            result = toPositionInSet().toString();
             return;
         case TagDataType::StandardGenreIndex:
             if(const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
@@ -379,6 +430,56 @@ void TagValue::toString(string &result) const
         case TagDataType::TimeSpan:
             result = toTimeSpan().toString();
             return;
+        default:
+            throw ConversionException("Can not convert binary data/picture to string.");
+        }
+    }
+    result.clear();
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        std::wstring representation.
+ * \throws Throws ConversionException on failure.
+ * \remarks Use this only, if UTF-16 text is assigned.
+ */
+u16string TagValue::toWString() const
+{
+    u16string res;
+    toWString(res);
+    return res;
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        std::u16string representation.
+ * \throws Throws ConversionException on failure.
+ * \remarks Use this only, if UTF-16 text is assigned.
+ */
+void TagValue::toWString(u16string &result) const
+{
+    if(!isEmpty()) {
+        switch(m_type) {
+        case TagDataType::Text:
+            result.assign(reinterpret_cast<typename u16string::value_type *>(m_ptr.get()), m_size / sizeof(typename u16string::value_type));
+            return;
+        case TagDataType::Integer:
+            result = ConversionUtilities::numberToString<int32, u16string>(toInteger());
+            return;
+        case TagDataType::PositionInSet:
+            result = toPositionInSet().toString<u16string>();
+            return;
+        case TagDataType::StandardGenreIndex:
+            if(const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+                // TODO: implement this
+                throw ConversionException("Wide default genre strings are currently not supported.");
+            } else {
+                throw ConversionException("No string representation for the assigned standard genre index available.");
+            }
+            break;
+        case TagDataType::TimeSpan:
+            // TODO: implement this
+            throw ConversionException("Wide time span string representations are currently not supported.");
         default:
             throw ConversionException("Can not convert binary data/picture to string.");
         }
@@ -438,15 +539,17 @@ void TagValue::assignStandardGenreIndex(int index)
  */
 void TagValue::assignData(const char *data, size_t length, TagDataType type, TagTextEncoding encoding)
 {
-    m_size = length;
-    m_type = type;
-    m_encoding = encoding;
-    if(m_size > 0) {
-        m_ptr.reset(new char[m_size]);
+    if(length > m_size) {
+        m_ptr = make_unique<char[]>(length);
+    }
+    if(length) {
         std::copy(data, data + length, m_ptr.get());
     } else {
         m_ptr.reset();
     }
+    m_size = length;
+    m_type = type;
+    m_encoding = encoding;
 }
 
 /*!

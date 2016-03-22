@@ -19,15 +19,21 @@ public:
     ~OggStream();
 
     TrackType type() const;
+    std::size_t startPage() const;
 
 protected:
     void internalParseHeader();
 
 private:
-    std::vector<OggPage>::size_type m_startPage;
+    std::size_t m_startPage;
     OggContainer &m_container;
     uint32 m_currentSequenceNumber;
 };
+
+inline std::size_t OggStream::startPage() const
+{
+    return m_startPage;
+}
 
 inline TrackType OggStream::type() const
 {

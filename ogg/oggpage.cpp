@@ -77,7 +77,7 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
     stream.seekg(startOffset);
     uint32 crc = 0x0;
     byte value, segmentTableSize = 0, segmentTableIndex = 0;
-    for(uint32 i = 0, segmentLength = 27; i < segmentLength; ++i) {
+    for(uint32 i = 0, segmentLength = 27; i != segmentLength; ++i) {
         switch(i) {
         case 22:
             // bytes 22, 23, 24, 25 hold denoted checksum and must be set to zero

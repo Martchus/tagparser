@@ -200,6 +200,7 @@ public:
 protected:
     identifierType m_id;
     uint64 m_startOffset;
+    uint64 m_maxSize;
     uint32 m_idLength;
     dataSizeType m_dataSize;
     uint32 m_sizeLength;
@@ -212,7 +213,6 @@ private:
     void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy);
 
     containerType* m_container;
-    uint64 m_maxSize;
     bool m_parsed;
 };
 
@@ -248,12 +248,12 @@ template <class ImplementationType>
 GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::implementationType &parent, uint64 startOffset) :
     m_id(identifierType()),
     m_startOffset(startOffset),
+    m_maxSize(parent.startOffset() + parent.totalSize() - startOffset),
     m_idLength(0),
     m_dataSize(0),
     m_sizeLength(0),
     m_parent(&parent),
     m_container(&parent.container()),
-    m_maxSize(parent.startOffset() + parent.totalSize() - startOffset),
     m_parsed(false)
 {}
 
@@ -264,12 +264,12 @@ template <class ImplementationType>
 GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::containerType &container, uint64 startOffset, uint64 maxSize) :
     m_id(identifierType()),
     m_startOffset(startOffset),
+    m_maxSize(maxSize),
     m_idLength(0),
     m_dataSize(0),
     m_sizeLength(0),
     m_parent(nullptr),
     m_container(&container),
-    m_maxSize(maxSize),
     m_parsed(false)
 {}
 

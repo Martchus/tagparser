@@ -2,6 +2,10 @@
 
 #include "../exceptions.h"
 
+#include <iostream>
+
+using namespace std;
+
 namespace Media {
 
 /*!
@@ -18,9 +22,22 @@ namespace Media {
  */
 
 /*!
+ * \brief Sets the stream and related parameters and clears all available pages.
+ * \remarks Invalidates the iterator. Use reset() to continue iteration.
+ */
+void OggIterator::clear(istream &stream, uint64 startOffset, uint64 streamSize)
+{
+    m_stream = &stream;
+    m_startOffset = startOffset;
+    m_streamSize = streamSize;
+    m_pages.clear();
+}
+
+/*!
  * \brief Resets the iterator to point at the first segment of the first page (matching the filter if set).
  *
- * Fetched pages (directly accessable through the page() method) remain after resetting the iterator.
+ * Fetched pages (directly accessable through the page() method) remain after resetting the iterator. Use
+ * the clear method to clear all pages.
  */
 void OggIterator::reset()
 {
@@ -36,70 +53,66 @@ void OggIterator::reset()
 }
 
 /*!
- * \brief Increases the current position by one page if the iterator is valid; does nothing otherwise.
+ * \brief Increases the current position by one page.
+ * \remarks The iterator must be valid. The iterator might be invalidated.
  */
 void OggIterator::nextPage()
 {
-    if(*this) {
-        while(++m_page < m_pages.size() || fetchNextPage()) {
-            const OggPage &page = m_pages[m_page];
-            if(!page.segmentSizes().empty() && matchesFilter(page)) {
-                // page is not empty and matches ID filter if set
-                m_segment = m_bytesRead = 0;
-                m_offset = page.startOffset() + page.headerSize();
-                return;
-            }
+    while(++m_page < m_pages.size() || fetchNextPage()) {
+        const OggPage &page = m_pages[m_page];
+        if(!page.segmentSizes().empty() && matchesFilter(page)) {
+            // page is not empty and matches ID filter if set
+            m_segment = m_bytesRead = 0;
+            m_offset = page.startOffset() + page.headerSize();
+            return;
         }
-        // no next page available -> iterator is in invalid state
     }
+    // no next page available -> iterator is in invalid state
 }
 
 /*!
- * \brief Increases the current position by one segment if the iterator is valid; does nothing otherwise.
+ * \brief Increases the current position by one segment.
+ * \remarks The iterator must be valid. The iterator might be invalidated.
  */
 void OggIterator::nextSegment()
 {
-    if(*this) {
-        const OggPage &page = m_pages[m_page];
-        if(m_segment + 1 < page.segmentSizes().size() && matchesFilter(page)) {
-            // current page has next segment
-            m_bytesRead = 0;
-            m_offset += page.segmentSizes()[m_segment++];
-        } else {
-            // next (matching) page has next segment
-            nextPage();
-        }
+    const OggPage &page = m_pages[m_page];
+    if(matchesFilter(page) && ++m_segment < page.segmentSizes().size()) {
+        // current page has next segment
+        m_bytesRead = 0;
+        m_offset += page.segmentSizes()[m_segment - 1];
+    } else {
+        // next (matching) page has next segment
+        nextPage();
     }
 }
 
 /*!
- * \brief Decreases the current position by one page if the iterator is valid; does nothing otherwise.
+ * \brief Decreases the current position by one page.
+ * \remarks The iterator must be valid. The iterator might be invalidated.
  */
 void OggIterator::previousPage()
 {
-    if(*this) {
-        while(m_page > 0) {
-            const OggPage &page = m_pages[--m_page];
-            if(matchesFilter(page)) {
-                m_offset = page.dataOffset(m_segment = page.segmentSizes().size() - 1);
-                return;
-            }
+    while(m_page) {
+        const OggPage &page = m_pages[--m_page];
+        if(matchesFilter(page)) {
+            m_offset = page.dataOffset(m_segment = page.segmentSizes().size() - 1);
+            return;
         }
     }
 }
 
 /*!
- * \brief Decreases the current position by one segment if the iterator is valid; does nothing otherwise.
+ * \brief Decreases the current position by one segment.
+ * \remarks The iterator must be valid. The iterator might be invalidated.
  */
 void OggIterator::previousSegment()
 {
-    if(*this) {
-        const OggPage &page = m_pages[m_page];
-        if(m_segment > 0 && matchesFilter(page)) {
-            m_offset -= page.segmentSizes()[m_segment--];
-        } else {
-            previousPage();
-        }
+    const OggPage &page = m_pages[m_page];
+    if(m_segment && matchesFilter(page)) {
+        m_offset -= page.segmentSizes()[m_segment--];
+    } else {
+        previousPage();
     }
 }
 
@@ -130,7 +143,10 @@ void OggIterator::read(char *buffer, size_t count)
             count -= available;
         }
     }
-    throw TruncatedDataException();
+    if(count) {
+        // still bytes to read but no more available
+        throw TruncatedDataException();
+    }
 }
 
 /*!
@@ -173,9 +189,7 @@ bool OggIterator::fetchNextPage()
     if(m_page == m_pages.size()) { // can only fetch the next page if the current page is the last page
         m_offset = m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize();
         if(m_offset < m_streamSize) {
-            OggPage page;
-            page.parseHeader(*m_stream, m_offset, static_cast<int32>(m_streamSize - m_offset));
-            m_pages.push_back(page);
+            m_pages.emplace_back(*m_stream, m_offset, static_cast<int32>(m_streamSize - m_offset));
             return true;
         }
     }

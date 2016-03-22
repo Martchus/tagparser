@@ -64,82 +64,116 @@ void EbmlElement::internalParse()
 {
     invalidateStatus();
     static const string context("parsing EBML element header");
-    // check whether max size is valid
-    if(maxTotalSize() < 2) {
-        addNotification(NotificationType::Critical, "The EBML element at " + numberToString(startOffset()) + " is truncated or does not exist.", context);
-        throw TruncatedDataException();
-    }
-    stream().seekg(startOffset());
-    // read ID
-    char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
-    byte beg, mask = 0x80;
-    beg = stream().peek();
-    m_idLength = 1;
-    while(m_idLength <= GenericFileElement<implementationType>::maximumIdLengthSupported() && (beg & mask) == 0) {
-        ++m_idLength;
-        mask >>= 1;
-    }
-    if(m_idLength > GenericFileElement<implementationType>::maximumIdLengthSupported()) {
-        addNotification(NotificationType::Critical, "EBML ID length is not supported.", context);
-        throw VersionNotSupportedException();
-    }
-    if(m_idLength > container().maxIdLength()) {
-        addNotification(NotificationType::Critical, "EBML ID length is invalid.", context);
-        throw InvalidDataException();
-    }
-    reader().read(buf + (GenericFileElement<implementationType>::maximumIdLengthSupported() - m_idLength), m_idLength);
-    m_id = BE::toUInt32(buf);
-    // read size
-    mask = 0x80;
-    m_sizeLength = 1;
-    beg = stream().peek();
-    while(m_sizeLength <= GenericFileElement<implementationType>::maximumSizeLengthSupported() && (beg & mask) == 0) {
-        ++m_sizeLength;
-        mask >>= 1;
-    }
-    if(m_sizeLength > GenericFileElement<implementationType>::maximumSizeLengthSupported()) {
-        addNotification(NotificationType::Critical, "EBML size length is not supported.", parsingContext());
-        throw VersionNotSupportedException();
-    }
-    if(m_sizeLength > container().maxSizeLength()) {
-        addNotification(NotificationType::Critical, "EBML size length is invalid.", parsingContext());
-        throw InvalidDataException();
-    }
-    // read size into buffer
-    memset(buf, 0, sizeof(dataSizeType)); // reset buffer
-    reader().read(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
-    *(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength)) ^= mask; // xor the first byte in buffer which has been read from the file with mask
-    m_dataSize = ConversionUtilities::BE::toUInt64(buf);
-    // check if element is truncated
-    if(totalSize() > maxTotalSize()) {
-        if(m_idLength + m_sizeLength > maxTotalSize()) { // header truncated
-            addNotification(NotificationType::Critical, "EBML header seems to be truncated.", parsingContext());
+
+    byte skipped;
+    for(skipped = 0; /* TODO: add a sane limit here */; ++m_startOffset, --m_maxSize, ++skipped) {
+        // check whether max size is valid
+        if(maxTotalSize() < 2) {
+            addNotification(NotificationType::Critical, "The EBML element at " + numberToString(startOffset()) + " is truncated or does not exist.", context);
             throw TruncatedDataException();
-        } else { // data truncated
-            addNotification(NotificationType::Warning, "Data of EBML element seems to be truncated; unable to parse siblings of that element.", parsingContext());
-            m_dataSize = maxTotalSize() - m_idLength - m_sizeLength; // using max size instead
         }
-    }
-    // check if there's a first child
-    if(uint64 firstChildOffset = this->firstChildOffset()) {
-        if(firstChildOffset < dataSize()) {
-            m_firstChild.reset(new EbmlElement(static_cast<EbmlElement &>(*this), startOffset() + firstChildOffset));
+        stream().seekg(startOffset());
+        // read ID
+        char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
+        byte beg, mask = 0x80;
+        beg = stream().peek();
+        m_idLength = 1;
+        while(m_idLength <= GenericFileElement<implementationType>::maximumIdLengthSupported() && (beg & mask) == 0) {
+            ++m_idLength;
+            mask >>= 1;
+        }
+        if(m_idLength > GenericFileElement<implementationType>::maximumIdLengthSupported()) {
+            if(!skipped) {
+                addNotification(NotificationType::Critical, "EBML ID length is not supported, trying to skip.", context);
+            }
+            continue; // try again
+        }
+        if(m_idLength > container().maxIdLength()) {
+            if(!skipped) {
+                addNotification(NotificationType::Critical, "EBML ID length is invalid.", context);
+            }
+            continue; // try again
+        }
+        reader().read(buf + (GenericFileElement<implementationType>::maximumIdLengthSupported() - m_idLength), m_idLength);
+        m_id = BE::toUInt32(buf);
+
+        // read size
+        mask = 0x80;
+        m_sizeLength = 1;
+        beg = stream().peek();
+        if(beg == 0xFF) {
+            // this indicates that the element size is unknown
+            // -> just assume the element takes the maximum available size
+            m_dataSize = maxTotalSize() - headerSize();
+        } else {
+           while(m_sizeLength <= GenericFileElement<implementationType>::maximumSizeLengthSupported() && (beg & mask) == 0) {
+                ++m_sizeLength;
+                mask >>= 1;
+            }
+            if(m_sizeLength > GenericFileElement<implementationType>::maximumSizeLengthSupported()) {
+                if(!skipped) {
+                    addNotification(NotificationType::Critical, "EBML size length is not supported.", parsingContext());
+                }
+                continue; // try again
+            }
+            if(m_sizeLength > container().maxSizeLength()) {
+                if(!skipped) {
+                    addNotification(NotificationType::Critical, "EBML size length is invalid.", parsingContext());
+                }
+                continue; // try again
+            }
+            // read size into buffer
+            memset(buf, 0, sizeof(dataSizeType)); // reset buffer
+            reader().read(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
+            *(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength)) ^= mask; // xor the first byte in buffer which has been read from the file with mask
+            m_dataSize = ConversionUtilities::BE::toUInt64(buf);
+            // check if element is truncated
+            if(totalSize() > maxTotalSize()) {
+                if(m_idLength + m_sizeLength > maxTotalSize()) { // header truncated
+                    if(!skipped) {
+                        addNotification(NotificationType::Critical, "EBML header seems to be truncated.", parsingContext());
+                    }
+                    continue; // try again
+                } else { // data truncated
+                    addNotification(NotificationType::Warning, "Data of EBML element seems to be truncated; unable to parse siblings of that element.", parsingContext());
+                    m_dataSize = maxTotalSize() - m_idLength - m_sizeLength; // using max size instead
+                }
+            }
+        }
+
+        // check if there's a first child
+        if(const uint64 firstChildOffset = this->firstChildOffset()) {
+            if(firstChildOffset < dataSize()) {
+                m_firstChild.reset(new EbmlElement(static_cast<EbmlElement &>(*this), startOffset() + firstChildOffset));
+            } else {
+                m_firstChild.reset();
+            }
         } else {
             m_firstChild.reset();
         }
-    } else {
-        m_firstChild.reset();
-    }
-    // check if there's a sibling
-    if(totalSize() < maxTotalSize()) {
-        if(parent()) {
-            m_nextSibling.reset(new EbmlElement(*(parent()), startOffset() + totalSize()));
+
+        // check if there's a sibling
+        if(totalSize() < maxTotalSize()) {
+            if(parent()) {
+                m_nextSibling.reset(new EbmlElement(*(parent()), startOffset() + totalSize()));
+            } else {
+                m_nextSibling.reset(new EbmlElement(container(), startOffset() + totalSize(), maxTotalSize() - totalSize()));
+            }
         } else {
-            m_nextSibling.reset(new EbmlElement(container(), startOffset() + totalSize(), maxTotalSize() - totalSize()));
+            m_nextSibling.reset();
         }
-    } else {
-        m_nextSibling.reset();
+
+        // no critical errors occured
+        // -> add a warning if bytes have been skipped
+        if(skipped) {
+            addNotification(NotificationType::Warning, numberToString<unsigned int>(skipped) + " bytes have been skipped", parsingContext());
+        }
+        // -> don't need another try, return here
+        return;
     }
+
+    // critical errors occured and skipping some bytes wasn't successful
+    throw InvalidDataException();
 }
 
 /*!

@@ -75,6 +75,7 @@ public:
     // operators
     TagValue &operator=(const TagValue &other);
     TagValue &operator=(TagValue &&other) = default;
+    bool operator==(const TagValue &other) const;
 
     // methods
     bool isEmpty() const;
@@ -84,9 +85,11 @@ public:
     TagDataType type() const;
     std::string toString() const;
     void toString(std::string &result) const;
+    std::u16string toWString() const;
+    void toWString(std::u16string &result) const;
     int32 toInteger() const;
     int toStandardGenreIndex() const;
-    PositionInSet toPositionIntSet() const;
+    PositionInSet toPositionInSet() const;
     ChronoUtilities::TimeSpan toTimeSpan() const;
     ChronoUtilities::DateTime toDateTime() const;
     size_t dataSize() const;
@@ -118,7 +121,7 @@ private:
     std::unique_ptr<char[]> m_ptr;
     std::string::size_type m_size;
     TagDataType m_type;
-    std::string m_dec;
+    std::string m_desc;
     std::string m_mimeType;
     std::string m_lng;
     bool m_labeledAsReadonly;
@@ -212,7 +215,7 @@ inline char *TagValue::dataPointer() const
  */
 inline const std::string &TagValue::description() const
 {
-    return m_dec;
+    return m_desc;
 }
 
 /*!
@@ -225,7 +228,7 @@ inline const std::string &TagValue::description() const
  */
 inline void TagValue::setDescription(const std::string &value, TagTextEncoding encoding)
 {
-    m_dec = value;
+    m_desc = value;
     m_descEncoding = encoding;
 }
 

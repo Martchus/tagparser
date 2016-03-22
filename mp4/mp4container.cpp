@@ -57,7 +57,7 @@ void Mp4Container::internalParseHeader()
         m_doctype = reader().readString(4);
         m_version = reader().readUInt32BE();
     } else {
-        m_doctype = "mp41";
+        m_doctype.clear();
         m_version = 0;
     }
 }
@@ -771,7 +771,7 @@ calculatePadding:
         reset();
         try {
             parseTracks();
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Unable to reparse the header of the new file.", context);
             throw;
         }
@@ -931,11 +931,11 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                         addNotification(NotificationType::Warning, "traf atom stores multiple tfhd atoms but it should only contain exactly one tfhd atom.", context);
                     }
                 }
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 addNotification(NotificationType::Critical, "Unable to parse childs of top-level atom moof.", context);
             }
         }
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse top-level atom moof.", context);
     }
     // update each track
@@ -946,7 +946,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
         if(!track->isHeaderValid()) {
             try {
                 track->parseHeader();
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated because the track seems to be invalid..", context);
                 throw;
             }
@@ -954,7 +954,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
         if(track->isHeaderValid()) {
             try {
                 track->updateChunkOffsets(oldMdatOffsets, newMdatOffsets);
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated.", context);
                 throw;
             }

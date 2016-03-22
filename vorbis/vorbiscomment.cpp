@@ -59,7 +59,7 @@ string VorbisComment::fieldId(KnownField field) const
     case KnownField::DiskPosition: return diskNumber();
     case KnownField::PartNumber: return partNumber();
     case KnownField::Composer: return composer();
-    case KnownField::Encoder: return encodedBy();
+    case KnownField::Encoder: return encoder();
     case KnownField::EncoderSettings: return encoderSettings();
     case KnownField::Description: return description();
     case KnownField::RecordLabel: return label();
@@ -73,7 +73,7 @@ string VorbisComment::fieldId(KnownField field) const
 KnownField VorbisComment::knownField(const string &id) const
 {
     using namespace VorbisCommentIds;
-    static const map<string, KnownField> map({
+    static const map<string, KnownField> fieldMap({
         {album(), KnownField::Album},
         {artist(), KnownField::Artist},
         {comment(), KnownField::Comment},
@@ -85,7 +85,7 @@ KnownField VorbisComment::knownField(const string &id) const
         {diskNumber(), KnownField::DiskPosition},
         {partNumber(), KnownField::PartNumber},
         {composer(), KnownField::Composer},
-        {encodedBy(), KnownField::Encoder},
+        {encoder(), KnownField::Encoder},
         {encoderSettings(), KnownField::EncoderSettings},
         {description(), KnownField::Description},
         {label(), KnownField::RecordLabel},
@@ -93,7 +93,7 @@ KnownField VorbisComment::knownField(const string &id) const
         {lyricist(), KnownField::Lyricist}
     });
     try {
-        return map.at(id);
+        return fieldMap.at(id);
     } catch(out_of_range &) {
         return KnownField::Invalid;
     }
@@ -181,7 +181,7 @@ void VorbisComment::make(std::ostream &stream, bool noSignature)
     string vendor;
     try {
         m_vendor.toString(vendor);
-    } catch(ConversionException &) {
+    } catch(const ConversionException &) {
         addNotification(NotificationType::Warning, "Can not convert the assigned vendor to string.", context);
     }
     BinaryWriter writer(&stream);
