@@ -34,9 +34,6 @@ Mp4Container::Mp4Container(MediaFileInfo &fileInfo, uint64 startOffset) :
     m_fragmented(false)
 {}
 
-/*!
- * \brief Destroys the container.
- */
 Mp4Container::~Mp4Container()
 {}
 

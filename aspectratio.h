@@ -41,7 +41,7 @@ inline AspectRatio::AspectRatio(uint16 numerator, uint16 denominator) :
  */
 inline bool AspectRatio::isValid() const
 {
-    return !type || !numerator || !denominator;
+    return type && numerator && denominator;
 }
 
 /*!

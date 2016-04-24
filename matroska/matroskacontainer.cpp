@@ -10,9 +10,7 @@
 #include "../backuphelper.h"
 
 // include configuration from separate header file when building with CMake
-#ifndef APP_METADATA_AVAIL
 #include "resources/config.h"
-#endif
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>
@@ -58,9 +56,6 @@ MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset
     m_doctypeReadVersion = 1;
 }
 
-/*!
- * \brief Destroys the container.
- */
 MatroskaContainer::~MatroskaContainer()
 {}
 
