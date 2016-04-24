@@ -20,7 +20,7 @@ namespace Media {
  * \brief Constructs a new container for the specified \a stream at the specified \a startOffset.
  */
 OggContainer::OggContainer(MediaFileInfo &fileInfo, uint64 startOffset) :
-    GenericContainer<MediaFileInfo, VorbisComment, OggStream, OggPage>(fileInfo, startOffset),//AbstractContainer(stream, startOffset)
+    GenericContainer<MediaFileInfo, VorbisComment, OggStream, OggPage>(fileInfo, startOffset),
     m_iterator(fileInfo.stream(), startOffset, fileInfo.size()),
     m_validateChecksums(false)
 {}
