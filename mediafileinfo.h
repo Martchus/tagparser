@@ -68,7 +68,7 @@ public:
     MediaFileInfo(const std::string &path);
     MediaFileInfo(const MediaFileInfo &) = delete;
     MediaFileInfo &operator=(const MediaFileInfo &) = delete;
-    virtual ~MediaFileInfo();
+    ~MediaFileInfo();
 
     // methods to parse file
     void parseContainerFormat();
@@ -142,6 +142,8 @@ public:
     void clearParsingResults();
 
     // methods to get, set object behaviour
+    const std::string &saveFilePath() const;
+    void setSaveFilePath(const std::string &saveFilePath);
     bool isForcingFullParse() const;
     void setForceFullParse(bool forceFullParse);
     bool isForcingRewrite() const;
@@ -169,6 +171,7 @@ private:
     // currently only the makeMp3File() methods is present; corresponding methods for
     // other formats are outsourced to container classes
     void makeMp3File();
+
     // fields related to the container
     ParsingStatus m_containerParsingStatus;
     ContainerFormat m_containerFormat;
@@ -177,17 +180,22 @@ private:
     bool m_actualExistingId3v1Tag;
     std::list<std::streamoff> m_actualId3v2TagOffsets;
     std::unique_ptr<AbstractContainer> m_container;
+
     // fields related to the tracks
     ParsingStatus m_tracksParsingStatus;
     std::unique_ptr<AbstractTrack> m_singleTrack;
+
     // fields related to the tag
     ParsingStatus m_tagsParsingStatus;
     std::unique_ptr<Id3v1Tag> m_id3v1Tag;
     std::vector<std::unique_ptr<Id3v2Tag> > m_id3v2Tags;
+
     // fields related to the chapters and the attachments
     ParsingStatus m_chaptersParsingStatus;
     ParsingStatus m_attachmentsParsingStatus;
+
     // fields specifying object behaviour
+    std::string m_saveFilePath;
     bool m_forceFullParse;
     bool m_forceRewrite;
     size_t m_minPadding;
@@ -355,6 +363,34 @@ inline Id3v1Tag *MediaFileInfo::id3v1Tag() const
 inline const std::vector<std::unique_ptr<Id3v2Tag> > &MediaFileInfo::id3v2Tags() const
 {
     return m_id3v2Tags;
+}
+
+/*!
+ * \brief Returns the "save file path" which has been set using setSaveFilePath().
+ * \sa setSaveFilePath()
+ */
+inline const std::string &MediaFileInfo::saveFilePath() const
+{
+    return m_saveFilePath;
+}
+
+/*!
+ * \brief Sets the "save file path".
+ *
+ * If \a saveFilePath is not empty, this path will be used to save the output file
+ * when applying changes using applyChanges(). Thus the current file is not modified
+ * by applyChanges() in this case and the variable isForcingRewrite() does not
+ * affect the behaviour of applyChanges(). If the changes have been applied
+ * without fatal errors the "save file path" is cleared and used as the
+ * new regular path().
+ *
+ * By default, this path is empty.
+ *
+ * \remarks \a saveFilePath mustn't be the current path().
+ */
+inline void MediaFileInfo::setSaveFilePath(const std::string &saveFilePath)
+{
+    m_saveFilePath = saveFilePath;
 }
 
 /*!

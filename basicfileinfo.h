@@ -12,18 +12,23 @@ namespace Media {
 class LIB_EXPORT BasicFileInfo
 {
 public:
+    // constructor, destructor
     BasicFileInfo(const std::string &path = std::string());
     BasicFileInfo(const BasicFileInfo &) = delete;
     BasicFileInfo &operator=(const BasicFileInfo &) = delete;
     virtual ~BasicFileInfo();
 
+    // methods to control associated file stream
     void open(bool readOnly = false);
     void reopen(bool readonly = false);
     bool isOpen() const;
     bool isReadOnly() const;
     void close();
     void invalidate();
+    std::fstream &stream();
+    const std::fstream &stream() const;
 
+    // methods to get, set path (components)
     const std::string &path() const;
     void setPath(const std::string &path);
     static std::string fileName(const std::string &path, bool cutExtension = false);
@@ -34,10 +39,11 @@ public:
     std::string pathWithoutExtension() const;
     static std::string containingDirectory(const std::string &path);
     std::string containingDirectory() const;
-    std::fstream &stream();
-    const std::fstream &stream() const;
+
+    // methods to get, set the file size
     uint64 size() const;
     void reportSizeChanged(uint64 newSize);
+    void reportPathChanged(const std::string &newPath);
 
 protected:
     virtual void invalidated();
@@ -103,6 +109,24 @@ inline const std::string &BasicFileInfo::path() const
 inline uint64 BasicFileInfo::size() const
 {
     return m_size;
+}
+
+/*!
+ * \brief Call this function to report that the size changed.
+ * \remarks Should be called after writing/truncating the stream().
+ */
+inline void BasicFileInfo::reportSizeChanged(uint64 newSize)
+{
+    m_size = newSize;
+}
+
+/*!
+ * \brief Call this function to report that the path changed.
+ * \remarks Should be called after associating another file to the stream() manually.
+ */
+inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
+{
+    m_path = newPath;
 }
 
 }

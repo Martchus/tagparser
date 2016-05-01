@@ -1332,8 +1332,8 @@ void MediaFileInfo::invalidated()
 void MediaFileInfo::makeMp3File()
 {
     const string context("making MP3 file");
-    // there's no need to rewrite the complete file if there is just are not ID3v2 tags present or to be written
-    if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty()) {
+    // there's no need to rewrite the complete file if there are no ID3v2 tags present or to be written
+    if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty()) {
         if(m_actualExistingId3v1Tag) {
             // there is currently an ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
@@ -1395,7 +1395,7 @@ void MediaFileInfo::makeMp3File()
         }
 
         // check whether rewrite is required
-        bool rewriteRequired = isForcingRewrite() || (tagsSize > static_cast<uint32>(m_containerOffset));
+        bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > static_cast<uint32>(m_containerOffset));
         uint32 padding = 0;
         if(!rewriteRequired) {
             // rewriting is not forced and new tag is not too big for available space
@@ -1428,17 +1428,28 @@ void MediaFileInfo::makeMp3File()
         fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
 
         if(rewriteRequired) {
-            // move current file to temp dir and reopen it as backupStream, recreate original file
-            try {
-                // ensure the file is close before moving
-                close();
-                BackupHelper::createBackupFile(path(), backupPath, backupStream);
-                // recreate original file, define buffer variables
-                outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch(const ios_base::failure &) {
-                addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                throw;
+            if(m_saveFilePath.empty()) {
+                // move current file to temp dir and reopen it as backupStream, recreate original file
+                try {
+                    BackupHelper::createBackupFile(path(), backupPath, outputStream, backupStream);
+                    // recreate original file, define buffer variables
+                    outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
+                } catch(const ios_base::failure &) {
+                    addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+                    throw;
+                }
+            } else {
+                // open the current file as backupStream and create a new outputStream at the specified "save file path"
+                try {
+                    backupStream.exceptions(ios_base::badbit | ios_base::failbit);
+                    backupStream.open(path(), ios_base::in | ios_base::binary);
+                    outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
+                } catch(const ios_base::failure &) {
+                    addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
+                    throw;
+                }
             }
+
 
         } else { // !rewriteRequired
             // reopen original file to ensure it is opened for writing
@@ -1501,6 +1512,11 @@ void MediaFileInfo::makeMp3File()
             if(rewriteRequired) {
                 // report new size
                 reportSizeChanged(outputStream.tellp());
+                // "save as path" is now the regular path
+                if(!saveFilePath().empty()) {
+                    reportPathChanged(saveFilePath());
+                    m_saveFilePath.clear();
+                }
                 // stream is useless for further usage because it is write-only
                 outputStream.close();
             } else {
@@ -1521,50 +1537,9 @@ void MediaFileInfo::makeMp3File()
                 }
             }
 
-        } catch(const OperationAbortedException &) {
-            if(&stream() != &outputStream) {
-                // a temp/backup file has been created -> restore original file
-                addNotification(NotificationType::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
-                try {
-                    BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, outputStream, backupStream);
-                    addNotification(NotificationType::Information, "The original file has been restored.", context);
-                } catch(const ios_base::failure &ex) {
-                    addNotification(NotificationType::Critical, ex.what(), context);
-                }
-            } else {
-                addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
-            }
-            throw;
-        } catch(const Failure &) {
-            if(&stream() != &outputStream) {
-                // a temp/backup file has been created -> restore original file
-                addNotification(NotificationType::Critical, "Rewriting the file to apply changed tag information failed.", context);
-                try {
-                    BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, outputStream, backupStream);
-                    addNotification(NotificationType::Information, "The original file has been restored.", context);
-                } catch(const ios_base::failure &ex) {
-                    addNotification(NotificationType::Critical, ex.what(), context);
-                }
-            } else {
-                addNotification(NotificationType::Critical, "Applying new tag information failed.", context);
-            }
-            throw;
-        } catch(const ios_base::failure &) {
-            if(&stream() != &outputStream) {
-                // a temp/backup file has been created -> restore original file
-                addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
-                try {
-                    BackupHelper::restoreOriginalFileFromBackupFile(path(), backupPath, outputStream, backupStream);
-                    addNotification(NotificationType::Information, "The original file has been restored.", context);
-                } catch(const ios_base::failure &ex) {
-                    addNotification(NotificationType::Critical, ex.what(), context);
-                }
-            } else {
-                addNotification(NotificationType::Critical, "An IO error occured when applying tag information.", context);
-            }
-            throw;
+        } catch(...) {
+            BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, context);
         }
-        // TODO: reduce code duplication
     }
 }
 

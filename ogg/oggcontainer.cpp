@@ -263,14 +263,33 @@ void OggContainer::internalMakeFile()
     const string context("making OGG file");
     updateStatus("Prepare for rewriting OGG file ...");
     parseTags(); // tags need to be parsed before the file can be rewritten
-    fileInfo().close();
     string backupPath;
     fstream backupStream;
-    try {
-        BackupHelper::createBackupFile(fileInfo().path(), backupPath, backupStream);
-        // recreate original file
-        fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
 
+    if(fileInfo().saveFilePath().empty()) {
+        // move current file to temp dir and reopen it as backupStream, recreate original file
+        try {
+            BackupHelper::createBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
+            // recreate original file, define buffer variables
+            fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
+        } catch(const ios_base::failure &) {
+            addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+            throw;
+        }
+    } else {
+        // open the current file as backupStream and create a new outputStream at the specified "save file path"
+        try {
+            backupStream.exceptions(ios_base::badbit | ios_base::failbit);
+            backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
+            fileInfo().close();
+            fileInfo().stream().open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
+        } catch(const ios_base::failure &) {
+            addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
+            throw;
+        }
+    }
+
+    try {
         // prepare iterating comments
         VorbisComment *currentComment;
         OggParameter *currentParams;
@@ -432,7 +451,14 @@ void OggContainer::internalMakeFile()
             }
         }
 
+        // report new size
         fileInfo().reportSizeChanged(stream().tellp());
+
+        // "save as path" is now the regular path
+        if(!fileInfo().saveFilePath().empty()) {
+            fileInfo().reportPathChanged(fileInfo().saveFilePath());
+            fileInfo().setSaveFilePath(string());
+        }
 
         // close backups stream; reopen new file as readable stream
         backupStream.close();
@@ -447,17 +473,9 @@ void OggContainer::internalMakeFile()
         // clear iterator
         m_iterator.clear(fileInfo().stream(), startOffset(), fileInfo().size());
 
-    } catch(const OperationAbortedException &) {
-        addNotification(NotificationType::Information, "Rewriting file to apply new tag information has been aborted.", context);
-        BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
+    } catch(...) {
         m_iterator.setStream(fileInfo().stream());
-        throw;
-
-    } catch(const ios_base::failure &ex) {
-        addNotification(NotificationType::Critical, "IO error occured when rewriting file to apply new tag information.\n" + string(ex.what()), context);
-        BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
-        m_iterator.setStream(fileInfo().stream());
-        throw;
+        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, fileInfo().stream(), backupStream, context);
     }
 }
 

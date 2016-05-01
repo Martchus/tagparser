@@ -814,7 +814,7 @@ void MatroskaContainer::internalMakeFile()
     // -> holds new padding
     uint64 newPadding;
     // -> whether rewrite is required (always required when forced to rewrite)
-    bool rewriteRequired = fileInfo().isForcingRewrite();
+    bool rewriteRequired = fileInfo().isForcingRewrite() || !fileInfo().saveFilePath().empty();
 
     // calculate EBML header size
     // -> sub element ID sizes
@@ -1341,19 +1341,33 @@ nonRewriteCalculations:
     char buff[8]; // buffer used to make size denotations
 
     if(rewriteRequired) {
-        // move current file to temp dir and reopen it as backupStream, recreate original file
-        try {
-            // ensure the file is close before moving
-            fileInfo().close();
-            BackupHelper::createBackupFile(fileInfo().path(), backupPath, backupStream);
-            // set backup stream as associated input stream since we need the original elements to write the new file
-            setStream(backupStream);
-            // recreate original file, define buffer variables
-            outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-        } catch(const ios_base::failure &) {
-            addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-            throw;
+        if(fileInfo().saveFilePath().empty()) {
+            // move current file to temp dir and reopen it as backupStream, recreate original file
+            try {
+                BackupHelper::createBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
+                // recreate original file, define buffer variables
+                outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
+            } catch(const ios_base::failure &) {
+                addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+                throw;
+            }
+        } else {
+            // open the current file as backupStream and create a new outputStream at the specified "save file path"
+            try {
+                backupStream.exceptions(ios_base::badbit | ios_base::failbit);
+                backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
+                fileInfo().close();
+                outputStream.open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
+            } catch(const ios_base::failure &) {
+                addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
+                throw;
+            }
         }
+
+        // set backup stream as associated input stream since we need the original elements to write the new file
+        setStream(backupStream);
+
+        // TODO: reduce code duplication
 
     } else { // !rewriteRequired
         // buffer currently assigned attachments
@@ -1643,6 +1657,13 @@ nonRewriteCalculations:
         if(rewriteRequired) {
             // report new size
             fileInfo().reportSizeChanged(outputStream.tellp());
+
+            // "save as path" is now the regular path
+            if(!fileInfo().saveFilePath().empty()) {
+                fileInfo().reportPathChanged(fileInfo().saveFilePath());
+                fileInfo().setSaveFilePath(string());
+            }
+
             // the outputStream needs to be reopened to be able to read again
             outputStream.close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
@@ -1690,56 +1711,9 @@ nonRewriteCalculations:
         outputStream.flush();
 
         // handle errors (which might have been occured after renaming/creating backup file)
-    } catch(const OperationAbortedException &) {
-        reset();
-        if(&stream() != &outputStream) {
-            // a temp/backup file has been created -> restore original file
-            setStream(outputStream);
-            addNotification(NotificationType::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
-            try {
-                BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
-                addNotification(NotificationType::Information, "The original file has been restored.", context);
-            } catch(const ios_base::failure &ex) {
-                addNotification(NotificationType::Critical, ex.what(), context);
-            }
-        } else {
-            addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
-        }
-        throw;
-    } catch(const Failure &) {
-        reset();
-        if(&stream() != &outputStream) {
-            // a temp/backup file has been created -> restore original file
-            setStream(outputStream);
-            addNotification(NotificationType::Critical, "Rewriting the file to apply changed tag information failed.", context);
-            try {
-                BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
-                addNotification(NotificationType::Information, "The original file has been restored.", context);
-            } catch(const ios_base::failure &ex) {
-                addNotification(NotificationType::Critical, ex.what(), context);
-            }
-        } else {
-            addNotification(NotificationType::Critical, "Applying new tag information failed.", context);
-        }
-        throw;
-    } catch(const ios_base::failure &) {
-        reset();
-        if(&stream() != &outputStream) {
-            // a temp/backup file has been created -> restore original file
-            setStream(outputStream);
-            addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
-            try {
-                BackupHelper::restoreOriginalFileFromBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
-                addNotification(NotificationType::Information, "The original file has been restored.", context);
-            } catch(const ios_base::failure &ex) {
-                addNotification(NotificationType::Critical, ex.what(), context);
-            }
-        } else {
-            addNotification(NotificationType::Critical, "An IO error occured when applying tag information.", context);
-        }
-        throw;
+    } catch(...) {
+        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, context);
     }
-    // TODO: reduce code duplication
 }
 
 }

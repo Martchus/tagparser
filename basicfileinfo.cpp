@@ -221,12 +221,4 @@ void BasicFileInfo::invalidated()
     close();
 }
 
-/*!
- * \brief Call this function when subclassing to report a changed file size.
- */
-void BasicFileInfo::reportSizeChanged(uint64 newSize)
-{
-    m_size = newSize;
-}
-
 }
