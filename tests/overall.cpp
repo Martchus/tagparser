@@ -21,6 +21,7 @@
 #include <iostream>
 #include <queue>
 #include <cstring>
+#include <cstdio>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -179,7 +180,10 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     default:
         ;
     }
+    // close and remove file and backup files
     m_fileInfo.close();
+    remove(path.c_str());
+    remove((path + ".bak").c_str());
 }
 
 /*!
