@@ -66,6 +66,7 @@ enum Sig32 : uint32
 enum Sig24 : uint32
 {
     Bzip2 = 0x425A68u,
+    Flv = 0x464C56u,
     Gzip = 0x1F8B08u,
     Id3v2 = 0x494433u,
     Utf8Text = 0xEFBBBFu,
@@ -185,6 +186,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     switch(sig >> 40) { // check 24-bit signatures
     case Bzip2:
         return ContainerFormat::Bzip2;
+    case Flv:
+        return ContainerFormat::FlashVideo;
     case Gzip:
         return ContainerFormat::Gzip;
     case Id3v2:
@@ -232,6 +235,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Ar: return "a";
     case ContainerFormat::Asf: return "asf";
     case ContainerFormat::Elf: return "elf";
+    case ContainerFormat::FlashVideo: return "flv";
     case ContainerFormat::Gif87a:
     case ContainerFormat::Gif89a: return "gif";
     case ContainerFormat::JavaClassFile: return "class";
@@ -311,6 +315,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "Advanced Systems Format";
     case ContainerFormat::Elf:
         return "Executable and Linkable Format";
+    case ContainerFormat::FlashVideo:
+        return "Flash Video";
     case ContainerFormat::Gif87a:
     case ContainerFormat::Gif89a:
         return "Graphics Interchange Format";
@@ -411,6 +417,8 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
     switch(containerFormat) {
     case ContainerFormat::Asf:
         return "video/x-ms-asf";
+    case ContainerFormat::FlashVideo:
+        return "video/x-flv";
     case ContainerFormat::Gif87a:
     case ContainerFormat::Gif89a:
         return "image/gif";

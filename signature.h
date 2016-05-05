@@ -19,6 +19,7 @@ enum class ContainerFormat
     Asf, /**< Advanced Systems Format */
     Bzip2, /** bzip2 compressed file */
     Elf, /**< Executable and Linkable Format */
+    FlashVideo, /**< Flash (FLV) */
     Gif87a, /**< Graphics Interchange Format (1987) */
     Gif89a, /**< Graphics Interchange Format (1989) */
     Gzip, /**< gzip compressed file */
