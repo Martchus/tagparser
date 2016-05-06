@@ -749,7 +749,7 @@ void Id3v2Frame::parseComment(const char *buffer, size_t dataSize, TagValue &tag
 {
     static const string context("parsing comment/unsynchronized lyrics frame");
     const char *end = buffer + dataSize;
-    if(dataSize < 6) {
+    if(dataSize < 5) {
         addNotification(NotificationType::Critical, "Comment frame is incomplete.", context);
         throw TruncatedDataException();
     }
@@ -759,7 +759,7 @@ void Id3v2Frame::parseComment(const char *buffer, size_t dataSize, TagValue &tag
     }
     auto substr = parseSubstring(buffer += 3, dataSize -= 4, dataEncoding, true);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
-    if(get<2>(substr) >= end) {
+    if(get<2>(substr) > end) {
         addNotification(NotificationType::Critical, "Comment frame is incomplete (description not terminated?).", context);
         throw TruncatedDataException();
     }
