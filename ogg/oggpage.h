@@ -5,7 +5,7 @@
 #include <c++utilities/application/global.h>
 
 #include <vector>
-#include <algorithm>
+#include <numeric>
 #include <istream>
 
 namespace Media {

@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include <tuple>
+#include <numeric>
 
 using namespace std;
 using namespace IoUtilities;
