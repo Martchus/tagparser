@@ -133,6 +133,8 @@ public:
     void removeTag(Tag *tag);
     void removeAllTags();
     void mergeId3v2Tags();
+    bool id3v1ToId3v2();
+    bool id3v2ToId3v1();
 
     // methods to get/wipe notifications
     bool haveRelatedObjectsNotifications() const;
