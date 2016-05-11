@@ -1250,7 +1250,7 @@ void MediaFileInfo::clearParsingResults()
 }
 
 /*!
- * \brief Merges the assigned ID3v2 tags.
+ * \brief Merges the assigned ID3v2 tags into a single ID3v2 tag.
  *
  * Some files I've got contain multiple successive ID3v2 tags. If the tags of
  * such an file is parsed by this class, these tags will be kept seperate.
@@ -1277,6 +1277,46 @@ void MediaFileInfo::mergeId3v2Tags()
             }
             m_id3v2Tags.erase(isecond, end - 1);
         }
+    }
+}
+
+/*!
+ * \brief Converts an existing ID3v1 tag into an ID3v2 tag.
+ *
+ * Effectively merges all ID3 tags into a single ID3v2 tag.
+ *
+ * Does nothing if there are currently no ID3 tags assigned and the file format
+ * isn't known to support ID3 tags.
+ *
+ * This method does nothing the tags of the current file haven't been parsed using
+ * the parseTags() method.
+ */
+bool MediaFileInfo::id3v1ToId3v2()
+{
+    if(!areTagsSupported() || !m_container) {
+        return createAppropriateTags(false, TagUsage::Never, TagUsage::Always, true, true, 3);
+    } else {
+        return false;
+    }
+}
+
+/*!
+ * \brief Converts the existing ID3v2 tags into an ID3v1 tag.
+ *
+ * Effectively merges all ID3 tags into a single ID3v1 tag.
+ *
+ * Does nothing if there are currently no ID3 tags assigned and the file format
+ * isn't known to support ID3 tags.
+ *
+ * This method does nothing the tags of the current file haven't been parsed using
+ * the parseTags() method.
+ */
+bool MediaFileInfo::id3v2ToId3v1()
+{
+    if(!areTagsSupported() || !m_container) {
+        return createAppropriateTags(false, TagUsage::Always, TagUsage::Never, true, true, 3);
+    } else {
+        return false;
     }
 }
 
