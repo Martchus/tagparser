@@ -12,6 +12,23 @@ using namespace ConversionUtilities;
 namespace Media {
 
 /*!
+ * \class Media::TagTarget
+ * \brief The TagTarget class specifies the target of a tag.
+ *
+ * Tags might only target a specific track, chapter, ...
+ *
+ * Specifying a target is currently only fully supported by Matroska.
+ *
+ * Since Ogg saves tags at stream level, the stream can be specified
+ * by passing a TagTarget instance to OggContainer::createTag().
+ * However, only the first track in the tracks() array is considered
+ * and any other values are just ignored.
+ *
+ * In any other tag formats, the specified target is (currently)
+ * completely ignored.
+ */
+
+/*!
  * \brief Returns the string representation of the current instance.
  */
 string TagTarget::toString() const

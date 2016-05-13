@@ -26,7 +26,8 @@ enum class TagType : unsigned int
     Id3v2Tag = 0x02, /**< The tag is a Media::Id3v2Tag. */
     Mp4Tag = 0x04, /**< The tag is a Media::Mp4Tag. */
     MatroskaTag = 0x08, /**< The tag is a Media::MatroskaTag. */
-    VorbisComment = 0x10 /**< The tag is a Media::VorbisComment. */
+    VorbisComment = 0x10, /**< The tag is a Media::VorbisComment. */
+    OggVorbisComment = 0x20 /**< The tag is a Media::OggVorbisComment. */
 };
 
 /*!
@@ -216,8 +217,7 @@ inline uint32 Tag::size() const
 }
 
 /*!
- * \brief Returns an indication whether a target is supported
- *        by the tag.
+ * \brief Returns an indication whether a target is supported by the tag.
  *
  * If no target is supported, setting a target using setTarget()
  * has no effect when saving the tag.

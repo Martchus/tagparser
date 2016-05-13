@@ -1,6 +1,8 @@
 #include "./vorbiscommentfield.h"
 #include "./vorbiscommentids.h"
 
+#include "../flac/flacmetadata.h"
+
 #include "../ogg/oggiterator.h"
 
 #include "../id3/id3v2frame.h"
@@ -71,21 +73,12 @@ void VorbisCommentField::parse(OggIterator &iterator)
                 // extract cover value
                 try {
                     auto decoded = decodeBase64(data.get() + idSize + 1, size - idSize - 1);
-                    stringstream ss(ios_base::in | ios_base::out | ios_base::binary);
-                    ss.exceptions(ios_base::failbit | ios_base::badbit);
-                    ss.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
-                    BinaryReader reader(&ss);
-                    setTypeInfo(reader.readUInt32BE());
-                    auto size = reader.readUInt32BE();
-                    value().setMimeType(reader.readString(size));
-                    size = reader.readUInt32BE();
-                    value().setDescription(reader.readString(size));
-                    // skip width, height, color depth, number of colors used
-                    ss.seekg(4 * 4, ios_base::cur);
-                    size = reader.readUInt32BE();
-                    auto data = make_unique<char[]>(size);
-                    ss.read(data.get(), size);
-                    value().assignData(move(data), size, TagDataType::Picture);
+                    stringstream bufferStream(ios_base::in | ios_base::out | ios_base::binary);
+                    bufferStream.exceptions(ios_base::failbit | ios_base::badbit);
+                    bufferStream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
+                    FlacMetaDataBlockPicture pictureBlock(value());
+                    pictureBlock.parse(bufferStream);
+                    setTypeInfo(pictureBlock.pictureType());
                 } catch (const ios_base::failure &) {
                     addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
                     throw Failure();
@@ -95,7 +88,7 @@ void VorbisCommentField::parse(OggIterator &iterator)
                 }
             } else if(id().size() + 1 < size) {
                 // extract other values (as string)
-                setValue(string(data.get() + idSize + 1, size - idSize - 1));
+                setValue(TagValue(string(data.get() + idSize + 1, size - idSize - 1), TagTextEncoding::Utf8));
             }
         } else {
             addNotification(NotificationType::Critical, "Field is truncated.", context);
@@ -127,24 +120,17 @@ void VorbisCommentField::make(BinaryWriter &writer)
                 throw InvalidDataException();
             }
             try {
-                uint32 dataSize = 32 + value().mimeType().size() + value().description().size() + value().dataSize();
-                auto buffer = make_unique<char[]>(dataSize);
-                stringstream ss(ios_base::in | ios_base::out | ios_base::binary);
-                ss.exceptions(ios_base::failbit | ios_base::badbit);
-                ss.rdbuf()->pubsetbuf(buffer.get(), dataSize);
-                BinaryWriter writer(&ss);
-                writer.writeUInt32BE(typeInfo());
-                writer.writeUInt32BE(value().mimeType().size());
-                writer.writeString(value().mimeType());
-                writer.writeUInt32BE(value().description().size());
-                writer.writeString(value().description());
-                writer.writeUInt32BE(0); // skip width
-                writer.writeUInt32BE(0); // skip height
-                writer.writeUInt32BE(0); // skip color depth
-                writer.writeUInt32BE(0); // skip number of colors used
-                writer.writeUInt32BE(value().dataSize());
-                writer.write(value().dataPointer(), value().dataSize());
-                valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), dataSize);
+                FlacMetaDataBlockPicture pictureBlock(value());
+                pictureBlock.setPictureType(typeInfo());
+
+                const auto requiredSize = pictureBlock.requiredSize();
+                auto buffer = make_unique<char[]>(requiredSize);
+                stringstream bufferStream(ios_base::in | ios_base::out | ios_base::binary);
+                bufferStream.exceptions(ios_base::failbit | ios_base::badbit);
+                bufferStream.rdbuf()->pubsetbuf(buffer.get(), requiredSize);
+
+                pictureBlock.make(bufferStream);
+                valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), requiredSize);
             } catch (const ios_base::failure &) {
                 addNotification(NotificationType::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
                 throw Failure();

@@ -161,8 +161,9 @@ void OggIterator::read(char *buffer, size_t count)
  */
 void OggIterator::seekForward(size_t count)
 {
-    while(*this && count) {
-        uint32 available = currentSegmentSize() - m_bytesRead;
+    uint32 available = currentSegmentSize() - m_bytesRead;
+    while(*this) {
+        available = currentSegmentSize() - m_bytesRead;
         if(count <= available) {
             m_bytesRead += count;
             return;

@@ -24,7 +24,7 @@ public:
     void setHeight(uint32 value);
 
     bool constexpr isNull() const;
-    bool constexpr operator==(const Size &other);
+    bool constexpr operator==(const Size &other) const;
     std::string toString() const;
 
 private:
@@ -91,7 +91,7 @@ inline constexpr bool Size::isNull() const
 /*!
  * \brief Returns whether this instance equals \a other.
  */
-inline constexpr bool Size::operator==(const Size &other)
+inline constexpr bool Size::operator==(const Size &other) const
 {
     return (m_width == other.m_width) && (m_height == other.m_height);
 }

@@ -20,7 +20,7 @@ namespace Media {
 
 /*!
  * \class Media::VorbisComment
- * \brief Implementation of Media::Tag for the Vorbis comment.
+ * \brief Implementation of Media::Tag for Vorbis comments.
  */
 
 const TagValue &VorbisComment::value(KnownField field) const
@@ -106,16 +106,17 @@ KnownField VorbisComment::knownField(const string &id) const
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisComment::parse(OggIterator &iterator, bool skipSignature)
+void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, size_t offset)
 {
     // prepare parsing
     invalidateStatus();
     static const string context("parsing Vorbis comment");
-    iterator.stream().seekg(iterator.currentSegmentOffset());
-    auto startOffset = iterator.currentSegmentOffset();
+    auto startOffset = iterator.currentSegmentOffset() + offset;
+    iterator.seekForward(offset);
     try {
         // read signature: 0x3 + "vorbis"
         char sig[8];
+        bool skipSignature = flags & VorbisCommentFlags::NoSignature;
         if(!skipSignature) {
             iterator.read(sig, 7);
             skipSignature = (ConversionUtilities::BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
@@ -124,11 +125,12 @@ void VorbisComment::parse(OggIterator &iterator, bool skipSignature)
             // read vendor (length prefixed string)
             {
                 iterator.read(sig, 4);
-                auto vendorSize = LE::toUInt32(sig);
+                const auto vendorSize = LE::toUInt32(sig);
                 if(iterator.currentCharacterOffset() + vendorSize <= iterator.streamSize()) {
                     auto buff = make_unique<char []>(vendorSize);
                     iterator.read(buff.get(), vendorSize);
-                    m_vendor = string(buff.get(), vendorSize);
+                    m_vendor.assignData(move(buff), vendorSize, TagDataType::Text, TagTextEncoding::Utf8);
+                    // TODO: Is the vendor string actually UTF-8 (like the field values)?
                 } else {
                     addNotification(NotificationType::Critical, "Vendor information is truncated.", context);
                     throw TruncatedDataException();
@@ -153,7 +155,9 @@ void VorbisComment::parse(OggIterator &iterator, bool skipSignature)
                 addNotifications(field);
                 field.invalidateNotifications();
             }
-            iterator.seekForward(1); // skip framing
+            if(!(flags & VorbisCommentFlags::NoFramingByte)) {
+                iterator.seekForward(1); // skip framing byte
+            }
             m_size = static_cast<uint32>(static_cast<uint64>(iterator.currentCharacterOffset()) - startOffset);
         } else {
             addNotification(NotificationType::Critical, "Signature is invalid.", context);
@@ -173,7 +177,7 @@ void VorbisComment::parse(OggIterator &iterator, bool skipSignature)
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void VorbisComment::make(std::ostream &stream, bool noSignature)
+void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags)
 {
     // prepare making
     invalidateStatus();
@@ -185,7 +189,7 @@ void VorbisComment::make(std::ostream &stream, bool noSignature)
         addNotification(NotificationType::Warning, "Can not convert the assigned vendor to string.", context);
     }
     BinaryWriter writer(&stream);
-    if(!noSignature) {
+    if(!(flags & VorbisCommentFlags::NoSignature)) {
         // write signature
         static const char sig[7] = {0x03, 0x76, 0x6F, 0x72, 0x62, 0x69, 0x73};
         stream.write(sig, sizeof(sig));
@@ -201,7 +205,7 @@ void VorbisComment::make(std::ostream &stream, bool noSignature)
         if(!field.value().isEmpty()) {
             try {
                 field.make(writer);
-            } catch(Failure &) {
+            } catch(const Failure &) {
                 // nothing to do here since notifications will be added anyways
             }
             // add making notifications
@@ -210,7 +214,9 @@ void VorbisComment::make(std::ostream &stream, bool noSignature)
         }
     }
     // write framing byte
-    stream.put(0x01);
+    if(!(flags & VorbisCommentFlags::NoFramingByte)) {
+        stream.put(0x01);
+    }
 }
 
 }

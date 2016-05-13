@@ -28,6 +28,7 @@ public:
     bool isLastPage() const;
     uint64 absoluteGranulePosition() const;
     uint32 streamSerialNumber() const;
+    bool matchesStreamSerialNumber(uint32 streamSerialNumber) const;
     uint32 sequenceNumber() const;
     uint32 checksum() const;
     byte segmentTableSize() const;
@@ -153,6 +154,15 @@ inline uint64 OggPage::absoluteGranulePosition() const
 inline uint32 OggPage::streamSerialNumber() const
 {
     return m_streamSerialNumber;
+}
+
+/*!
+ * \brief Returns whether the stream serial number of the current instance matches the specified one.
+ * \sa streamSerialNumber()
+ */
+inline bool OggPage::matchesStreamSerialNumber(uint32 streamSerialNumber) const
+{
+    return m_streamSerialNumber == streamSerialNumber;
 }
 
 /*!

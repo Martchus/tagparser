@@ -34,6 +34,8 @@ set(HEADER_FILES
     ogg/oggpage.h
     ogg/oggstream.h
     opus/opusidentificationheader.h
+    flac/flactooggmappingheader.h
+    flac/flacmetadata.h
     positioninset.h
     signature.h
     size.h
@@ -105,6 +107,8 @@ set(SRC_FILES
     ogg/oggpage.cpp
     ogg/oggstream.cpp
     opus/opusidentificationheader.cpp
+    flac/flactooggmappingheader.cpp
+    flac/flacmetadata.cpp
     signature.cpp
     statusprovider.cpp
     tag.cpp

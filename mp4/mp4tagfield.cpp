@@ -413,11 +413,17 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
     try {
         // try to use appropriate raw data type
         m_rawDataType = m_field.appropriateRawDataType();
-    } catch(Failure &) {
+    } catch(const Failure &) {
         // unable to obtain appropriate raw data type
-        // assume utf-8 text
-        m_rawDataType = RawDataType::Utf8;
-        m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
+        if(m_field.id() == Mp4TagAtomIds::Cover) {
+            // assume JPEG image
+            m_rawDataType = RawDataType::Utf8;
+            m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. JPEG image will be assumed.", context);
+        } else {
+            // assume UTF-8 text
+            m_rawDataType = RawDataType::Utf8;
+            m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
+        }
     }
 
     try {

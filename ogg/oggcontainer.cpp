@@ -1,5 +1,7 @@
 #include "./oggcontainer.h"
 
+#include "../flac/flacmetadata.h"
+
 #include "../mediafileinfo.h"
 #include "../backuphelper.h"
 
@@ -12,6 +14,25 @@ using namespace IoUtilities;
 namespace Media {
 
 /*!
+ * \class Media::OggVorbisComment
+ * \brief Specialization of Media::VorbisComment for Vorbis comments inside an OGG stream.
+ */
+
+const char *OggVorbisComment::typeName() const
+{
+    switch(m_oggParams.streamFormat) {
+    case GeneralMediaFormat::Flac:
+        return "Vorbis comment (in FLAC stream)";
+    case GeneralMediaFormat::Opus:
+        return "Vorbis comment (in Opus stream)";
+    case GeneralMediaFormat::Theora:
+        return "Vorbis comment (in Theora stream)";
+    default:
+        return "Vorbis comment";
+    }
+}
+
+/*!
  * \class Media::OggContainer
  * \brief Implementation of Media::AbstractContainer for OGG files.
  */
@@ -20,7 +41,7 @@ namespace Media {
  * \brief Constructs a new container for the specified \a stream at the specified \a startOffset.
  */
 OggContainer::OggContainer(MediaFileInfo &fileInfo, uint64 startOffset) :
-    GenericContainer<MediaFileInfo, VorbisComment, OggStream, OggPage>(fileInfo, startOffset),
+    GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage>(fileInfo, startOffset),
     m_iterator(fileInfo.stream(), startOffset, fileInfo.size()),
     m_validateChecksums(false)
 {}
@@ -36,28 +57,36 @@ void OggContainer::reset()
 /*!
  * \brief Creates a new tag.
  * \sa AbstractContainer::createTag()
- * \remarks Tracks must be parsed before because tags are stored on track level!
+ * \remarks
+ *  - Tracks must be parsed before because tags are stored on track level!
+ *  - The track can be specified via the \a target argument. However, only the first track of tracks() array is considered.
+ *  - If tracks() array of \a target is empty, a random track will be picked.
+ *  - Vorbis streams should always have a tag assigned yet. However, this
+ *    methods allows creation of a tag if none has been assigned yet.
+ *  - FLAC streams should always have a tag assigned yet and this method
+ *    does NOT allow to create a tag in this case.
  */
-VorbisComment *OggContainer::createTag(const TagTarget &target)
+OggVorbisComment *OggContainer::createTag(const TagTarget &target)
 {
-    if(!target.isEmpty()) {
-        // targets are not supported here, so the specified target should be empty
-        // -> just be consistent with generic implementation here
+    if(!target.tracks().empty()) {
+        // return the tag for the first matching track ID
         for(auto &tag : m_tags) {
-            if(tag->target() == target && !tag->oggParams().removed) {
+            if(!tag->target().tracks().empty() && tag->target().tracks().front() == target.tracks().front() && !tag->oggParams().removed) {
                 return tag.get();
             }
         }
+        // not tag found -> try to re-use a tag which has been flagged as removed
         for(auto &tag : m_tags) {
-            if(tag->target() == target) {
+            if(!tag->target().tracks().empty() && tag->target().tracks().front() == target.tracks().front()) {
                 tag->oggParams().removed = false;
                 return tag.get();
             }
         }
-    } else if(VorbisComment *comment = tag(0)) {
-        comment->oggParams().removed = false;
+    } else if(OggVorbisComment *comment = tag(0)) {
+        // no track ID specified -> just return the first tag (if one exists)
         return comment;
     } else if(!m_tags.empty()) {
+        // no track ID specified -> just return the first tag (try to re-use a tag which has been flagged as removed)
         m_tags.front()->oggParams().removed = false;
         return m_tags.front().get();
     }
@@ -65,27 +94,29 @@ VorbisComment *OggContainer::createTag(const TagTarget &target)
     // a new tag needs to be created
     // -> determine an appropriate track for the tag
     // -> just use the first Vorbis/Opus track
-    // -> TODO: provide interface for specifying a specific track
     for(const auto &track : m_tracks) {
-        switch(track->format().general) {
-        case GeneralMediaFormat::Vorbis:
-        case GeneralMediaFormat::Opus:
-            // check whether start page has a valid value
-            if(track->startPage() < m_iterator.pages().size()) {
-                ariseComment(track->startPage(), static_cast<size_t>(-1), track->format().general);
-                m_tags.back()->setTarget(target); // also for consistency
-                return m_tags.back().get();
-            } else {
-                // TODO: error handling?
+        if(target.tracks().empty() || target.tracks().front() == track->id()) {
+            switch(track->format().general) {
+            case GeneralMediaFormat::Vorbis:
+            case GeneralMediaFormat::Opus:
+                // check whether start page has a valid value
+                if(track->startPage() < m_iterator.pages().size()) {
+                    announceComment(track->startPage(), static_cast<size_t>(-1), false, track->format().general);
+                    m_tags.back()->setTarget(target);
+                    return m_tags.back().get();
+                } else {
+                    // TODO: error handling?
+                }
+            default:
+                ;
             }
-        default:
-            ;
+            // TODO: allow adding tags to FLAC tracks (not really important, because a tag should always be present)
         }
     }
     return nullptr;
 }
 
-VorbisComment *OggContainer::tag(size_t index)
+OggVorbisComment *OggContainer::tag(size_t index)
 {
     size_t i = 0;
     for(const auto &tag : m_tags) {
@@ -205,7 +236,10 @@ void OggContainer::internalParseTags()
         case GeneralMediaFormat::Opus:
             // skip header (has already been detected by OggStream)
             m_iterator.seekForward(8);
-            comment->parse(m_iterator, true);
+            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+            break;
+        case GeneralMediaFormat::Flac:
+            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, 4);
             break;
         default:
             addNotification(NotificationType::Critical, "Stream format not supported.", "parsing tags from OGG streams");
@@ -215,10 +249,21 @@ void OggContainer::internalParseTags()
     }
 }
 
-void OggContainer::ariseComment(std::size_t pageIndex, std::size_t segmentIndex, GeneralMediaFormat mediaFormat)
+/*!
+ * \brief Announces the existence of a Vorbis comment.
+ *
+ * The start offset of the comment is specified by \a pageIndex and \a segmentIndex.
+ *
+ * The format of the stream the comment belongs to is specified by \a mediaFormat.
+ * Valid values are GeneralMediaFormat::Vorbis, GeneralMediaFormat::Opus
+ * and GeneralMediaFormat::Flac.
+ *
+ * \remarks This method is called by OggStream when parsing the header.
+ */
+void OggContainer::announceComment(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat mediaFormat)
 {
-    m_tags.emplace_back(make_unique<VorbisComment>());
-    m_tags.back()->oggParams().set(pageIndex, segmentIndex, mediaFormat);
+    m_tags.emplace_back(make_unique<OggVorbisComment>());
+    m_tags.back()->oggParams().set(pageIndex, segmentIndex, lastMetaDataBlock, mediaFormat);
 }
 
 void OggContainer::internalParseTracks()
@@ -240,7 +285,7 @@ void OggContainer::internalParseTracks()
  * \brief Writes the specified \a comment with the given \a params to the specified \a buffer and
  *        adds the number of bytes written to \a newSegmentSizes.
  */
-void makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params)
+void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params)
 {
     auto offset = buffer.tellp();
     switch(params->streamFormat) {
@@ -250,9 +295,29 @@ void makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelpe
     case GeneralMediaFormat::Opus:
         ConversionUtilities::BE::getBytes(0x4F70757354616773u, copyHelper.buffer());
         buffer.write(copyHelper.buffer(), 8);
-        comment->make(buffer, true);
+        comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
         break;
-    default:
+    case GeneralMediaFormat::Flac: {
+        // Vorbis comment must be wrapped in "METADATA_BLOCK_HEADER"
+        FlacMetaDataBlockHeader header;
+        header.setLast(params->lastMetaDataBlock);
+        header.setType(FlacMetaDataBlockType::VorbisComment);
+
+        // write the header later, when the size is known
+        buffer.write(copyHelper.buffer(), 4);
+
+        comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+
+        // finally make the header
+        header.setDataSize(buffer.tellp() - offset - 4);
+        if(header.dataSize() > 0xFFFFFF) {
+            addNotification(NotificationType::Critical, "Size of Vorbis comment exceeds size limit for FLAC \"METADATA_BLOCK_HEADER\".", "making Vorbis Comment");
+        }
+        buffer.seekp(offset);
+        header.makeHeader(buffer);
+        buffer.seekp(header.dataSize(), ios_base::cur);
+        break;
+    } default:
         ;
     }
     newSegmentSizes.push_back(buffer.tellp() - offset);
@@ -291,7 +356,7 @@ void OggContainer::internalMakeFile()
 
     try {
         // prepare iterating comments
-        VorbisComment *currentComment;
+        OggVorbisComment *currentComment;
         OggParameter *currentParams;
         auto tagIterator = m_tags.cbegin(), tagEnd = m_tags.cend();
         if(tagIterator != tagEnd) {
@@ -428,6 +493,7 @@ void OggContainer::internalMakeFile()
                         stream().seekp(segmentSizesWritten, ios_base::cur);
                         // -> write actual page data
                         copyHelper.copy(buffer, stream(), currentSize);
+
                         ++pageSequenceNumber;
                     }
                 }

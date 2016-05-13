@@ -252,9 +252,10 @@ void AbstractContainer::internalMakeFile()
 /*!
  * \brief Creates and returns a tag for the specified \a target.
  * \remarks
- *          - If an empty \a target is specified it will be ignored.
  *          - If there is already a tag (for the specified \a target) present,
  *            no new tag will be created. The present tag will be returned instead.
+ *          - If an empty \a target is specified it will be ignored.
+ *          - If targets aren't supported the specified \a target will be ignored.
  *          - If no tag could be created, nullptr is returned.
  *          - The container keeps the ownership over the created tag.
  */

@@ -5,7 +5,9 @@ C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags.
 The tag library can read and write the following tag formats:
 - iTunes-style MP4 tags (MP4-DASH is supported)
 - ID3v1 and ID3v2 tags
-- Vorbis and Opus comments (cover art via "METADATA_BLOCK_PICTURE" is supported) in Ogg streams
+  - conversion between ID3v1 and different versions of ID3v2
+- Vorbis, Opus and FLAC comments in Ogg streams
+  - cover art via "METADATA_BLOCK_PICTURE" is supported
 - Matroska/WebM tags and attachments
 
 ## File layout options

@@ -247,15 +247,20 @@ inline std::vector<std::unique_ptr<TrackType> > &GenericContainer<FileInfoType, 
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::createTag(const TagTarget &target)
 {
-    if(!target.isEmpty()) {
-        for(auto &tag : m_tags) {
-            if(tag->target() == target) {
-                return tag.get();
+    // check whether a tag matching the specified target is already assigned
+    if(!m_tags.empty()) {
+        if(!target.isEmpty() && m_tags.front()->supportsTarget()) {
+            for(auto &tag : m_tags) {
+                if(tag->target() == target) {
+                    return tag.get();
+                }
             }
+        } else {
+            return m_tags.front().get();
         }
-    } else if(!m_tags.empty()) {
-        return m_tags.front().get();
     }
+
+    // a new tag must be created
     m_tags.emplace_back(std::make_unique<TagType>());
     auto &tag = m_tags.back();
     tag->setTarget(target);

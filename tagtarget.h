@@ -9,9 +9,6 @@
 
 namespace Media {
 
-/*!
- * \brief The TagTarget class stores target information.
- */
 class LIB_EXPORT TagTarget
 {
 public:

@@ -4,8 +4,6 @@
 #include <c++utilities/application/global.h>
 #include <c++utilities/conversion/types.h>
 
-#include <istream>
-
 namespace Media {
 
 class OggIterator;
@@ -38,7 +36,7 @@ private:
 };
 
 /*!
- * \brief Constructs a new vorbis identification header.
+ * \brief Constructs a new Vorbis identification header.
  */
 inline VorbisIdentificationHeader::VorbisIdentificationHeader() :
     m_version(0),
