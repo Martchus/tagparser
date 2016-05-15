@@ -153,7 +153,9 @@ void VorbisComment::parse(OggIterator &iterator, bool skipSignature)
                 addNotifications(field);
                 field.invalidateNotifications();
             }
-            iterator.seekForward(1); // skip framing
+            if(!skipSignature) {
+                iterator.seekForward(1); // skip framing
+            }
             m_size = static_cast<uint32>(static_cast<uint64>(iterator.currentCharacterOffset()) - startOffset);
         } else {
             addNotification(NotificationType::Critical, "Signature is invalid.", context);
@@ -210,7 +212,9 @@ void VorbisComment::make(std::ostream &stream, bool noSignature)
         }
     }
     // write framing byte
-    stream.put(0x01);
+    if(!noSignature) {
+        stream.put(0x01);
+    }
 }
 
 }
