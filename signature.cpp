@@ -42,6 +42,7 @@ enum Sig48 : uint64
 enum Sig32 : uint32
 {
     Elf = 0x7F454C46u,
+    Flac = 0x664C6143u,
     JavaClassFile = 0xCAFEBABEu,
     Ebml = 0x1A45DFA3u,
     Mp4 = 0x66747970u,
@@ -150,6 +151,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     switch(sig >> 32) { // check 32-bit signatures
     case Elf:
         return ContainerFormat::Elf;
+    case Flac:
+        return ContainerFormat::Flac;
     case JavaClassFile:
         return ContainerFormat::JavaClassFile;
     case Ebml:
@@ -235,6 +238,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Ar: return "a";
     case ContainerFormat::Asf: return "asf";
     case ContainerFormat::Elf: return "elf";
+    case ContainerFormat::Flac: return "flac";
     case ContainerFormat::FlashVideo: return "flv";
     case ContainerFormat::Gif87a:
     case ContainerFormat::Gif89a: return "gif";
@@ -315,6 +319,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "Advanced Systems Format";
     case ContainerFormat::Elf:
         return "Executable and Linkable Format";
+    case ContainerFormat::Flac:
+        return "raw Free Lossless Audio Codec frames";
     case ContainerFormat::FlashVideo:
         return "Flash Video";
     case ContainerFormat::Gif87a:
@@ -417,6 +423,8 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
     switch(containerFormat) {
     case ContainerFormat::Asf:
         return "video/x-ms-asf";
+    case ContainerFormat::Flac:
+        return "audio/flac";
     case ContainerFormat::FlashVideo:
         return "video/x-flv";
     case ContainerFormat::Gif87a:

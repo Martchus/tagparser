@@ -123,6 +123,7 @@ void OggIterator::previousSegment()
  *          - Page headers are skipped (this is the whole purpose of this method).
  * \throws Throws a TruncatedDataException if the end of the stream is reached before \a count bytes
  *         have been read.
+ * \sa readAll()
  * \sa currentCharacterOffset()
  * \sa seekForward()
  */
@@ -150,6 +151,36 @@ void OggIterator::read(char *buffer, size_t count)
 }
 
 /*!
+ * \brief Reads all bytes from the OGG stream and writes it to the specified \a buffer.
+ * \remarks
+ *          - Might increase the current page index and/or the current segment index.
+ *          - Page headers are skipped (this is the whole purpose of this method).
+ *          - Does not read more than \a max bytes from the buffer.
+ * \sa read()
+ * \sa currentCharacterOffset()
+ * \sa seekForward()
+ */
+size_t OggIterator::readAll(char *buffer, size_t max)
+{
+    size_t bytesRead = 0;
+    while(*this && max) {
+        uint32 available = currentSegmentSize() - m_bytesRead;
+        stream().seekg(currentCharacterOffset());
+        if(max <= available) {
+            stream().read(buffer + bytesRead, max);
+            m_bytesRead += max;
+            return bytesRead + max;
+        } else {
+            stream().read(buffer + bytesRead, available);
+            nextSegment();
+            bytesRead += available;
+            max -= available;
+        }
+    }
+    return bytesRead;
+}
+
+/*!
  * \brief Advances the position of the next character to be read from the OGG stream by \a count bytes.
  * \remarks
  *          - Might increase the current page index and/or the current segment index.
@@ -159,7 +190,7 @@ void OggIterator::read(char *buffer, size_t count)
  * \sa currentCharacterOffset()
  * \sa read()
  */
-void OggIterator::seekForward(size_t count)
+void OggIterator::ignore(size_t count)
 {
     uint32 available = currentSegmentSize() - m_bytesRead;
     while(*this) {

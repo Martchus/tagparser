@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <numeric>
-#include <istream>
+#include <iosfwd>
 
 namespace Media {
 

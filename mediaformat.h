@@ -259,6 +259,7 @@ public:
     operator bool() const;
     MediaFormat &operator+=(const MediaFormat &other);
     bool operator==(GeneralMediaFormat general) const;
+    bool operator!=(GeneralMediaFormat general) const;
 
     GeneralMediaFormat general;
     unsigned char sub;
@@ -297,6 +298,14 @@ inline MediaFormat &MediaFormat::operator+=(const MediaFormat &other)
 inline bool MediaFormat::operator==(GeneralMediaFormat general) const
 {
     return this->general == general;
+}
+
+/*!
+ * \brief Returns whether the media format is not the specified general media format.
+ */
+inline bool MediaFormat::operator!=(GeneralMediaFormat general) const
+{
+    return this->general != general;
 }
 
 /*!

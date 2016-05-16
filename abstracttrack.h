@@ -13,7 +13,7 @@
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
 
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 namespace Media {
@@ -35,7 +35,8 @@ enum class TrackType
     Mp4Track, /**< The track is a Media::Mp4Track. */
     WaveAudioStream, /**< The track is a Media::WaveAudioStream. */
     OggStream, /**< The track is a Media::OggStream. */
-    AdtsStream /**< The track is a Media::AdtsStream. */
+    AdtsStream, /**< The track is a Media::AdtsStream. */
+    FlacStream, /**< The track is a Media::FlacStream. */
 };
 
 class LIB_EXPORT AbstractTrack : public StatusProvider

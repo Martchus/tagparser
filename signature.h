@@ -10,6 +10,8 @@ namespace Media {
 
 /*!
  * \brief Specifies the container format.
+ *
+ * Raw streams like ADTS or raw FLAC count as container format in this context.
  */
 enum class ContainerFormat
 {
@@ -19,6 +21,7 @@ enum class ContainerFormat
     Asf, /**< Advanced Systems Format */
     Bzip2, /** bzip2 compressed file */
     Elf, /**< Executable and Linkable Format */
+    Flac, /** < Free Lossless Audio Codec (raw stream) */
     FlashVideo, /**< Flash (FLV) */
     Gif87a, /**< Graphics Interchange Format (1987) */
     Gif89a, /**< Graphics Interchange Format (1989) */

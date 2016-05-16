@@ -6,8 +6,6 @@
 #include "./basicfileinfo.h"
 #include "./abstractcontainer.h"
 
-#include <string>
-#include <fstream>
 #include <vector>
 #include <memory>
 
@@ -24,8 +22,6 @@ class OggContainer;
 class EbmlElement;
 class MatroskaTag;
 class AbstractTrack;
-class WaveAudioStream;
-class MpegAudioFrameStream;
 class VorbisComment;
 
 enum class MediaType;
@@ -333,14 +329,6 @@ inline bool MediaFileInfo::hasId3v1Tag() const
 inline bool MediaFileInfo::hasId3v2Tag() const
 {
     return m_id3v2Tags.size();
-}
-
-/*!
- * \brief Returns an indication whether a tag of any format is assigned.
- */
-inline bool MediaFileInfo::hasAnyTag() const
-{
-    return hasId3v1Tag() || hasId3v2Tag() || (m_container && m_container->tagCount());
 }
 
 /*!

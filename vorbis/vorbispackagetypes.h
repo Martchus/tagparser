@@ -1,6 +1,8 @@
 #ifndef VORBISPACKAGETYPES_H
 #define VORBISPACKAGETYPES_H
 
+#include <c++utilities/conversion/types.h>
+
 namespace Media {
 
 /*!

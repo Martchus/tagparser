@@ -7,7 +7,7 @@
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/chrono/datetime.h>
 
-#include <istream>
+#include <iosfwd>
 #include <string>
 #include <memory>
 

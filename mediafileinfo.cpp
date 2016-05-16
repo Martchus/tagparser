@@ -27,6 +27,9 @@
 
 #include "./ogg/oggcontainer.h"
 
+#include "./flac/flacstream.h"
+#include "./flac/flacmetadata.h"
+
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/misc/memory.h>
@@ -306,19 +309,31 @@ void MediaFileInfo::parseTracks()
             m_container->parseTracks();
         } else {
             switch(m_containerFormat) {
-            case ContainerFormat::RiffWave:
-                m_singleTrack = make_unique<WaveAudioStream>(stream(), m_containerOffset);
+            case ContainerFormat::Adts:
+                m_singleTrack = make_unique<AdtsStream>(stream(), m_containerOffset);
+                break;
+            case ContainerFormat::Flac:
+                m_singleTrack = make_unique<FlacStream>(*this, m_containerOffset);
                 break;
             case ContainerFormat::MpegAudioFrames:
                 m_singleTrack = make_unique<MpegAudioFrameStream>(stream(), m_containerOffset);
                 break;
-            case ContainerFormat::Adts:
-                m_singleTrack = make_unique<AdtsStream>(stream(), m_containerOffset);
+            case ContainerFormat::RiffWave:
+                m_singleTrack = make_unique<WaveAudioStream>(stream(), m_containerOffset);
                 break;
             default:
                 throw NotImplementedException();
             }
             m_singleTrack->parseHeader();
+
+            switch(m_containerFormat) {
+            case ContainerFormat::Flac:
+                // FLAC streams might container padding
+                m_paddingSize += static_cast<FlacStream *>(m_singleTrack.get())->paddingSize();
+                break;
+            default:
+                ;
+            }
         }
         m_tracksParsingStatus = ParsingStatus::Ok;
     } catch(const NotImplementedException &) {
@@ -539,27 +554,34 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
             m_container->createTag();
         }
     } else {
-        // no container object present; creation of ID3 tag is possible
-        if(!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
-            switch(containerFormat()) {
-            case ContainerFormat::MpegAudioFrames:
-            case ContainerFormat::Adts:
-                break;
-            default:
-                return false;
+        // no container object present
+        if(m_containerFormat == ContainerFormat::Flac) {
+            // creation of Vorbis comment is possible
+            static_cast<FlacStream *>(m_singleTrack.get())->createVorbisComment();
+        } else {
+            // creation of ID3 tag is possible
+            if(!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
+                switch(containerFormat()) {
+                case ContainerFormat::MpegAudioFrames:
+                case ContainerFormat::Adts:
+                    break;
+                default:
+                    return false;
+                }
+            }
+            // create ID3 tags according to id3v2usage and id3v2usage
+            if(id3v1usage == TagUsage::Always) {
+                // always create ID3v1 tag -> ensure there is one
+                createId3v1Tag();
+            }
+            if(id3v2usage == TagUsage::Always) {
+                // always create ID3v2 tag -> ensure there is one and set version
+                if(!hasId3v2Tag()) {
+                    createId3v2Tag()->setVersion(id3v2version, 0);
+                }
             }
         }
-        // create ID3 tags according to id3v2usage and id3v2usage
-        if(id3v1usage == TagUsage::Always) {
-            // always create ID3v1 tag -> ensure there is one
-            createId3v1Tag();
-        }
-        if(id3v2usage == TagUsage::Always) {
-            // always create ID3v2 tag -> ensure there is one and set version
-            if(!hasId3v2Tag()) {
-                createId3v2Tag()->setVersion(id3v2version, 0);
-            }
-        }
+
         if(mergeMultipleSuccessiveId3v2Tags) {
             mergeId3v2Tags();
         }
@@ -1031,12 +1053,13 @@ bool MediaFileInfo::areTracksSupported() const
 bool MediaFileInfo::areTagsSupported() const
 {
     switch(m_containerFormat) {
-    case ContainerFormat::Mp4:
-    case ContainerFormat::MpegAudioFrames:
-    case ContainerFormat::Ogg:
-    case ContainerFormat::Matroska:
-    case ContainerFormat::Webm:
     case ContainerFormat::Adts:
+    case ContainerFormat::Flac:
+    case ContainerFormat::Matroska:
+    case ContainerFormat::MpegAudioFrames:
+    case ContainerFormat::Mp4:
+    case ContainerFormat::Ogg:
+    case ContainerFormat::Webm:
         // these container formats are supported
         return true;
     default:
@@ -1081,7 +1104,11 @@ const vector<unique_ptr<MatroskaTag> > &MediaFileInfo::matroskaTags() const
  */
 VorbisComment *MediaFileInfo::vorbisComment() const
 {
-    return m_containerFormat == ContainerFormat::Ogg && m_container && m_container->tagCount() > 0 ? static_cast<OggContainer *>(m_container.get())->tags().front().get() : nullptr;
+    return m_containerFormat == ContainerFormat::Ogg && m_container && m_container->tagCount()
+            ? static_cast<OggContainer *>(m_container.get())->tags().front().get()
+            : (m_containerFormat == ContainerFormat::Flac && m_singleTrack
+               ? static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment()
+               : nullptr);
 }
 
 /*!
@@ -1330,16 +1357,33 @@ bool MediaFileInfo::id3v2ToId3v1()
  */
 void MediaFileInfo::tags(vector<Tag *> &tags) const
 {
-    if(hasId3v1Tag())
+    if(hasId3v1Tag()) {
         tags.push_back(m_id3v1Tag.get());
+    }
     for(const unique_ptr<Id3v2Tag> &tag : m_id3v2Tags) {
         tags.push_back(tag.get());
+    }
+    if(m_containerFormat == ContainerFormat::Flac && m_singleTrack) {
+        if(auto *vorbisComment = static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment()) {
+            tags.push_back(vorbisComment);
+        }
     }
     if(m_container) {
         for(size_t i = 0, count = m_container->tagCount(); i < count; ++i) {
             tags.push_back(m_container->tag(i));
         }
     }
+}
+
+/*!
+ * \brief Returns an indication whether a tag of any format is assigned.
+ */
+bool MediaFileInfo::hasAnyTag() const
+{
+    return hasId3v1Tag()
+            || hasId3v2Tag()
+            || (m_container && m_container->tagCount())
+            || (m_containerFormat == ContainerFormat::Flac && static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment());
 }
 
 /*!
@@ -1371,9 +1415,9 @@ void MediaFileInfo::invalidated()
  */
 void MediaFileInfo::makeMp3File()
 {
-    const string context("making MP3 file");
+    static const string context("making MP3 file");
     // there's no need to rewrite the complete file if there are no ID3v2 tags present or to be written
-    if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty()) {
+    if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty() && m_containerFormat != ContainerFormat::Flac) {
         if(m_actualExistingId3v1Tag) {
             // there is currently an ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
@@ -1434,30 +1478,57 @@ void MediaFileInfo::makeMp3File()
             addNotifications(*tag);
         }
 
+        // check whether it is a raw FLAC stream
+        FlacStream *flacStream = (m_containerFormat == ContainerFormat::Flac ? static_cast<FlacStream *>(m_singleTrack.get()) : nullptr);
+        uint32 streamOffset; // where the actual stream starts
+        stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
+        flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
+        uint32 startOfLastMetaDataBlock;
+
+        if(flacStream) {
+            // if it is a raw FLAC stream, make FLAC metadata
+            startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData);
+            tagsSize += flacMetaData.tellp();
+            streamOffset = flacStream->streamOffset();
+        } else {
+            // make no further metadata, just use the container offset as stream offset
+            streamOffset = static_cast<uint32>(m_containerOffset);
+        }
+
         // check whether rewrite is required
-        bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > static_cast<uint32>(m_containerOffset));
+        bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > streamOffset);
         uint32 padding = 0;
         if(!rewriteRequired) {
             // rewriting is not forced and new tag is not too big for available space
             // -> calculate new padding
-            padding = static_cast<uint32>(m_containerOffset) - tagsSize;
+            padding = streamOffset - tagsSize;
             // -> check whether the new padding matches specifications
             if(padding < minPadding() || padding > maxPadding()) {
                 rewriteRequired = true;
             }
         }
-        if(makers.empty()) {
-            // an ID3v2 tag shouldn't be written
+        if(makers.empty() && !flacStream) {
+            // an ID3v2 tag is not written and it is not a FLAC stream
             // -> can't include padding
             if(padding) {
                 // but padding would be present -> need to rewrite
-                padding = 0;
+                padding = 0; // can't write the preferred padding despite rewriting
                 rewriteRequired = true;
             }
         } else if(rewriteRequired) {
             // rewriting is forced or new ID3v2 tag is too big for available space
             // -> use preferred padding when rewriting anyways
             padding = preferredPadding();
+        } else if(makers.empty() && flacStream && padding && padding < 4) {
+            // no ID3v2 tag -> must include padding in FLAC stream
+            // but padding of 1, 2, and 3 byte isn't possible -> need to rewrite
+            padding = preferredPadding();
+            rewriteRequired = true;
+        }
+        if(rewriteRequired && flacStream && makers.empty() && padding) {
+            // the first 4 byte of FLAC padding actually don't count because these
+            // can not be used for additional meta data
+            padding += 4;
         }
         updateStatus(rewriteRequired ? "Preparing streams for rewriting ..." : "Preparing streams for updating ...");
 
@@ -1490,7 +1561,6 @@ void MediaFileInfo::makeMp3File()
                 }
             }
 
-
         } else { // !rewriteRequired
             // reopen original file to ensure it is opened for writing
             try {
@@ -1511,30 +1581,56 @@ void MediaFileInfo::makeMp3File()
                     i->make(outputStream, 0);
                 }
                 // include padding into the last ID3v2 tag
-                makers.back().make(outputStream, padding);
-            } else {
-                // just write padding
+                makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : padding);
+            }
+
+            if(flacStream) {
+                if(padding && startOfLastMetaDataBlock) {
+                    // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
+                    flacMetaData.seekg(startOfLastMetaDataBlock);
+                    flacMetaData.seekp(startOfLastMetaDataBlock);
+                    flacMetaData.put(static_cast<byte>(flacMetaData.peek()) & (0x80u - 1));
+                    flacMetaData.seekg(0);
+                }
+
+                // write FLAC metadata
+                outputStream << flacMetaData.rdbuf();
+
+                // write padding
+                if(padding) {
+                    flacStream->makePadding(outputStream, padding, true);
+                }
+            }
+
+            if(makers.empty() && !flacStream){
+                // just write padding (however, padding should be set to 0 in this case?)
                 for(; padding; --padding) {
                     outputStream.put(0);
                 }
             }
 
-            // copy / skip media data
+            // copy / skip actual stream data
             // -> determine media data size
-            uint64 mediaDataSize = size() - m_containerOffset;
+            uint64 mediaDataSize = size() - streamOffset;
             if(m_actualExistingId3v1Tag) {
                 mediaDataSize -= 128;
             }
 
             if(rewriteRequired) {
                 // copy data from original file
-                updateStatus("Writing MPEG audio frames ...");
-                backupStream.seekg(m_containerOffset);
+                switch(m_containerFormat) {
+                case ContainerFormat::MpegAudioFrames:
+                    updateStatus("Writing MPEG audio frames ...");
+                    break;
+                default:
+                    updateStatus("Writing frames ...");
+                }
+                backupStream.seekg(streamOffset);
                 CopyHelper<0x4000> copyHelper;
                 copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&StatusProvider::isAborted, this), bind(&StatusProvider::updatePercentage, this, _1));
                 updatePercentage(100.0);
             } else {
-                // just skip media data
+                // just skip actual stream data
                 outputStream.seekp(mediaDataSize, ios_base::cur);
             }
 

@@ -64,6 +64,16 @@ public:
     virtual const char *what() const USE_NOTHROW;
 };
 
+/*!
+ * \brief Throws TruncatedDataException() if the specified \a sizeDenotation exceeds maxSize; otherwise maxSize is reduced by \a sizeDenotation.
+ */
+#define CHECK_MAX_SIZE(sizeDenotation) \
+    if(maxSize < sizeDenotation) { \
+        throw TruncatedDataException(); \
+    } else { \
+        maxSize -= sizeDenotation; \
+    }
+
 }
 
 #endif // MEDIA_EXCEPTIONS_H

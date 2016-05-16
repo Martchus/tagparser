@@ -12,26 +12,6 @@ namespace Media {
 class OggIterator;
 class VorbisComment;
 
-/*!
- * \brief The VorbisCommentFlags enum specifies flags which controls parsing and making of Vorbis comments.
- */
-enum class VorbisCommentFlags : byte
-{
-    None = 0x0, /**< Regular parsing/making. */
-    NoSignature = 0x1, /**< Skips the signature when parsing; does not make the signature when making. */
-    NoFramingByte = 0x2 /**< Doesn't expect the framing bit to be present when parsing; does not make the framing bit when making. */
-};
-
-inline bool operator &(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
-{
-    return static_cast<byte>(lhs) & static_cast<byte>(rhs);
-}
-
-inline VorbisCommentFlags operator |(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
-{
-    return static_cast<VorbisCommentFlags>(static_cast<byte>(lhs) | static_cast<byte>(rhs));
-}
-
 class LIB_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>
 {
 public:
@@ -47,11 +27,16 @@ public:
     std::string fieldId(KnownField field) const;
     KnownField knownField(const std::string &id) const;
 
-    void parse(OggIterator &iterator, VorbisCommentFlags flags = VorbisCommentFlags::None, std::size_t offset = 0);
+    void parse(OggIterator &iterator, VorbisCommentFlags flags = VorbisCommentFlags::None);
+    void parse(std::istream &stream, uint64 maxSize, VorbisCommentFlags flags = VorbisCommentFlags::None);
     void make(std::ostream &stream, VorbisCommentFlags flags = VorbisCommentFlags::None);
 
     const TagValue &vendor() const;
     void setVendor(const TagValue &vendor);
+
+private:
+    template<class StreamType>
+    void internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags);
 
 private:
     TagValue m_vendor;

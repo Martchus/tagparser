@@ -12,8 +12,7 @@
 #include <c++utilities/conversion/stringconversion.h>
 
 #include <string>
-#include <istream>
-#include <ostream>
+#include <iosfwd>
 #include <vector>
 
 namespace Media

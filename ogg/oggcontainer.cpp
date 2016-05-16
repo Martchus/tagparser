@@ -235,11 +235,12 @@ void OggContainer::internalParseTags()
             break;
         case GeneralMediaFormat::Opus:
             // skip header (has already been detected by OggStream)
-            m_iterator.seekForward(8);
+            m_iterator.ignore(8);
             comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
             break;
         case GeneralMediaFormat::Flac:
-            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, 4);
+            m_iterator.ignore(4);
+            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
             break;
         default:
             addNotification(NotificationType::Critical, "Stream format not supported.", "parsing tags from OGG streams");
@@ -287,7 +288,7 @@ void OggContainer::internalParseTracks()
  */
 void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params)
 {
-    auto offset = buffer.tellp();
+    const auto offset = buffer.tellp();
     switch(params->streamFormat) {
     case GeneralMediaFormat::Vorbis:
         comment->make(buffer);

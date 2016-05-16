@@ -54,7 +54,7 @@ void FlacMetaDataBlockHeader::makeHeader(std::ostream &outputStream)
 
 /*!
  * \brief Parses the FLAC "METADATA_BLOCK_STREAMINFO" which is read using the specified \a iterator.
- * \remarks The specified \a buffer must be at least 34 bytes long.
+ * \remarks The specified \a buffer must be at least 0x22 bytes long.
  */
 void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
 {
@@ -78,18 +78,24 @@ void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
 
 /*!
  * \brief Parses the FLAC "METADATA_BLOCK_PICTURE".
+ *
+ * \a maxSize specifies the maximum size of the structure.
  */
-void FlacMetaDataBlockPicture::parse(istream &inputStream)
+void FlacMetaDataBlockPicture::parse(istream &inputStream, uint32 maxSize)
 {
+    CHECK_MAX_SIZE(32);
     BinaryReader reader(&inputStream);
     m_pictureType = reader.readUInt32BE();
-    auto size = reader.readUInt32BE();
+    uint32 size = reader.readUInt32BE();
+    CHECK_MAX_SIZE(size);
     m_value.setMimeType(reader.readString(size));
     size = reader.readUInt32BE();
+    CHECK_MAX_SIZE(size);
     m_value.setDescription(reader.readString(size));
     // skip width, height, color depth, number of colors used
     inputStream.seekg(4 * 4, ios_base::cur);
     size = reader.readUInt32BE();
+    CHECK_MAX_SIZE(size);
     auto data = make_unique<char[]>(size);
     inputStream.read(data.get(), size);
     m_value.assignData(move(data), size, TagDataType::Picture);

@@ -1,13 +1,14 @@
 # Tag Parser
-C++ library for reading and writing MP4 (iTunes), ID3, Vorbis and Matroska tags.
+C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags.
 
 ## Supported formats
 The tag library can read and write the following tag formats:
-- iTunes-style MP4 tags (MP4-DASH is supported)
+- iTunes-style MP4/M4A tags (MP4-DASH is supported)
 - ID3v1 and ID3v2 tags
-  - conversion between ID3v1 and different versions of ID3v2
+  - conversion between ID3v1 and different versions of ID3v2 is possible
 - Vorbis, Opus and FLAC comments in Ogg streams
   - cover art via "METADATA_BLOCK_PICTURE" is supported
+- Vorbis comments and "METADATA_BLOCK_PICTURE" in raw FLAC streams
 - Matroska/WebM tags and attachments
 
 ## File layout options
@@ -23,7 +24,8 @@ or appending the tag. Usage of padding can be configured:
 
 However, it is also possible to force rewriting the entire file.
 
-Taking advantage of padding is currently not supported when dealing with Ogg streams.
+Taking advantage of padding is currently not supported when dealing with Ogg streams (it is supported when
+dealing with raw FLAC streams).
 
 ## Additional features
 The library can also display technical information such as the ID, format, language, bitrate,

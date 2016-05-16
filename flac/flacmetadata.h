@@ -66,6 +66,7 @@ inline FlacMetaDataBlockHeader::FlacMetaDataBlockHeader() :
 
 /*!
  * \brief Returns whether this is the last metadata block before the audio blocks.
+ * \remarks The default value is 0/false.
  */
 inline byte FlacMetaDataBlockHeader::isLast() const
 {
@@ -258,7 +259,7 @@ class LIB_EXPORT FlacMetaDataBlockPicture
 public:
     FlacMetaDataBlockPicture(TagValue &tagValue);
 
-    void parse(std::istream &inputStream);
+    void parse(std::istream &inputStream, uint32 maxSize);
     uint32 requiredSize() const;
     void make(std::ostream &outputStream);
 

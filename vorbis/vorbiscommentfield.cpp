@@ -42,25 +42,26 @@ VorbisCommentField::VorbisCommentField(const identifierType &id, const TagValue 
 {}
 
 /*!
- * \brief Parses a field from the stream read using the specified \a reader.
- *
- * The position of the current character in the input stream is expected to be
- * at the beginning of the field to be parsed.
- *
- * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
- *         error occurs.
+ * \brief Internal implementation for parsing.
  */
-void VorbisCommentField::parse(OggIterator &iterator)
+template<class StreamType>
+void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
 {
     static const string context("parsing Vorbis comment  field");
     char buff[4];
-    iterator.read(buff, 4);
-    if(auto size = LE::toUInt32(buff)) { // read size
-        if(iterator.currentCharacterOffset() + size <= iterator.streamSize()) {
+    if(maxSize < 4) {
+        addNotification(NotificationType::Critical, "Field expected.", context);
+        throw TruncatedDataException();
+    } else {
+        maxSize -= 4;
+    }
+    stream.read(buff, 4);
+    if(const auto size = LE::toUInt32(buff)) { // read size
+        if(size <= maxSize) {
+            maxSize -= size;
             // read data
             auto data = make_unique<char []>(size);
-            iterator.read(data.get(), size);
+            stream.read(data.get(), size);
             uint32 idSize = 0;
             for(const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize);
             // extract id
@@ -77,13 +78,16 @@ void VorbisCommentField::parse(OggIterator &iterator)
                     bufferStream.exceptions(ios_base::failbit | ios_base::badbit);
                     bufferStream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
                     FlacMetaDataBlockPicture pictureBlock(value());
-                    pictureBlock.parse(bufferStream);
+                    pictureBlock.parse(bufferStream, decoded.second);
                     setTypeInfo(pictureBlock.pictureType());
-                } catch (const ios_base::failure &) {
+                } catch(const ios_base::failure &) {
                     addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
                     throw Failure();
-                } catch (const ConversionException &) {
-                    addNotification(NotificationType::Critical, "Base64 data from METADATA_BLOCK_PICTURE is invalid.", context);
+                } catch(const TruncatedDataException &) {
+                    addNotification(NotificationType::Critical, "METADATA_BLOCK_PICTURE is truncated.", context);
+                    throw;
+                } catch(const ConversionException &) {
+                    addNotification(NotificationType::Critical, "Base64 coding of METADATA_BLOCK_PICTURE is invalid.", context);
                     throw InvalidDataException();
                 }
             } else if(id().size() + 1 < size) {
@@ -98,13 +102,61 @@ void VorbisCommentField::parse(OggIterator &iterator)
 }
 
 /*!
+ * \brief Parses a field using the specified \a iterator.
+ *
+ * The currentCharacterOffset() of the iterator is expected to be
+ * at the beginning of the field to be parsed.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Media::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void VorbisCommentField::parse(OggIterator &iterator)
+{
+    uint64 maxSize = iterator.streamSize() - iterator.currentCharacterOffset();
+    internalParse(iterator, maxSize);
+}
+
+/*!
+ * \brief Parses a field using the specified \a iterator.
+ *
+ * The currentCharacterOffset() of the iterator is expected to be
+ * at the beginning of the field to be parsed.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Media::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize)
+{
+    internalParse(iterator, maxSize);
+}
+
+/*!
+ * \brief Parses a field from the specified \a stream.
+ *
+ * The position of the current character in the input stream is expected to be
+ * at the beginning of the field to be parsed.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Media::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void VorbisCommentField::parse(istream &stream, uint64 &maxSize)
+{
+    internalParse(stream, maxSize);
+}
+
+/*!
  * \brief Writes the field to a stream using the specified \a writer.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
+ * \returns Returns whether the field has been written. (Some fields might be skipped
+ *          when specific \a flags are set.)
  */
-void VorbisCommentField::make(BinaryWriter &writer)
+bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags)
 {
     static const string context("making Vorbis comment  field");
     if(id().empty()) {
@@ -114,6 +166,9 @@ void VorbisCommentField::make(BinaryWriter &writer)
         // try to convert value to string
         string valueString;
         if(id() == VorbisCommentIds::cover()) {
+            if(flags & VorbisCommentFlags::NoCovers) {
+                return false;
+            }
             // make cover
             if(value().type() != TagDataType::Picture) {
                 addNotification(NotificationType::Critical, "Assigned value of cover field is not picture data.", context);
@@ -143,10 +198,11 @@ void VorbisCommentField::make(BinaryWriter &writer)
         writer.writeString(id());
         writer.writeChar('=');
         writer.writeString(valueString);
-    } catch(ConversionException &) {
+    } catch(const ConversionException &) {
         addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
         throw InvalidDataException();
     }
+    return true;
 }
 
 }

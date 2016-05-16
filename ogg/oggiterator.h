@@ -3,7 +3,7 @@
 
 #include "./oggpage.h"
 
-#include <istream>
+#include <iosfwd>
 #include <vector>
 
 namespace Media {
@@ -31,13 +31,15 @@ public:
     std::vector<uint32>::size_type currentSegmentIndex() const;
     uint64 currentSegmentOffset() const;
     uint64 currentCharacterOffset() const;
+    uint64 tellg() const;
     uint32 currentSegmentSize() const;
     void setFilter(uint32 streamSerialId);
     void removeFilter();
     bool areAllPagesFetched() const;
-    void read(char *buffer, size_t count);
-    void seekForward(size_t count);
-    bool bytesRemaining(size_t atLeast) const;
+    void read(char *buffer, std::size_t count);
+    size_t readAll(char *buffer, std::size_t max);
+    void ignore(std::size_t count = 1);
+    bool bytesRemaining(std::size_t atLeast) const;
 
     operator bool() const;
     OggIterator &operator++();
@@ -199,6 +201,14 @@ inline uint64 OggIterator::currentSegmentOffset() const
 inline uint64 OggIterator::currentCharacterOffset() const
 {
     return m_offset + m_bytesRead;
+}
+
+/*!
+ * \brief Same as currentCharacterOffset(); only provided for compliance with std::istream.
+ */
+inline uint64 OggIterator::tellg() const
+{
+    return currentCharacterOffset();
 }
 
 /*!

@@ -100,51 +100,51 @@ KnownField VorbisComment::knownField(const string &id) const
 }
 
 /*!
- * \brief Parses tag information using the specified OGG \a iterator.
- *
- * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
- *         error occurs.
+ * \brief Internal implementation for parsing.
  */
-void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, size_t offset)
+template<class StreamType>
+void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags)
 {
     // prepare parsing
     invalidateStatus();
     static const string context("parsing Vorbis comment");
-    auto startOffset = iterator.currentSegmentOffset() + offset;
-    iterator.seekForward(offset);
+    uint64 startOffset = static_cast<uint64>(stream.tellg());
     try {
         // read signature: 0x3 + "vorbis"
         char sig[8];
         bool skipSignature = flags & VorbisCommentFlags::NoSignature;
         if(!skipSignature) {
-            iterator.read(sig, 7);
+            CHECK_MAX_SIZE(7);
+            stream.read(sig, 7);
             skipSignature = (ConversionUtilities::BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
         }
         if(skipSignature) {
             // read vendor (length prefixed string)
             {
-                iterator.read(sig, 4);
+                CHECK_MAX_SIZE(4);
+                stream.read(sig, 4);
                 const auto vendorSize = LE::toUInt32(sig);
-                if(iterator.currentCharacterOffset() + vendorSize <= iterator.streamSize()) {
+                if(vendorSize <= maxSize) {
                     auto buff = make_unique<char []>(vendorSize);
-                    iterator.read(buff.get(), vendorSize);
+                    stream.read(buff.get(), vendorSize);
                     m_vendor.assignData(move(buff), vendorSize, TagDataType::Text, TagTextEncoding::Utf8);
                     // TODO: Is the vendor string actually UTF-8 (like the field values)?
                 } else {
                     addNotification(NotificationType::Critical, "Vendor information is truncated.", context);
                     throw TruncatedDataException();
                 }
+                maxSize -= vendorSize;
             }
             // read field count
-            iterator.read(sig, 4);
+            CHECK_MAX_SIZE(4);
+            stream.read(sig, 4);
             uint32 fieldCount = LE::toUInt32(sig);
             VorbisCommentField field;
             const string &fieldId = field.id();
             for(uint32 i = 0; i < fieldCount; ++i) {
                 // read fields
                 try {
-                    field.parse(iterator);
+                    field.parse(stream, maxSize);
                     fields().insert(pair<fieldType::identifierType, fieldType>(fieldId, field));
                 } catch(const TruncatedDataException &) {
                     addNotifications(field);
@@ -156,18 +156,42 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, size_
                 field.invalidateNotifications();
             }
             if(!(flags & VorbisCommentFlags::NoFramingByte)) {
-                iterator.seekForward(1); // skip framing byte
+                stream.ignore(); // skip framing byte
             }
-            m_size = static_cast<uint32>(static_cast<uint64>(iterator.currentCharacterOffset()) - startOffset);
+            m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
         } else {
             addNotification(NotificationType::Critical, "Signature is invalid.", context);
             throw InvalidDataException();
         }
     } catch(const TruncatedDataException &) {
-        m_size = static_cast<uint32>(static_cast<uint64>(iterator.currentCharacterOffset()) - startOffset);
+        m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
         addNotification(NotificationType::Critical, "Vorbis comment is truncated.", context);
         throw;
     }
+}
+
+/*!
+ * \brief Parses tag information using the specified OGG \a iterator.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Media::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags)
+{
+    internalParse(iterator, iterator.streamSize(), flags);
+}
+
+/*!
+ * \brief Parses tag information using the specified OGG \a iterator.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Media::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags flags)
+{
+    internalParse(stream, maxSize, flags);
 }
 
 /*!
@@ -197,14 +221,18 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags)
     // write vendor
     writer.writeUInt32LE(vendor.size());
     writer.writeString(vendor);
-    // write field count
-    writer.writeUInt32LE(fieldCount());
+    // write field count later
+    const auto fieldCountOffset = stream.tellp();
+    writer.writeUInt32LE(0);
     // write fields
+    uint32 fieldsWritten = 0;
     for(auto i : fields()) {
         VorbisCommentField &field = i.second;
         if(!field.value().isEmpty()) {
             try {
-                field.make(writer);
+                if(field.make(writer, flags)) {
+                    ++fieldsWritten;
+                }
             } catch(const Failure &) {
                 // nothing to do here since notifications will be added anyways
             }
@@ -213,6 +241,11 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags)
             field.invalidateNotifications();
         }
     }
+    // write field count
+    const auto framingByteOffset = stream.tellp();
+    stream.seekp(fieldCountOffset);
+    writer.writeUInt32LE(fieldsWritten);
+    stream.seekp(framingByteOffset);
     // write framing byte
     if(!(flags & VorbisCommentFlags::NoFramingByte)) {
         stream.put(0x01);

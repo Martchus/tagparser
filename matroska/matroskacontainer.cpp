@@ -9,7 +9,6 @@
 #include "../exceptions.h"
 #include "../backuphelper.h"
 
-// include configuration from separate header file when building with CMake
 #include "resources/config.h"
 
 #include <c++utilities/conversion/stringconversion.h>
