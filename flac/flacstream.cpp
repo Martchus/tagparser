@@ -51,6 +51,20 @@ VorbisComment *FlacStream::createVorbisComment()
     return m_vorbisComment.get();
 }
 
+/*!
+ * \brief Removes the assigned Vorbis comment if one is assigned; does nothing otherwise.
+ * \returns Returns whether there were a Vorbis comment assigned.
+ */
+bool FlacStream::removeVorbisComment()
+{
+    if(m_vorbisComment) {
+        m_vorbisComment.reset();
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void FlacStream::internalParseHeader()
 {
     static const string context("parsing raw FLAC header");

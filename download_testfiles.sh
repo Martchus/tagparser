@@ -43,7 +43,7 @@ download() {
             skipping
         fi
         popd
-        
+
         # extraction
         mkdir "$destdir"
         pushd "$destdir"
@@ -59,12 +59,12 @@ download() {
         popd
     else
         skipping
-    fi 
+    fi
 }
 
 download_rsync() {
     title="$1" cmd="$2"
-    
+
     inform "Downloading \"$title\" ..."
     if [[ ! -d $destdir ]]; then
         # actual download
@@ -75,7 +75,7 @@ download_rsync() {
         fi
     else
         skipping
-    fi 
+    fi
 }
 
 # enter testfiles directory
@@ -95,3 +95,8 @@ download \
 download_rsync \
     'MTX Test Data' \
     'rsync -rv --links --delete belgarath.bunkus.org::mtx-test-data mtx-test-data'
+
+# convert FLAC files for FLAC tests with ffmpeg
+mkdir -p flac
+[[ ! -f flac/test.flac ]] && ffmpeg -i mtx-test-data/alac/othertest-itunes.m4a -c:a flac flac/test.flac # raw FLAC stream
+[[ ! -f flac/test.ogg ]] && ffmpeg -i flac/test.flac -c:a copy flac/test.ogg # FLAC in Ogg

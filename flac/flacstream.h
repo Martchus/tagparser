@@ -21,6 +21,7 @@ public:
     TrackType type() const;
     VorbisComment *vorbisComment() const;
     VorbisComment *createVorbisComment();
+    bool removeVorbisComment();
     uint32 paddingSize() const;
     uint32 streamOffset() const;
 

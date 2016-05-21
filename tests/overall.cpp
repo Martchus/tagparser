@@ -45,6 +45,8 @@ class OverallTests : public TestFixture
     CPPUNIT_TEST(testMp3Making);
     CPPUNIT_TEST(testOggParsing);
     CPPUNIT_TEST(testOggMaking);
+    CPPUNIT_TEST(testFlacParsing);
+    CPPUNIT_TEST(testFlacMaking);
     CPPUNIT_TEST(testMkvParsing);
     CPPUNIT_TEST(testMkvMaking);
     CPPUNIT_TEST_SUITE_END();
@@ -83,6 +85,9 @@ public:
     void checkOggTestfile2();
     void checkOggTestMetaData();
 
+    void checkFlacTestfile1();
+    void checkFlacTestfile2();
+
     void setMkvTestMetaData();
     void setMp4TestMetaData();
     void setMp3TestMetaData();
@@ -97,6 +102,8 @@ public:
     void testMp3Making();
     void testOggParsing();
     void testOggMaking();
+    void testFlacParsing();
+    void testFlacMaking();
 
 private:
     MediaFileInfo m_fileInfo;
@@ -967,6 +974,7 @@ void OverallTests::checkOggTestfile1()
     switch(m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(tags.size() == 1);
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "ffmpeg2theora 0.13");
         // Theora tags are currently not supported and hence only the Vorbis comment is
         // taken into account here
         break;
@@ -1003,6 +1011,7 @@ void OverallTests::checkOggTestfile2()
     switch(m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(tags.size() == 1);
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "opusenc from opus-tools 0.1.6");
         break;
     case TagStatus::TestMetaDataPresent:
         checkOggTestMetaData();
@@ -1032,6 +1041,76 @@ void OverallTests::checkOggTestMetaData()
     CPPUNIT_ASSERT(tag->value(KnownField::DiskPosition) == m_testPosition);
     // TODO: check more fields
     m_preservedMetaData.pop();
+}
+
+/*!
+ * \brief Checks "flac/test.flac" (converted from "mtx-test-data/alac/othertest-itunes.m4a" via ffmpeg).
+ * \remarks Raw FLAC stream.
+ */
+void OverallTests::checkFlacTestfile1()
+{
+    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Flac);
+    const auto tracks = m_fileInfo.tracks();
+    CPPUNIT_ASSERT(tracks.size() == 1);
+    for(const auto &track : tracks) {
+        CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
+        CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Flac);
+        CPPUNIT_ASSERT(track->channelCount() == 2);
+        CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
+        CPPUNIT_ASSERT(track->bitsPerSample() == 16);
+    }
+    const auto tags = m_fileInfo.tags();
+    switch(m_tagStatus) {
+    case TagStatus::Original:
+        // ffmpeg is able to set some tags from the original file (mtx-test-data/alac/othertest-itunes.m4a)
+        CPPUNIT_ASSERT(tags.size() == 1);
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Sad Song");
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).toString() == "Oasis");
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Album).toString() == "Don't Go Away (Apple Lossless)");
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Genre).toString() == "Alternative & Punk");
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "Lavf57.25.100");
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Year).toString() == "1998");
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
+        //CPPUNIT_ASSERT(tags.front()->value(KnownField::Cover).dataSize() == 0x58f3);
+        //CPPUNIT_ASSERT(BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()) == 0xFFD8FFE000104A46);
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::TrackPosition).toPositionInSet() == PositionInSet(3, 4));
+        CPPUNIT_ASSERT(tags.front()->value(KnownField::DiskPosition).toPositionInSet() == PositionInSet(1, 1));
+        break;
+    case TagStatus::TestMetaDataPresent:
+        checkOggTestMetaData();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT(tags.size() == 0);
+    }
+}
+
+/*!
+ * \brief Checks "flac/test.ogg" (converted from "flac/test.flac" via ffmpeg).
+ * \remarks FLAC in Ogg.
+ */
+void OverallTests::checkFlacTestfile2()
+{
+    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
+    const auto tracks = m_fileInfo.tracks();
+    CPPUNIT_ASSERT(tracks.size() == 1);
+    for(const auto &track : tracks) {
+        CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
+        CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Flac);
+        CPPUNIT_ASSERT(track->channelCount() == 2);
+        CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
+        CPPUNIT_ASSERT(track->bitsPerSample() == 16);
+    }
+    const auto tags = m_fileInfo.tags();
+    switch(m_tagStatus) {
+    case TagStatus::Original:
+        CPPUNIT_ASSERT(tags.size() == 1);
+        break;
+    case TagStatus::TestMetaDataPresent:
+        checkOggTestMetaData();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT(tags.size() == 0);
+    }
 }
 
 /*!
@@ -1115,7 +1194,7 @@ void OverallTests::setMp3TestMetaData()
 void OverallTests::setOggTestMetaData()
 {
     // ensure a tag exists
-    Tag *tag = m_fileInfo.container()->createTag();
+    VorbisComment *tag = m_fileInfo.createVorbisComment();
 
     // assign test meta data
     tag->setValue(KnownField::Title, m_testTitle);
@@ -1373,6 +1452,7 @@ void OverallTests::testMp3Making()
 
 /*!
  * \brief Tests the Ogg parser via MediaFileInfo.
+ * \remarks FLAC in Ogg is tested in testFlacParsing().
  */
 void OverallTests::testOggParsing()
 {
@@ -1385,7 +1465,9 @@ void OverallTests::testOggParsing()
 
 /*!
  * \brief Tests the Ogg maker via MediaFileInfo.
- * \remarks Relies on the parser to check results.
+ * \remarks
+ *  - Relies on the parser to check results.
+ *  - FLAC in Ogg is tested in testFlacMaking().
  */
 void OverallTests::testOggMaking()
 {
@@ -1412,5 +1494,48 @@ void OverallTests::testOggMaking()
         void (OverallTests::*modifyRoutine)(void) = remove ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaData;
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/ogg/qt4dance_medium.ogg"), modifyRoutine, &OverallTests::checkOggTestfile1);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
+    }
+}
+
+/*!
+ * \brief Tests the FLAC parser via MediaFileInfo.
+ */
+void OverallTests::testFlacParsing()
+{
+    cerr << endl << "FLAC parser" << endl;
+    m_fileInfo.setForceFullParse(false);
+    m_tagStatus = TagStatus::Original;
+    parseFile(TestUtilities::testFilePath("flac/test.flac"), &OverallTests::checkFlacTestfile1);
+    parseFile(TestUtilities::testFilePath("flac/test.ogg"), &OverallTests::checkFlacTestfile2);
+}
+
+/*!
+ * \brief Tests the FLAC maker via MediaFileInfo.
+ * \remarks Relies on the parser to check results.
+ */
+void OverallTests::testFlacMaking()
+{
+    // full parse is required to determine padding
+    m_fileInfo.setForceFullParse(true);
+
+    // do the test under different conditions
+    for(m_mode = 0; m_mode != 0x2; ++m_mode) {
+        // TODO: setup test conditions
+
+        // print test conditions
+        list<string> testConditions;
+        if(m_mode & 0x1) {
+            testConditions.emplace_back("removing tag");
+        } else {
+            testConditions.emplace_back("modifying tag");
+        }
+        cerr << endl << "FLAC maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
+
+        // do actual tests
+        bool remove = m_mode & 0x1;
+        m_tagStatus = remove ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
+        void (OverallTests::*modifyRoutine)(void) = remove ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaData;
+        makeFile(TestUtilities::workingCopyPath("flac/test.flac"), modifyRoutine, &OverallTests::checkFlacTestfile1);
+        makeFile(TestUtilities::workingCopyPath("flac/test.ogg"), modifyRoutine, &OverallTests::checkFlacTestfile2);
     }
 }

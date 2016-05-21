@@ -512,16 +512,16 @@ void MediaFileInfo::parseEverything()
  * \param requiredTargets Specifies the required targets. Targets are ignored if not supported by the container.
  * \return Returns an indication whether appropriate tags could be created for the file.
  * \remarks
- *          - The ID3 related arguments are only practiced when the file format is MP3 or when the file format
- *            is unknown and \a treatUnknownFilesAsMp3Files is true. These arguments are ignored when creating
- *            tags for other known file formats such as MP4.
- *          - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed
- *            if \a id3v1Usage is set to TagUsage::Never.
- *          - The method might do nothing if the file already has appropriate tags.
- *          - This is only a convenience method. The task can be done by manually using the methods createId3v1Tag(),
- *            createId3v2Tag(), removeId3v1Tag() ... as well.
- *          - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never)
- *            and an ID3v1 tag will be created instead not all fields can be transfered.
+ *  - The ID3 related arguments are only practiced when the file format is MP3 or when the file format
+ *    is unknown and \a treatUnknownFilesAsMp3Files is true. These arguments are ignored when creating
+ *    tags for other known file formats such as MP4.
+ *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed
+ *    if \a id3v1Usage is set to TagUsage::Never.
+ *  - The method might do nothing if the file already has appropriate tags.
+ *  - This is only a convenience method. The task can be done by manually using the methods createId3v1Tag(),
+ *    createId3v2Tag(), removeId3v1Tag() ... as well.
+ *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never)
+ *    and an ID3v1 tag will be created instead not all fields can be transfered.
  */
 bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, uint32 id3v2version, const std::vector<TagTarget> &requiredTargets)
 {
@@ -911,7 +911,6 @@ bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
  * To apply the removal and other changings call the applyChanges() method.
  *
  * \returns Returns whether there where ID3v2 tags assigned which could be removed.
- *
  * \sa applyChanges()
  */
 bool MediaFileInfo::removeAllId3v2Tags()
@@ -934,10 +933,8 @@ bool MediaFileInfo::removeAllId3v2Tags()
  * To apply the created tag and other changings call the applyChanges() method.
  *
  * \returns Returns the first ID3v2 tag of the current file.
- *
  * \remarks The MediaFileInfo keeps the ownership over the created tag. It will be
  *          destroyed when the MediaFileInfo is invalidated.
- *
  * \sa applyChanges()
  */
 Id3v2Tag *MediaFileInfo::createId3v2Tag()
@@ -987,6 +984,9 @@ void MediaFileInfo::removeAllTags()
 {
     if(m_container) {
         m_container->removeAllTags();
+    }
+    if(m_singleTrack && m_containerFormat == ContainerFormat::Flac) {
+        static_cast<FlacStream *>(m_singleTrack.get())->removeVorbisComment();
     }
     m_id3v1Tag.reset();
     m_id3v2Tags.clear();
@@ -1345,6 +1345,69 @@ bool MediaFileInfo::id3v2ToId3v1()
     } else {
         return false;
     }
+}
+
+/*!
+ * \brief Creates a Vorbis comment for the current file.
+ *
+ * This method does nothing if the tags/tracks of the current file haven't been parsed using
+ * the parseTags() and parseTracks() methods.
+ *
+ * If the file has already a Vorbis comment no new tag will be created.
+ *
+ * To apply the created tag and other changings call the applyChanges() method.
+ *
+ * \returns Returns the Vorbis comment or nullptr if creation is not possible.
+ *
+ * \sa applyChanges()
+ */
+VorbisComment *MediaFileInfo::createVorbisComment()
+{
+    switch(m_containerFormat) {
+    case ContainerFormat::Ogg:
+        if(m_container) {
+            return static_cast<OggContainer *>(m_container.get())->createTag(TagTarget());
+        }
+        break;
+    case ContainerFormat::Flac:
+        if(m_singleTrack) {
+            return static_cast<FlacStream *>(m_singleTrack.get())->createVorbisComment();
+        }
+        break;
+    default:
+        ;
+    }
+    return nullptr;
+}
+
+/*!
+ * \brief Removes all assigned Vorbis comment from the current file.
+ *
+ * To apply the removal and other changings call the applyChanges() method.
+ *
+ * \returns Returns whether there was an Vorbis comment assigned which could be removed.
+ *
+ * \sa applyChanges()
+ */
+bool MediaFileInfo::removeVorbisComment()
+{
+    switch(m_containerFormat) {
+    case ContainerFormat::Ogg:
+        if(m_container) {
+            bool hadTags = static_cast<OggContainer *>(m_container.get())->tagCount();
+            static_cast<OggContainer *>(m_container.get())->removeAllTags();
+            return hadTags;
+        }
+        break;
+    case ContainerFormat::Flac:
+        if(m_singleTrack) {
+            return static_cast<FlacStream *>(m_singleTrack.get())->removeVorbisComment();
+        }
+        break;
+    default:
+        ;
+    }
+    return false;
 }
 
 /*!

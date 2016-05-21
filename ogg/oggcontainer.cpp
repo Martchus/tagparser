@@ -419,7 +419,9 @@ void OggContainer::internalMakeFile()
 
                             // check whether there is a new comment to be inserted into the current page
                             if(m_iterator.currentPageIndex() == currentParams->lastPageIndex && currentParams->firstSegmentIndex == static_cast<size_t>(-1)) {
-                                makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams);
+                                if(!currentParams->removed) {
+                                    makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams);
+                                }
                                 // proceed with next comment
                                 if(++tagIterator != tagEnd) {
                                     currentParams = &(currentComment = tagIterator->get())->oggParams();
