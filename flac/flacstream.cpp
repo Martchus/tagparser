@@ -99,6 +99,7 @@ void FlacStream::internalParseHeader()
                     m_samplingFrequency = streamInfo.samplingFrequency();
                     m_sampleCount = streamInfo.totalSampleCount();
                     m_bitsPerSample = streamInfo.bitsPerSample();
+                    m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
                 } else {
                     addNotification(NotificationType::Critical, "\"METADATA_BLOCK_STREAMINFO\" is truncated and will be ignored.", context);
                 }

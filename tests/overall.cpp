@@ -1058,6 +1058,7 @@ void OverallTests::checkFlacTestfile1()
         CPPUNIT_ASSERT(track->channelCount() == 2);
         CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
         CPPUNIT_ASSERT(track->bitsPerSample() == 16);
+        CPPUNIT_ASSERT(track->duration().minutes() == 4);
     }
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
@@ -1099,6 +1100,7 @@ void OverallTests::checkFlacTestfile2()
         CPPUNIT_ASSERT(track->channelCount() == 2);
         CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
         CPPUNIT_ASSERT(track->bitsPerSample() == 16);
+        CPPUNIT_ASSERT(track->duration().minutes() == 4);
     }
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {

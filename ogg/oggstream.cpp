@@ -224,6 +224,15 @@ void OggStream::internalParseHeader()
                     m_channelCount = streamInfo.channelCount();
                     m_samplingFrequency = streamInfo.samplingFrequency();
                     m_sampleCount = streamInfo.totalSampleCount();
+                    if(!m_sampleCount && iterator.areAllPagesFetched()) {
+                        const auto &pages = iterator.pages();
+                        const auto firstPage = find_if(pages.cbegin(), pages.cend(), pred);
+                        const auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);
+                        if(firstPage != pages.cend() && lastPage != pages.crend()) {
+                            m_sampleCount = lastPage->absoluteGranulePosition() - firstPage->absoluteGranulePosition();
+                        }
+                    }
+                    m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
                     hasIdentificationHeader = true;
                 } else {
                     addNotification(NotificationType::Critical, "FLAC-to-Ogg mapping header appears more then once. Oversupplied occurrence will be ignored.", context);
