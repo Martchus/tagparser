@@ -1,6 +1,5 @@
 #include "./matroskatag.h"
 #include "./ebmlelement.h"
-#include "./matroskatagid.h"
 
 #include <map>
 #include <initializer_list>
@@ -157,7 +156,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
     while(child) {
         try {
             child->parse();
-        } catch (Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Unable to parse childs of Targets element.", context);
             break;
         }

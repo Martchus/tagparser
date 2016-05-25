@@ -115,6 +115,10 @@ public:
     virtual bool supportsTarget() const;
     const TagTarget &target() const;
     void setTarget(const TagTarget &target);
+    virtual TagTargetLevel targetLevel() const;
+    const char *targetLevelName() const;
+    bool isTargetingLevel(TagTargetLevel tagTargetLevel) const;
+    std::string targetString() const;
     virtual unsigned int fieldCount() const = 0;
     virtual bool supportsField(KnownField field) const = 0;
     virtual TagDataType proposedDataType(KnownField field) const;
@@ -253,6 +257,42 @@ inline const TagTarget &Tag::target() const
 inline void Tag::setTarget(const TagTarget &target)
 {
     m_target = target;
+}
+
+/*!
+ * \brief Returns the name of the current tag target level.
+ * \remarks Returns TagTargetLevel::Unspecified if target levels are not supported by the tag.
+ */
+inline TagTargetLevel Tag::targetLevel() const
+{
+    return TagTargetLevel::Unspecified;
+}
+
+/*!
+ * \brief Returns the name of the current target level.
+ * \remarks Returns nullptr if target levels are not supported by the tag.
+ */
+inline const char *Tag::targetLevelName() const
+{
+    return supportsTarget() ? tagTargetLevelName(targetLevel()) : nullptr;
+}
+
+/*!
+ * \brief Returns whether the tag is targeting the specified \a tagTargetLevel.
+ * \remarks If targets are not supported by the tag it is considered targeting
+ *          everything and hence this method returns always true in this case.
+ */
+inline bool Tag::isTargetingLevel(TagTargetLevel tagTargetLevel) const
+{
+    return !supportsTarget() || static_cast<byte>(targetLevel()) >= static_cast<byte>(tagTargetLevel);
+}
+
+/*!
+ * \brief Returns the string representation for the assigned tag target.
+ */
+inline std::string Tag::targetString() const
+{
+    return target().toString(targetLevel());
 }
 
 /*!

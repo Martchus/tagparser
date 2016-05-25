@@ -1,4 +1,5 @@
 #include "./signature.h"
+#include "./matroska/matroskatagid.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
 
@@ -479,6 +480,34 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
         return "image/vnd.microsoft.icon";
     default:
         return "";
+    }
+}
+
+/*!
+ * \brief Returns the general TagTargetLevel for the specified \a container format and raw \a targetLevelValue.
+ */
+TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue)
+{
+    switch(containerFormat) {
+    case ContainerFormat::Matroska:
+    case ContainerFormat::Webm:
+        return matroskaTagTargetLevel(targetLevelValue);
+    default:
+        return TagTargetLevel::Unspecified;
+    }
+}
+
+/*!
+ * \brief Returns the raw target level value for the specified \a containerFormat and general \a targetLevel.
+ */
+uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel)
+{
+    switch(containerFormat) {
+    case ContainerFormat::Matroska:
+    case ContainerFormat::Webm:
+        return matroskaTagTargetLevelValue(targetLevel);
+    default:
+        return 0;
     }
 }
 

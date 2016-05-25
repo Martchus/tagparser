@@ -12,6 +12,31 @@ using namespace ConversionUtilities;
 namespace Media {
 
 /*!
+ * \brief Returns a string representation for the specified \a tagTargetLevel.
+ */
+const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
+{
+    switch(tagTargetLevel) {
+    case TagTargetLevel::Shot:
+        return "shot";
+    case TagTargetLevel::Subtrack:
+        return "subtrack, part, movement, scene";
+    case TagTargetLevel::Track:
+        return "track, song, chapter";
+    case TagTargetLevel::Part:
+        return "part, session";
+    case TagTargetLevel::Album:
+        return "album, opera, concert, movie, episode";
+    case TagTargetLevel::Edition:
+        return "edition, issue, volume, opus, season, sequel";
+    case TagTargetLevel::Collection:
+        return "collection";
+    default:
+        return "";
+    }
+}
+
+/*!
  * \class Media::TagTarget
  * \brief The TagTarget class specifies the target of a tag.
  *
@@ -30,8 +55,9 @@ namespace Media {
 
 /*!
  * \brief Returns the string representation of the current instance.
+ * \remarks Uses the specified \a tagTargetLevel if no levelName() is assigned.
  */
-string TagTarget::toString() const
+string TagTarget::toString(TagTargetLevel tagTargetLevel) const
 {
     list<string> parts;
     parts.emplace_back();
@@ -43,7 +69,7 @@ string TagTarget::toString() const
     if(!levelName().empty()) {
         name = levelName();
     } else {
-        name = matroskaTargetTypeName(this->level());
+        name = tagTargetLevelName(tagTargetLevel);
     }
     if(!name.empty()) {
         if(!level.empty()) {

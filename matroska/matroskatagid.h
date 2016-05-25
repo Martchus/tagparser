@@ -1,8 +1,7 @@
 #ifndef MEDIA_MATROSKATAGIDS_H
 #define MEDIA_MATROSKATAGIDS_H
 
-#include <c++utilities/application/global.h>
-#include <c++utilities/conversion/types.h>
+#include "../tagtarget.h"
 
 namespace Media {
 
@@ -337,7 +336,21 @@ inline LIB_EXPORT const char *termsOfUse() {
 
 }
 
-LIB_EXPORT const char *matroskaTargetTypeName(uint32 targetTypeValue);
+/*!
+ * \brief Returns the general TagTargetLevel for the Matroska specific \a targetLevelValue.
+ */
+inline LIB_EXPORT TagTargetLevel matroskaTagTargetLevel(uint64 targetLevelValue)
+{
+    return targetLevelValue > 70 ? TagTargetLevel::Collection : static_cast<TagTargetLevel>(targetLevelValue / 10);
+}
+
+/*!
+ * \brief Returns the Matroska specific target level value for the specified general \a targetLevel.
+ */
+inline LIB_EXPORT uint64 matroskaTagTargetLevelValue(TagTargetLevel targetLevel)
+{
+    return static_cast<uint64>(targetLevel) * 10;
+}
 
 } // namespace Media
 

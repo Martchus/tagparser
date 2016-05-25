@@ -2,6 +2,7 @@
 #define MEDIA_MATROSKATAG_H
 
 #include "./matroskatagfield.h"
+#include "./matroskatagid.h"
 
 #include "../fieldbasedtag.h"
 
@@ -56,6 +57,7 @@ public:
     TagTextEncoding proposedTextEncoding() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
     bool supportsTarget() const;
+    TagTargetLevel targetLevel() const;
 
     std::string fieldId(KnownField field) const;
     KnownField knownField(const std::string &id) const;
@@ -68,16 +70,21 @@ private:
     void parseTargets(EbmlElement &targetsElement);
 };
 
-inline bool MatroskaTag::supportsTarget() const
-{
-    return true;
-}
-
 /*!
  * \brief Constructs a new tag.
  */
 inline MatroskaTag::MatroskaTag()
 {}
+
+inline bool MatroskaTag::supportsTarget() const
+{
+    return true;
+}
+
+inline TagTargetLevel MatroskaTag::targetLevel() const
+{
+    return matroskaTagTargetLevel(m_target.level());
+}
 
 inline TagType MatroskaTag::type() const
 {

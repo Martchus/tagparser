@@ -8,6 +8,8 @@
 
 namespace Media {
 
+enum class TagTargetLevel : byte;
+
 /*!
  * \brief Specifies the container format.
  *
@@ -63,6 +65,8 @@ LIB_EXPORT const char *containerFormatName(ContainerFormat containerFormat);
 LIB_EXPORT const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
 LIB_EXPORT const char *containerFormatSubversion(ContainerFormat containerFormat);
 LIB_EXPORT const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
+LIB_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue);
+LIB_EXPORT uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
 
 }
 

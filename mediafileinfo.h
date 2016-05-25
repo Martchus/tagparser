@@ -330,7 +330,7 @@ inline bool MediaFileInfo::hasId3v1Tag() const
  */
 inline bool MediaFileInfo::hasId3v2Tag() const
 {
-    return m_id3v2Tags.size();
+    return !m_id3v2Tags.empty();
 }
 
 /*!

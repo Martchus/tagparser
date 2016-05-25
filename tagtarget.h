@@ -6,8 +6,26 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace Media {
+
+/*!
+ * \brief The TagTargetLevel enum specifies tag target levels.
+ */
+enum class TagTargetLevel : unsigned char
+{
+    Unspecified,
+    Shot,
+    Subtrack,
+    Track,
+    Part,
+    Album,
+    Edition,
+    Collection
+};
+
+LIB_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
 
 class LIB_EXPORT TagTarget
 {
@@ -31,7 +49,8 @@ public:
     IdContainerType &attachments();
     bool isEmpty() const;
     void clear();
-    std::string toString() const;
+    std::string toString(const std::function<TagTargetLevel(uint64)> &tagTargetMapping) const;
+    std::string toString(TagTargetLevel tagTargetLevel) const;
     bool operator ==(const TagTarget &other) const;
 
 private:
@@ -188,6 +207,16 @@ inline bool TagTarget::operator ==(const TagTarget &other) const
             && m_chapters == other.m_chapters
             && m_editions == other.m_editions
             && m_attachments == other.m_attachments;
+}
+
+/*!
+ * \brief Returns the string representation of the current instance.
+ * \remarks Uses the specified \a tagTargetMapping function to map the assigned level()
+ *          to a TagTargetLevel if no levelName() is assigned.
+ */
+inline std::string TagTarget::toString(const std::function<TagTargetLevel(uint64)> &tagTargetMapping) const
+{
+    return toString(tagTargetMapping ? tagTargetMapping(this->level()) : TagTargetLevel::Unspecified);
 }
 
 }

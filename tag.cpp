@@ -36,7 +36,7 @@ string Tag::toString() const
     stringstream ss;
     ss << typeName();
     if(supportsTarget() && !target().isEmpty()) {
-        ss << " targeting " << target().toString();
+        ss << " targeting " << targetString();
     }
     return ss.str();
 }
