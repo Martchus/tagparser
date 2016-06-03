@@ -526,7 +526,7 @@ void MediaFileInfo::parseEverything()
 bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, uint32 id3v2version, const std::vector<TagTarget> &requiredTargets)
 {
     // check if tags need to be created/adjusted/removed
-    bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 && requiredTargets.front().isEmpty());
+    bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 || !requiredTargets.front().isEmpty());
     bool targetsSupported = false;
     if(areTagsSupported() && m_container) {
         // container object takes care of tag management
