@@ -59,28 +59,29 @@ const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
  */
 string TagTarget::toString(TagTargetLevel tagTargetLevel) const
 {
-    list<string> parts;
-    parts.emplace_back();
-    string &level = parts.back();
-    if(this->level()) {
-        level.append("level " + numberToString(this->level()));
+    string levelString;
+    if(level()) {
+        levelString += "level ";
+        levelString += numberToString(level());
     }
-    string name;
-    if(!levelName().empty()) {
-        name = levelName();
-    } else {
-        name = tagTargetLevelName(tagTargetLevel);
-    }
-    if(!name.empty()) {
-        if(!level.empty()) {
-            level.append(" ");
+    const char *defaultLevelName;
+    if(!levelName().empty() || *(defaultLevelName = tagTargetLevelName(tagTargetLevel))) {
+        if(!levelString.empty()) {
+            levelString += ' ';
         }
-        level.append("»");
-        level.append(name);
-        level.append("«");
+        levelString += '\'';
+        if(!levelName().empty()) {
+            levelString += levelName();
+        } else {
+            levelString += defaultLevelName;
+        }
+        levelString += '\'';
     }
-    if(level.empty()) {
-        level.append("undefined target");
+    list<string> parts;
+    if(levelString.empty()) {
+        parts.emplace_back("undefined target");
+    } else {
+        parts.emplace_back(move(levelString));
     }
     for(auto v : tracks()) {
         parts.emplace_back("track " + numberToString(v));
