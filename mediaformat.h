@@ -32,8 +32,8 @@ enum class GeneralMediaFormat
     AfxStream, /**< AFX Stream */
     Alac, /**< Apple Lossless Audio Codec */
     Als, /**< ALS */
-    Amr, /** < AMR */
-    Avc, /** < Advanced Video Coding */
+    Amr, /**< AMR */
+    Avc, /**< Advanced Video Coding */
     Bitmap, /**< Windows Bitmap */
     Dirac, /**< Dirac */
     Dts, /**< DTS */
@@ -54,7 +54,7 @@ enum class GeneralMediaFormat
     MicrosoftAudioCodecManager, /**< Microsoft Audio Codec Manager (ACM) */
     MicrosoftMpeg4, /**< Microsoft MPEG-4 */
     MicrosoftVideoCodecManager, /**< Microsoft Video Codec Manager (VCM) */
-    DolbyMlp, /** < Dolby MLP */
+    DolbyMlp, /**< Dolby MLP */
     Mpeg1Audio, /**< MPEG-1 Audio */
     Mpeg1Video, /**< MPEG-1 Vudio */
     Mpeg2Audio, /**< MPEG-2 Audio */
@@ -78,15 +78,15 @@ enum class GeneralMediaFormat
     TextSubtitle, /**< Text subtitle */
     Theora, /**< Theora */
     Tiff, /**< TIFF */
-    TimedText, /** < Timed Text */
+    TimedText, /**< Timed Text */
     Tta, /**< The True Audio lessles audio compressor */
     UncompressedVideoFrames, /**< uncompressed RGB */
     Vc1, /**< VC-1 */
     VobBtn, /**< VobBtn */
     VobSub, /**< VobSub */
     Vorbis, /**< Vorbis */
-    Vp8, /** < VP8 */
-    Vp9, /** < VP9 */
+    Vp8, /**< VP8 */
+    Vp9, /**< VP9 */
     WavPack, /**< WavPack */
     WindowsMediaAudio, /**< Windows Media Audio */
     WindowsMediaVideo, /**< Windows Media Video */

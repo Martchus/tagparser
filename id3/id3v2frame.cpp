@@ -575,7 +575,7 @@ byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
  * \remarks The length is always returned as the number of bytes, not as the number of characters (makes a difference for
  *          UTF-16 encodings).
  */
-tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char *buffer, size_t bufferSize, TagTextEncoding &encoding, bool addWarnings)
+tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char *buffer, std::size_t bufferSize, TagTextEncoding &encoding, bool addWarnings)
 {
     tuple<const char *, size_t, const char *> res(buffer, 0, buffer + bufferSize);
     switch(encoding) {
@@ -684,7 +684,7 @@ void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &e
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2Frame::parseLegacyPicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
+void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo)
 {
     static const string context("parsing ID3v2.2 picture frame");
     if(maxSize < 6) {
@@ -711,7 +711,7 @@ void Id3v2Frame::parseLegacyPicture(const char *buffer, size_t maxSize, TagValue
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2Frame::parsePicture(const char *buffer, size_t maxSize, TagValue &tagValue, byte &typeInfo)
+void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo)
 {
     static const string context("parsing ID3v2.3 picture frame");
     const char *end = buffer + maxSize;
@@ -745,7 +745,7 @@ void Id3v2Frame::parsePicture(const char *buffer, size_t maxSize, TagValue &tagV
  * \param dataSize Specifies the maximal number of bytes to read from the buffer.
  * \param tagValue Specifies the tag value used to store the results.
  */
-void Id3v2Frame::parseComment(const char *buffer, size_t dataSize, TagValue &tagValue)
+void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue &tagValue)
 {
     static const string context("parsing comment/unsynchronized lyrics frame");
     const char *end = buffer + dataSize;
@@ -773,7 +773,7 @@ void Id3v2Frame::parseComment(const char *buffer, size_t dataSize, TagValue &tag
  * \param value Specifies the string to make.
  * \param encoding Specifies the encoding of the string to make.
  */
-void Id3v2Frame::makeString(unique_ptr<char[]> &buffer, uint32 &bufferSize, const string &value, TagTextEncoding encoding)
+void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding)
 {
     makeEncodingAndData(buffer, bufferSize, encoding, value.data(), value.size());
 }
@@ -781,11 +781,12 @@ void Id3v2Frame::makeString(unique_ptr<char[]> &buffer, uint32 &bufferSize, cons
 /*!
  * \brief Writes an encoding denoation and the specified \a data to a \a buffer.
  * \param buffer Specifies the buffer.
+ * \param bufferSize Specifies the size of \a buffer.
  * \param encoding Specifies the data encoding.
  * \param data Specifies the data.
- * \param dataSize Specifies the data size.
+ * \param dataSize Specifies size of \a data.
  */
-void Id3v2Frame::makeEncodingAndData(unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, size_t dataSize)
+void Id3v2Frame::makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t dataSize)
 {
     // calculate buffer size
     if(!data) {

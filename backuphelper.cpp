@@ -58,7 +58,7 @@ string &backupDirectory()
  *
  * \throws Throws std::ios_base::failure on failure.
  */
-void restoreOriginalFileFromBackupFile(const string &originalPath, const string &backupPath, fstream &originalStream, fstream &backupStream)
+void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream)
 {
     // ensure the orignal stream is closed
     if(originalStream.is_open()) {
@@ -114,7 +114,7 @@ void restoreOriginalFileFromBackupFile(const string &originalPath, const string 
  *
  * \throws Throws std::ios_base::failure on failure.
  */
-void createBackupFile(const string &originalPath, string &backupPath, fstream &originalStream, fstream &backupStream)
+void createBackupFile(const std::string &originalPath, std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream)
 {
     // determine the backup path
     const string &backupDir = backupDirectory();
@@ -246,7 +246,7 @@ void createBackupFile(const string &originalPath, string &backupPath, fstream &o
  *                     no backup file has been created.
  * \param context      Specifies the context used to add notifications.
  */
-void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const string &backupPath, fstream &outputStream, fstream &backupStream, const string &context)
+void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, std::fstream &outputStream, std::fstream &backupStream, const std::string &context)
 {
     // reset the associated container in any case
     if(fileInfo.container()) {

@@ -456,7 +456,7 @@ u16string TagValue::toWString() const
  * \throws Throws ConversionException on failure.
  * \remarks Use this only, if UTF-16 text is assigned.
  */
-void TagValue::toWString(u16string &result) const
+void TagValue::toWString(std::u16string &result) const
 {
     if(!isEmpty()) {
         switch(m_type) {

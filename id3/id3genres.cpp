@@ -5,8 +5,8 @@ using namespace std;
 namespace Media {
 
 /*!
- * \class Media::Id3Genres
- * \brief Id3Genres converts pre-defined ID3 genres to strings and vise versa.
+ * \class Id3Genres
+ * \brief The Id3Genres class converts pre-defined ID3 genres to strings and vise versa.
  */
 
 /*!

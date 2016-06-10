@@ -95,7 +95,6 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
 /*!
  * \brief Writes a "SeekHead" element for the current instance to the specified \a stream.
  * \param stream Specifies the stream to write the "SeekHead" element to.
- * \param segmentStartOffset Specifies the start offset of "Segment" element the "SeekHead" belongs to.
  * \throws Throws ios_base::failure when an IO error occurs.
  * \throws Throws Failure or a derived exception when a making error occurs.
  */

@@ -37,7 +37,7 @@ StreamDataBlock::StreamDataBlock() :
  *
  * The object does NOT take ownership over the stream returned by the specified function.
  */
-StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream, istream::off_type startOffset, ios_base::seekdir startDir, istream::off_type endOffset, ios_base::seekdir endDir) :
+StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream, std::istream::off_type startOffset, std::ios_base::seekdir startDir, std::istream::off_type endOffset, std::ios_base::seekdir endDir) :
     m_stream(stream)
 {
     auto &s = stream();

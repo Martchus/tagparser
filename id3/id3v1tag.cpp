@@ -40,14 +40,13 @@ bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 
 /*!
  * \brief Parses tag information from the specified \a stream.
- *
+ * \param stream Specifies the stream to read from.
  * \param autoSeek Specifies whether the parser should automatically seek at the end of stream.
- *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v1Tag::parse(istream &stream, bool autoSeek)
+void Id3v1Tag::parse(std::istream &stream, bool autoSeek)
 {
     invalidateStatus();
     static const string context("parsing ID3v1 tag");
@@ -89,7 +88,7 @@ void Id3v1Tag::parse(istream &stream, bool autoSeek)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v1Tag::parse(iostream &stream)
+void Id3v1Tag::parse(std::iostream &stream)
 {
     return parse(stream, false);
 }

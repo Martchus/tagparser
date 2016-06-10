@@ -427,6 +427,8 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff)
 /*!
  * \brief Writes \a value to \a buff.
  * \returns Returns the number of bytes written to \a buff.
+ * \param value Specifies the value to be written.
+ * \param buff Specifies the buffer to write to.
  * \param minBytes Specifies the minimum number of bytes to use.
  */
 byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
@@ -482,7 +484,7 @@ void EbmlElement::makeSimpleElement(ostream &stream, identifierType id, uint64 c
  * \param id Specifies the element ID.
  * \param content Specifies the value of the element as string.
  */
-void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::identifierType id, const string &content)
+void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::identifierType id, const std::string &content)
 {
     char buff1[8];
     byte sizeLength = EbmlElement::makeId(id, buff1);

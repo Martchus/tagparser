@@ -75,7 +75,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64
  *               information.
  * \param startOffset The start offset of the track in the specified \a stream.
  */
-AbstractTrack::AbstractTrack(iostream &stream, uint64 startOffset) :
+AbstractTrack::AbstractTrack(std::iostream &stream, uint64 startOffset) :
     AbstractTrack(stream, stream, startOffset)
 {}
 
