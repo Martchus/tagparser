@@ -25,10 +25,9 @@ MatroskaChapter::~MatroskaChapter()
 /*!
  * \fn MatroskaChapter::parse()
  * \brief Parses the "ChapterAtom"-element which has been specified when constructing the object.
- *
- * Fetches nested chapters but does not parse them.
- *
- * Clears all previous parsing results.
+ * \remarks
+ * - Fetches nested chapters but does not parse them.
+ * - Clears all previous parsing results.
  */
 
 void MatroskaChapter::internalParse()

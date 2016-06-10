@@ -46,6 +46,11 @@ using namespace IoUtilities;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
+/*!
+ * \namespace IoUtilities
+ * \brief Contains utility classes helping to read and write streams.
+ */
+
 namespace Media {
 
 #ifdef FORCE_FULL_PARSE_DEFAULT

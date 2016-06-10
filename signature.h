@@ -14,10 +14,10 @@ namespace Media {
 enum class ContainerFormat
 {
     Unknown, /**< unknown container format */
-    Adts, /** < Audio Data Transport Stream */
-    Ar, /** < "GNU ar" archive */
+    Adts, /**< Audio Data Transport Stream */
+    Ar, /**< "GNU ar" archive */
     Asf, /**< Advanced Systems Format */
-    Bzip2, /** bzip2 compressed file */
+    Bzip2, /**< bzip2 compressed file */
     Elf, /**< Executable and Linkable Format */
     Gif87a, /**< Graphics Interchange Format (1987) */
     Gif89a, /**< Graphics Interchange Format (1989) */
@@ -40,7 +40,7 @@ enum class ContainerFormat
     Riff, /**< Resource Interchange File Format */
     RiffWave, /**< WAVE (subset of RIFF) */
     RiffAvi, /**< Audio Video Interleave (subset of RIFF) */
-    Tar, /** < Tar archive */
+    Tar, /**< Tar archive */
     TiffBigEndian, /**< Tagged Image File Format (big endian) */
     TiffLittleEndian, /**< Tagged Image File Format (little endian) */
     Utf16Text, /**< UTF-16 text */

@@ -43,7 +43,7 @@ string &backupDirectory()
  *
  * \throws Throws std::ios_base::failure on failure.
  */
-void restoreOriginalFileFromBackupFile(const string &originalPath, const string &backupPath, fstream &originalStream, fstream &backupStream)
+void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream)
 {
     // ensure the orignal stream is closed
     if(originalStream.is_open()) {
@@ -82,7 +82,7 @@ void restoreOriginalFileFromBackupFile(const string &originalPath, const string 
  *
  * \throws Throws std::ios_base::failure on failure.
  */
-void createBackupFile(const string &originalPath, string &backupPath, fstream &backupStream)
+void createBackupFile(const std::string &originalPath, std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream)
 {
     // set the backup path
     const string &backupDir = backupDirectory();

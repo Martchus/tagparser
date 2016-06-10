@@ -35,7 +35,7 @@ API provides a way to check which encoding is present (when reading) and which e
 can be used (when writing).
 
 ## Usage
-For examples check out the command line interface of my Tag Editor (which is also on Git).
+For examples check out the command line interface of my [Tag Editor](https://github.com/Martchus/tageditor).
 
 ## Bugs, stability
 - Matroska files composed of more than one segment aren't tested yet and might not work.
