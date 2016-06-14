@@ -11,6 +11,7 @@
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
+#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>
@@ -80,15 +81,16 @@ void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
                     FlacMetaDataBlockPicture pictureBlock(value());
                     pictureBlock.parse(bufferStream, decoded.second);
                     setTypeInfo(pictureBlock.pictureType());
-                } catch(const ios_base::failure &) {
-                    addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
-                    throw Failure();
                 } catch(const TruncatedDataException &) {
                     addNotification(NotificationType::Critical, "METADATA_BLOCK_PICTURE is truncated.", context);
                     throw;
                 } catch(const ConversionException &) {
                     addNotification(NotificationType::Critical, "Base64 coding of METADATA_BLOCK_PICTURE is invalid.", context);
                     throw InvalidDataException();
+                } catch(...) {
+                    catchIoFailure();
+                    addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
+                    throw Failure();
                 }
             } else if(id().size() + 1 < size) {
                 // extract other values (as string)
@@ -186,7 +188,8 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags)
 
                 pictureBlock.make(bufferStream);
                 valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), requiredSize);
-            } catch (const ios_base::failure &) {
+            } catch(...) {
+                catchIoFailure();
                 addNotification(NotificationType::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
                 throw Failure();
             }

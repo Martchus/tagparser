@@ -8,6 +8,7 @@
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/copy.h>
+#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/misc/memory.h>
 
 #include <unistd.h>
@@ -498,9 +499,10 @@ calculatePadding:
                 BackupHelper::createBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
                 outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch(const ios_base::failure &) {
+            } catch(...) {
+                const char *what = catchIoFailure();
                 addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                throw;
+                throwIoFailure(what);
             }
         } else {
             // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -509,9 +511,10 @@ calculatePadding:
                 backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
                 fileInfo().close();
                 outputStream.open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch(const ios_base::failure &) {
+            } catch(...) {
+                const char *what = catchIoFailure();
                 addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
-                throw;
+                throwIoFailure(what);
             }
         }
 
@@ -525,9 +528,10 @@ calculatePadding:
         try {
             fileInfo().close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
-        } catch(const ios_base::failure &) {
+        } catch(...) {
+            const char *what = catchIoFailure();
             addNotification(NotificationType::Critical, "Opening the file with write permissions failed.", context);
-            throw;
+            throwIoFailure(what);
         }
     }
 

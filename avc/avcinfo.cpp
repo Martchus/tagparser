@@ -5,6 +5,7 @@
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/bitreader.h>
 #include <c++utilities/misc/memory.h>
+#include <c++utilities/io/catchiofailure.h>
 
 #include <unordered_map>
 
@@ -200,7 +201,8 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
             pictureSize.setWidth(mbSize.width() * 16);
             pictureSize.setHeight((2 - frameMbsOnly) * mbSize.height() * 16);
         }
-    } catch(const ios_base::failure &) {
+    } catch(...) {
+        catchIoFailure();
         throw TruncatedDataException();
     }
 }
@@ -239,7 +241,8 @@ void PpsInfo::parse(BinaryReader &reader, uint32 maxSize)
         spsId = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
         bitReader.skipBits(1); // entropy coding mode flag
         picOrderPresent = bitReader.readBit();
-    } catch(const ios_base::failure &) {
+    } catch(...) {
+        catchIoFailure();
         throw TruncatedDataException();
     }
 }

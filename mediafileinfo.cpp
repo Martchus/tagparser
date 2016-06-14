@@ -31,6 +31,7 @@
 #include "./flac/flacmetadata.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/misc/memory.h>
 
@@ -1507,7 +1508,7 @@ void MediaFileInfo::makeMp3File()
                     reportSizeChanged(size() - 128);
                 } else {
                     addNotification(NotificationType::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
-                    throw ios_base::failure("Unable to truncate file to remove ID3v1 tag.");
+                    throwIoFailure("Unable to truncate file to remove ID3v1 tag.");
                 }
             }
 
@@ -1613,9 +1614,10 @@ void MediaFileInfo::makeMp3File()
                     BackupHelper::createBackupFile(path(), backupPath, outputStream, backupStream);
                     // recreate original file, define buffer variables
                     outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
-                } catch(const ios_base::failure &) {
+                } catch(...) {
+                    const char *what = catchIoFailure();
                     addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                    throw;
+                    throwIoFailure(what);
                 }
             } else {
                 // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -1623,9 +1625,10 @@ void MediaFileInfo::makeMp3File()
                     backupStream.exceptions(ios_base::badbit | ios_base::failbit);
                     backupStream.open(path(), ios_base::in | ios_base::binary);
                     outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
-                } catch(const ios_base::failure &) {
+                } catch(...) {
+                    const char *what = catchIoFailure();
                     addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
-                    throw;
+                    throwIoFailure(what);
                 }
             }
 
@@ -1634,9 +1637,10 @@ void MediaFileInfo::makeMp3File()
             try {
                 close();
                 outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
-            } catch(const ios_base::failure &) {
+            } catch(...) {
+                const char *what = catchIoFailure();
                 addNotification(NotificationType::Critical, "Opening the file with write permissions failed.", context);
-                throw;
+                throwIoFailure(what);
             }
         }
 

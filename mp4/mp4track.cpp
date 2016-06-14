@@ -15,6 +15,7 @@
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/bitreader.h>
+#include <c++utilities/io/catchiofailure.h>
 
 #include <locale>
 #include <cmath>
@@ -645,16 +646,17 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
                 audioCfg->psPresent = bitReader.readBit();
             }
         }
-    } catch(ios_base::failure &) {
+    } catch(const NotImplementedException &) {
+        statusProvider.addNotification(NotificationType::Information, "Not implemented for the format of audio track.", context);
+    } catch(...) {
+        const char *what = catchIoFailure();
         if(stream.fail()) {
             // IO error caused by input stream
-            throw;
+            throwIoFailure(what);
         } else {
             // IO error caused by bitReader
             statusProvider.addNotification(NotificationType::Critical, "Audio specific configuration is truncated.", context);
         }
-    } catch(NotImplementedException &) {
-        statusProvider.addNotification(NotificationType::Information, "Not implemented for the format of audio track.", context);
     }
     return audioCfg;
 }

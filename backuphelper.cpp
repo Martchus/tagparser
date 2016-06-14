@@ -2,6 +2,7 @@
 #include "./mediafileinfo.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/io/catchiofailure.h>
 
 #ifdef PLATFORM_WINDOWS
 # include <windows.h>
@@ -16,6 +17,7 @@
 
 using namespace std;
 using namespace ConversionUtilities;
+using namespace IoUtilities;
 
 namespace Media {
 
@@ -72,7 +74,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
     if(backupStream.is_open()) {
         backupStream.close();
     } else {
-        throw ios_base::failure("Backup/temporary file has not been created.");
+        throwIoFailure("Backup/temporary file has not been created.");
     }
     // remove original file and restore backup
     std::remove(originalPath.c_str());
@@ -86,8 +88,9 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
             originalStream.open(originalPath, ios_base::out | ios_base::binary);
             originalStream << backupStream.rdbuf();
             // TODO: callback for progress updates
-        } catch(const ios_base::failure &) {
-            throw ios_base::failure("Unable to restore original file from backup file \"" + backupPath + "\" after failure.");
+        } catch(...) {
+            catchIoFailure();
+            throwIoFailure(("Unable to restore original file from backup file \"" + backupPath + "\" after failure.").data());
         }
     }
 }
@@ -201,8 +204,9 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
             backupStream << originalStream.rdbuf();
             // streams are closed in the next try-block
             // TODO: callback for progress updates
-        } catch(const ios_base::failure &) {
-            throw ios_base::failure("Unable to rename original file before rewriting it.");
+        } catch(...) {
+            catchIoFailure();
+            throwIoFailure("Unable to rename original file before rewriting it.");
         }
     }
     try {
@@ -217,13 +221,14 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
         // open backup stream
         backupStream.exceptions(ios_base::failbit | ios_base::badbit);
         backupStream.open(backupPath, ios_base::in | ios_base::binary);
-    } catch(const ios_base::failure &) {
+    } catch(...) {
+        catchIoFailure();
         // can't open the new file
         // -> try to re-rename backup file in the error case to restore previous state
         if(std::rename(backupPath.c_str(), originalPath.c_str()) != 0) {
-            throw ios_base::failure("Unable to restore original file from backup file \"" + backupPath + "\" after failure.");
+            throwIoFailure(("Unable to restore original file from backup file \"" + backupPath + "\" after failure.").data());
         } else {
-            throw ios_base::failure("Unable to open backup file.");
+            throwIoFailure("Unable to open backup file.");
         }
     }
 }
@@ -263,8 +268,8 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 fileInfo.addNotification(NotificationType::Information, "The original file has been restored.", context);
-            } catch(const ios_base::failure &ex) {
-                fileInfo.addNotification(NotificationType::Critical, ex.what(), context);
+            } catch(...) {
+                fileInfo.addNotification(NotificationType::Critical, catchIoFailure(), context);
             }
         } else {
             fileInfo.addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
@@ -278,29 +283,29 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 fileInfo.addNotification(NotificationType::Information, "The original file has been restored.", context);
-            } catch(const ios_base::failure &ex) {
-                fileInfo.addNotification(NotificationType::Critical, ex.what(), context);
+            } catch(...) {
+                fileInfo.addNotification(NotificationType::Critical, catchIoFailure(), context);
             }
         } else {
             fileInfo.addNotification(NotificationType::Critical, "Applying new tag information failed.", context);
         }
         throw;
 
-    } catch(const ios_base::failure &) {
+    } catch(...) {
+        const char *what = catchIoFailure();
         if(!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
             fileInfo.addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 fileInfo.addNotification(NotificationType::Information, "The original file has been restored.", context);
-            } catch(const ios_base::failure &ex) {
-                fileInfo.addNotification(NotificationType::Critical, ex.what(), context);
+            } catch(...) {
+                fileInfo.addNotification(NotificationType::Critical, catchIoFailure(), context);
             }
         } else {
             fileInfo.addNotification(NotificationType::Critical, "An IO error occured when applying tag information.", context);
         }
-        throw;
-
+        throwIoFailure(what);
     }
 }
 

@@ -4,6 +4,7 @@
 #include "./exceptions.h"
 
 #include <c++utilities/misc/memory.h>
+#include <c++utilities/io/catchiofailure.h>
 
 #include <sstream>
 
@@ -48,7 +49,7 @@ StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream,
     m_endOffset = s.tellg();
     s.seekg(currentPos);
     if(m_endOffset < m_startOffset) {
-        throw ios_base::failure("End offset is less then start offset.");
+        IoUtilities::throwIoFailure("End offset is less then start offset.");
     }
 }
 

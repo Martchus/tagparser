@@ -6,6 +6,7 @@
 #include "../backuphelper.h"
 
 #include <c++utilities/io/copy.h>
+#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/misc/memory.h>
 
 using namespace std;
@@ -338,9 +339,10 @@ void OggContainer::internalMakeFile()
             BackupHelper::createBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
             // recreate original file, define buffer variables
             fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-        } catch(const ios_base::failure &) {
+        } catch(...) {
+            const char *what = catchIoFailure();
             addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-            throw;
+            throwIoFailure(what);
         }
     } else {
         // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -349,9 +351,10 @@ void OggContainer::internalMakeFile()
             backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
             fileInfo().close();
             fileInfo().stream().open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
-        } catch(const ios_base::failure &) {
+        } catch(...) {
+            const char *what = catchIoFailure();
             addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
-            throw;
+            throwIoFailure(what);
         }
     }
 
