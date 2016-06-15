@@ -36,6 +36,10 @@ enum class TagStatus
     Removed
 };
 
+/*!
+ * \brief The OverallTests class tests reading and writing tags and parsing technical information
+ *        for all supported container/tag formats.
+ */
 class OverallTests : public TestFixture
 {
     CPPUNIT_TEST_SUITE(OverallTests);

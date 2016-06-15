@@ -770,6 +770,7 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
 /*!
  * \brief Writes an encoding denoation and the specified string \a value to a \a buffer.
  * \param buffer Specifies the buffer.
+ * \param bufferSize Specifies the size of \a buffer.
  * \param value Specifies the string to make.
  * \param encoding Specifies the encoding of the string to make.
  */

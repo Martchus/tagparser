@@ -493,7 +493,7 @@ inline const typename GenericFileElement<ImplementationType>::implementationType
  * \brief Returns the first child of the element.
  *
  * The current element keeps ownership over the returned element.
- * If childs are present nullptr is returned.
+ * If no childs are present nullptr is returned.
  *
  * \remarks parse() needs to be called before.
  */
@@ -507,7 +507,7 @@ inline typename GenericFileElement<ImplementationType>::implementationType *Gene
  * \brief Returns the first child of the element.
  *
  * The current element keeps ownership over the returned element.
- * If childs are present nullptr is returned.
+ * If no childs are present nullptr is returned.
  *
  * \remarks parse() needs to be called before.
  */

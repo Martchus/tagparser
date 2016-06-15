@@ -8,7 +8,7 @@
 
 namespace Media {
 
-enum class TagTargetLevel : byte;
+DECLARE_ENUM(TagTargetLevel, byte);
 
 /*!
  * \brief Specifies the container format.
