@@ -30,7 +30,7 @@ class GenericFileElement;
 
 /*!
  * \class Media::FileElementIterator
- * \brief The FileElementIterator class helps iterating through the childs of a FileElement.
+ * \brief The FileElementIterator class helps iterating through the children of a FileElement.
  */
 template<typename ImplementationType>
 class FileElementIterator
