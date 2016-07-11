@@ -18,8 +18,6 @@
 
 namespace Media {
 
-enum class MediaType;
-enum class GeneralMediaFormat;
 class MpegAudioFrameStream;
 class WaveAudioStream;
 class Mp4Track;
@@ -293,6 +291,14 @@ inline const std::string &AbstractTrack::formatId() const
 inline MediaType AbstractTrack::mediaType() const
 {
     return m_mediaType;
+}
+
+/*!
+ * \brief Returns the string representation of the media type of the track.
+ */
+inline const char *AbstractTrack::mediaTypeName() const
+{
+    return ::Media::mediaTypeName(m_mediaType);
 }
 
 /*!

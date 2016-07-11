@@ -170,13 +170,15 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
     } else if(part1 == "S_TEXT") {
         fmt.general = GeneralMediaFormat::TextSubtitle;
         if(part2 == "UTF8") {
-            fmt.sub = SubFormats::TextSubBasicUtf8;
+            fmt.sub = SubFormats::PlainUtf8Subtitle;
         } else if(part2 == "SSA") {
-            fmt.sub = SubFormats::TextSubSubtitlesFormat;
+            fmt.sub = SubFormats::SubStationAlpha;
         } else if(part2 == "ASS") {
-            fmt.sub = SubFormats::TextSubAdvancedSubtitlesFormat;
+            fmt.sub = SubFormats::AdvancedSubStationAlpha;
         } else if(part2 == "USF") {
-            fmt.sub = SubFormats::TextSubUniversalSubtitleFormat;
+            fmt.sub = SubFormats::UniversalSubtitleFormat;
+        } else if(part2 == "WEBVTT") {
+            fmt.sub = SubFormats::WebVideoTextTracksFormat;
         }
     } else if(part1 == "S_IMAGE") {
         fmt.general = GeneralMediaFormat::ImageSubtitle;
@@ -200,7 +202,7 @@ void MatroskaTrack::internalParseHeader()
     static const string context("parsing header of Matroska track");
     try {
     m_trackElement->parse();
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse track element.", context);
         throw;
     }
@@ -208,7 +210,7 @@ void MatroskaTrack::internalParseHeader()
     for(EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
         try {
             trackInfoElement->parse();
-        } catch (Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Unable to parse track information element.", context);
             break;
         }
@@ -225,16 +227,21 @@ void MatroskaTrack::internalParseHeader()
             case MatroskaTrackType::Subtitle:
                 m_mediaType = MediaType::Text;
                 break;
+            case MatroskaTrackType::Buttons:
+                m_mediaType = MediaType::Buttons;
+                break;
+            case MatroskaTrackType::Control:
+                m_mediaType = MediaType::Control;
+                break;
             default:
                 m_mediaType = MediaType::Unknown;
             }
             break;
         case MatroskaIds::TrackVideo:
-            subElement = trackInfoElement->firstChild();
-            while(subElement) {
+            for(subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
                     subElement->parse();
-                } catch (Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Critical, "Unable to parse video track element.", context);
                     break;
                 }
@@ -275,15 +282,13 @@ void MatroskaTrack::internalParseHeader()
                 default:
                     ;
                 }
-                subElement = subElement->nextSibling();
             }
             break;
         case MatroskaIds::TrackAudio:
-            subElement = trackInfoElement->firstChild();
-            while(subElement) {
+            for(subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
                     subElement->parse();
-                } catch (Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Critical, "Unable to parse audio track element.", context);
                     break;
                 }
@@ -307,7 +312,6 @@ void MatroskaTrack::internalParseHeader()
                 default:
                     ;
                 }
-                subElement = subElement->nextSibling();
             }
             break;
         case MatroskaIds::TrackNumber:
@@ -350,7 +354,7 @@ void MatroskaTrack::internalParseHeader()
         }
         switch(m_mediaType) {
         case MediaType::Video:
-            if(m_fps == 0 && defaultDuration != 0) {
+            if(!m_fps && defaultDuration) {
                 m_fps = 1000000000.0 / static_cast<double>(defaultDuration);
             }
             break;

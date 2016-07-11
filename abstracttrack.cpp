@@ -86,27 +86,6 @@ AbstractTrack::~AbstractTrack()
 {}
 
 /*!
- * \brief Returns the media type as string.
- */
-const char *AbstractTrack::mediaTypeName() const
-{
-    switch(m_mediaType) {
-    case MediaType::Audio:
-        return "Audio";
-    case MediaType::Video:
-        return "Video";
-    case MediaType::Text:
-        return "Subititle";
-    case MediaType::Hint:
-        return "Hint";
-    case MediaType::Unknown:
-        return "Other";
-    default:
-        return "";
-    }
-}
-
-/*!
  * \brief Returns a string with the channel configuration if available; otherwise returns nullptr.
  */
 const char *AbstractTrack::channelConfigString() const

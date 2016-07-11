@@ -215,10 +215,11 @@ const char *MediaFormat::name() const
         }
     case GeneralMediaFormat::TextSubtitle:
         switch(sub) {
-        case SubFormats::TextSubBasicUtf8: return "UTF-8 Plain Text subtitles";
-        case SubFormats::TextSubSubtitlesFormat: return "Subtitles Format";
-        case SubFormats::TextSubAdvancedSubtitlesFormat: return "Advanced Subtitles Format";
-        case SubFormats::TextSubUniversalSubtitleFormat: return "Universal Subtitle Format";
+        case SubFormats::PlainUtf8Subtitle: return "plain UTF-8 subtitle";
+        case SubFormats::SubStationAlpha: return "SubStation Alpha";
+        case SubFormats::AdvancedSubStationAlpha: return "Advanced SubStation Alpha";
+        case SubFormats::UniversalSubtitleFormat: return "Universal Subtitle Format";
+        case SubFormats::WebVideoTextTracksFormat: return "Web Video Text Tracks Format";
         default: return "Text subtitle";
         }
     case GeneralMediaFormat::Theora: return "Theora";
@@ -388,11 +389,12 @@ const char *MediaFormat::abbreviation() const
         }
     case GeneralMediaFormat::TextSubtitle:
         switch(sub) {
-        case SubFormats::TextSubBasicUtf8: return "UTF-8 Sub";
-        case SubFormats::TextSubSubtitlesFormat: return "SSA";
-        case SubFormats::TextSubAdvancedSubtitlesFormat: return "ASS";
-        case SubFormats::TextSubUniversalSubtitleFormat: return "USF";
-        default: return "Text subtitle";
+        case SubFormats::PlainUtf8Subtitle: return "";
+        case SubFormats::SubStationAlpha: return "SSA";
+        case SubFormats::AdvancedSubStationAlpha: return "ASS";
+        case SubFormats::UniversalSubtitleFormat: return "USF";
+        case SubFormats::WebVideoTextTracksFormat: return "WebVTT";
+        default: return "";
         }
     case GeneralMediaFormat::Theora: return "Theora";
     case GeneralMediaFormat::Tiff: return "TIFF";
@@ -426,7 +428,7 @@ const char *MediaFormat::extensionName() const
         case SpectralBandReplication:
             return "Spectral Band Replication / HE-AAC";
         case ParametricStereo:
-            return "Parametric Stereo / HE-AAC v2"; // PS never comes alone?
+            return "Parametric Stereo / HE-AAC v2"; // PS always implies SBR?
         case (SpectralBandReplication | ParametricStereo):
             return "Spectral Band Replication and Parametric Stereo / HE-AAC v2";
         default:
@@ -437,6 +439,31 @@ const char *MediaFormat::extensionName() const
         ;
     }
     return "";
+}
+
+/*!
+ * \brief Returns the string representation for the specified \a mediaType.
+ */
+const char *mediaTypeName(MediaType mediaType)
+{
+    switch(mediaType) {
+    case MediaType::Audio:
+        return "Audio";
+    case MediaType::Video:
+        return "Video";
+    case MediaType::Text:
+        return "Subititle";
+    case MediaType::Hint:
+        return "Hint";
+    case MediaType::Buttons:
+        return "Buttons";
+    case MediaType::Control:
+        return "Control";
+    case MediaType::Unknown:
+        return "Other";
+    default:
+        return "";
+    }
 }
 
 }

@@ -16,8 +16,12 @@ enum class MediaType
     Audio, /**< audio/sound */
     Video, /**< video */
     Text, /**< text/subtitle */
+    Buttons, /**< buttons */
+    Control, /**< control */
     Hint /**< hint */
 };
+
+extern const char *LIB_EXPORT mediaTypeName(MediaType mediaType);
 
 /*!
  * \brief The GeneralMediaFormat enum specifies the general format of media data (PCM, MPEG-4, PNG, ...).
@@ -226,10 +230,11 @@ enum PcmVersion : unsigned char {
 };
 
 enum TextSubtitle : unsigned char {
-    TextSubBasicUtf8 = 1,
-    TextSubSubtitlesFormat,
-    TextSubAdvancedSubtitlesFormat,
-    TextSubUniversalSubtitleFormat
+    PlainUtf8Subtitle = 1,
+    SubStationAlpha,
+    AdvancedSubStationAlpha,
+    UniversalSubtitleFormat,
+    WebVideoTextTracksFormat
 };
 
 enum ImageSubtitle : unsigned char {
