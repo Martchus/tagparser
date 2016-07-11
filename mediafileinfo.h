@@ -25,7 +25,7 @@ class AbstractTrack;
 class VorbisComment;
 
 enum class MediaType;
-DECLARE_ENUM(TagType, unsigned int);
+DECLARE_ENUM_CLASS(TagType, unsigned int);
 
 /*!
  * \brief The TagUsage enum specifies the usage of a certain tag type.
