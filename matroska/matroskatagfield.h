@@ -54,7 +54,8 @@ public:
 private:
     MatroskaTagFieldMaker(MatroskaTagField &field);
 
-    const MatroskaTagField &m_field;
+    MatroskaTagField &m_field;
+    bool m_isBinary;
     std::string m_stringValue;
     uint64 m_simpleTagSize;
     uint64 m_totalSize;

@@ -138,7 +138,7 @@ MatroskaTagFieldMaker MatroskaTagField::prepareMaking()
     }
     try {
         return MatroskaTagFieldMaker(*this);
-    } catch(ConversionException &) {
+    } catch(const ConversionException &) {
         addNotification(NotificationType::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
         throw InvalidDataException();
     }
@@ -167,9 +167,15 @@ void MatroskaTagField::make(ostream &stream)
  * \sa See MatroskaTagField::prepareMaking() for more information.
  */
 MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field) :
-    m_field(field)
+    m_field(field),
+    m_isBinary(false)
 {
-    m_stringValue = m_field.value().toString();
+    try {
+        m_stringValue = m_field.value().toString();
+    } catch(const ConversionException &) {
+        m_field.addNotification(NotificationType::Warning, "The assigned tag value can not be converted to a string and is treated as binary value (which is likely not what you want since official Matroska specifiecation doesn't list any binary fields).", "making Matroska \"SimpleTag\" element.");
+        m_isBinary = true;
+    }
     size_t languageSize = m_field.value().language().size();
     if(!languageSize) {
         languageSize = 3; // if there's no language set, the 3 byte long value "und" is used
@@ -225,12 +231,18 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
     writer.writeUInt16BE(MatroskaIds::TagDefault);
     stream.put(0x80 | 1);
     stream.put(m_field.isDefault() ? 1 : 0);
-    // write header of "TagString" element
-    writer.writeUInt16BE(MatroskaIds::TagString);
-    sizeDenotationLen = EbmlElement::makeSizeDenotation(m_stringValue.size(), buff);
-    stream.write(buff, sizeDenotationLen);
-    stream.write(m_stringValue.c_str(), m_stringValue.size());
-    // "TagBinary" element currently not supported!
+    // write header of "TagString"/"TagBinary" element
+    if(m_isBinary) {
+        writer.writeUInt16BE(MatroskaIds::TagBinary);
+        sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.value().dataSize(), buff);
+        stream.write(buff, sizeDenotationLen);
+        stream.write(m_field.value().dataPointer(), m_field.value().dataSize());
+    } else {
+        writer.writeUInt16BE(MatroskaIds::TagString);
+        sizeDenotationLen = EbmlElement::makeSizeDenotation(m_stringValue.size(), buff);
+        stream.write(buff, sizeDenotationLen);
+        stream.write(m_stringValue.data(), m_stringValue.size());
+    }
     // make nested tags
     for(const auto &maker : m_nestedMaker) {
         maker.make(stream);
