@@ -159,7 +159,7 @@ set(META_PROJECT_VARNAME TAG_PARSER)
 set(META_APP_NAME "Tag Parser")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
-set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags.")
+set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags")
 set(META_VERSION_MAJOR 6)
 set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 0)
@@ -168,10 +168,9 @@ set(META_VERSION_PATCH 0)
 find_package(c++utilities 4.0.0 REQUIRED)
 use_cpp_utilities()
 
-# find zlib
-find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIRS})
-list(APPEND LIBRARIES ${ZLIB_LIBRARIES})
+# find 3rd party libraries
+include(3rdParty)
+use_external_library_from_package(ZLIB ANY_VERSION ZLIB_INCLUDE_DIRS ZLIB_LIBRARIES AUTO_LINKAGE REQUIRED) # zlib
 
 # include modules to apply configuration
 include(BasicConfig)
