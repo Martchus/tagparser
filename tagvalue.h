@@ -6,6 +6,7 @@
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/chrono/datetime.h>
+#include <c++utilities/misc/memory.h>
 
 #include <iosfwd>
 #include <string>
@@ -63,7 +64,7 @@ class LIB_EXPORT TagValue
 public:
     // constructor, destructor
     TagValue();
-    TagValue(const std::string &text, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    TagValue(const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(int value);
     TagValue(const char *data, size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
     TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
@@ -83,10 +84,10 @@ public:
     void clearMetadata();
     void clearDataAndMetadata();
     TagDataType type() const;
-    std::string toString() const;
-    void toString(std::string &result) const;
-    std::u16string toWString() const;
-    void toWString(std::u16string &result) const;
+    std::string toString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
+    void toString(std::string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
+    std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
+    void toWString(std::u16string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     int32 toInteger() const;
     int toStandardGenreIndex() const;
     PositionInSet toPositionInSet() const;
@@ -106,7 +107,7 @@ public:
     TagTextEncoding descriptionEncoding() const;
     static const TagValue &empty();
 
-    void assignText(const std::string &text, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    void assignText(const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
     void assignStandardGenreIndex(int index);
     void assignData(const char *data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
@@ -117,7 +118,6 @@ public:
 
 
 private:
-    //char *_ptr;
     std::unique_ptr<char[]> m_ptr;
     std::string::size_type m_size;
     TagDataType m_type;
@@ -128,6 +128,92 @@ private:
     TagTextEncoding m_encoding;
     TagTextEncoding m_descEncoding;
 };
+
+/*!
+ * \brief Constructs an empty TagValue.
+ */
+inline TagValue::TagValue() :
+    m_size(0),
+    m_type(TagDataType::Undefined),
+    m_labeledAsReadonly(false),
+    m_encoding(TagTextEncoding::Latin1),
+    m_descEncoding(TagTextEncoding::Latin1)
+{}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given \a text.
+ * \param text Specifies the text to be assigned.
+ * \param textEncoding Specifies the encoding of the given \a text.
+ * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
+ *                  use \a textEncoding without any character set conversions.
+ * \throws Throws a ConversionException if the conversion the specified character set fails.
+ */
+inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo) :
+    m_labeledAsReadonly(false),
+    m_descEncoding(TagTextEncoding::Latin1)
+{
+    assignText(text, textEncoding, convertTo);
+}
+
+/*!
+ * \brief Constructs a new TagValue holding the given integer \a value.
+ */
+inline TagValue::TagValue(int value) :
+    TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::Integer)
+{}
+
+/*!
+ * \brief Constructs a new TagValue with a copy of the given \a data.
+ *
+ * \param data Specifies a pointer to the data.
+ * \param length Specifies the length of the data.
+ * \param type Specifies the type of the data as TagDataType.
+ * \param encoding Specifies the encoding of the data as TagTextEncoding. The
+ *                 encoding will only be considered if a text is assigned.
+ */
+inline TagValue::TagValue(const char *data, size_t length, TagDataType type, TagTextEncoding encoding) :
+    m_size(length),
+    m_type(type),
+    m_labeledAsReadonly(false),
+    m_encoding(encoding),
+    m_descEncoding(TagTextEncoding::Latin1)
+{
+    if(length) {
+        m_ptr = std::make_unique<char []>(m_size);
+        std::copy(data, data + length, m_ptr.get());
+    }
+}
+
+/*!
+ * \brief Constructs a new TagValue holding with the given \a data.
+ *
+ * The data is not copied. It is moved.
+ *
+ * \param data Specifies a pointer to the data.
+ * \param length Specifies the length of the data.
+ * \param type Specifies the type of the data as TagDataType.
+ * \param encoding Specifies the encoding of the data as TagTextEncoding. The
+ *                 encoding will only be considered if a text is assigned.
+ */
+inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type, TagTextEncoding encoding) :
+    m_size(length),
+    m_type(type),
+    m_labeledAsReadonly(false),
+    m_encoding(encoding),
+    m_descEncoding(TagTextEncoding::Latin1)
+{
+    if(length) {
+        m_ptr = move(data);
+    }
+}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given PositionInSet \a value.
+ * \param value Specifies the PositionInSet.
+ */
+inline TagValue::TagValue(const PositionInSet &value) :
+    TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
+{}
 
 /*!
  * \brief Assigns the given PositionInSet \a value.
@@ -164,6 +250,33 @@ inline void TagValue::assignDateTime(ChronoUtilities::DateTime value)
 inline TagDataType TagValue::type() const
 {
     return m_type;
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        std::string representation.
+ * \param encoding Specifies the encoding to to be used; set to TagTextEncoding::Unspecified to use the
+ *        present encoding without any character set conversion.
+ * \throws Throws ConversionException on failure.
+ */
+inline std::string TagValue::toString(TagTextEncoding encoding) const
+{
+    std::string res;
+    toString(res, encoding);
+    return res;
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        std::wstring representation.
+ * \throws Throws ConversionException on failure.
+ * \remarks Use this only, if UTF-16 text is assigned.
+ */
+inline std::u16string TagValue::toWString(TagTextEncoding encoding) const
+{
+    std::u16string res;
+    toWString(res, encoding);
+    return res;
 }
 
 /*!
