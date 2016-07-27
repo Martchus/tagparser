@@ -508,23 +508,22 @@ void MediaFileInfo::parseEverything()
 }
 
 /*!
- * \brief Ensures appropriate tags are created.
- * \param treatUnknownFilesAsMp3Files Specifies whether unknown file formats should be treated as MP3.
- * \param id3v1usage Specifies the usage of ID3v1 when creating tags for MP3 files.
- * \param id3v2usage Specifies the usage of ID3v2 when creating tags for MP3 files.
+ * \brief Ensures appropriate tags are created according the given specifications.
+ * \param treatUnknownFilesAsMp3Files Specifies whether unknown file formats should be treated as MP3 (might break the file).
+ * \param id3v1usage Specifies the usage of ID3v1 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
+ * \param id3v2usage Specifies the usage of ID3v2 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
  * \param mergeMultipleSuccessiveId3v2Tags Specifies whether multiple successive ID3v2 tags should be merged (see mergeId3v2Tags()).
- * \param keepExistingId3v2version Specifies whether the version of existing ID3v2 tags should be updated.
- * \param id3v2version Specifies the IDv2 version to be used. Valid values are 2, 3 and 4.
- * \param requiredTargets Specifies the required targets. Targets are ignored if not supported by the container.
- * \return Returns an indication whether appropriate tags could be created for the file.
+ * \param keepExistingId3v2version Specifies whether the version of existing ID3v2 tags should be adjusted to \a id3v2version (otherwise \a id3v2version is only used when creating a new ID3v2 tag).
+ * \param id3v2version Specifies the ID3v2 version to be used. Valid values are 2, 3 and 4.
+ * \param requiredTargets Specifies the required targets. If targets are not supported by the container an informal notification is added.
+ * \return Returns whether appropriate tags could be created for the file.
  * \remarks
  *  - The ID3 related arguments are only practiced when the file format is MP3 or when the file format
- *    is unknown and \a treatUnknownFilesAsMp3Files is true. These arguments are ignored when creating
- *    tags for other known file formats such as MP4.
+ *    is unknown and \a treatUnknownFilesAsMp3Files is true.
  *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed
  *    if \a id3v1Usage is set to TagUsage::Never.
- *  - The method might do nothing if the file already has appropriate tags.
- *  - This is only a convenience method. The task can be done by manually using the methods createId3v1Tag(),
+ *  - The method might do nothing if present tag already match the given specifications.
+ *  - This is only a convenience method. The task could be done by manually using the methods createId3v1Tag(),
  *    createId3v2Tag(), removeId3v1Tag() ... as well.
  *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never)
  *    and an ID3v1 tag will be created instead not all fields can be transfered.
@@ -617,7 +616,7 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
         }
     }
     if(targetsRequired && !targetsSupported) {
-        addNotification(NotificationType::Warning, "The container/tags do not support targets. The specified targets are ignored.", "creating tags");
+        addNotification(NotificationType::Information, "The container/tags do not support targets. The specified targets are ignored.", "creating tags");
     }
     return true;
 }
