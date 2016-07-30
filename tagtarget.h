@@ -198,11 +198,11 @@ inline void TagTarget::clear()
 
 /*!
  * \brief Returns whether the tag targets are equal.
+ * \remarks Targets where only the level name differs are considered equal though.
  */
 inline bool TagTarget::operator ==(const TagTarget &other) const
 {
     return level() == other.level()
-            //&& m_levelName == other.m_levelName // consider targets with the same level number but different level names equal?
             && m_tracks == other.m_tracks
             && m_chapters == other.m_chapters
             && m_editions == other.m_editions

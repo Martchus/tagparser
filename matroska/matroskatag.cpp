@@ -89,16 +89,15 @@ void MatroskaTag::parse(EbmlElement &tagElement)
     static const string context("parsing Matroska tag");
     tagElement.parse();
     m_size = tagElement.totalSize();
-    EbmlElement *child = tagElement.firstChild();
     MatroskaTagField field;
-    while(child) {
+    for(EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
         child->parse();
         switch(child->id()) {
         case MatroskaIds::SimpleTag: {
             try {
                 field.invalidateNotifications();
                 field.reparse(*child, true);
-                fields().insert(pair<string, MatroskaTagField>(field.id(), field));
+                fields().insert(make_pair(field.id(), field));
             } catch(const Failure &) {
             }
             addNotifications(context, field);
@@ -107,7 +106,6 @@ void MatroskaTag::parse(EbmlElement &tagElement)
             parseTargets(*child);
             break;
         }
-        child = child->nextSibling();
     }
 }
 
@@ -152,8 +150,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
     bool targetTypeValueFound = false;
     bool targetTypeFound = false;
     targetsElement.parse();
-    EbmlElement *child = targetsElement.firstChild();
-    while(child) {
+    for(EbmlElement *child = targetsElement.firstChild(); child; child = child->nextSibling()) {
         try {
             child->parse();
         } catch(const Failure &) {
@@ -192,7 +189,6 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
         default:
             addNotification(NotificationType::Warning, "Targets element contains unknown element. It will be ignored.", context);
         }
-        child = child->nextSibling();
     }
     if(!m_target.level()) {
         m_target.setLevel(50); // default level

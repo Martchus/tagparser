@@ -142,7 +142,6 @@ set(SRC_FILES
     mediaformat.cpp
 )
 set(TEST_HEADER_FILES
-
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp

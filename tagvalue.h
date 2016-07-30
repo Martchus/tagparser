@@ -64,6 +64,7 @@ class LIB_EXPORT TagValue
 public:
     // constructor, destructor
     TagValue();
+    TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(int value);
     TagValue(const char *data, size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
@@ -107,6 +108,7 @@ public:
     TagTextEncoding descriptionEncoding() const;
     static const TagValue &empty();
 
+    void assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignText(const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
     void assignStandardGenreIndex(int index);
@@ -139,6 +141,22 @@ inline TagValue::TagValue() :
     m_encoding(TagTextEncoding::Latin1),
     m_descEncoding(TagTextEncoding::Latin1)
 {}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given \a text.
+ * \param text Specifies the text to be assigned.
+ * \param textSize Specifies the size of \a text. (The actual number of bytes, not the number of characters.)
+ * \param textEncoding Specifies the encoding of the given \a text.
+ * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
+ *                  use \a textEncoding without any character set conversions.
+ * \throws Throws a ConversionException if the conversion the specified character set fails.
+ */
+inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo) :
+    m_labeledAsReadonly(false),
+    m_descEncoding(TagTextEncoding::Latin1)
+{
+    assignText(text, textSize, textEncoding, convertTo);
+}
 
 /*!
  * \brief Constructs a new TagValue holding a copy of the given \a text.
@@ -214,6 +232,19 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagData
 inline TagValue::TagValue(const PositionInSet &value) :
     TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
 {}
+
+/*!
+ * \brief Assigns a copy of the given \a text.
+ * \param text Specifies the text to be assigned.
+ * \param textEncoding Specifies the encoding of the given \a text.
+ * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
+ *                  use \a textEncoding without any character set conversions.
+ * \throws Throws a ConversionException if the conversion the specified character set fails.
+ */
+inline void TagValue::assignText(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+{
+    assignText(text.data(), text.size(), textEncoding, convertTo);
+}
 
 /*!
  * \brief Assigns the given PositionInSet \a value.

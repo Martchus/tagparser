@@ -226,7 +226,15 @@ PositionInSet TagValue::toPositionInSet() const
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            return PositionInSet(string(m_ptr.get(), m_size));
+            switch(m_encoding) {
+            case TagTextEncoding::Unspecified:
+            case TagTextEncoding::Latin1:
+            case TagTextEncoding::Utf8:
+                return PositionInSet(string(m_ptr.get(), m_size));
+            case TagTextEncoding::Utf16LittleEndian:
+            case TagTextEncoding::Utf16BigEndian:
+                return PositionInSet(u16string(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2));
+            }
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
             switch(m_size) {
@@ -468,19 +476,20 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
 /*!
  * \brief Assigns a copy of the given \a text.
  * \param text Specifies the text to be assigned.
+ * \param textSize Specifies the size of \a text. (The actual number of bytes, not the number of characters.)
  * \param textEncoding Specifies the encoding of the given \a text.
  * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
  *                  use \a textEncoding without any character set conversions.
  * \throws Throws a ConversionException if the conversion the specified character set fails.
  */
-void TagValue::assignText(const string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
 {
     m_type = TagDataType::Text;
     m_encoding = textEncoding;
-    if(!text.empty()) {
+    if(textSize) {
         if(convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
-            m_ptr = make_unique<char []>(m_size = text.size());
-            text.copy(m_ptr.get(), m_size);
+            m_ptr = make_unique<char []>(m_size = textSize);
+            copy(text, text + textSize, m_ptr.get());
         } else {
             StringData encodedData;
             switch(textEncoding) {
@@ -488,13 +497,13 @@ void TagValue::assignText(const string &text, TagTextEncoding textEncoding, TagT
                 // use pre-defined methods when encoding to UTF-8
                 switch(convertTo) {
                 case TagTextEncoding::Latin1:
-                    encodedData = convertLatin1ToUtf8(text.data(), text.size());
+                    encodedData = convertLatin1ToUtf8(text, textSize);
                     break;
                 case TagTextEncoding::Utf16LittleEndian:
-                    encodedData = convertUtf16LEToUtf8(text.data(), text.size());
+                    encodedData = convertUtf16LEToUtf8(text, textSize);
                     break;
                 case TagTextEncoding::Utf16BigEndian:
-                    encodedData = convertUtf16BEToUtf8(text.data(), text.size());
+                    encodedData = convertUtf16BEToUtf8(text, textSize);
                     break;
                 default:
                     ;
@@ -504,7 +513,7 @@ void TagValue::assignText(const string &text, TagTextEncoding textEncoding, TagT
                 // otherwise, determine input and output parameter to use general covertString method
                 const auto inputParameter = encodingParameter(textEncoding);
                 const auto outputParameter = encodingParameter(convertTo);
-                encodedData = convertString(inputParameter.first, outputParameter.first, text.data(), text.size(), outputParameter.second / inputParameter.second);
+                encodedData = convertString(inputParameter.first, outputParameter.first, text, textSize, outputParameter.second / inputParameter.second);
             }
             }
             // can't just move the encoded data because it needs to be deleted with free

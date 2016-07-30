@@ -44,15 +44,17 @@ class OverallTests : public TestFixture
 {
     CPPUNIT_TEST_SUITE(OverallTests);
     CPPUNIT_TEST(testMp4Parsing);
-    CPPUNIT_TEST(testMp4Making);
     CPPUNIT_TEST(testMp3Parsing);
-    CPPUNIT_TEST(testMp3Making);
     CPPUNIT_TEST(testOggParsing);
-    CPPUNIT_TEST(testOggMaking);
     CPPUNIT_TEST(testFlacParsing);
-    CPPUNIT_TEST(testFlacMaking);
     CPPUNIT_TEST(testMkvParsing);
+#ifdef PLATFORM_UNIX
+    CPPUNIT_TEST(testMp4Making);
+    CPPUNIT_TEST(testMp3Making);
+    CPPUNIT_TEST(testOggMaking);
+    CPPUNIT_TEST(testFlacMaking);
     CPPUNIT_TEST(testMkvMaking);
+#endif
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -99,15 +101,17 @@ public:
     void removeAllTags();
 
     void testMkvParsing();
-    void testMkvMaking();
     void testMp4Parsing();
-    void testMp4Making();
     void testMp3Parsing();
-    void testMp3Making();
     void testOggParsing();
-    void testOggMaking();
     void testFlacParsing();
+#ifdef PLATFORM_UNIX
+    void testMkvMaking();
+    void testMp4Making();
+    void testMp3Making();
+    void testOggMaking();
     void testFlacMaking();
+#endif
 
 private:
     MediaFileInfo m_fileInfo;
@@ -1238,6 +1242,7 @@ void OverallTests::testMkvParsing()
     parseFile(TestUtilities::testFilePath("matroska_wave1/test8.mkv"), &OverallTests::checkMkvTestfile8);
 }
 
+#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the Matroska maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -1318,6 +1323,7 @@ void OverallTests::testMkvMaking()
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
     }
 }
+#endif
 
 /*!
  * \brief Tests the MP4 parser via MediaFileInfo.
@@ -1334,6 +1340,7 @@ void OverallTests::testMp4Parsing()
     parseFile(TestUtilities::testFilePath("mtx-test-data/aac/he-aacv2-ps.m4a"), &OverallTests::checkMp4Testfile5);
 }
 
+#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the MP4 maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -1394,6 +1401,7 @@ void OverallTests::testMp4Making()
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
     }
 }
+#endif
 
 /*!
  * \brief Tests the MP3 parser via MediaFileInfo.
@@ -1406,6 +1414,7 @@ void OverallTests::testMp3Parsing()
     parseFile(TestUtilities::testFilePath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"), &OverallTests::checkMp3Testfile1);
 }
 
+#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the MP3 maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -1455,6 +1464,7 @@ void OverallTests::testMp3Making()
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"), modifyRoutine, &OverallTests::checkMp3Testfile1);
     }
 }
+#endif
 
 /*!
  * \brief Tests the Ogg parser via MediaFileInfo.
@@ -1469,6 +1479,7 @@ void OverallTests::testOggParsing()
     parseFile(TestUtilities::testFilePath("mtx-test-data/opus/v-opus.ogg"), &OverallTests::checkOggTestfile2);
 }
 
+#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the Ogg maker via MediaFileInfo.
  * \remarks
@@ -1502,6 +1513,7 @@ void OverallTests::testOggMaking()
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
     }
 }
+#endif
 
 /*!
  * \brief Tests the FLAC parser via MediaFileInfo.
@@ -1515,6 +1527,7 @@ void OverallTests::testFlacParsing()
     parseFile(TestUtilities::testFilePath("flac/test.ogg"), &OverallTests::checkFlacTestfile2);
 }
 
+#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the FLAC maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -1545,3 +1558,4 @@ void OverallTests::testFlacMaking()
         makeFile(TestUtilities::workingCopyPath("flac/test.ogg"), modifyRoutine, &OverallTests::checkFlacTestfile2);
     }
 }
+#endif
