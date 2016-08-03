@@ -10,6 +10,16 @@ using namespace IoUtilities;
 
 namespace Media {
 
+/*!
+ * \class AvcConfiguration
+ * \brief The AvcConfiguration struct provides a parser for AVC configuration.
+ */
+
+/*!
+ * \brief Parses the AVC configuration using the specified \a reader.
+ * \throws Throws TruncatedDataException() when the config size exceeds the specified \a maxSize.
+ * \remarks Logging/reporting parsing errors is not implemented yet.
+ */
 void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
 {
     if(maxSize < 7) {

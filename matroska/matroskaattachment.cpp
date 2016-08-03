@@ -169,15 +169,7 @@ void MatroskaAttachmentMaker::make(ostream &stream) const
         stream.write(buff, 2);
         len = EbmlElement::makeSizeDenotation(attachment().data()->size(), buff);
         stream.write(buff, len);
-        // copy data
-        if(attachment().data()->buffer()) {
-            stream.write(attachment().data()->buffer().get(), attachment().data()->size());
-        } else {
-            CopyHelper<0x2000> copyHelper;
-            attachment().data()->stream().seekg(attachment().data()->startOffset());
-            copyHelper.copy(attachment().data()->stream(), stream, attachment().data()->size());
-        }
-
+        attachment().data()->copyTo(stream);
     }
 }
 

@@ -5,10 +5,12 @@
 
 #include <c++utilities/misc/memory.h>
 #include <c++utilities/io/catchiofailure.h>
+#include <c++utilities/io/copy.h>
 
 #include <sstream>
 
 using namespace std;
+using namespace IoUtilities;
 
 namespace Media {
 
@@ -61,6 +63,21 @@ void StreamDataBlock::makeBuffer() const
     m_buffer = make_unique<char[]>(size());
     stream().seekg(startOffset());
     stream().read(m_buffer.get(), size());
+}
+
+/*!
+ * \brief Copies the data to the specified \a stream.
+ * \remarks Makes use of the buffer allocated with makeBuffer() if this method has been called before.
+ */
+void StreamDataBlock::copyTo(ostream &stream) const
+{
+    if(buffer()) {
+        stream.write(buffer().get(), size());
+    } else {
+        CopyHelper<0x2000> copyHelper;
+        m_stream().seekg(startOffset());
+        copyHelper.copy(m_stream(), stream, size());
+    }
 }
 
 /*!

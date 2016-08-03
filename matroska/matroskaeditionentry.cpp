@@ -11,6 +11,11 @@ using namespace std;
 namespace Media {
 
 /*!
+ * \class MatroskaEditionEntry
+ * \brief The MatroskaEditionEntry class provides a parser for edition entries in Matroska files.
+ */
+
+/*!
  * \brief Constructs a new MatroskaEditionEntry for the specified \a editionEntryElement.
  */
 MatroskaEditionEntry::MatroskaEditionEntry(EbmlElement *editionEntryElement) :
@@ -79,10 +84,9 @@ void MatroskaEditionEntry::parse()
 
 /*!
  * \brief Parses the "EditionEntry"-element specified when constructing the object.
- *
- * Parses also fetched chapters and nested chapters.
- *
- * Clears all previous parsing results.
+ * \remarks
+ * - Parses also fetched chapters and nested chapters.
+ * - Clears all previous parsing results.
  */
 void MatroskaEditionEntry::parseNested()
 {

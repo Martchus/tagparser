@@ -273,6 +273,21 @@ void HrdParameters::parse(IoUtilities::BitReader &reader)
     timeOffsetLength = reader.readBits<byte>(5);
 }
 
+/*!
+ * \struct Media::TimingInfo
+ * \brief The TimingInfo struct holds timing information (part of SPS info).
+ */
 
+/*!
+ * \struct Media::SliceInfo
+ * \brief The SliceInfo struct holds the slice information of an AVC frame.
+ * \remarks currently not useful, might be removed
+ */
+
+/*!
+ * \struct Media::AvcFrame
+ * \brief The AvcFrame struct holds an AVC frame.
+ * \remarks currently not useful, might be removed
+ */
 
 }

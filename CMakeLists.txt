@@ -27,7 +27,6 @@ set(HEADER_FILES
     caseinsensitivecomparer.h
     mpegaudio/mpegaudioframe.h
     mpegaudio/mpegaudioframestream.h
-    nestingsupportingtag.h
     notification.h
     ogg/oggcontainer.h
     ogg/oggiterator.h

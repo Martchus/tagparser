@@ -60,12 +60,10 @@ void OggContainer::reset()
  * \sa AbstractContainer::createTag()
  * \remarks
  *  - Tracks must be parsed before because tags are stored on track level!
- *  - The track can be specified via the \a target argument. However, only the first track of tracks() array is considered.
- *  - If tracks() array of \a target is empty, a random track will be picked.
- *  - Vorbis streams should always have a tag assigned yet. However, this
- *    methods allows creation of a tag if none has been assigned yet.
- *  - FLAC streams should always have a tag assigned yet and this method
- *    does NOT allow to create a tag in this case.
+ *  - The track can be specified via the \a target argument. However, only the first track of tracks() array of \a target is considered.
+ *  - If tracks() array of \a target is empty, the first track/tag is picked.
+ *  - Vorbis streams should always have a tag assigned; this method allows creation of a tag for Vorbis streams if none is present though.
+ *  - FLAC streams should always have a tag assigned; this method does *not* allow creation of a tag for FLAC streams if none is present though.
  */
 OggVorbisComment *OggContainer::createTag(const TagTarget &target)
 {
@@ -145,12 +143,11 @@ size_t OggContainer::tagCount() const
 /*!
  * \brief Actually just flags the specified \a tag as removed and clears all assigned fields.
  *
- * This specialization is neccessary because completeley removing the tag whould also
- * remove the OGG parameter which are needed when appying the changes.
+ * This specialization is neccessary because removing the tag completely whould also
+ * remove the OGG parameter which are needed when appying changes.
  *
  * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
- *          So do NOT use this method to remove tags from Vorbis, just call removeAllFields() on \a tag.
- * \sa AbstractContainer::removeTag()
+ *          So do NOT use this method to remove tags from Vorbis, just call Tag::removeAllFields() on \a tag.
  */
 bool OggContainer::removeTag(Tag *tag)
 {

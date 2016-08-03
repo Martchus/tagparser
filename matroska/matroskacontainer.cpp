@@ -707,8 +707,10 @@ void MatroskaContainer::internalParseAttachments()
     }
 }
 
+/// \brief The private SegmentData struct is used in MatroskaContainer::internalMakeFile() to store segment specific data.
 struct SegmentData
 {
+    /// \brief Constructs a new segment data object.
     SegmentData() :
         hasCrc32(false),
         cuesElement(nullptr),
@@ -723,33 +725,33 @@ struct SegmentData
         newDataOffset(0)
     {}
 
-    // whether CRC-32 checksum is present
+    /// \brief whether CRC-32 checksum is present
     bool hasCrc32;
-    // used to make "SeekHead"-element
+    /// \brief used to make "SeekHead"-element
     MatroskaSeekInfo seekInfo;
-    // "Cues"-element (original file)
+    /// \brief "Cues"-element (original file)
     EbmlElement *cuesElement;
-    // used to make "Cues"-element
+    /// \brief used to make "Cues"-element
     MatroskaCuePositionUpdater cuesUpdater;
-    // size of the "SegmentInfo"-element
+    /// \brief size of the "SegmentInfo"-element
     uint64 infoDataSize;
-    // cluster sizes
+    /// \brief cluster sizes
     vector<uint64> clusterSizes;
-    // first "Cluster"-element (original file)
+    /// \brief first "Cluster"-element (original file)
     EbmlElement *firstClusterElement;
-    // end offset of last "Cluster"-element (original file)
+    /// \brief end offset of last "Cluster"-element (original file)
     uint64 clusterEndOffset;
-    // start offset (in the new file)
+    /// \brief start offset (in the new file)
     uint64 startOffset;
-    // padding (in the new file)
+    /// \brief padding (in the new file)
     uint64 newPadding;
-    // header size (in the new file)
+    /// \brief header size (in the new file)
     byte sizeDenotationLength;
-    // total size of the segment data (in the new file, excluding header)
+    /// \brief total size of the segment data (in the new file, excluding header)
     uint64 totalDataSize;
-    // total size of the segment data (in the new file, including header)
+    /// \brief total size of the segment data (in the new file, including header)
     uint64 totalSize;
-    // data offset of the segment in the new file
+    /// \brief data offset of the segment in the new file
     uint64 newDataOffset;
 };
 

@@ -5,6 +5,7 @@
 
 #include <map>
 #include <functional>
+#include <initializer_list>
 
 namespace Media {
 
@@ -27,11 +28,14 @@ class FieldMapBasedTag : public Tag
 public:
     FieldMapBasedTag();
 
-    virtual const TagValue &value(KnownField field) const;
     virtual const TagValue &value(const typename FieldType::identifierType &id) const;
+    virtual const TagValue &value(KnownField field) const;
     virtual std::list<const TagValue *> values(const typename FieldType::identifierType &id) const;
-    virtual bool setValue(KnownField field, const TagValue &value);
+    virtual std::list<const TagValue *> values(KnownField field) const;
     virtual bool setValue(const typename FieldType::identifierType &id, const TagValue &value);
+    virtual bool setValue(KnownField field, const TagValue &value);
+    virtual bool setValues(const typename FieldType::identifierType &id, std::initializer_list<TagValue> values);
+    virtual bool setValues(KnownField field, std::initializer_list<TagValue> values);
     virtual bool hasField(KnownField field) const;
     virtual bool hasField(const typename FieldType::identifierType &id) const;
     virtual void removeAllFields();
@@ -72,14 +76,9 @@ template <class FieldType, class Compare>
 FieldMapBasedTag<FieldType, Compare>::FieldMapBasedTag()
 {}
 
-template <class FieldType, class Compare>
-inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField field) const
-{
-    return value(fieldId(field));
-}
-
 /*!
  * \brief Returns the value of the field with the specified \a id.
+ * \sa Tag::value()
  */
 template <class FieldType, class Compare>
 inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(const typename FieldType::identifierType &id) const
@@ -88,11 +87,15 @@ inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(const typenam
     return i != m_fields.end() ? i->second.value() : TagValue::empty();
 }
 
+template <class FieldType, class Compare>
+inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField field) const
+{
+    return value(fieldId(field));
+}
+
 /*!
  * \brief Returns the values of the field with the specified \a id.
- *
- * There might me more then one value assigned to a \a field. Whereas value()
- * returns only the first value, this method returns all values.
+ * \sa Tag::values()
  */
 template <class FieldType, class Compare>
 inline std::list<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(const typename FieldType::identifierType &id) const
@@ -100,9 +103,17 @@ inline std::list<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(
     auto range = m_fields.equal_range(id);
     std::list<const TagValue *> values;
     for(auto i = range.first; i != range.second; ++i) {
-        values.push_back(&i->second.value());
+        if(!i->second.value().isEmpty()) {
+            values.push_back(&i->second.value());
+        }
     }
     return values;
+}
+
+template <class FieldType, class Compare>
+inline std::list<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(KnownField field) const
+{
+    return values(fieldId(field));
 }
 
 template <class FieldType, class Compare>
@@ -113,6 +124,7 @@ inline bool FieldMapBasedTag<FieldType, Compare>::setValue(KnownField field, con
 
 /*!
  * \brief Assigns the given \a value to the field with the specified \a id.
+ * \sa Tag::setValue()
  */
 template <class FieldType, class Compare>
 bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::identifierType &id, const Media::TagValue &value)
@@ -120,12 +132,47 @@ bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::id
     auto i = m_fields.find(id);
     if(i != m_fields.end()) { // field already exists -> set its value
         i->second.setValue(value);
-    } else if(!value.isEmpty())  {// field doesn't exist -> create new one if value is not null
-        m_fields.insert(std::pair<typename FieldType::identifierType, FieldType>(id, FieldType(id, value)));
+    } else if(!value.isEmpty())  { // field doesn't exist -> create new one if value is not null
+        m_fields.insert(std::make_pair(id, FieldType(id, value)));
     } else { // otherwise return false
         return false;
     }
     return true;
+}
+
+/*!
+ * \brief Assigns the given \a values to the field with the specified \a id.
+ * \sa Tag::setValues()
+ */
+template <class FieldType, class Compare>
+bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::identifierType &id, std::initializer_list<TagValue> values)
+{
+    auto valuesIterator = values.begin();
+    auto range = m_fields.equal_range(id);
+    for(; valuesIterator != values.end() && range.first != range.second; ++valuesIterator) {
+        if(!valuesIterator->isEmpty()) {
+            range.first->second.setValue(*valuesIterator);
+            ++range.first;
+        }
+    }
+    for(; valuesIterator != values.end(); ++valuesIterator) {
+        m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
+    }
+    for(; range.first != range.second; ++range.first) {
+        range.first->second.setValue(TagValue());
+    }
+    return true;
+}
+
+/*!
+ * \brief Assigns the given \a values to the field with the specified \a id.
+ * \remarks There might me more then one value assigned to a \a field. Whereas setValue() only alters the first value, this
+ *          method will replace all currently assigned values with the specified \a values.
+ */
+template <class FieldType, class Compare>
+bool FieldMapBasedTag<FieldType, Compare>::setValues(KnownField field, std::initializer_list<TagValue> values)
+{
+    return setValues(fieldId(field), values);
 }
 
 template <class FieldType, class Compare>
@@ -150,11 +197,7 @@ inline void FieldMapBasedTag<FieldType, Compare>::removeAllFields()
 }
 
 /*!
- * \brief Returns the fields of the tag.
- *
- * This method provides direct access to the fields of the tag. It might
- * be usefull when the convenience methods value(), setValue(), hasField(), ...
- * do not offer the required functionality.
+ * \brief Returns the fields of the tag by providing direct access to the field map of the tag.
  */
 template <class FieldType, class Compare>
 inline const std::multimap<typename FieldType::identifierType, FieldType, Compare> &FieldMapBasedTag<FieldType, Compare>::fields() const
@@ -163,11 +206,7 @@ inline const std::multimap<typename FieldType::identifierType, FieldType, Compar
 }
 
 /*!
- * \brief Returns the fields of the tag.
- *
- * This method provides direct access to the fields of the tag. It might
- * be usefull when the convenience methods value(), setValue(), hasField(), ...
- * do not offer the required functionality.
+ * \brief Returns the fields of the tag by providing direct access to the field map of the tag.
  */
 template <class FieldType, class Compare>
 inline std::multimap<typename FieldType::identifierType, FieldType, Compare> &FieldMapBasedTag<FieldType, Compare>::fields()
@@ -178,7 +217,7 @@ inline std::multimap<typename FieldType::identifierType, FieldType, Compare> &Fi
 template <class FieldType, class Compare>
 unsigned int FieldMapBasedTag<FieldType, Compare>::fieldCount() const
 {
-    int count = 0;
+    unsigned int count = 0;
     for(const auto &field : m_fields) {
         if(!field.second.value().isEmpty()) {
             ++count;
@@ -233,7 +272,7 @@ int FieldMapBasedTag<FieldType, Compare>::insertFields(const FieldMapBasedTag<Fi
             }
         }
         if(!fieldInserted) {
-            fields().insert(std::pair<typename FieldType::identifierType, FieldType>(fromField.id(), fromField));
+            fields().insert(std::make_pair(fromField.id(), fromField));
             ++fieldsInserted;
         }
     }

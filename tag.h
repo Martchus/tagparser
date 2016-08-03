@@ -107,7 +107,9 @@ public:
     virtual TagTextEncoding proposedTextEncoding() const;
     virtual bool canEncodingBeUsed(TagTextEncoding encoding) const;
     virtual const TagValue &value(KnownField field) const = 0;
+    virtual std::list<const TagValue *> values(KnownField field) const;
     virtual bool setValue(KnownField field, const TagValue &value) = 0;
+    virtual bool setValues(KnownField field, std::initializer_list<TagValue> values);
     virtual bool hasField(KnownField field) const = 0;
     virtual void removeAllFields() = 0;
     const std::string &version() const;

@@ -22,6 +22,9 @@ struct LIB_EXPORT AvcConfiguration
     void parse(IoUtilities::BinaryReader &reader, uint64 maxSize);
 };
 
+/*!
+ * \brief Constructs an empty AVC configuration.
+ */
 inline AvcConfiguration::AvcConfiguration() :
     profileIndication(0),
     profileCompat(0),

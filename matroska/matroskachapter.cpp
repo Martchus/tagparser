@@ -10,6 +10,11 @@ using namespace ChronoUtilities;
 namespace Media {
 
 /*!
+ * \class MatroskaChapter
+ * \brief The MatroskaChapter class provides an implementation of AbstractAttachment for Matroska files.
+ */
+
+/*!
  * \brief Constructs a new MatroskaChapter for the specified \a chapterAtomElement.
  */
 MatroskaChapter::MatroskaChapter(EbmlElement *chapterAtomElement) :

@@ -256,6 +256,13 @@ void Mp4Tag::make(ostream &stream)
 }
 
 /*!
+ * \class Media::Mp4TagMaker
+ * \brief The Mp4TagMaker class helps writing MP4 tags.
+ *
+ * An instance can be obtained using the Mp4Tag::prepareMaking() method.
+ */
+
+/*!
  * \brief Prepares making the specified \a tag.
  * \sa See Mp4Tag::prepareMaking() for more information.
  */

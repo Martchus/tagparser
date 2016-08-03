@@ -301,7 +301,7 @@ inline std::string TagValue::toString(TagTextEncoding encoding) const
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::wstring representation.
  * \throws Throws ConversionException on failure.
- * \remarks Use this only, if UTF-16 text is assigned.
+ * \remarks Use this only, if \a encoding is an UTF-16 encoding.
  */
 inline std::u16string TagValue::toWString(TagTextEncoding encoding) const
 {
@@ -312,7 +312,7 @@ inline std::u16string TagValue::toWString(TagTextEncoding encoding) const
 
 /*!
  * \brief Returns an indication whether an value is assigned.
- * \remarks Meta data such as description and mime type is not considered as an assigned value.
+ * \remarks Meta data such as description and MIME type is not considered as an assigned value.
  */
 inline bool TagValue::isEmpty() const
 {
@@ -321,7 +321,7 @@ inline bool TagValue::isEmpty() const
 
 /*!
  * \brief Clears the assigned data.
- * \remarks Meta data such as description and mime type remains unaffected.
+ * \remarks Meta data such as description and MIME type remains unaffected.
  * \sa clearMetadata()
  * \sa clearDataAndMetadata()
  */
@@ -333,7 +333,7 @@ inline void TagValue::clearData()
 
 /*!
  * \brief Returns the size of the assigned value in bytes.
- * \remarks Meta data such as description and mime type is not considered as part of the assigned value.
+ * \remarks Meta data such as description and MIME type is not considered as part of the assigned value.
  */
 inline size_t TagValue::dataSize() const
 {
@@ -377,7 +377,7 @@ inline void TagValue::setDescription(const std::string &value, TagTextEncoding e
 }
 
 /*!
- * \brief Returns the mime type.
+ * \brief Returns the MIME type.
  * \remarks The usage of this meta information depends on the tag implementation.
  * \sa setMimeType()
  */
@@ -387,7 +387,7 @@ inline const std::string &TagValue::mimeType() const
 }
 
 /*!
- * \brief Sets the mime type.
+ * \brief Sets the MIME type.
  * \param value Specifies the mime type.
  * \remarks The usage of this meta information depends on the tag implementation.
  * \sa mimeType()

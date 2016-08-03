@@ -33,41 +33,71 @@ Tag::~Tag()
  */
 string Tag::toString() const
 {
-    stringstream ss;
-    ss << typeName();
-    if(supportsTarget() && !target().isEmpty()) {
-        ss << " targeting " << targetString();
+    string res;
+    res += typeName();
+    if(supportsTarget()) {
+        res += " targeting ";
+        res += targetString();
     }
-    return ss.str();
+    return res;
+}
+
+/*!
+ * \brief Returns the values of the specified \a field.
+ * \remarks
+ * - There might me more than one value assigned to a \a field. Whereas value()
+ *   returns only the first value, this method returns all values.
+ * - However, the default implementation just returns the first value assuming
+ *   multiple values per field are not supported by the tag.
+ */
+std::list<const TagValue *> Tag::values(KnownField field) const
+{
+    std::list<const TagValue *> values;
+    const TagValue &v = value(field);
+    if(!v.isEmpty()) {
+        values.push_back(&v);
+    }
+    return values;
+}
+
+/*!
+ * \brief Assigns the given \a values to the specified \a field.
+ * \remarks
+ * - There might me more then one value assigned to a \a field. Whereas setValue() only alters the first value, this
+ *   method will replace all currently assigned values with the specified \a values.
+ * - However, the default implementation just sets the first value and discards additional values assuming
+ *   multiple values per field are not supported by the tag.
+ */
+bool Tag::setValues(KnownField field, std::initializer_list<TagValue> values)
+{
+    return setValue(field, values.size() ? *values.begin() : TagValue());
 }
 
 /*!
  * \fn Tag::value()
  * \brief Returns the value of the specified \a field.
- *
- * If no value for the specified \a field is assigned an
- * empty TagValue will be returned.
- *
- * \sa setValue()
- * \sa hasField()
+ * \remarks
+ * - If the specified \a field is not present an empty TagValue will be returned.
+ * - Some tags support more than just one value per field. If there are multiple values
+ *   this method just returns the first one.
+ * \sa setValue(), hasField()
  */
 
 /*!
  * \fn Tag::setValue()
  * \brief Assigns the given \a value to the specified \a field.
- *
- * If an empty \a value is given, the field will be be removed.
- *
- * \sa value()
- * \sa hasField()
+ * \remarks
+ * - If an empty \a value is given, the field will be be removed.
+ * - Some tags support more than just one value per field. This method will only
+ *   alter the first value.
+ * \sa value(),  hasField()
  */
 
 /*!
  * \fn Tag::hasField()
  * \brief Returns an indication whether the specified \a field is present.
  *
- * \sa value()
- * \sa setValue()
+ * \sa value(), setValue()
  */
 
 /*!

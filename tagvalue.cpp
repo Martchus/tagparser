@@ -329,6 +329,7 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::string representation.
+ * \param result Specifies the string to store the result.
  * \param encoding Specifies the encoding to to be used; set to TagTextEncoding::Unspecified to use the
  *        present encoding without any character set conversion.
  * \remarks If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
@@ -404,7 +405,8 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::u16string representation.
  * \throws Throws ConversionException on failure.
- * \remarks Use this only, if UTF-16 text is assigned.
+ * \remarks Use this only, if \a encoding is an UTF-16 encoding.
+ * \sa toString()
  */
 void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
 {

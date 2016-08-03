@@ -9,10 +9,26 @@ using namespace ConversionUtilities;
 namespace Media {
 
 /*!
+ * \class MatroskaOffsetStates
+ * \brief The MatroskaOffsetStates holds an offset within a Matroska file.
+ *
+ * The purpose of this class is to preserve the previous value when an offset
+ * is updated.
+ */
+
+/*!
+ * \class MatroskaReferenceOffsetPair
+ * \brief The MatroskaReferenceOffsetPair holds an offset within a Matroska file plus the reference offset.
+ *
+ * The purpose of this class is to preserve the previous value when an offset
+ * is updated.
+ */
+
+/*!
  * \class Media::MatroskaCuePositionUpdater
  * \brief The MatroskaCuePositionUpdater class helps to rewrite the "Cues"-element with shifted positions.
  *
- * This class is used when rewriting Matroska files to save changed tag information.
+ * This class is used when rewriting a Matroska file to save changed tag information.
  */
 
 /*!

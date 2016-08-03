@@ -27,7 +27,14 @@ using namespace ChronoUtilities;
 
 namespace Media {
 
-DateTime startDate = DateTime::fromDate(1904, 1, 1);
+/// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
+const DateTime startDate = DateTime::fromDate(1904, 1, 1);
+
+/*!
+ * \class Mpeg4AudioSpecificConfig
+ * \brief The Mpeg4AudioSpecificConfig class holds MPEG-4 audio specific config parsed using Mp4Track::parseAudioSpecificConfig().
+ * \remarks Is part of Mpeg4ElementaryStreamInfo (audio streams only).
+ */
 
 Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
     audioObjectType(0),
@@ -51,9 +58,22 @@ Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
     epConfig(0)
 {}
 
+/*!
+ * \class Mpeg4VideoSpecificConfig
+ * \brief The Mpeg4VideoSpecificConfig class holds MPEG-4 video specific config parsed using Mp4Track::parseVideoSpecificConfig().
+ * \remarks
+ *  - Is part of Mpeg4ElementaryStreamInfo (video streams only).
+ *  - AVC configuration is another thing and covered by the AvcConfiguration class.
+ */
+
 Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig() :
     profile(0)
 {}
+
+/*!
+ * \class Mpeg4ElementaryStreamInfo
+ * \brief The Mpeg4ElementaryStreamInfo class holds MPEG-4 elementary stream info parsed using Mp4Track::parseMpeg4ElementaryStreamInfo().
+ */
 
 /*!
  * \class Media::Mp4Track

@@ -138,16 +138,10 @@ MediaFileInfo::~MediaFileInfo()
  * containerFormatAbbreviation(), containerFormatSubversion(), containerMimeType(),
  * container(), mp4Container() and matroskaContainer() will return the parsed
  * information.
- *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
- *
- * \sa isContainerParsed()
- * \sa parseTracks()
- * \sa parseTag()
- * \sa parseChapters()
- * \sa parseEverything()
+ * \sa isContainerParsed(), parseTracks(), parseTag(), parseChapters(), parseEverything()
  */
 void MediaFileInfo::parseContainerFormat()
 {
@@ -290,25 +284,17 @@ startParsingSignature:
  * After calling this method the methods trackCount(), tracks(), and
  * hasTracksOfType() will return the parsed
  * information.
- *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
- *
- * \remarks parseContainerFormat() is called before the tracks will be parsed.
- *
- * \sa areTracksParsed()
- * \sa parseContainerFormat()
- * \sa parseTag()
- * \sa parseChapters()
- * \sa parseEverything()
+ * \remarks parseContainerFormat() must be called before.
+ * \sa areTracksParsed(), parseContainerFormat(), parseTags(), parseChapters(), parseEverything()
  */
 void MediaFileInfo::parseTracks()
 {
     if(tracksParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tracks twice
         return;
     }
-    parseContainerFormat(); // ensure the container format has been load yet
     static const string context("parsing tracks");
     try {
         if(m_container) {
@@ -359,25 +345,17 @@ void MediaFileInfo::parseTracks()
  * mp4Tag() and allTags() will return the parsed information.
  *
  * Previously assigned but not applied tag information will be discarted.
- *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
- *
- * \remarks parseContainerFormat() is called before the tags informations will be parsed.
- *
- * \sa isTagParsed()
- * \sa parseContainerFormat()
- * \sa parseTracks()
- * \sa parseChapters()
- * \sa parseEverything()
+ * \remarks parseContainerFormat() must be called before.
+ * \sa isTagParsed(), parseContainerFormat(), parseTracks(), parseChapters(), parseEverything()
  */
 void MediaFileInfo::parseTags()
 {
     if(tagsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tags twice
         return;
     }
-    parseContainerFormat(); // ensure the container format has been load yet
     static const string context("parsing tag");
     // check for id3v1 tag
     if(size() >= 128) {
@@ -436,14 +414,8 @@ void MediaFileInfo::parseTags()
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
- *
- * \remarks parseContainerFormat() is called before the tags informations will be parsed.
- *
- * \sa areChaptersParsed()
- * \sa parseContainerFormat()
- * \sa parseTracks()
- * \sa parseTags()
- * \sa parseEverything()
+ * \remarks parseContainerFormat() must be called before.
+ * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
  */
 void MediaFileInfo::parseChapters()
 {
@@ -458,15 +430,26 @@ void MediaFileInfo::parseChapters()
         } else {
             throw NotImplementedException();
         }
-    } catch (NotImplementedException &) {
+    } catch (const NotImplementedException &) {
         m_chaptersParsingStatus = ParsingStatus::NotSupported;
         addNotification(NotificationType::Information, "Parsing chapters is not implemented for the container format of the file.", context);
-    } catch (Failure &) {
+    } catch (const Failure &) {
         m_chaptersParsingStatus = ParsingStatus::CriticalFailure;
         addNotification(NotificationType::Critical, "Unable to parse chapters.", context);
     }
 }
 
+/*!
+ * \brief Parses the attachments of the current file.
+ *
+ * This method parses the attachments of the current file if not been parsed yet.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Media::Failure or a derived exception when a parsing
+ *         error occurs.
+ * \remarks parseContainerFormat() must be called before.
+ * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
+ */
 void MediaFileInfo::parseAttachments()
 {
     if(attachmentsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the attachments twice
@@ -480,10 +463,10 @@ void MediaFileInfo::parseAttachments()
         } else {
             throw NotImplementedException();
         }
-    } catch (NotImplementedException &) {
+    } catch (const NotImplementedException &) {
         m_attachmentsParsingStatus = ParsingStatus::NotSupported;
         addNotification(NotificationType::Information, "Parsing attachments is not implemented for the container format of the file.", context);
-    } catch (Failure &) {
+    } catch (const Failure &) {
         m_attachmentsParsingStatus = ParsingStatus::CriticalFailure;
         addNotification(NotificationType::Critical, "Unable to parse attachments.", context);
     }
@@ -493,10 +476,7 @@ void MediaFileInfo::parseAttachments()
  * \brief Parses the container format, the tracks and the tag information of the current file.
  *
  * See the individual methods to for more details and exceptions which might be thrown.
- *
- * \sa parseContainerFormat();
- * \sa parseTracks();
- * \sa parseTag();
+ * \sa parseContainerFormat(), parseTracks(), parseTags()
  */
 void MediaFileInfo::parseEverything()
 {

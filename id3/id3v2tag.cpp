@@ -380,6 +380,13 @@ bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
 }
 
 /*!
+ * \class Media::Id3v2TagMaker
+ * \brief The Id3v2TagMaker class helps writing ID3v2 tags.
+ *
+ * An instance can be obtained using the Id3v2Tag::prepareMaking() method.
+ */
+
+/*!
  * \brief Prepares making the specified \a tag.
  * \sa See Id3v2Tag::prepareMaking() for more information.
  */

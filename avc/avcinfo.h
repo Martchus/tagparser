@@ -115,7 +115,7 @@ inline SpsInfo::SpsInfo() :
     size(0)
 {}
 
-struct PpsInfo {
+struct LIB_EXPORT PpsInfo {
     PpsInfo();
     ugolomb id;
     ugolomb spsId;
@@ -132,7 +132,7 @@ inline PpsInfo::PpsInfo() :
     size(0)
 {}
 
-struct SliceInfo {
+struct LIB_EXPORT SliceInfo {
     SliceInfo();
     byte naluType;
     byte naluRefIdc;
@@ -167,7 +167,7 @@ inline SliceInfo::SliceInfo() :
     pps(0)
 {}
 
-class AvcFrame {
+class LIB_EXPORT AvcFrame {
     AvcFrame();
 
 private:

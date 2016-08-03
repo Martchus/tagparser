@@ -27,6 +27,7 @@ public:
     const std::unique_ptr<char[]> &buffer() const;
     void makeBuffer() const;
     void discardBuffer();
+    void copyTo(std::ostream &stream) const;
 
 protected:
     StreamDataBlock();
@@ -211,12 +212,10 @@ inline void AbstractAttachment::setId(const uint64 &id)
 
 /*!
  * \brief Returns a reference to the data of the attachment.
- *
- * The reference might be nullptr if there is no data assigned.
- * The attachment keeps ownership over the reference.
- *
- * \sa setData()
- * \sa setFile()
+ * \remarks
+ * - The reference might be nullptr if there is no data assigned.
+ * - The attachment keeps ownership over the reference.
+ * \sa setData(), setFile()
  */
 inline const StreamDataBlock *AbstractAttachment::data() const
 {
@@ -225,11 +224,8 @@ inline const StreamDataBlock *AbstractAttachment::data() const
 
 /*!
  * \brief Sets the \a data for the attachment.
- *
- * The specified \a data is moved to the attachment.
- *
- * \sa data()
- * \sa setFile()
+ * \remarks The specified \a data is moved to the attachment.
+ * \sa data(), setFile()
  */
 inline void AbstractAttachment::setData(std::unique_ptr<StreamDataBlock> &&data)
 {
@@ -249,7 +245,6 @@ inline bool AbstractAttachment::isDataFromFile() const
  * \brief Returns whether the attachment is ignored/omitted when rewriting the container.
  *
  * The default value is false.
- *
  * \sa setIgnored()
  */
 inline bool AbstractAttachment::isIgnored() const
