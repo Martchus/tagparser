@@ -470,7 +470,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
     m_requiredSize = m_dataSize;
     if(version < 3) {
         // -> header size
-        m_requiredSize += 3;
+        m_requiredSize += 6;
     } else {
         // -> header size
         m_requiredSize += 10;
@@ -910,17 +910,18 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
     }
     // calculate needed buffer size and create buffer
     string::size_type descriptionLength = comment.description().find('\0');
-    if(descriptionLength == string::npos)
+    if(descriptionLength == string::npos) {
         descriptionLength = comment.description().length();
-    uint32 dataSize = comment.dataSize();
-    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionLength  + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
-    // note:                     encoding byte + language + description length + 1 or 2 null bytes                                                                                       + data size
+    }
+    const auto data = comment.toString();
+    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionLength  + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + data.size());
+    // note:                     encoding byte              + language + description length + 1 or 2 null bytes                                                                                       + data size
     char *offset = buffer.get();
     // write encoding
     *offset = makeTextEncodingByte(encoding);
     // write language
     for(unsigned int i = 0; i < 3; ++i) {
-        *(++offset) = (lng.length() > i) ? lng.at(i) : 0x00;
+        *(++offset) = (lng.length() > i) ? lng[i] : 0x00;
     }
     // write description
     comment.description().copy(++offset, descriptionLength);
@@ -930,8 +931,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
         *(++offset) = 0x00;
     }
     // write actual data
-    const auto data = comment.toString();
-    data.copy(++offset, data.length());
+    data.copy(++offset, data.size());
 }
 
 }
