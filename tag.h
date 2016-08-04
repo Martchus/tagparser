@@ -127,6 +127,7 @@ public:
     virtual bool supportsDescription(KnownField field) const;
     virtual bool supportsMimeType(KnownField field) const;
     virtual unsigned int insertValues(const Tag &from, bool overwrite);
+    virtual void ensureTextValuesAreProperlyEncoded() = 0;
 //    Tag *parent() const;
 //    bool setParent(Tag *tag);
 //    Tag *nestedTag(size_t index) const;

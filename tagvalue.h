@@ -14,6 +14,8 @@
 
 namespace Media {
 
+class Tag;
+
 /*!
  * \brief Specifies the text encoding.
  */
@@ -105,6 +107,8 @@ public:
     bool isLabeledAsReadonly() const;
     void setReadonly(bool value);
     TagTextEncoding dataEncoding() const;
+    void convertDataEncoding(TagTextEncoding encoding);
+    void convertDataEncodingForTag(const Tag *tag);
     TagTextEncoding descriptionEncoding() const;
     static const TagValue &empty();
 
@@ -446,7 +450,7 @@ inline void TagValue::setReadonly(bool value)
 
 /*!
  * \brief Returns the data encoding.
- * \remarks This method is only useful when a text is assigned.
+ * \remarks This value is only relevant if type() equals TagDataType::Text.
  * \sa assignText()
  */
 inline TagTextEncoding TagValue::dataEncoding() const
@@ -456,9 +460,8 @@ inline TagTextEncoding TagValue::dataEncoding() const
 
 /*!
  * \brief Returns the description encoding.
- * \remarks This method is only useful when a description is assigned.
- * \sa description()
- * \sa setDescription()
+ * \remarks This value is only relevant if a description is assigned.
+ * \sa description(), setDescription()
  */
 inline TagTextEncoding TagValue::descriptionEncoding() const
 {

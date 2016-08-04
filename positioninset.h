@@ -110,9 +110,8 @@ StringType PositionInSet::toString() const
     if(m_position) {
         ss << m_position;
     }
-    ss << "/";
     if(m_total) {
-        ss << m_total;
+        ss << '/' << m_total;
     }
     return ss.str();
 }

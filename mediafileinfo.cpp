@@ -492,24 +492,28 @@ void MediaFileInfo::parseEverything()
  * \param treatUnknownFilesAsMp3Files Specifies whether unknown file formats should be treated as MP3 (might break the file).
  * \param id3v1usage Specifies the usage of ID3v1 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
  * \param id3v2usage Specifies the usage of ID3v2 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
+ * \param id3InitOnCreate Indicates whether to initialize newly created ID3 tags (according to \a id3v1usage and \a id3v2usage) with the values of the already present ID3 tags.
+ * \param id3TransferValuesOnRemoval Indicates whether values of removed ID3 tags (according to \a id3v1usage and \a id3v2usage) should be transfered to remaining ID3 tags (no values will be overwritten).
  * \param mergeMultipleSuccessiveId3v2Tags Specifies whether multiple successive ID3v2 tags should be merged (see mergeId3v2Tags()).
  * \param keepExistingId3v2version Specifies whether the version of existing ID3v2 tags should be adjusted to \a id3v2version (otherwise \a id3v2version is only used when creating a new ID3v2 tag).
  * \param id3v2version Specifies the ID3v2 version to be used. Valid values are 2, 3 and 4.
  * \param requiredTargets Specifies the required targets. If targets are not supported by the container an informal notification is added.
  * \return Returns whether appropriate tags could be created for the file.
  * \remarks
- *  - The ID3 related arguments are only practiced when the file format is MP3 or when the file format
- *    is unknown and \a treatUnknownFilesAsMp3Files is true.
- *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed
- *    if \a id3v1Usage is set to TagUsage::Never.
+ *  - Tags must have been parsed  before invoking this method (otherwise it will just return false).
+ *  - The ID3 related arguments are only practiced when the file format is MP3 or when the file format is unknown and \a treatUnknownFilesAsMp3Files is true.
+ *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed if \a id3v1Usage is set to TagUsage::Never.
  *  - The method might do nothing if present tag already match the given specifications.
- *  - This is only a convenience method. The task could be done by manually using the methods createId3v1Tag(),
- *    createId3v2Tag(), removeId3v1Tag() ... as well.
- *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never)
- *    and an ID3v1 tag will be created instead not all fields can be transfered.
+ *  - This is only a convenience method. The task could be done by manually using the methods createId3v1Tag(), createId3v2Tag(), removeId3v1Tag() ... as well.
+ *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transfered.
+ *  - TODO: Refactoring required, there are too much params (not sure how to refactor though, since not all of the params are simple flags).
  */
-bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, uint32 id3v2version, const std::vector<TagTarget> &requiredTargets)
+bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool id3InitOnCreate, bool id3TransferValuesOnRemoval, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, byte id3v2MajorVersion, const std::vector<TagTarget> &requiredTargets)
 {
+    // check if tags have been parsed yet (tags must have been parsed yet to create appropriate tags)
+    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+        return false;
+    }
     // check if tags need to be created/adjusted/removed
     bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 || !requiredTargets.front().isEmpty());
     bool targetsSupported = false;
@@ -557,12 +561,26 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
             // create ID3 tags according to id3v2usage and id3v2usage
             if(id3v1usage == TagUsage::Always) {
                 // always create ID3v1 tag -> ensure there is one
-                createId3v1Tag();
+                if(!id3v1Tag()) {
+                    Id3v1Tag *id3v1Tag = createId3v1Tag();
+                    if(id3InitOnCreate) {
+                        for(const auto &id3v2Tag : id3v2Tags()) {
+                            // overwrite existing values to ensure default ID3v1 genre "Blues" is updated as well
+                            id3v1Tag->insertValues(*id3v2Tag, true);
+                            // ID3v1 does not support all text encodings which might be used in ID3v2
+                            id3v1Tag->ensureTextValuesAreProperlyEncoded();
+                        }
+                    }
+                }
             }
             if(id3v2usage == TagUsage::Always) {
                 // always create ID3v2 tag -> ensure there is one and set version
                 if(!hasId3v2Tag()) {
-                    createId3v2Tag()->setVersion(id3v2version, 0);
+                    Id3v2Tag *id3v2Tag = createId3v2Tag();
+                    id3v2Tag->setVersion(id3v2MajorVersion, 0);
+                    if(id3InitOnCreate && id3v1Tag()) {
+                        id3v2Tag->insertValues(*id3v1Tag(), true);
+                    }
                 }
             }
         }
@@ -573,15 +591,15 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
         // remove ID3 tags according to id3v2usage and id3v2usage
         if(id3v1usage == TagUsage::Never) {
             if(hasId3v1Tag()) {
-                if(hasId3v2Tag()) {
-                    // transfer tags to ID3v2 tag before removing
+                // transfer tags to ID3v2 tag before removing
+                if(id3TransferValuesOnRemoval && hasId3v2Tag()) {
                     id3v2Tags().front()->insertValues(*id3v1Tag(), false);
                 }
                 removeId3v1Tag();
             }
         }
         if(id3v2usage == TagUsage::Never) {
-            if(hasId3v1Tag()) {
+            if(id3TransferValuesOnRemoval && hasId3v1Tag()) {
                 // transfer tags to ID3v1 tag before removing
                 for(const auto &tag : id3v2Tags()) {
                     id3v1Tag()->insertValues(*tag, false);
@@ -591,7 +609,7 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
         } else if(!keepExistingId3v2version) {
             // set version of ID3v2 tag according user preferences
             for(const auto &tag : id3v2Tags()) {
-                tag->setVersion(id3v2version, 0);
+                tag->setVersion(id3v2MajorVersion, 0);
             }
         }
     }
@@ -1459,7 +1477,7 @@ void MediaFileInfo::invalidated()
 }
 
 /*!
- * \brief Internally used to chanings of a MP3 file (or theoretically any file) with ID3 tags.
+ * \brief Internally used to save chanings of MP3/FLAC files and any other files which might have ID3 tags.
  */
 void MediaFileInfo::makeMp3File()
 {

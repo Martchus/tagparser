@@ -29,26 +29,27 @@ public:
     FieldMapBasedTag();
 
     virtual const TagValue &value(const typename FieldType::identifierType &id) const;
-    virtual const TagValue &value(KnownField field) const;
-    virtual std::list<const TagValue *> values(const typename FieldType::identifierType &id) const;
-    virtual std::list<const TagValue *> values(KnownField field) const;
+    const TagValue &value(KnownField field) const;
+    std::list<const TagValue *> values(const typename FieldType::identifierType &id) const;
+    std::list<const TagValue *> values(KnownField field) const;
     virtual bool setValue(const typename FieldType::identifierType &id, const TagValue &value);
-    virtual bool setValue(KnownField field, const TagValue &value);
-    virtual bool setValues(const typename FieldType::identifierType &id, std::initializer_list<TagValue> values);
-    virtual bool setValues(KnownField field, std::initializer_list<TagValue> values);
-    virtual bool hasField(KnownField field) const;
+    bool setValue(KnownField field, const TagValue &value);
+    bool setValues(const typename FieldType::identifierType &id, std::initializer_list<TagValue> values);
+    bool setValues(KnownField field, std::initializer_list<TagValue> values);
+    bool hasField(KnownField field) const;
     virtual bool hasField(const typename FieldType::identifierType &id) const;
-    virtual void removeAllFields();
+    void removeAllFields();
     const std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields() const;
     std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields();
-    virtual unsigned int fieldCount() const;
+    unsigned int fieldCount() const;
     virtual typename FieldType::identifierType fieldId(KnownField value) const = 0;
     virtual KnownField knownField(const typename FieldType::identifierType &id) const = 0;
-    virtual bool supportsField(KnownField field) const;
+    bool supportsField(KnownField field) const;
     using Tag::proposedDataType;
     virtual TagDataType proposedDataType(const typename FieldType::identifierType &id) const;
-    virtual int insertFields(const FieldMapBasedTag<FieldType, Compare> &from, bool overwrite);
-    virtual unsigned int insertValues(const Tag &from, bool overwrite);
+    int insertFields(const FieldMapBasedTag<FieldType, Compare> &from, bool overwrite);
+    unsigned int insertValues(const Tag &from, bool overwrite);
+    void ensureTextValuesAreProperlyEncoded();
     typedef FieldType fieldType;
 
 private:
@@ -287,6 +288,14 @@ unsigned int FieldMapBasedTag<FieldType, Compare>::insertValues(const Tag &from,
         return insertFields(static_cast<const FieldMapBasedTag<FieldType, Compare> &>(from), overwrite);
     } else {
         return Tag::insertValues(from, overwrite);
+    }
+}
+
+template <class FieldType, class Compare>
+void FieldMapBasedTag<FieldType, Compare>::ensureTextValuesAreProperlyEncoded()
+{
+    for(auto &field : fields()) {
+        field.second.value().convertDataEncodingForTag(this);
     }
 }
 

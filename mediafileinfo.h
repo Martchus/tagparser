@@ -119,8 +119,8 @@ public:
 
     // methods to create/remove tags
     bool createAppropriateTags(bool treatUnknownFilesAsMp3Files = false, TagUsage id3v1usage = TagUsage::KeepExisting,
-                               TagUsage id3v2usage = TagUsage::Always, bool mergeMultipleSuccessiveId3v2Tags = true,
-                               bool keepExistingId3v2version = true, uint32 id3v2version = 3, const std::vector<TagTarget> &requiredTargets = std::vector<TagTarget>());
+                               TagUsage id3v2usage = TagUsage::Always, bool id3InitOnCreate = false, bool id3TransferValuesOnRemoval = true, bool mergeMultipleSuccessiveId3v2Tags = true,
+                               bool keepExistingId3v2version = true, byte id3v2MajorVersion = 3, const std::vector<TagTarget> &requiredTargets = std::vector<TagTarget>());
     bool removeId3v1Tag();
     Id3v1Tag *createId3v1Tag();
     bool removeId3v2Tag(Id3v2Tag *tag);

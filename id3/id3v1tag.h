@@ -11,23 +11,24 @@ class LIB_EXPORT Id3v1Tag : public Tag
 public:
     Id3v1Tag();
 
-    virtual TagType type() const;
-    virtual const char *typeName() const;
-    virtual bool canEncodingBeUsed(TagTextEncoding encoding) const;
-    virtual const TagValue &value(KnownField value) const;
-    virtual bool setValue(KnownField field, const TagValue &value);
-    virtual bool setValueConsideringTypeInfo(KnownField field, const TagValue &value, const std::string &typeInfo);
-    virtual bool hasField(KnownField field) const;
-    virtual void removeAllFields();
-    virtual unsigned int fieldCount() const;
-    virtual bool supportsField(KnownField field) const;
+    TagType type() const;
+    const char *typeName() const;
+    bool canEncodingBeUsed(TagTextEncoding encoding) const;
+    const TagValue &value(KnownField value) const;
+    bool setValue(KnownField field, const TagValue &value);
+    bool setValueConsideringTypeInfo(KnownField field, const TagValue &value, const std::string &typeInfo);
+    bool hasField(KnownField field) const;
+    void removeAllFields();
+    unsigned int fieldCount() const;
+    bool supportsField(KnownField field) const;
+    void ensureTextValuesAreProperlyEncoded();
 
     void parse(std::istream &sourceStream, bool autoSeek);
     void parse(std::iostream &sourceStream);
     void make(std::ostream &targetStream);
 
 private:
-    void readValue(TagValue &value, size_t length, char *buffer, int offset);
+    void readValue(TagValue &value, size_t maxLength, const char *buffer);
     void writeValue(const TagValue &value, size_t length, char *buffer, std::ostream &targetStream);
 
     TagValue m_title;

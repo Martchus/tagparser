@@ -872,10 +872,15 @@ void OverallTests::checkMp3Testfile1()
             case TagType::Id3v2Tag:
                 CPPUNIT_ASSERT(tag->value(KnownField::Title).dataEncoding() == TagTextEncoding::Utf16LittleEndian);
                 CPPUNIT_ASSERT(tag->value(KnownField::Title).toWString() == u"Cohesion");
+                CPPUNIT_ASSERT(tag->value(KnownField::Title).toString(TagTextEncoding::Utf8) == "Cohesion");
                 CPPUNIT_ASSERT(tag->value(KnownField::Artist).toWString() == u"Minutemen");
+                CPPUNIT_ASSERT(tag->value(KnownField::Artist).toString(TagTextEncoding::Utf8) == "Minutemen");
                 CPPUNIT_ASSERT(tag->value(KnownField::Album).toWString() == u"Double Nickels On The Dime");
+                CPPUNIT_ASSERT(tag->value(KnownField::Album).toString(TagTextEncoding::Utf8) == "Double Nickels On The Dime");
                 CPPUNIT_ASSERT(tag->value(KnownField::Genre).toWString() == u"Punk Rock");
+                CPPUNIT_ASSERT(tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8) == "Punk Rock");
                 CPPUNIT_ASSERT(tag->value(KnownField::Comment).toWString() == u"ExactAudioCopy v0.95b4");
+                CPPUNIT_ASSERT(tag->value(KnownField::Comment).toString(TagTextEncoding::Utf8) == "ExactAudioCopy v0.95b4");
                 CPPUNIT_ASSERT(tag->value(KnownField::TrackPosition).toPositionInSet().total() == 43);
                 CPPUNIT_ASSERT(tag->value(KnownField::Length).toTimeSpan().isNull());
                 CPPUNIT_ASSERT(tag->value(KnownField::Lyricist).isEmpty());

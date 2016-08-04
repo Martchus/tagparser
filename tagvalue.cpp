@@ -1,4 +1,5 @@
 #include "./tagvalue.h"
+#include "./tag.h"
 
 #include "./id3/id3genres.h"
 
@@ -323,6 +324,63 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
         return make_pair("UTF-16BE", 2.0f);
     default:
         return make_pair(nullptr, 0.0f);
+    }
+}
+
+/*!
+ * \brief Converts the currently assigned text value to the specified \a encoding.
+ * \throws Throws ConversionUtilities::ConversionException() if the conversion fails.
+ * \remarks
+ * - Does nothing if dataEncoding() equals \a encoding.
+ * - Sets dataEncoding() to the specified \a encoding if the conversion succeeds.
+ * - Does not do any conversion if the current type() is not TagDataType::Text.
+ * \sa convertDataEncodingForTag()
+ */
+void TagValue::convertDataEncoding(TagTextEncoding encoding)
+{
+    if(m_encoding != encoding) {
+        if(type() == TagDataType::Text) {
+            StringData encodedData;
+            switch(encoding) {
+            case TagTextEncoding::Utf8:
+                // use pre-defined methods when encoding to UTF-8
+                switch(dataEncoding()) {
+                case TagTextEncoding::Latin1:
+                    encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
+                    break;
+                case TagTextEncoding::Utf16LittleEndian:
+                    encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
+                    break;
+                case TagTextEncoding::Utf16BigEndian:
+                    encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
+                    break;
+                default:
+                    ;
+                }
+                break;
+            default: {
+                // otherwise, determine input and output parameter to use general covertString method
+                const auto inputParameter = encodingParameter(dataEncoding());
+                const auto outputParameter = encodingParameter(encoding);
+                encodedData = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
+            }
+            }
+            // can't just move the encoded data because it needs to be deleted with free
+            m_ptr = make_unique<char []>(m_size = encodedData.second);
+            copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
+        }
+        m_encoding = encoding;
+    }
+}
+
+/*!
+ * \brief Ensures the encoding of the currently assigned text value is supported by the specified \a tag.
+ * \sa This is a convenience method for convertDataEncoding().
+ */
+void TagValue::convertDataEncodingForTag(const Tag *tag)
+{
+    if(type() == TagDataType::Text && !tag->canEncodingBeUsed(dataEncoding())) {
+        convertDataEncoding(tag->proposedTextEncoding());
     }
 }
 

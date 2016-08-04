@@ -121,6 +121,8 @@ bool Tag::setValues(KnownField field, std::initializer_list<TagValue> values)
  * \param from Specifies the Tag the values should be inserted from.
  * \param overwrite Indicates whether existing values should be overwritten.
  * \return Returns the number of values that have been inserted.
+ * \remarks The encoding of the inserted text values might not be supported by the tag.
+ *          To fix this, call ensureTextValuesAreProperlyEncoded() after insertion.
  */
 unsigned int Tag::insertValues(const Tag &from, bool overwrite)
 {
@@ -138,6 +140,12 @@ unsigned int Tag::insertValues(const Tag &from, bool overwrite)
     }
     return count;
 }
+
+/*!
+ * \fn Tag::ensureTextValuesAreProperlyEncoded()
+ * \brief Ensures the encoding of all assigned text values is supported by the tag by
+ *        converting the character set if neccessary.
+ */
 
 //bool Tag::setParent(Tag *tag)
 //{
