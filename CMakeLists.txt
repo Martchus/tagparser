@@ -159,7 +159,7 @@ set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 2)
 
 # find c++utilities
-find_package(c++utilities 4.0.0 REQUIRED)
+find_package(c++utilities 3.3.0 REQUIRED)
 use_cpp_utilities()
 
 # find zlib
