@@ -201,7 +201,7 @@ void MatroskaTrack::internalParseHeader()
 {
     static const string context("parsing header of Matroska track");
     try {
-    m_trackElement->parse();
+        m_trackElement->parse();
     } catch(const Failure &) {
         addNotification(NotificationType::Critical, "Unable to parse track element.", context);
         throw;

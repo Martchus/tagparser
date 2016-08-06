@@ -117,6 +117,31 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
             cropping.setBottom(bitReader.readUnsignedExpGolombCodedBits<uint32>());
         }
 
+        // calculate actual picture size
+        if(!cropping.isNull()) {
+            // determine cropping scale
+            ugolomb croppingScaleX, croppingScaleY;
+            switch(chromaFormatIndication) {
+            case 1: // 4:2:0
+                croppingScaleX = 2;
+                croppingScaleY = frameMbsOnly ? 2 : 4;
+                break;
+            case 2: // 4:2:2
+                croppingScaleX = 2;
+                croppingScaleY = 2 - frameMbsOnly;
+                break;
+            default: // case 0: monochrome, case 3: 4:4:4
+                croppingScaleX = 1;
+                croppingScaleY = 2 - frameMbsOnly;
+                break;
+            }
+            pictureSize.setWidth(mbSize.width() * 16 - croppingScaleX * (cropping.left() + cropping.right()));
+            pictureSize.setHeight((2 - frameMbsOnly) * mbSize.height() * 16 - croppingScaleY * (cropping.top() + cropping.bottom()));
+        } else {
+            pictureSize.setWidth(mbSize.width() * 16);
+            pictureSize.setHeight((2 - frameMbsOnly) * mbSize.height() * 16);
+        }
+
         // read VUI (video usability information)
         if((vuiPresent = bitReader.readBit())) {
             if((bitReader.readBit())) { // PAR present flag
@@ -166,6 +191,7 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 
             pictureStructPresent = bitReader.readBit();
 
+            // TODO: investigate error (truncated data) when parsing mtx-test-data/mkv/attachment-without-fileuid.mkv
             if(bitReader.readBit()) { // bitstream restriction flag
                 bitReader.skipBits(1); // motion vectors over pic boundries flag
                 bitReader.readUnsignedExpGolombCodedBits<byte>(); // max bytes per pic denom
@@ -177,30 +203,6 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
             }
         }
 
-        // calculate actual picture size
-        if(!cropping.isNull()) {
-            // determine cropping scale
-            ugolomb croppingScaleX, croppingScaleY;
-            switch(chromaFormatIndication) {
-            case 1: // 4:2:0
-                croppingScaleX = 2;
-                croppingScaleY = frameMbsOnly ? 2 : 4;
-                break;
-            case 2: // 4:2:2
-                croppingScaleX = 2;
-                croppingScaleY = 2 - frameMbsOnly;
-                break;
-            default: // case 0: monochrome, case 3: 4:4:4
-                croppingScaleX = 1;
-                croppingScaleY = 2 - frameMbsOnly;
-                break;
-            }
-            pictureSize.setWidth(mbSize.width() * 16 - croppingScaleX * (cropping.left() + cropping.right()));
-            pictureSize.setHeight((2 - frameMbsOnly) * mbSize.height() * 16 - croppingScaleY * (cropping.top() + cropping.bottom()));
-        } else {
-            pictureSize.setWidth(mbSize.width() * 16);
-            pictureSize.setHeight((2 - frameMbsOnly) * mbSize.height() * 16);
-        }
     } catch(...) {
         catchIoFailure();
         throw TruncatedDataException();
