@@ -42,9 +42,7 @@ void MatroskaChapter::internalParse()
     invalidateStatus();
     clear();
     // iterate through childs of "ChapterAtom"-element
-    EbmlElement *chapterAtomChild = m_chapterAtomElement->firstChild();
-    EbmlElement *subElement;
-    while(chapterAtomChild) {
+    for(EbmlElement *chapterAtomChild = m_chapterAtomElement->firstChild(); chapterAtomChild; chapterAtomChild = chapterAtomChild->nextSibling()) {
         chapterAtomChild->parse();
         switch(chapterAtomChild->id()) {
         case MatroskaIds::ChapterUID:
@@ -69,40 +67,36 @@ void MatroskaChapter::internalParse()
         case MatroskaIds::ChapterPhysicalEquiv:
             break;
         case MatroskaIds::ChapterTrack:
-            subElement = chapterAtomChild->firstChild();
-            while(subElement) {
-                subElement->parse();
-                switch(subElement->id()) {
+            for(EbmlElement *chapterTrackElement = chapterAtomChild->firstChild(); chapterTrackElement; chapterTrackElement = chapterTrackElement->nextSibling()) {
+                chapterTrackElement->parse();
+                switch(chapterTrackElement->id()) {
                 case MatroskaIds::ChapterTrack:
-                    m_tracks.emplace_back(subElement->readUInteger());
+                    m_tracks.emplace_back(chapterTrackElement->readUInteger());
                     break;
                 default:
                     addNotification(NotificationType::Warning, "\"ChapterTrack\"-element contains unknown child element \"" + chapterAtomChild->idToString() + "\". It will be ignored.", context);
                 }
-                subElement = subElement->nextSibling();
             }
             break;
         case MatroskaIds::ChapterDisplay:
-            subElement = chapterAtomChild->firstChild();
             m_names.emplace_back();
-            while(subElement) {
-                subElement->parse();
-                switch(subElement->id()) {
+            for(EbmlElement *chapterDisplayElement = chapterAtomChild->firstChild(); chapterDisplayElement; chapterDisplayElement = chapterDisplayElement->nextSibling()) {
+                chapterDisplayElement->parse();
+                switch(chapterDisplayElement->id()) {
                 case MatroskaIds::ChapString:
                     if(m_names.back().empty()) {
-                        m_names.back().assign(subElement->readString());
+                        m_names.back().assign(chapterDisplayElement->readString());
                     } else {
                         addNotification(NotificationType::Warning, "\"ChapterDisplay\"-element contains multiple \"ChapString\"-elements. Surplus occurrences will be ignored.", context);
                     }
                     break;
                 case MatroskaIds::ChapLanguage:
-                    m_names.back().languages().emplace_back(subElement->readString());
+                    m_names.back().languages().emplace_back(chapterDisplayElement->readString());
                     break;
                 case MatroskaIds::ChapCountry:
-                    m_names.back().countries().emplace_back(subElement->readString());
+                    m_names.back().countries().emplace_back(chapterDisplayElement->readString());
                     break;
                 }
-                subElement = subElement->nextSibling();
             }
             break;
         case MatroskaIds::ChapProcess:
@@ -112,11 +106,12 @@ void MatroskaChapter::internalParse()
         default:
             addNotification(NotificationType::Warning, "\"ChapterAtom\"-element contains unknown child element \"" + chapterAtomChild->idToString() + "\". It will be ignored.", context);
         }
-        chapterAtomChild = chapterAtomChild->nextSibling();
     }
-    // "eng" is declared to be default language
-    if(m_names.back().languages().empty()) {
-        m_names.back().languages().emplace_back("eng");
+    // "eng" is default language
+    for(LocaleAwareString &name : m_names) {
+        if(name.languages().empty()) {
+            name.languages().emplace_back("eng");
+        }
     }
 }
 

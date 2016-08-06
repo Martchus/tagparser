@@ -280,8 +280,7 @@ bool sameOffset(uint64 offset, const EbmlElement *element) {
 
 /*!
  * \brief Returns whether none of the specified \a elements have the specified \a offset.
- *
- * This method is used when gathering elements to avaoid adding the same element twice.
+ * \remarks This method is used when gathering elements to avoid adding the same element twice.
  */
 inline bool excludesOffset(const vector<EbmlElement *> &elements, uint64 offset)
 {
@@ -290,11 +289,12 @@ inline bool excludesOffset(const vector<EbmlElement *> &elements, uint64 offset)
 
 MatroskaChapter *MatroskaContainer::chapter(std::size_t index)
 {
-    size_t currentIndex = 0;
-    for(auto &entry : m_editionEntries) {
-        currentIndex += entry->chapters().size();
-        if(index < currentIndex) {
-            return entry->chapters()[index].get();
+    for(const auto &entry : m_editionEntries) {
+        const auto &chapters = entry->chapters();
+        if(index < chapters.size()) {
+            return chapters[index].get();
+        } else {
+            index -= chapters.size();
         }
     }
     return nullptr;
@@ -312,7 +312,7 @@ size_t MatroskaContainer::chapterCount() const
 MatroskaAttachment *MatroskaContainer::createAttachment()
 {
     // generate unique ID
-    srand (time(nullptr));
+    srand(time(nullptr));
     byte tries = 0;
     uint64 attachmentId;
 generateRandomId:

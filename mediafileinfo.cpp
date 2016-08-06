@@ -1125,7 +1125,7 @@ vector<AbstractChapter *> MediaFileInfo::chapters() const
     if(m_container) {
         size_t count = m_container->chapterCount();
         res.reserve(count);
-        for(size_t i = 0; i < count; ++i) {
+        for(size_t i = 0; i != count; ++i) {
             res.push_back(m_container->chapter(i));
         }
     }
