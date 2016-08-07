@@ -42,6 +42,7 @@ enum Sig48 : uint64
  */
 enum Sig32 : uint32
 {
+    Dirac = 0x42424344u,
     Elf = 0x7F454C46u,
     Flac = 0x664C6143u,
     JavaClassFile = 0xCAFEBABEu,
@@ -79,6 +80,7 @@ enum Sig24 : uint32
  */
 enum Sig16 : uint16
 {
+    Ac3 = 0x0B77u,
     Adts = 0xFFF0u,
     AdtsMask = 0xFFF6u,
     Jpeg = 0xffd8u,
@@ -150,6 +152,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         ;
     }
     switch(sig >> 32) { // check 32-bit signatures
+    case Dirac:
+        return ContainerFormat::Dirac;
     case Elf:
         return ContainerFormat::Elf;
     case Flac:
@@ -200,6 +204,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::Utf8Text;
     }
     switch(sig >> 48) { // check 16-bit signatures
+    case Ac3:
+        return ContainerFormat::Ac3Frames;
     case Jpeg:
         return ContainerFormat::Jpeg;
     case Lha:
@@ -227,17 +233,17 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
 
 /*!
  * \brief Returns the abbreviation of the container format as C-style string considering
- * the specified media type and version.
- *
- * This abbreviation might be used as file extension.
- *
- * Returns an empty string if no abbreviation is available.
+ *        the specified media type and version.
+ * \remarks The abbreviation might be used as file extension.
+ * \returns Returns an empty string if no abbreviation is available.
  */
 const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType, unsigned int version)
 {
     switch(containerFormat) {
+    case ContainerFormat::Ac3Frames: return "ac3";
     case ContainerFormat::Ar: return "a";
     case ContainerFormat::Asf: return "asf";
+    case ContainerFormat::Dirac: return "drc";
     case ContainerFormat::Elf: return "elf";
     case ContainerFormat::Flac: return "flac";
     case ContainerFormat::FlashVideo: return "flv";
@@ -312,12 +318,16 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
 const char *containerFormatName(ContainerFormat containerFormat)
 {
     switch(containerFormat) {
+    case ContainerFormat::Ac3Frames:
+        return "raw Dolby Digital";
     case ContainerFormat::Adts:
         return "Audio Data Transport Stream";
     case ContainerFormat::Ar:
         return "Archive (GNU ar)";
     case ContainerFormat::Asf:
         return "Advanced Systems Format";
+    case ContainerFormat::Dirac:
+        return "raw Dirac";
     case ContainerFormat::Elf:
         return "Executable and Linkable Format";
     case ContainerFormat::Flac:
@@ -422,6 +432,8 @@ const char *containerFormatSubversion(ContainerFormat containerFormat)
 const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType)
 {
     switch(containerFormat) {
+    case ContainerFormat::Ac3Frames:
+        return "audio/ac3";
     case ContainerFormat::Asf:
         return "video/x-ms-asf";
     case ContainerFormat::Flac:

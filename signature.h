@@ -18,12 +18,15 @@ DECLARE_ENUM_CLASS(TagTargetLevel, byte);
 enum class ContainerFormat
 {
     Unknown, /**< unknown container format */
+    Ac3Frames, /**< raw AC-3/Dolby Digital frames */
     Adts, /**< Audio Data Transport Stream */
     Ar, /**< "GNU ar" archive */
     Asf, /**< Advanced Systems Format */
     Bzip2, /**< bzip2 compressed file */
+    Dirac, /**< raw Dirac */
+    Ebml, /**< EBML */
     Elf, /**< Executable and Linkable Format */
-    Flac, /**< Free Lossless Audio Codec (raw stream) */
+    Flac, /**< raw Free Lossless Audio Codec */
     FlashVideo, /**< Flash (FLV) */
     Gif87a, /**< Graphics Interchange Format (1987) */
     Gif89a, /**< Graphics Interchange Format (1989) */
@@ -32,31 +35,30 @@ enum class ContainerFormat
     JavaClassFile, /**< Java class file */
     Jpeg, /**< JPEG File Interchange Format */
     Lha, /**< LHA */
+    Lzip, /**< lz compressed file */
     Lzw, /**< LZW */
+    Matroska, /**< Matroska (subset of EBML) */
     Mp4, /**< MPEG-4 Part 14 (subset of QuickTime container) */
+    MpegAudioFrames, /**< MPEG-1 Layer 1/2/3 frames */
     Ogg, /**< Ogg */
     PhotoshopDocument, /**< Photoshop document */
     Png, /**< Portable Network Graphics */
     PortableExecutable, /**< Portable Executable */
+    QuickTime, /**< QuickTime container */
     Rar, /**< RAR Archive */
-    Ebml, /**< EBML */
-    Matroska, /**< Matroska (subset of EBML) */
-    Webm, /**< WebM (subset of Matroska) */
-    MpegAudioFrames, /**< MPEG-1 Layer 1/2/3 frames */
     Riff, /**< Resource Interchange File Format */
-    RiffWave, /**< WAVE (subset of RIFF) */
     RiffAvi, /**< Audio Video Interleave (subset of RIFF) */
+    RiffWave, /**< WAVE (subset of RIFF) */
+    SevenZ, /**< 7z archive */
     Tar, /**< Tar archive */
     TiffBigEndian, /**< Tagged Image File Format (big endian) */
     TiffLittleEndian, /**< Tagged Image File Format (little endian) */
     Utf16Text, /**< UTF-16 text */
     Utf32Text, /**< UTF-32 text */
     Utf8Text, /**< UTF-8 text */
+    Webm, /**< WebM (subset of Matroska) */
     WindowsBitmap, /**< Microsoft Windows Bitmap */
     WindowsIcon, /**< Microsoft Windows Icon */
-    SevenZ, /**< 7z archive */
-    Lzip, /**< lz compressed file */
-    QuickTime, /**< QuickTime container */
     Zip /**< ZIP archive */
 };
 
