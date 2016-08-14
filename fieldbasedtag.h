@@ -5,7 +5,6 @@
 
 #include <map>
 #include <functional>
-#include <initializer_list>
 
 namespace Media {
 
@@ -30,12 +29,12 @@ public:
 
     virtual const TagValue &value(const typename FieldType::identifierType &id) const;
     const TagValue &value(KnownField field) const;
-    std::list<const TagValue *> values(const typename FieldType::identifierType &id) const;
-    std::list<const TagValue *> values(KnownField field) const;
+    std::vector<const TagValue *> values(const typename FieldType::identifierType &id) const;
+    std::vector<const TagValue *> values(KnownField field) const;
     virtual bool setValue(const typename FieldType::identifierType &id, const TagValue &value);
     bool setValue(KnownField field, const TagValue &value);
-    bool setValues(const typename FieldType::identifierType &id, std::initializer_list<TagValue> values);
-    bool setValues(KnownField field, std::initializer_list<TagValue> values);
+    bool setValues(const typename FieldType::identifierType &id, const std::vector<TagValue> &values);
+    bool setValues(KnownField field, const std::vector<TagValue> &values);
     bool hasField(KnownField field) const;
     virtual bool hasField(const typename FieldType::identifierType &id) const;
     void removeAllFields();
@@ -99,10 +98,10 @@ inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField fi
  * \sa Tag::values()
  */
 template <class FieldType, class Compare>
-inline std::list<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(const typename FieldType::identifierType &id) const
+inline std::vector<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(const typename FieldType::identifierType &id) const
 {
     auto range = m_fields.equal_range(id);
-    std::list<const TagValue *> values;
+    std::vector<const TagValue *> values;
     for(auto i = range.first; i != range.second; ++i) {
         if(!i->second.value().isEmpty()) {
             values.push_back(&i->second.value());
@@ -112,7 +111,7 @@ inline std::list<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(
 }
 
 template <class FieldType, class Compare>
-inline std::list<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(KnownField field) const
+inline std::vector<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(KnownField field) const
 {
     return values(fieldId(field));
 }
@@ -146,7 +145,7 @@ bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::id
  * \sa Tag::setValues()
  */
 template <class FieldType, class Compare>
-bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::identifierType &id, std::initializer_list<TagValue> values)
+bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::identifierType &id, const std::vector<TagValue> &values)
 {
     auto valuesIterator = values.begin();
     auto range = m_fields.equal_range(id);
@@ -171,7 +170,7 @@ bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::i
  *          method will replace all currently assigned values with the specified \a values.
  */
 template <class FieldType, class Compare>
-bool FieldMapBasedTag<FieldType, Compare>::setValues(KnownField field, std::initializer_list<TagValue> values)
+bool FieldMapBasedTag<FieldType, Compare>::setValues(KnownField field, const std::vector<TagValue> &values)
 {
     return setValues(fieldId(field), values);
 }

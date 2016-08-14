@@ -50,9 +50,9 @@ string Tag::toString() const
  * - However, the default implementation just returns the first value assuming
  *   multiple values per field are not supported by the tag.
  */
-std::list<const TagValue *> Tag::values(KnownField field) const
+std::vector<const TagValue *> Tag::values(KnownField field) const
 {
-    std::list<const TagValue *> values;
+    std::vector<const TagValue *> values;
     const TagValue &v = value(field);
     if(!v.isEmpty()) {
         values.push_back(&v);
@@ -68,7 +68,7 @@ std::list<const TagValue *> Tag::values(KnownField field) const
  * - However, the default implementation just sets the first value and discards additional values assuming
  *   multiple values per field are not supported by the tag.
  */
-bool Tag::setValues(KnownField field, std::initializer_list<TagValue> values)
+bool Tag::setValues(KnownField field, const std::vector<TagValue> &values)
 {
     return setValue(field, values.size() ? *values.begin() : TagValue());
 }
