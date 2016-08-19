@@ -168,7 +168,15 @@ use_cpp_utilities()
 
 # find 3rd party libraries
 include(3rdParty)
-use_external_library_from_package(ZLIB ANY_VERSION ZLIB_INCLUDE_DIRS ZLIB_LIBRARIES AUTO_LINKAGE REQUIRED) # zlib
+# zlib
+use_external_library_from_package(
+    z
+    ZLIB ANY_VERSION
+    ZLIB_INCLUDE_DIRS
+    ZLIB_LIBRARIES
+    AUTO_LINKAGE
+    REQUIRED
+)
 
 # include modules to apply configuration
 include(BasicConfig)
