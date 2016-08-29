@@ -9,7 +9,7 @@
 
 namespace Media {
 
-class LIB_EXPORT MatroskaSeekInfo : public StatusProvider
+class TAG_PARSER_EXPORT MatroskaSeekInfo : public StatusProvider
 {
 public:
     MatroskaSeekInfo();

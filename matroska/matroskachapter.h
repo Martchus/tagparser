@@ -9,7 +9,7 @@ namespace Media {
 
 class EbmlElement;
 
-class LIB_EXPORT MatroskaChapter : public AbstractChapter
+class TAG_PARSER_EXPORT MatroskaChapter : public AbstractChapter
 {
 public:
     MatroskaChapter(EbmlElement *chapterAtomElement);

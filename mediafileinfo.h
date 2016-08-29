@@ -56,7 +56,7 @@ enum class ParsingStatus : byte
     CriticalFailure /**< tried to parse the part, but critical errors occured */
 };
 
-class LIB_EXPORT MediaFileInfo : public BasicFileInfo, public StatusProvider
+class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo, public StatusProvider
 {
 public:
     // constructor, destructor

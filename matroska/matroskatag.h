@@ -11,7 +11,7 @@ namespace Media {
 class EbmlElement;
 class MatroskaTag;
 
-class LIB_EXPORT MatroskaTagMaker
+class TAG_PARSER_EXPORT MatroskaTagMaker
 {
     friend class MatroskaTag;
 
@@ -47,7 +47,7 @@ inline uint64 MatroskaTagMaker::requiredSize() const
     return m_totalSize;
 }
 
-class LIB_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTagField>
+class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTagField>
 {
 public:
     MatroskaTag();

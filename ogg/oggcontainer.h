@@ -25,7 +25,7 @@ class OggContainer;
 /*!
  * \brief The OggParameter struct holds the OGG parameter for a VorbisComment.
  */
-struct LIB_EXPORT OggParameter
+struct TAG_PARSER_EXPORT OggParameter
 {
     OggParameter();
     void set(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
@@ -65,7 +65,7 @@ inline void OggParameter::set(std::size_t pageIndex, std::size_t segmentIndex, b
     this->streamFormat = streamFormat;
 }
 
-class LIB_EXPORT OggVorbisComment : public VorbisComment
+class TAG_PARSER_EXPORT OggVorbisComment : public VorbisComment
 {
     friend class OggContainer;
 
@@ -124,7 +124,7 @@ inline const OggParameter &OggVorbisComment::oggParams() const
     return m_oggParams;
 }
 
-class LIB_EXPORT OggContainer : public GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage>
+class TAG_PARSER_EXPORT OggContainer : public GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage>
 {
     friend class OggStream;
 

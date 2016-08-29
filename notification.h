@@ -1,6 +1,8 @@
 #ifndef NOTIFICATION_H
 #define NOTIFICATION_H
 
+#include "./global.h"
+
 #include <c++utilities/chrono/datetime.h>
 
 #include <string>
@@ -38,7 +40,7 @@ class Notification;
 
 typedef std::list<Notification> NotificationList;
 
-class LIB_EXPORT Notification
+class TAG_PARSER_EXPORT Notification
 {
 public:
     Notification(NotificationType type, const std::string &message, const std::string &context);

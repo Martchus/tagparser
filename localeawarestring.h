@@ -1,7 +1,7 @@
 #ifndef MEDIA_LOCALEAWARESTRING_H
 #define MEDIA_LOCALEAWARESTRING_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@ namespace Media {
 /*!
  * \brief The LocaleAwareString class is a standard string with locale information (languages, countries).
  */
-class LIB_EXPORT LocaleAwareString : public std::string
+class TAG_PARSER_EXPORT LocaleAwareString : public std::string
 {
 public:
     LocaleAwareString(const std::string &value = std::string());

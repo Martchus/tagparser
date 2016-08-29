@@ -20,7 +20,7 @@ namespace Media
 
 class Id3v2Frame;
 
-class LIB_EXPORT Id3v2FrameMaker
+class TAG_PARSER_EXPORT Id3v2FrameMaker
 {
     friend class Id3v2Frame;
 
@@ -78,7 +78,7 @@ inline uint32 Id3v2FrameMaker::requiredSize() const
  * \brief Defines traits for the TagField implementation of the Id3v2Frame class.
  */
 template <>
-class LIB_EXPORT TagFieldTraits<Id3v2Frame>
+class TAG_PARSER_EXPORT TagFieldTraits<Id3v2Frame>
 {
 public:
     /*!
@@ -97,7 +97,7 @@ public:
     typedef Id3v2Frame implementationType;
 };
 
-class LIB_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
+class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
 {
     friend class TagField<Id3v2Frame>;
 

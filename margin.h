@@ -1,7 +1,8 @@
 #ifndef MARGIN_H
 #define MARGIN_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
+
 #include <c++utilities/conversion/types.h>
 
 #include <string>
@@ -12,7 +13,7 @@ namespace Media {
 /*!
  * \brief The Margin class defines the four margins of a rectangle.
  */
-class LIB_EXPORT Margin
+class TAG_PARSER_EXPORT Margin
 {
 public:
     constexpr Margin(uint32 top = 0, uint32 left = 0, uint32 bottom = 0, uint32 right = 0);

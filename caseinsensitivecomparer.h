@@ -1,7 +1,7 @@
 #ifndef CASEINSENSITIVECOMPARER
 #define CASEINSENSITIVECOMPARER
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
 
 #include <string>
 
@@ -12,7 +12,7 @@ namespace Media {
 /*!
  * \brief The CaseInsensitiveCharComparer struct defines a method for case-insensivive character comparsion (less).
  */
-struct LIB_EXPORT CaseInsensitiveCharComparer
+struct TAG_PARSER_EXPORT CaseInsensitiveCharComparer
 {
     static constexpr unsigned char toLower(const unsigned char c)
     {
@@ -28,7 +28,7 @@ struct LIB_EXPORT CaseInsensitiveCharComparer
 /*!
  * \brief The CaseInsensitiveStringComparer struct defines a method for case-insensivive string comparsion (less).
  */
-struct LIB_EXPORT CaseInsensitiveStringComparer
+struct TAG_PARSER_EXPORT CaseInsensitiveStringComparer
 {
     bool operator()(const std::string &lhs, const std::string &rhs) const
     {

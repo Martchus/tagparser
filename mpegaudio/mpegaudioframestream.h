@@ -10,7 +10,7 @@
 namespace Media
 {
 
-class LIB_EXPORT MpegAudioFrameStream : public AbstractTrack
+class TAG_PARSER_EXPORT MpegAudioFrameStream : public AbstractTrack
 {
 public:
     MpegAudioFrameStream(std::iostream &stream, uint64 startOffset);

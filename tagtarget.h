@@ -1,7 +1,8 @@
 #ifndef MEDIA_TAGTARGET_H
 #define MEDIA_TAGTARGET_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
+
 #include <c++utilities/conversion/types.h>
 
 #include <string>
@@ -25,9 +26,9 @@ enum class TagTargetLevel : unsigned char
     Collection
 };
 
-LIB_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
+TAG_PARSER_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
 
-class LIB_EXPORT TagTarget
+class TAG_PARSER_EXPORT TagTarget
 {
 public:
     typedef uint64 IdType;

@@ -12,7 +12,7 @@ namespace Media {
 class OggIterator;
 class VorbisComment;
 
-class LIB_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>
+class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>
 {
 public:
     VorbisComment();

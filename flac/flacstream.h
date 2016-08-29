@@ -12,7 +12,7 @@ namespace Media {
 class MediaFileInfo;
 class VorbisComment;
 
-class LIB_EXPORT FlacStream : public AbstractTrack
+class TAG_PARSER_EXPORT FlacStream : public AbstractTrack
 {
 public:
     FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset);

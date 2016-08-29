@@ -1,7 +1,8 @@
 #ifndef SIZE_H
 #define SIZE_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
+
 #include <c++utilities/conversion/types.h>
 
 #include <string>
@@ -12,7 +13,7 @@ namespace Media {
 /*!
  * \brief The Size class defines the size of a two-dimensional object using integer point precision.
  */
-class LIB_EXPORT Size
+class TAG_PARSER_EXPORT Size
 {
 public:
     constexpr Size();

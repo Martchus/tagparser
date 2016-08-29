@@ -22,7 +22,7 @@ typedef uint32 ugolomb;
  */
 typedef int32 sgolomb;
 
-struct LIB_EXPORT TimingInfo {
+struct TAG_PARSER_EXPORT TimingInfo {
     TimingInfo();
     uint32 unitsInTick;
     uint32 timeScale;
@@ -43,7 +43,7 @@ inline int64 TimingInfo::defaultDuration() const
     return 1000000000ll * unitsInTick / timeScale;
 }
 
-struct LIB_EXPORT HrdParameters {
+struct TAG_PARSER_EXPORT HrdParameters {
     HrdParameters();
     ugolomb cpbCount;
     byte bitRateScale;
@@ -66,7 +66,7 @@ inline HrdParameters::HrdParameters() :
     timeOffsetLength(0)
 {}
 
-struct LIB_EXPORT SpsInfo {
+struct TAG_PARSER_EXPORT SpsInfo {
     SpsInfo();
     ugolomb id;
     byte profileIndication;
@@ -115,7 +115,7 @@ inline SpsInfo::SpsInfo() :
     size(0)
 {}
 
-struct LIB_EXPORT PpsInfo {
+struct TAG_PARSER_EXPORT PpsInfo {
     PpsInfo();
     ugolomb id;
     ugolomb spsId;
@@ -132,7 +132,7 @@ inline PpsInfo::PpsInfo() :
     size(0)
 {}
 
-struct LIB_EXPORT SliceInfo {
+struct TAG_PARSER_EXPORT SliceInfo {
     SliceInfo();
     byte naluType;
     byte naluRefIdc;
@@ -167,7 +167,7 @@ inline SliceInfo::SliceInfo() :
     pps(0)
 {}
 
-class LIB_EXPORT AvcFrame {
+class TAG_PARSER_EXPORT AvcFrame {
     AvcFrame();
 
 private:

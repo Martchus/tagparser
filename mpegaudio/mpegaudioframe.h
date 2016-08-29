@@ -1,8 +1,9 @@
 #ifndef MP3FRAMEAUDIOSTREAM_H
 #define MP3FRAMEAUDIOSTREAM_H
 
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/application/global.h>
 
 #include <iostream>
 
@@ -25,7 +26,7 @@ enum class MpegChannelMode
     Unspecifed /**< used to indicate that the channel mode is unknown */
 };
 
-LIB_EXPORT const char *mpegChannelModeString(MpegChannelMode channelMode);
+TAG_PARSER_EXPORT const char *mpegChannelModeString(MpegChannelMode channelMode);
 
 enum class XingHeaderFlags
 {
@@ -36,7 +37,7 @@ enum class XingHeaderFlags
     HasQualityIndicator = 0x8u /**< Xing quality indicator is present */
 };
 
-class LIB_EXPORT MpegAudioFrame
+class TAG_PARSER_EXPORT MpegAudioFrame
 {
 public:
     MpegAudioFrame();

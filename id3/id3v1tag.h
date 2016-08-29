@@ -6,7 +6,7 @@
 namespace Media
 {
 
-class LIB_EXPORT Id3v1Tag : public Tag
+class TAG_PARSER_EXPORT Id3v1Tag : public Tag
 {
 public:
     Id3v1Tag();

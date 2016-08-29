@@ -22,7 +22,7 @@ class Mp4Container;
  * \brief Defines traits for the GenericFileElement implementation Mp4Atom.
  */
 template <>
-class LIB_EXPORT FileElementTraits<Mp4Atom>
+class TAG_PARSER_EXPORT FileElementTraits<Mp4Atom>
 {
 public:
     /*!
@@ -54,7 +54,7 @@ public:
     }
 };
 
-class LIB_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom>
+class TAG_PARSER_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom>
 {
     friend class GenericFileElement<Mp4Atom>;
 

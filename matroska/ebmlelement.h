@@ -23,7 +23,7 @@ class MatroskaContainer;
  * \brief Defines traits for the GenericFileElement implementation EbmlElement.
  */
 template <>
-class LIB_EXPORT FileElementTraits<EbmlElement>
+class TAG_PARSER_EXPORT FileElementTraits<EbmlElement>
 {
 public:
     /*!
@@ -47,7 +47,7 @@ public:
     typedef EbmlElement implementationType;
 };
 
-class LIB_EXPORT EbmlElement : public GenericFileElement<EbmlElement>
+class TAG_PARSER_EXPORT EbmlElement : public GenericFileElement<EbmlElement>
 {
     friend class GenericFileElement<EbmlElement>;
 

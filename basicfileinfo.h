@@ -1,7 +1,8 @@
 #ifndef BASICFILEINFO_H
 #define BASICFILEINFO_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
+
 #include <c++utilities/conversion/types.h>
 
 #include <string>
@@ -9,7 +10,7 @@
 
 namespace Media {
 
-class LIB_EXPORT BasicFileInfo
+class TAG_PARSER_EXPORT BasicFileInfo
 {
 public:
     // constructor, destructor

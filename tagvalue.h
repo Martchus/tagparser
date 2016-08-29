@@ -61,7 +61,7 @@ enum class TagDataType : unsigned int
     Undefined /**< undefined/invalid data type */
 };
 
-class LIB_EXPORT TagValue
+class TAG_PARSER_EXPORT TagValue
 {
 public:
     // constructor, destructor

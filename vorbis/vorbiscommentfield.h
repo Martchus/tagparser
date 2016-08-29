@@ -38,7 +38,7 @@ class VorbisCommentField;
  * \brief Defines traits for the TagField implementation of the VorbisCommentField class.
  */
 template <>
-class LIB_EXPORT TagFieldTraits<VorbisCommentField>
+class TAG_PARSER_EXPORT TagFieldTraits<VorbisCommentField>
 {
 public:
     /*!
@@ -57,7 +57,7 @@ public:
 
 class OggIterator;
 
-class LIB_EXPORT VorbisCommentField : public TagField<VorbisCommentField>, public StatusProvider
+class TAG_PARSER_EXPORT VorbisCommentField : public TagField<VorbisCommentField>, public StatusProvider
 {
     friend class TagField<VorbisCommentField>;
 

@@ -13,7 +13,7 @@ namespace Media {
 
 class MediaFileInfo;
 
-class LIB_EXPORT StreamDataBlock
+class TAG_PARSER_EXPORT StreamDataBlock
 {
 public:
     StreamDataBlock(const std::function<std::istream & ()> &stream,
@@ -88,7 +88,7 @@ inline void StreamDataBlock::discardBuffer()
     m_buffer.reset();
 }
 
-class LIB_EXPORT FileDataBlock : public StreamDataBlock
+class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock
 {
 public:
     FileDataBlock(const std::string &path);
@@ -103,7 +103,7 @@ inline const MediaFileInfo *FileDataBlock::fileInfo() const
     return m_fileInfo.get();
 }
 
-class LIB_EXPORT AbstractAttachment : public StatusProvider
+class TAG_PARSER_EXPORT AbstractAttachment : public StatusProvider
 {
 public:
     const std::string &description() const;

@@ -7,7 +7,7 @@ namespace Media {
 
 class EbmlElement;
 
-class LIB_EXPORT MatroskaEditionEntry : public StatusProvider
+class TAG_PARSER_EXPORT MatroskaEditionEntry : public StatusProvider
 {
 public:
     MatroskaEditionEntry(EbmlElement *editionEntryElement);

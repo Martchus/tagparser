@@ -8,7 +8,7 @@
 
 namespace Media {
 
-class LIB_EXPORT OggIterator
+class TAG_PARSER_EXPORT OggIterator
 {
 public:
     OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize);

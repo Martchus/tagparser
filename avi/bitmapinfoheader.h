@@ -1,7 +1,8 @@
 #ifndef MEDIA_BITMAPINFOHEADER_H
 #define MEDIA_BITMAPINFOHEADER_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 namespace IoUtilities {
@@ -10,7 +11,7 @@ class BinaryReader;
 
 namespace Media {
 
-class LIB_EXPORT BitmapInfoHeader
+class TAG_PARSER_EXPORT BitmapInfoHeader
 {
 public:
     BitmapInfoHeader();

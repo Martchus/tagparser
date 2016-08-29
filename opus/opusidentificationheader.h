@@ -1,14 +1,15 @@
 #ifndef MEDIA_OPUSIDENTIFICATIONHEADER_H
 #define MEDIA_OPUSIDENTIFICATIONHEADER_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 namespace Media {
 
 class OggIterator;
 
-class LIB_EXPORT OpusIdentificationHeader
+class TAG_PARSER_EXPORT OpusIdentificationHeader
 {
 public:
     OpusIdentificationHeader();

@@ -241,7 +241,7 @@ const char *streamTypeName(byte streamTypeId)
  */
 namespace Mpeg4AudioObjectIds {
 
-LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent, bool psPresent)
+TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent, bool psPresent)
 {
     MediaFormat fmt;
     switch(mpeg4AudioObjectId) {

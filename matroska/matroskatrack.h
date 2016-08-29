@@ -8,7 +8,7 @@ namespace Media {
 class EbmlElement;
 class MatroskaContainer;
 
-class LIB_EXPORT MatroskaTrack : public AbstractTrack
+class TAG_PARSER_EXPORT MatroskaTrack : public AbstractTrack
 {
     friend class MatroskaContainer;
 

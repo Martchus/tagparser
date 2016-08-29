@@ -10,7 +10,7 @@ namespace Media {
 class OggContainer;
 class OggIterator;
 
-class LIB_EXPORT OggStream : public AbstractTrack
+class TAG_PARSER_EXPORT OggStream : public AbstractTrack
 {
     friend class OggContainer;
 

@@ -22,7 +22,7 @@ class MatroskaEditionEntry;
 
 class MediaFileInfo;
 
-class LIB_EXPORT MatroskaContainer : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>
+class TAG_PARSER_EXPORT MatroskaContainer : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>
 {
 public:
     MatroskaContainer(MediaFileInfo &stream, uint64 startOffset);

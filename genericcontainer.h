@@ -22,7 +22,7 @@ namespace Media {
  * \tparam ElementType Specifies the class which is used to deal with the elements the file consists of.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-class LIB_EXPORT GenericContainer : public AbstractContainer
+class TAG_PARSER_EXPORT GenericContainer : public AbstractContainer
 {
     friend FileInfoType;
 

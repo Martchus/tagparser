@@ -9,7 +9,7 @@ namespace Media {
 
 class MediaFormat;
 
-struct LIB_EXPORT AvcConfiguration
+struct TAG_PARSER_EXPORT AvcConfiguration
 {
     AvcConfiguration();
     byte profileIndication;

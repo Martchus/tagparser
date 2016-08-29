@@ -8,7 +8,7 @@ namespace Media {
 class EbmlElement;
 class MatroskaAttachment;
 
-class LIB_EXPORT MatroskaAttachmentMaker
+class TAG_PARSER_EXPORT MatroskaAttachmentMaker
 {
     friend class MatroskaAttachment;
 
@@ -42,7 +42,7 @@ inline uint64 MatroskaAttachmentMaker::requiredSize() const
     return m_totalSize;
 }
 
-class LIB_EXPORT MatroskaAttachment : public AbstractAttachment
+class TAG_PARSER_EXPORT MatroskaAttachment : public AbstractAttachment
 {
 public:
     MatroskaAttachment();

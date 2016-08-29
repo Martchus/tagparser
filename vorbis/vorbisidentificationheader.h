@@ -1,14 +1,15 @@
 #ifndef MEDIA_VORBISIDENTIFICATIONHEADER_H
 #define MEDIA_VORBISIDENTIFICATIONHEADER_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 namespace Media {
 
 class OggIterator;
 
-class LIB_EXPORT VorbisIdentificationHeader
+class TAG_PARSER_EXPORT VorbisIdentificationHeader
 {
 public:
     VorbisIdentificationHeader();

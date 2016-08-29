@@ -7,7 +7,7 @@
 
 namespace Media {
 
-class LIB_EXPORT AdtsStream : public AbstractTrack
+class TAG_PARSER_EXPORT AdtsStream : public AbstractTrack
 {
 public:
     AdtsStream(std::iostream &stream, uint64 startOffset);

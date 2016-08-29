@@ -1,8 +1,9 @@
 #ifndef OGGPAGE_H
 #define OGGPAGE_H
 
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/application/global.h>
 
 #include <vector>
 #include <numeric>
@@ -10,7 +11,7 @@
 
 namespace Media {
 
-class LIB_EXPORT OggPage
+class TAG_PARSER_EXPORT OggPage
 {
 public:
     OggPage();

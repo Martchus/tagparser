@@ -26,7 +26,7 @@ class AbstractTrack;
 class AbstractChapter;
 class AbstractAttachment;
 
-class LIB_EXPORT AbstractContainer : public StatusProvider
+class TAG_PARSER_EXPORT AbstractContainer : public StatusProvider
 {
 public:
     virtual ~AbstractContainer();

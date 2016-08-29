@@ -1,7 +1,8 @@
 #ifndef MP4TAGATOMNAMES_H
 #define MP4TAGATOMNAMES_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 namespace Media
@@ -402,7 +403,7 @@ enum KnownValue : uint32 {
     Zoom = 0x7A6F6F6D
 };
 
-LIB_EXPORT MediaFormat fourccToMediaFormat(uint32 fourccId);
+TAG_PARSER_EXPORT MediaFormat fourccToMediaFormat(uint32 fourccId);
 
 }
 
@@ -469,7 +470,7 @@ enum KnownValue : byte {
     PrivateQcelp = 0xE1 /**< QCELP */
 };
 
-LIB_EXPORT MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
+TAG_PARSER_EXPORT MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
 
 }
 
@@ -490,7 +491,7 @@ enum KnownValue : byte {
     StreamingText
 };
 
-LIB_EXPORT const char *streamTypeName(byte streamTypeId);
+TAG_PARSER_EXPORT const char *streamTypeName(byte streamTypeId);
 
 }
 
@@ -587,7 +588,7 @@ enum KnownValue : byte {
     Usac /**< unified speech and audio coding */
 };
 
-LIB_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
+TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
 
 }
 
@@ -606,8 +607,8 @@ enum Mpeg4ChannelConfig : byte
     FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel
 };
 
-LIB_EXPORT const char *channelConfigString(byte config);
-LIB_EXPORT byte channelCount(byte config);
+TAG_PARSER_EXPORT const char *channelConfigString(byte config);
+TAG_PARSER_EXPORT byte channelCount(byte config);
 
 }
 

@@ -114,7 +114,7 @@ class FileElementTraits
  * \tparam ImplementationType Specifies the type of the actual implementation.
  */
 template <class ImplementationType>
-class LIB_EXPORT GenericFileElement : public StatusProvider
+class TAG_PARSER_EXPORT GenericFileElement : public StatusProvider
 {
     friend class FileElementTraits<ImplementationType>;
 

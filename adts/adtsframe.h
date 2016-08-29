@@ -1,8 +1,9 @@
 #ifndef MEDIA_ADTSFRAME_H
 #define MEDIA_ADTSFRAME_H
 
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/application/global.h>
 
 namespace IoUtilities {
 class BinaryReader;
@@ -10,7 +11,7 @@ class BinaryReader;
 
 namespace Media {
 
-class LIB_EXPORT AdtsFrame
+class TAG_PARSER_EXPORT AdtsFrame
 {
 public:
     AdtsFrame();

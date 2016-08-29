@@ -4,7 +4,6 @@
 #include "./mediaformat.h"
 
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/application/global.h>
 
 namespace Media {
 
@@ -62,13 +61,13 @@ enum class ContainerFormat
     Zip /**< ZIP archive */
 };
 
-LIB_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);
-LIB_EXPORT const char *containerFormatName(ContainerFormat containerFormat);
-LIB_EXPORT const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
-LIB_EXPORT const char *containerFormatSubversion(ContainerFormat containerFormat);
-LIB_EXPORT const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
-LIB_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue);
-LIB_EXPORT uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
+TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);
+TAG_PARSER_EXPORT const char *containerFormatName(ContainerFormat containerFormat);
+TAG_PARSER_EXPORT const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
+TAG_PARSER_EXPORT const char *containerFormatSubversion(ContainerFormat containerFormat);
+TAG_PARSER_EXPORT const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
+TAG_PARSER_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue);
+TAG_PARSER_EXPORT uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
 
 }
 

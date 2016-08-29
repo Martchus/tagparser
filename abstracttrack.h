@@ -37,7 +37,7 @@ enum class TrackType
     FlacStream, /**< The track is a Media::FlacStream. */
 };
 
-class LIB_EXPORT AbstractTrack : public StatusProvider
+class TAG_PARSER_EXPORT AbstractTrack : public StatusProvider
 {
     friend class MpegAudioFrameStream;
     friend class WaveAudioStream;

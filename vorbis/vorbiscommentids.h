@@ -1,7 +1,7 @@
 #ifndef MEDIA_VORBISCOMMENTIDS_H
 #define MEDIA_VORBISCOMMENTIDS_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
 
 namespace Media {
 
@@ -10,112 +10,112 @@ namespace Media {
  */
 namespace VorbisCommentIds {
 
-inline LIB_EXPORT const char *trackNumber() {
+inline TAG_PARSER_EXPORT const char *trackNumber() {
     return "TRACKNUMBER";
 }
-inline LIB_EXPORT const char *diskNumber() {
+inline TAG_PARSER_EXPORT const char *diskNumber() {
     return "DISCNUMBER";
 }
-inline LIB_EXPORT const char *part() {
+inline TAG_PARSER_EXPORT const char *part() {
     return "PART";
 }
-inline LIB_EXPORT const char *partNumber() {
+inline TAG_PARSER_EXPORT const char *partNumber() {
     return "PARTNUMBER";
 }
-inline LIB_EXPORT const char *title() {
+inline TAG_PARSER_EXPORT const char *title() {
     return "TITLE";
 }
-inline LIB_EXPORT const char *version() {
+inline TAG_PARSER_EXPORT const char *version() {
     return "VERSION";
 }
-inline LIB_EXPORT const char *artist() {
+inline TAG_PARSER_EXPORT const char *artist() {
     return "ARTIST";
 }
-inline LIB_EXPORT const char *album() {
+inline TAG_PARSER_EXPORT const char *album() {
     return "ALBUM";
 }
-inline LIB_EXPORT const char *label() {
+inline TAG_PARSER_EXPORT const char *label() {
     return "LABEL";
 }
-inline LIB_EXPORT const char *labelNo() {
+inline TAG_PARSER_EXPORT const char *labelNo() {
     return "LABELNO";
 }
-inline LIB_EXPORT const char *language() {
+inline TAG_PARSER_EXPORT const char *language() {
     return "LANGUAGE";
 }
-inline LIB_EXPORT const char *performer() {
+inline TAG_PARSER_EXPORT const char *performer() {
     return "PERFORMER";
 }
-inline LIB_EXPORT const char *composer() {
+inline TAG_PARSER_EXPORT const char *composer() {
     return "COMPOSER";
 }
-inline LIB_EXPORT const char *ensemble() {
+inline TAG_PARSER_EXPORT const char *ensemble() {
     return "ENSEMBLE";
 }
-inline LIB_EXPORT const char *arranger() {
+inline TAG_PARSER_EXPORT const char *arranger() {
     return "ARRANGER";
 }
-inline LIB_EXPORT const char *lyricist() {
+inline TAG_PARSER_EXPORT const char *lyricist() {
     return "LYRICIST";
 }
-inline LIB_EXPORT const char *author() {
+inline TAG_PARSER_EXPORT const char *author() {
     return "AUTHOR";
 }
-inline LIB_EXPORT const char *conductor() {
+inline TAG_PARSER_EXPORT const char *conductor() {
     return "CONDUCTOR";
 }
-inline LIB_EXPORT const char *encoder() {
+inline TAG_PARSER_EXPORT const char *encoder() {
     return "ENCODER";
 }
-inline LIB_EXPORT const char *publisher() {
+inline TAG_PARSER_EXPORT const char *publisher() {
     return "PUBLISHER";
 }
-inline LIB_EXPORT const char *genre() {
+inline TAG_PARSER_EXPORT const char *genre() {
     return "GENRE";
 }
-inline LIB_EXPORT const char *originalMediaType() {
+inline TAG_PARSER_EXPORT const char *originalMediaType() {
     return "ORIGINAL_MEDIA_TYPE";
 }
-inline LIB_EXPORT const char *contentType() {
+inline TAG_PARSER_EXPORT const char *contentType() {
     return "CONTENT_TYPE";
 }
-inline LIB_EXPORT const char *subject() {
+inline TAG_PARSER_EXPORT const char *subject() {
     return "SUBJECT";
 }
-inline LIB_EXPORT const char *description() {
+inline TAG_PARSER_EXPORT const char *description() {
     return "DESCRIPTION";
 }
-inline LIB_EXPORT const char *isrc() {
+inline TAG_PARSER_EXPORT const char *isrc() {
     return "ISRC";
 }
-inline LIB_EXPORT const char *eanupn() {
+inline TAG_PARSER_EXPORT const char *eanupn() {
     return "EAN/UPN";
 }
-inline LIB_EXPORT const char *comment() {
+inline TAG_PARSER_EXPORT const char *comment() {
     return "COMMENT";
 }
-inline LIB_EXPORT const char *encoderSettings() {
+inline TAG_PARSER_EXPORT const char *encoderSettings() {
     return "ENCODING";
 }
-inline LIB_EXPORT const char *date() {
+inline TAG_PARSER_EXPORT const char *date() {
     return "DATE";
 }
-inline LIB_EXPORT const char *location() {
+inline TAG_PARSER_EXPORT const char *location() {
     return "LOCATION";
 }
-inline LIB_EXPORT const char *license() {
+inline TAG_PARSER_EXPORT const char *license() {
     return "LICENSE";
 }
-inline LIB_EXPORT const char *copyright() {
+inline TAG_PARSER_EXPORT const char *copyright() {
     return "COPYRIGHT";
 }
-inline LIB_EXPORT const char *opus() {
+inline TAG_PARSER_EXPORT const char *opus() {
     return "OPUS";
 }
-inline LIB_EXPORT const char *sourceMedia() {
+inline TAG_PARSER_EXPORT const char *sourceMedia() {
     return "SOURCEMEDIA";
 }
-inline LIB_EXPORT const char *cover() {
+inline TAG_PARSER_EXPORT const char *cover() {
     return "METADATA_BLOCK_PICTURE";
 }
 

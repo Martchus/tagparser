@@ -1,7 +1,8 @@
 #ifndef MEDIA_FLACMETADATAHEADER_H
 #define MEDIA_FLACMETADATAHEADER_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 #include <iostream>
@@ -34,7 +35,7 @@ constexpr bool operator !=(byte lhs, FlacMetaDataBlockType type)
     return lhs != static_cast<byte>(type);
 }
 
-class LIB_EXPORT FlacMetaDataBlockHeader
+class TAG_PARSER_EXPORT FlacMetaDataBlockHeader
 {
 public:
     FlacMetaDataBlockHeader();
@@ -115,7 +116,7 @@ inline void FlacMetaDataBlockHeader::setDataSize(uint32 dataSize)
     m_dataSize = dataSize;
 }
 
-class LIB_EXPORT FlacMetaDataBlockStreamInfo
+class TAG_PARSER_EXPORT FlacMetaDataBlockStreamInfo
 {
 public:
     FlacMetaDataBlockStreamInfo();
@@ -254,7 +255,7 @@ inline const char *FlacMetaDataBlockStreamInfo::md5Sum() const
     return m_md5Sum;
 }
 
-class LIB_EXPORT FlacMetaDataBlockPicture
+class TAG_PARSER_EXPORT FlacMetaDataBlockPicture
 {
 public:
     FlacMetaDataBlockPicture(TagValue &tagValue);

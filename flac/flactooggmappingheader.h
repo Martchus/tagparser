@@ -7,7 +7,7 @@ namespace Media {
 
 class OggIterator;
 
-class LIB_EXPORT FlacToOggMappingHeader
+class TAG_PARSER_EXPORT FlacToOggMappingHeader
 {
 public:
     FlacToOggMappingHeader();

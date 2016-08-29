@@ -13,7 +13,7 @@ class MatroskaTagField;
  * \brief Defines traits for the TagField implementation of the MatroskaTagField class.
  */
 template <>
-class LIB_EXPORT TagFieldTraits<MatroskaTagField>
+class TAG_PARSER_EXPORT TagFieldTraits<MatroskaTagField>
 {
 public:
     /*!
@@ -42,7 +42,7 @@ inline bool TagFieldTraits<MatroskaTagField>::supportsNestedFields()
     return true;
 }
 
-class LIB_EXPORT MatroskaTagFieldMaker
+class TAG_PARSER_EXPORT MatroskaTagFieldMaker
 {
     friend class MatroskaTagField;
 
@@ -80,7 +80,7 @@ inline uint64 MatroskaTagFieldMaker::requiredSize() const
 
 
 
-class LIB_EXPORT MatroskaTagField : public TagField<MatroskaTagField>, public StatusProvider
+class TAG_PARSER_EXPORT MatroskaTagField : public TagField<MatroskaTagField>, public StatusProvider
 {
     friend class TagField<MatroskaTagField>;
 

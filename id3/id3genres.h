@@ -1,7 +1,8 @@
 #ifndef ID3GENRES_H
 #define ID3GENRES_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 #include <string>
@@ -9,7 +10,7 @@
 namespace Media
 {
 
-class LIB_EXPORT Id3Genres
+class TAG_PARSER_EXPORT Id3Genres
 {
 public:
     static const char *stringFromIndex(int index);

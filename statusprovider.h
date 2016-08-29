@@ -8,7 +8,7 @@
 
 namespace Media {
 
-class LIB_EXPORT StatusProvider
+class TAG_PARSER_EXPORT StatusProvider
 {
 public:
     typedef std::function<void (StatusProvider &sender)> CallbackFunction;

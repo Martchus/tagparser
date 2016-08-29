@@ -14,7 +14,7 @@ class Mpeg4Descriptor;
  * \brief Defines traits for the GenericFileElement implementation Mpeg4Descriptor.
  */
 template <>
-class LIB_EXPORT FileElementTraits<Mpeg4Descriptor>
+class TAG_PARSER_EXPORT FileElementTraits<Mpeg4Descriptor>
 {
 public:
     /*!
@@ -46,7 +46,7 @@ public:
     }
 };
 
-class LIB_EXPORT Mpeg4Descriptor : public GenericFileElement<Mpeg4Descriptor>
+class TAG_PARSER_EXPORT Mpeg4Descriptor : public GenericFileElement<Mpeg4Descriptor>
 {
     friend class GenericFileElement<Mpeg4Descriptor>;
 

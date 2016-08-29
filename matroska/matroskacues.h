@@ -8,7 +8,7 @@
 
 namespace Media {
 
-class LIB_EXPORT MatroskaOffsetStates
+class TAG_PARSER_EXPORT MatroskaOffsetStates
 {
 public:
     MatroskaOffsetStates(uint64 initialValue);
@@ -40,7 +40,7 @@ inline uint64 MatroskaOffsetStates::initialValue() const
     return m_initialValue;
 }
 
-class LIB_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates
+class TAG_PARSER_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates
 {
 public:
     MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue);
@@ -59,7 +59,7 @@ inline uint64 MatroskaReferenceOffsetPair::referenceOffset() const
     return m_referenceOffset;
 }
 
-class LIB_EXPORT MatroskaCuePositionUpdater : public StatusProvider
+class TAG_PARSER_EXPORT MatroskaCuePositionUpdater : public StatusProvider
 {
 public:
     MatroskaCuePositionUpdater();

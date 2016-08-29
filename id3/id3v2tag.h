@@ -12,12 +12,12 @@ namespace Media
 
 class Id3v2Tag;
 
-struct LIB_EXPORT FrameComparer
+struct TAG_PARSER_EXPORT FrameComparer
 {
     bool operator()(const uint32 &lhs, const uint32 &rhs) const;
 };
 
-class LIB_EXPORT Id3v2TagMaker
+class TAG_PARSER_EXPORT Id3v2TagMaker
 {
     friend class Id3v2Tag;
 
@@ -52,7 +52,7 @@ inline uint64 Id3v2TagMaker::requiredSize() const
     return m_requiredSize;
 }
 
-class LIB_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComparer>
+class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComparer>
 {
 public:
     Id3v2Tag();

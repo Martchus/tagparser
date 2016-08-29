@@ -8,7 +8,7 @@
 namespace Media
 {
 
-class LIB_EXPORT WaveFormatHeader
+class TAG_PARSER_EXPORT WaveFormatHeader
 {
 public:
     WaveFormatHeader();
@@ -33,7 +33,7 @@ inline uint32 WaveFormatHeader::bitrate() const
     return bitsPerSample * sampleRate * channelCount;
 }
 
-class LIB_EXPORT WaveAudioStream : public AbstractTrack
+class TAG_PARSER_EXPORT WaveAudioStream : public AbstractTrack
 {
 public:
     WaveAudioStream(std::iostream &stream, uint64 startOffset);

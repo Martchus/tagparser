@@ -1,7 +1,7 @@
 #ifndef BACKUPHELPER_H
 #define BACKUPHELPER_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
 
 #include <string>
 #include <fstream>
@@ -12,10 +12,10 @@ class MediaFileInfo;
 
 namespace BackupHelper {
 
-LIB_EXPORT std::string &backupDirectory();
-LIB_EXPORT void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream);
-LIB_EXPORT void createBackupFile(const std::string &originalPath, std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream);
-LIB_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileInfo, const std::string &backupPath, std::fstream &outputStream, std::fstream &backupStream, const std::string &context = "making file");
+TAG_PARSER_EXPORT std::string &backupDirectory();
+TAG_PARSER_EXPORT void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream);
+TAG_PARSER_EXPORT void createBackupFile(const std::string &originalPath, std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream);
+TAG_PARSER_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileInfo, const std::string &backupPath, std::fstream &outputStream, std::fstream &backupStream, const std::string &context = "making file");
 
 }
 

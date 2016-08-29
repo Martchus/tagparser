@@ -11,7 +11,7 @@ namespace Media
 class Mp4Atom;
 class Mp4Tag;
 
-class LIB_EXPORT Mp4TagMaker
+class TAG_PARSER_EXPORT Mp4TagMaker
 {
     friend class Mp4Tag;
 
@@ -46,7 +46,7 @@ inline uint64 Mp4TagMaker::requiredSize() const
     return m_metaSize;
 }
 
-class LIB_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4TagField>
+class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4TagField>
 {
 public:
     Mp4Tag();

@@ -11,7 +11,7 @@
 
 namespace Media {
 
-class LIB_EXPORT AbstractChapter : public StatusProvider
+class TAG_PARSER_EXPORT AbstractChapter : public StatusProvider
 {
 public:
     virtual ~AbstractChapter();

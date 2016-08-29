@@ -1,7 +1,8 @@
 #ifndef MATROSKAIDS_H
 #define MATROSKAIDS_H
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
+
 #include <c++utilities/conversion/types.h>
 
 namespace Media {
@@ -488,7 +489,7 @@ enum KnownValues {
 
 }
 
-LIB_EXPORT const char *matroskaIdName(uint32 matroskaId);
+TAG_PARSER_EXPORT const char *matroskaIdName(uint32 matroskaId);
 
 }
 

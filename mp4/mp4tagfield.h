@@ -53,7 +53,7 @@ class Mp4TagField;
  * \brief Defines traits for the TagField implementation of the Mp4TagField class.
  */
 template <>
-class LIB_EXPORT TagFieldTraits<Mp4TagField>
+class TAG_PARSER_EXPORT TagFieldTraits<Mp4TagField>
 {
 public:
     /*!
@@ -74,7 +74,7 @@ public:
 
 class Mp4Atom;
 
-class LIB_EXPORT Mp4TagFieldMaker
+class TAG_PARSER_EXPORT Mp4TagFieldMaker
 {
     friend class Mp4TagField;
 
@@ -110,7 +110,7 @@ inline uint64 Mp4TagFieldMaker::requiredSize() const
    return m_totalSize;
 }
 
-class LIB_EXPORT Mp4TagField : public TagField<Mp4TagField>, public StatusProvider
+class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField>, public StatusProvider
 {
     friend class TagField<Mp4TagField>;
 

@@ -1,12 +1,13 @@
 #ifndef MEDIA_ASPECTRATIO_H
 #define MEDIA_ASPECTRATIO_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
+
 #include <c++utilities/conversion/types.h>
 
 namespace Media {
 
-struct LIB_EXPORT AspectRatio {
+struct TAG_PARSER_EXPORT AspectRatio {
     AspectRatio();
     AspectRatio(byte aspectRatioType);
     AspectRatio(uint16 numerator, uint16 denominator);

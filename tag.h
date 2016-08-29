@@ -96,7 +96,7 @@ constexpr KnownField nextKnownField(KnownField field)
     return field == lastKnownField ? KnownField::Invalid : static_cast<KnownField>(static_cast<int>(field) + 1);
 }
 
-class LIB_EXPORT Tag : public StatusProvider
+class TAG_PARSER_EXPORT Tag : public StatusProvider
 {
 public:
     virtual ~Tag();

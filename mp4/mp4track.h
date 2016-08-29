@@ -13,7 +13,7 @@ class Mp4Atom;
 class Mpeg4Descriptor;
 class AvcConfiguration;
 
-class LIB_EXPORT Mpeg4AudioSpecificConfig
+class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig
 {
 public:
     Mpeg4AudioSpecificConfig();
@@ -39,7 +39,7 @@ public:
     byte epConfig;
 };
 
-class LIB_EXPORT Mpeg4VideoSpecificConfig
+class TAG_PARSER_EXPORT Mpeg4VideoSpecificConfig
 {
 public:
     Mpeg4VideoSpecificConfig();
@@ -48,7 +48,7 @@ public:
     std::string userData;
 };
 
-class LIB_EXPORT Mpeg4ElementaryStreamInfo
+class TAG_PARSER_EXPORT Mpeg4ElementaryStreamInfo
 {
 public:
     Mpeg4ElementaryStreamInfo();
@@ -116,7 +116,7 @@ inline bool Mpeg4ElementaryStreamInfo::upstream() const
     return decCfgDescFlags & 0x02;
 }
 
-class LIB_EXPORT Mp4Track : public AbstractTrack
+class TAG_PARSER_EXPORT Mp4Track : public AbstractTrack
 {
 public:
     Mp4Track(Mp4Atom &trakAtom);

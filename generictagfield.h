@@ -29,7 +29,7 @@ class TagFieldTraits
  *          with the "Curiously recurring template pattern".
  */
 template <class ImplementationType>
-class LIB_EXPORT TagField
+class TAG_PARSER_EXPORT TagField
 {
 public:
     friend class TagFieldTraits<ImplementationType>;

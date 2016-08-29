@@ -1,7 +1,7 @@
 #ifndef MEDIAFORMAT_H
 #define MEDIAFORMAT_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
 
 #include <utility>
 
@@ -21,7 +21,7 @@ enum class MediaType
     Hint /**< hint */
 };
 
-extern const char *LIB_EXPORT mediaTypeName(MediaType mediaType);
+extern const char *TAG_PARSER_EXPORT mediaTypeName(MediaType mediaType);
 
 /*!
  * \brief The GeneralMediaFormat enum specifies the general format of media data (PCM, MPEG-4, PNG, ...).
@@ -253,7 +253,7 @@ enum AudioFormatExtensions : unsigned char {
 };
 }
 
-class LIB_EXPORT MediaFormat
+class TAG_PARSER_EXPORT MediaFormat
 {
 public:
     MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0, unsigned char extension = 0);

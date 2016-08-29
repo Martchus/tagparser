@@ -1,7 +1,8 @@
 #ifndef POSITIONINSET_H
 #define POSITIONINSET_H
 
-#include <c++utilities/application/global.h>
+#include "./global.h"
+
 #include <c++utilities/conversion/stringconversion.h>
 
 #include <string>
@@ -16,7 +17,7 @@ namespace Media {
  * This class is used to parse and store values like "9/11" which are used
  * by some tag formats to denote track positions.
  */
-class LIB_EXPORT PositionInSet
+class TAG_PARSER_EXPORT PositionInSet
 {
 public:
     constexpr PositionInSet(int32 position = 0, int32 total = 0);
