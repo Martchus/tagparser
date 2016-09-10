@@ -24,8 +24,7 @@ or appending the tag. Usage of padding can be configured:
 
 However, it is also possible to force rewriting the entire file.
 
-Taking advantage of padding is currently not supported when dealing with Ogg streams (it is supported when
-dealing with raw FLAC streams).
+Taking advantage of padding is currently not supported when dealing with Ogg streams (it is supported when dealing with raw FLAC streams).
 
 ## Additional features
 The library can also display technical information such as the ID, format, language, bitrate,
@@ -40,14 +39,14 @@ The library is aware of different text encodings and can convert between differe
 For examples check out the command line interface of [Tag Editor](https://github.com/Martchus/tageditor).
 
 ## Bugs, stability
-- Matroska files composed of more than one segment aren't tested yet and might not work.
-- It is recommend you to create backups before editing because I can not test whether the
-  library works with all kind of files.
+- Matroska files composed of more than one segment aren't tested yet and might not work
+- It is recommend you to create backups before editing because I can not test whether the library works with all kind of files
 
 ## Build instructions
 The tagparser library depends on c++utilities and is built in the same way.
 It also depends on zlib.
 
 ## TODO
-- Support more formats (EXIF, PDF metadata, Theora, ...).
-- Do tests with Matroska files which have multiple segments.
+- Support more formats (EXIF, PDF metadata, Theora, ...)
+- Do tests with Matroska files which have multiple segments
+- Support building in cue-sheet in flac
