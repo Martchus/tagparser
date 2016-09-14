@@ -37,6 +37,7 @@ The library is aware of different text encodings and can convert between differe
 
 ## Usage
 For examples check out the command line interface of [Tag Editor](https://github.com/Martchus/tageditor).
+API documentation can be generated using Doxygen with `make tagparser_apidoc`.
 
 ## Bugs, stability
 - Matroska files composed of more than one segment aren't tested yet and might not work
@@ -49,4 +50,4 @@ It also depends on zlib.
 ## TODO
 - Support more formats (EXIF, PDF metadata, Theora, ...)
 - Do tests with Matroska files which have multiple segments
-- Support building in cue-sheet in flac
+- Support adding cue-sheet to FLAC files
