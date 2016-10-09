@@ -618,8 +618,8 @@ void MatroskaContainer::internalParseTracks()
                 case MatroskaIds::TrackEntry:
                     m_tracks.emplace_back(make_unique<MatroskaTrack>(*subElement));
                     try {
-                    m_tracks.back()->parseHeader();
-                } catch(NoDataFoundException &) {
+                        m_tracks.back()->parseHeader();
+                    } catch(const NoDataFoundException &) {
                         m_tracks.pop_back();
                     } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse track " + ConversionUtilities::numberToString(m_tracks.size()) + ".", context);
@@ -652,8 +652,8 @@ void MatroskaContainer::internalParseChapters()
                 case MatroskaIds::EditionEntry:
                     m_editionEntries.emplace_back(make_unique<MatroskaEditionEntry>(subElement));
                     try {
-                    m_editionEntries.back()->parseNested();
-                } catch(NoDataFoundException &) {
+                        m_editionEntries.back()->parseNested();
+                    } catch(const NoDataFoundException &) {
                         m_editionEntries.pop_back();
                     } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse edition entry " + ConversionUtilities::numberToString(m_editionEntries.size()) + ".", context);
@@ -686,8 +686,8 @@ void MatroskaContainer::internalParseAttachments()
                 case MatroskaIds::AttachedFile:
                     m_attachments.emplace_back(make_unique<MatroskaAttachment>());
                     try {
-                    m_attachments.back()->parse(subElement);
-                } catch(NoDataFoundException &) {
+                        m_attachments.back()->parse(subElement);
+                    } catch(const NoDataFoundException &) {
                         m_attachments.pop_back();
                     } catch(const Failure &) {
                         addNotification(NotificationType::Critical, "Unable to parse attached file " + ConversionUtilities::numberToString(m_attachments.size()) + ".", context);
