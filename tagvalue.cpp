@@ -71,7 +71,8 @@ TagValue &TagValue::operator=(const TagValue &other)
 /*!
  * \brief Returns whether both instances are equal.
  *
- * Both instances are only considered equal, if the data type, encodings (if relevant for the type) and meta data are equal.
+ * If the data types are not equal, two instances are still considered equal if the string representation
+ * is identical. The encoding and meta data must be equal as well (if relevant for the data type).
  */
 bool TagValue::operator==(const TagValue &other) const
 {
@@ -155,7 +156,7 @@ void TagValue::clearDataAndMetadata()
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        integer representation.
- * \throws Throws ConversionException an failure.
+ * \throws Throws ConversionException on failure.
  */
 int32 TagValue::toInteger() const
 {
@@ -164,6 +165,7 @@ int32 TagValue::toInteger() const
         case TagDataType::Text:
             return ConversionUtilities::stringToNumber<int32>(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
+        case TagDataType::PositionInSet:
         case TagDataType::StandardGenreIndex:
             if(m_size == sizeof(int32)) {
                 auto res = *reinterpret_cast<int32 *>(m_ptr.get());
@@ -182,7 +184,7 @@ int32 TagValue::toInteger() const
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        standard genre index.
- * \throws Throws ConversionException an failure.
+ * \throws Throws ConversionException on failure.
  */
 int TagValue::toStandardGenreIndex() const
 {
@@ -220,7 +222,7 @@ int TagValue::toStandardGenreIndex() const
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        PositionInSet representation.
- * \throws Throws ConversionException an failure.
+ * \throws Throws ConversionException on failure.
  */
 PositionInSet TagValue::toPositionInSet() const
 {
@@ -234,13 +236,14 @@ PositionInSet TagValue::toPositionInSet() const
                 return PositionInSet(string(m_ptr.get(), m_size));
             case TagTextEncoding::Utf16LittleEndian:
             case TagTextEncoding::Utf16BigEndian:
+                // FIXME: Ensure endianness is correctly
                 return PositionInSet(u16string(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2));
             }
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
             switch(m_size) {
             case sizeof(int32):
-                return PositionInSet(*(reinterpret_cast<int *>(m_ptr.get())));
+                return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())));
             case 2 * sizeof(int32):
                 return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())), *(reinterpret_cast<int32 *>(m_ptr.get() + sizeof(int32))));
             default:
@@ -256,7 +259,7 @@ PositionInSet TagValue::toPositionInSet() const
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        TimeSpan representation.
- * \throws Throws ConversionException an failure.
+ * \throws Throws ConversionException on failure.
  */
 TimeSpan TagValue::toTimeSpan() const
 {
@@ -284,7 +287,7 @@ TimeSpan TagValue::toTimeSpan() const
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        DateTime representation.
- * \throws Throws ConversionException an failure.
+ * \throws Throws ConversionException on failure.
  */
 DateTime TagValue::toDateTime() const
 {

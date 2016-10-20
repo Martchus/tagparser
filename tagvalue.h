@@ -80,6 +80,7 @@ public:
     TagValue &operator=(const TagValue &other);
     TagValue &operator=(TagValue &&other) = default;
     bool operator==(const TagValue &other) const;
+    bool operator!=(const TagValue &other) const;
 
     // methods
     bool isEmpty() const;
@@ -236,6 +237,15 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagData
 inline TagValue::TagValue(const PositionInSet &value) :
     TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
 {}
+
+/*!
+ * \brief Returns whether both instances are not equal.
+ * \remarks Simply the negation of operator==() so check there for details.
+ */
+inline bool TagValue::operator!=(const TagValue &other) const
+{
+    return !(*this == other);
+}
 
 /*!
  * \brief Assigns a copy of the given \a text.
