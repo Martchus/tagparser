@@ -161,6 +161,8 @@ set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3,
 set(META_VERSION_MAJOR 6)
 set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 1)
+set(META_PUBLIC_SHARED_LIB_DEPENDS c++utilities)
+set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 
 # find c++utilities
 find_package(c++utilities 4.0.0 REQUIRED)

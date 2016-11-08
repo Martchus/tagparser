@@ -14,4 +14,14 @@
 # define TAG_PARSER_IMPORT LIB_IMPORT
 #endif
 
+/*!
+ * \def TAG_PARSER_EXPORT
+ * \brief Marks the symbol to be exported by the tagparser library.
+ */
+
+/*!
+ * \def TAG_PARSER_IMPORT
+ * \brief Marks the symbol to be imported from the tagparser library.
+ */
+
 #endif // TAG_PARSER_GLOBAL
