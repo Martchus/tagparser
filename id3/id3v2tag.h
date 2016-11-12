@@ -120,12 +120,12 @@ inline const char *Id3v2Tag::typeName() const
 
 inline TagTextEncoding Id3v2Tag::proposedTextEncoding() const
 {
-    return TagTextEncoding::Utf8;
+    return m_majorVersion > 3 ? TagTextEncoding::Utf8 : TagTextEncoding::Utf16LittleEndian;
 }
 
 inline bool Id3v2Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 {
-    return encoding == TagTextEncoding::Latin1 || encoding == TagTextEncoding::Utf8 || encoding == TagTextEncoding::Utf16BigEndian;
+    return encoding == TagTextEncoding::Latin1 || (encoding == TagTextEncoding::Utf8 && m_majorVersion > 3) || encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian;
 }
 
 inline bool Id3v2Tag::supportsDescription(KnownField field) const
