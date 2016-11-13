@@ -583,10 +583,16 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
     case TagTextEncoding::Utf16LittleEndian: {
             if(bufferSize >= 2) {
                 if(ConversionUtilities::LE::toUInt16(buffer) == 0xFEFF) {
-                    encoding = TagTextEncoding::Utf16LittleEndian;
+                    if(encoding != TagTextEncoding::Utf16LittleEndian) {
+                        addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Little Endian.", "parsing frame " + frameIdString());
+                        encoding = TagTextEncoding::Utf16LittleEndian;
+                    }
                     get<0>(res) += 2;
                 } else if(ConversionUtilities::BE::toUInt16(buffer) == 0xFEFF) {
-                    encoding = TagTextEncoding::Utf16BigEndian;
+                    if(encoding != TagTextEncoding::Utf16BigEndian) {
+                        addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Big Endian.", "parsing frame " + frameIdString());
+                        encoding = TagTextEncoding::Utf16BigEndian;
+                    }
                     get<0>(res) += 2;
                 }
             }
@@ -607,7 +613,10 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
     default: {
             if((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
                 get<0>(res) += 3;
-                encoding = TagTextEncoding::Utf8;
+                if(encoding != TagTextEncoding::Utf8) {
+                    addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-8.", "parsing frame " + frameIdString());
+                    encoding = TagTextEncoding::Utf8;
+                }
             }
             const char *pos = get<0>(res);
             for(; *pos != 0x00; ++pos) {
@@ -641,12 +650,29 @@ string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncod
 /*!
  * \brief Parses a substring in the specified \a buffer.
  *
- * Same as Id3v2Frame::parseSubstring() but returns the substring as u16string object.
+ * Same as Id3v2Frame::parseSubstring() but returns the substring as u16string object
+ *
+ * \remarks Converts byte order to match host byte order (otherwise it wouldn't make much sense to use the resulting u16string).
  */
 u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
 {
     auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
-    return u16string(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
+    u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
+    if(encoding !=
+#if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
+            TagTextEncoding::Utf16LittleEndian
+#elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
+            TagTextEncoding::Utf16BigEndian
+#else
+# error "Host byte order not supported"
+#endif
+            ) {
+        // ensure byte order matches host byte order
+        for(auto &c : res) {
+            c = ((c >> 8) & 0x00FF) | ((c << 8) & 0xFF00);
+        }
+    }
+    return res;
 }
 
 /*!
