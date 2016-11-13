@@ -411,7 +411,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
                 // length frame
                 m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toTimeSpan().totalMilliseconds()), TagTextEncoding::Latin1);
             } else if(m_frame.value().type() == TagDataType::StandardGenreIndex && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre)
-                      || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
+                                                                                    || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
                 // pre-defined genre frame
                 m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toStandardGenreIndex()), TagTextEncoding::Latin1);
             } else {
@@ -581,57 +581,57 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
     switch(encoding) {
     case TagTextEncoding::Utf16BigEndian:
     case TagTextEncoding::Utf16LittleEndian: {
-            if(bufferSize >= 2) {
-                if(ConversionUtilities::LE::toUInt16(buffer) == 0xFEFF) {
-                    if(encoding != TagTextEncoding::Utf16LittleEndian) {
-                        addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Little Endian.", "parsing frame " + frameIdString());
-                        encoding = TagTextEncoding::Utf16LittleEndian;
-                    }
-                    get<0>(res) += 2;
-                } else if(ConversionUtilities::BE::toUInt16(buffer) == 0xFEFF) {
-                    if(encoding != TagTextEncoding::Utf16BigEndian) {
-                        addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Big Endian.", "parsing frame " + frameIdString());
-                        encoding = TagTextEncoding::Utf16BigEndian;
-                    }
-                    get<0>(res) += 2;
+        if(bufferSize >= 2) {
+            if(ConversionUtilities::LE::toUInt16(buffer) == 0xFEFF) {
+                if(encoding != TagTextEncoding::Utf16LittleEndian) {
+                    addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Little Endian.", "parsing frame " + frameIdString());
+                    encoding = TagTextEncoding::Utf16LittleEndian;
                 }
-            }
-            const uint16 *pos = reinterpret_cast<const uint16 *>(get<0>(res));
-            for(; *pos != 0x0000; ++pos) {
-                if(pos < reinterpret_cast<const uint16 *>(get<2>(res))) {
-                    get<1>(res) += 2;
-                } else {
-                    if(addWarnings) {
-                        addNotification(NotificationType::Warning, "Wide string in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
-                    }
-                    break;
+                get<0>(res) += 2;
+            } else if(ConversionUtilities::BE::toUInt16(buffer) == 0xFEFF) {
+                if(encoding != TagTextEncoding::Utf16BigEndian) {
+                    addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Big Endian.", "parsing frame " + frameIdString());
+                    encoding = TagTextEncoding::Utf16BigEndian;
                 }
+                get<0>(res) += 2;
             }
-            get<2>(res) = reinterpret_cast<const char *>(++pos);
-            break;
         }
+        const uint16 *pos = reinterpret_cast<const uint16 *>(get<0>(res));
+        for(; *pos != 0x0000; ++pos) {
+            if(pos < reinterpret_cast<const uint16 *>(get<2>(res))) {
+                get<1>(res) += 2;
+            } else {
+                if(addWarnings) {
+                    addNotification(NotificationType::Warning, "Wide string in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
+                }
+                break;
+            }
+        }
+        get<2>(res) = reinterpret_cast<const char *>(++pos);
+        break;
+    }
     default: {
-            if((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
-                get<0>(res) += 3;
-                if(encoding != TagTextEncoding::Utf8) {
-                    addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-8.", "parsing frame " + frameIdString());
-                    encoding = TagTextEncoding::Utf8;
-                }
+        if((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
+            get<0>(res) += 3;
+            if(encoding != TagTextEncoding::Utf8) {
+                addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-8.", "parsing frame " + frameIdString());
+                encoding = TagTextEncoding::Utf8;
             }
-            const char *pos = get<0>(res);
-            for(; *pos != 0x00; ++pos) {
-                if(pos < get<2>(res)) {
-                    ++get<1>(res);
-                } else {
-                    if(addWarnings) {
-                        addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
-                    }
-                    break;
-                }
-            }
-            get<2>(res) = ++pos;
-            break;
         }
+        const char *pos = get<0>(res);
+        for(; *pos != 0x00; ++pos) {
+            if(pos < get<2>(res)) {
+                ++get<1>(res);
+            } else {
+                if(addWarnings) {
+                    addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
+                }
+                break;
+            }
+        }
+        get<2>(res) = ++pos;
+        break;
+    }
     }
     return res;
 }
@@ -659,13 +659,13 @@ u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTe
     auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
     u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
     if(encoding !=
-#if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
+        #if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
             TagTextEncoding::Utf16LittleEndian
-#elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
+        #elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
             TagTextEncoding::Utf16BigEndian
-#else
-# error "Host byte order not supported"
-#endif
+        #else
+        # error "Host byte order not supported"
+        #endif
             ) {
         // ensure byte order matches host byte order
         for(auto &c : res) {
@@ -823,7 +823,7 @@ void Id3v2Frame::makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bu
     case TagTextEncoding::Latin1:
     case TagTextEncoding::Utf8:
     case TagTextEncoding::Unspecified: // assumption
-         // allocate buffer
+        // allocate buffer
         buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 1);
         break;
     case TagTextEncoding::Utf16LittleEndian:
