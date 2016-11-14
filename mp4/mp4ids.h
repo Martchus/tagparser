@@ -125,6 +125,7 @@ extern const char *iTunes;
 
 namespace Mp4TagExtendedNameIds {
 extern const char *cdec;
+extern const char *label;
 }
 
 namespace Mp4MediaTypeIds {

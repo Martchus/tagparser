@@ -28,6 +28,7 @@ const char *iTunes = "com.apple.iTunes";
  */
 namespace Mp4TagExtendedNameIds {
 const char *cdec = "cdec";
+const char *label = "LABEL";
 }
 
 /*!

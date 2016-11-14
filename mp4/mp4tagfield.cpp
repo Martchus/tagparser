@@ -245,7 +245,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
             } else {
                 addNotification(NotificationType::Warning, "Unkown child atom \"" + dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
             }
-        } catch(Failure &) {
+        } catch(const Failure &) {
             addNotification(NotificationType::Warning, "Unable to parse all childs atom in tag atom (ilst child) found. (will be ignored)", context);
         }
     }
@@ -311,7 +311,14 @@ std::vector<uint32> Mp4TagField::expectedRawDataTypes() const
         res.push_back(RawDataType::Bmp);
         break;
     case Extended:
-        throw Failure();
+        if(mean() == Mp4TagExtendedMeanIds::iTunes) {
+            // correct?
+            res.push_back(RawDataType::Utf8);
+            res.push_back(RawDataType::Utf16);
+            break;
+        } else {
+            throw Failure();
+        }
     default:
         throw Failure();
     }
@@ -363,7 +370,15 @@ uint32 Mp4TagField::appropriateRawDataType() const
             }
         }
         case Extended:
-            throw Failure();
+            if(mean() == Mp4TagExtendedMeanIds::iTunes) {
+                switch(value().dataEncoding()) {
+                case TagTextEncoding::Utf8: return RawDataType::Utf8;
+                case TagTextEncoding::Utf16BigEndian: return RawDataType::Utf16;
+                default: throw Failure();
+                }
+            } else {
+                throw Failure();
+            }
         default:
             throw Failure();
         }

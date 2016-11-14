@@ -147,15 +147,15 @@ bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::id
 template <class FieldType, class Compare>
 bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::identifierType &id, const std::vector<TagValue> &values)
 {
-    auto valuesIterator = values.begin();
+    auto valuesIterator = values.cbegin();
     auto range = m_fields.equal_range(id);
-    for(; valuesIterator != values.end() && range.first != range.second; ++valuesIterator) {
+    for(; valuesIterator != values.cend() && range.first != range.second; ++valuesIterator) {
         if(!valuesIterator->isEmpty()) {
             range.first->second.setValue(*valuesIterator);
             ++range.first;
         }
     }
-    for(; valuesIterator != values.end(); ++valuesIterator) {
+    for(; valuesIterator != values.cend(); ++valuesIterator) {
         m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
     }
     for(; range.first != range.second; ++range.first) {

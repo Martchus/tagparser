@@ -157,14 +157,14 @@ void Mp4Container::internalParseTracks()
             while(trakAtom) {
                 try {
                     trakAtom->parse();
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Warning, "Unable to parse child atom of moov.", context);
                 }
                 // parse the trak atom using the Mp4Track class
                 m_tracks.emplace_back(make_unique<Mp4Track>(*trakAtom));
                 try { // try to parse header
                     m_tracks.back()->parseHeader();
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     addNotification(NotificationType::Critical, "Unable to parse track " + ConversionUtilities::numberToString(trackNum) + ".", context);
                 }
                 trakAtom = trakAtom->siblingById(Mp4AtomIds::Track, false); // get next trak atom
@@ -185,7 +185,7 @@ void Mp4Container::internalParseTracks()
                 }
             }
         }
-    } catch(Failure &) {
+    } catch(const Failure &) {
         addNotification(NotificationType::Warning, "Unable to parse moov atom.", context);
     }
 }

@@ -163,6 +163,7 @@ set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 1)
 set(META_PUBLIC_SHARED_LIB_DEPENDS c++utilities)
 set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
+set(META_PRIVATE_COMPILE_DEFINITIONS LEGACY_API)
 
 # find c++utilities
 find_package(c++utilities 4.0.0 REQUIRED)

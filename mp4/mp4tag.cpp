@@ -15,6 +15,30 @@ using namespace ConversionUtilities;
 namespace Media {
 
 /*!
+ * \class Media::Mp4ExtendedFieldId
+ * \brief The Mp4ExtendedFieldId specifies parameter for an extended field denoted via Mp4TagAtomIds::Extended.
+ */
+
+/*!
+ * \brief Constructs a new instance for the specified \a field.
+ * \remarks The instance will be invalid if no extended field parameter for \a field are known.
+ */
+Mp4ExtendedFieldId::Mp4ExtendedFieldId(KnownField field)
+{
+    switch(field) {
+    case KnownField::EncoderSettings:
+        mean = Mp4TagExtendedMeanIds::iTunes, name = Mp4TagExtendedNameIds::cdec;
+        break;
+    case KnownField::RecordLabel:
+        mean = Mp4TagExtendedMeanIds::iTunes, name = Mp4TagExtendedNameIds::label;
+        updateOnly = true; // set record label via extended field only if extended field is already present
+        break;
+    default:
+        mean = nullptr;
+    }
+}
+
+/*!
  * \class Media::Mp4Tag
  * \brief Implementation of Media::Tag for the MP4 container.
  */
@@ -42,16 +66,41 @@ const TagValue &Mp4Tag::value(KnownField field) const
             return FieldMapBasedTag<fieldType>::value(Mp4TagAtomIds::PreDefinedGenre);
         }
     } case KnownField::EncoderSettings:
-        return value(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::cdec);
+        return this->value(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::cdec);
+    case KnownField::RecordLabel: {
+        const TagValue &value = FieldMapBasedTag<fieldType>::value(Mp4TagAtomIds::RecordLabel);
+        if(!value.isEmpty()) {
+            return value;
+        } else {
+            return this->value(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::label);
+        }
+    }
     default:
         return FieldMapBasedTag<fieldType>::value(field);
     }
 }
 
+std::vector<const TagValue *> Mp4Tag::values(KnownField field) const
+{
+    auto values = FieldMapBasedTag<fieldType>::values(field);
+    const Mp4ExtendedFieldId extendedId(field);
+    if(extendedId) {
+        auto range = fields().equal_range(Mp4TagAtomIds::Extended);
+        for(auto i = range.first; i != range.second; ++i) {
+            if(extendedId.matches(i->second)) {
+                values.emplace_back(&i->second.value());
+            }
+        }
+    }
+    return values;
+}
+
 /*!
  * \brief Returns the value of the field with the specified \a mean and \a name attributes.
+ * \remarks
+ * - If there are multiple fields with specified \a mean and \a name only the first value will be returned.
  */
-const TagValue &Mp4Tag::value(const string mean, const string name) const
+const TagValue &Mp4Tag::value(const char *mean, const char *name) const
 {
     auto range = fields().equal_range(Mp4TagAtomIds::Extended);
     for(auto i = range.first; i != range.second; ++i) {
@@ -60,6 +109,14 @@ const TagValue &Mp4Tag::value(const string mean, const string name) const
         }
     }
     return TagValue::empty();
+}
+
+/*!
+ * \brief Returns the value of the field with the specified \a mean and \a name attributes.
+ */
+const TagValue &Mp4Tag::value(const string mean, const string name) const
+{
+    return (this->*static_cast<const TagValue &(Mp4Tag::*)(const string &, const string &) const>(&Mp4Tag::value))(mean, name);
 }
 
 uint32 Mp4Tag::fieldId(KnownField field) const
@@ -85,7 +142,6 @@ uint32 Mp4Tag::fieldId(KnownField field) const
     case KnownField::RecordLabel: return RecordLabel;
     case KnownField::Performers: return Performers;
     case KnownField::Lyricist: return Lyricist;
-    case KnownField::EncoderSettings: return Extended;
     default: return 0;
     }
 }
@@ -131,15 +187,55 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
         }
     case KnownField::EncoderSettings:
         return setValue(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::cdec, value);
+    case KnownField::RecordLabel:
+        if(!this->value(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::label).isEmpty()) {
+            setValue(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::label, value);
+        }
+        FALLTHROUGH;
     default:
         return FieldMapBasedTag<fieldType>::setValue(field, value);
     }
 }
 
+bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
+{
+    const Mp4ExtendedFieldId extendedId(field);
+    if(extendedId) {
+        auto valuesIterator = values.cbegin();
+        auto range = fields().equal_range(Mp4TagAtomIds::Extended);
+        for(; valuesIterator != values.cend() && range.first != range.second;) {
+            if(!valuesIterator->isEmpty()) {
+                if(extendedId.matches(range.first->second)
+                        && (!extendedId.updateOnly || !range.first->second.value().isEmpty())) {
+                    range.first->second.setValue(*valuesIterator);
+                    ++valuesIterator;
+                }
+                ++range.first;
+            } else {
+                ++valuesIterator;
+            }
+        }
+        for(; valuesIterator != values.cend(); ++valuesIterator) {
+            Mp4TagField tagField(Mp4TagAtomIds::Extended, *valuesIterator);
+            tagField.setMean(extendedId.mean);
+            tagField.setName(extendedId.name);
+            fields().insert(std::make_pair(Mp4TagAtomIds::Extended, move(tagField)));
+        }
+        for(; range.first != range.second; ++range.first) {
+            range.first->second.setValue(TagValue());
+        }
+    }
+    return FieldMapBasedTag<fieldType>::setValues(field, values);
+}
+
 /*!
  * \brief Assigns the given \a value to the field with the specified \a mean and \a name attributes.
+ * \remarks
+ * - If there are multiple fields with specified \a mean and \a name only the first will be altered.
+ * - If no field is present, a new one will be created.
+ * - If \a value is empty, the field will be removed.
  */
-bool Mp4Tag::setValue(const string mean, const string name, const TagValue &value)
+bool Mp4Tag::setValue(const char *mean, const char *name, const TagValue &value)
 {
     auto range = fields().equal_range(Mp4TagAtomIds::Extended);
     for(auto i = range.first; i != range.second; ++i) {
@@ -150,6 +246,14 @@ bool Mp4Tag::setValue(const string mean, const string name, const TagValue &valu
     }
     fields().insert(make_pair(Mp4TagAtomIds::Extended, fieldType(mean, name, value)));
     return true;
+}
+
+/*!
+ * \brief Assigns the given \a value to the field with the specified \a mean and \a name attributes.
+ */
+bool Mp4Tag::setValue(const string mean, const string name, const TagValue &value)
+{
+    return (this->*static_cast<bool(Mp4Tag::*)(const string &, const string &, const TagValue &)>(&Mp4Tag::setValue))(mean, name, value);
 }
 
 bool Mp4Tag::hasField(KnownField field) const
