@@ -13,10 +13,8 @@
 #include <iostream>
 
 namespace IoUtilities {
-
 class BinaryReader;
 class BinaryWriter;
-
 }
 
 namespace Media {
@@ -25,6 +23,13 @@ class Tag;
 class AbstractTrack;
 class AbstractChapter;
 class AbstractAttachment;
+
+enum class ElementPosition
+{
+    BeforeData, /**< the element is positioned before the actual data */
+    AfterData, /**< the element is positioned after the actual data */
+    Keep /**< the element is placed where it was before */
+};
 
 class TAG_PARSER_EXPORT AbstractContainer : public StatusProvider
 {
@@ -55,6 +60,7 @@ public:
     virtual std::size_t tagCount() const;
     virtual bool removeTag(Tag *tag);
     virtual void removeAllTags();
+    virtual ElementPosition determineTagPosition() const;
 
     virtual AbstractTrack *track(std::size_t index);
     virtual std::size_t trackCount() const;

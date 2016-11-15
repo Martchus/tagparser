@@ -37,13 +37,6 @@ enum class TagUsage
     Never /**< tags of the type are never used; a possibly existing tag of the type is removed */
 };
 
-enum class ElementPosition
-{
-    BeforeData, /**< the element is positioned before the actual data */
-    AfterData, /**< the element is positioned after the actual data */
-    Keep /**< the element is placed at its previous position */
-};
-
 /*!
  * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
  *        been parsed yet and if what the parsing result is.

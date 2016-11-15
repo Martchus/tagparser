@@ -25,6 +25,7 @@ public:
     bool supportsTrackModifications() const;
     bool isFragmented() const;
     void reset();
+    ElementPosition determineTagPosition() const;
 
 protected:
     void internalParseHeader();

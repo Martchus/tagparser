@@ -316,6 +316,16 @@ void AbstractContainer::removeAllTags()
 {}
 
 /*!
+ * \brief Determines the position of the tags inside the file.
+ * \returns Returns ElementPosition::BeforeData or ElementPosition::AfterData if the position could
+ *          be determined; otherwise returns ElementPosition::Keep.
+ */
+ElementPosition AbstractContainer::determineTagPosition() const
+{
+    return ElementPosition::Keep;
+}
+
+/*!
  * \brief Returns the track with the specified \a index.
  *
  * \a index must be less then trackCount().

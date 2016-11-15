@@ -45,6 +45,18 @@ void Mp4Container::reset()
     m_fragmented = false;
 }
 
+ElementPosition Mp4Container::determineTagPosition() const
+{
+    if(m_firstElement) {
+        Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData);
+        Mp4Atom *userDataAtom = m_firstElement->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData});
+        if(mediaDataAtom && userDataAtom) {
+            return userDataAtom->startOffset() < mediaDataAtom->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
+        }
+    }
+    return ElementPosition::Keep;
+}
+
 void Mp4Container::internalParseHeader()
 {
     //const string context("parsing header of MP4 container"); will be used when generating notifications
