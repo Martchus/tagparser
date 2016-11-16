@@ -337,6 +337,11 @@ ElementPosition MatroskaContainer::determineTagPosition() const
     return ElementPosition::Keep; // TODO
 }
 
+ElementPosition MatroskaContainer::determineIndexPosition() const
+{
+    return ElementPosition::Keep; // TODO
+}
+
 void MatroskaContainer::internalParseHeader()
 {
     static const string context("parsing header of Matroska container");

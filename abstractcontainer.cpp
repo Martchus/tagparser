@@ -172,6 +172,16 @@ bool AbstractContainer::supportsTrackModifications() const
 }
 
 /*!
+ * \brief Determines the position of the index.
+ * \returns Returns ElementPosition::BeforeData or ElementPosition::AfterData if the position could
+ *          be determined; otherwise returns ElementPosition::Keep.
+ */
+ElementPosition AbstractContainer::determineIndexPosition() const
+{
+    return ElementPosition::Keep;
+}
+
+/*!
  * \brief Internally called to parse the header.
  *
  * Must be implemented when subclassing to provide this feature.

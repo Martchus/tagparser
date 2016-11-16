@@ -48,10 +48,22 @@ void Mp4Container::reset()
 ElementPosition Mp4Container::determineTagPosition() const
 {
     if(m_firstElement) {
-        Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData);
-        Mp4Atom *userDataAtom = m_firstElement->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData});
+        const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData);
+        const Mp4Atom *userDataAtom = m_firstElement->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData});
         if(mediaDataAtom && userDataAtom) {
             return userDataAtom->startOffset() < mediaDataAtom->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
+        }
+    }
+    return ElementPosition::Keep;
+}
+
+ElementPosition Mp4Container::determineIndexPosition() const
+{
+    if(m_firstElement) {
+        const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData);
+        const Mp4Atom *movieAtom = m_firstElement->siblingById(Mp4AtomIds::Movie);
+        if(mediaDataAtom && movieAtom) {
+            return movieAtom->startOffset() < mediaDataAtom->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
         }
     }
     return ElementPosition::Keep;

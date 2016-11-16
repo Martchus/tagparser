@@ -67,6 +67,7 @@ public:
     virtual bool removeTrack(AbstractTrack *track);
     virtual void removeAllTracks();
     virtual bool supportsTrackModifications() const;
+    virtual ElementPosition determineIndexPosition() const;
 
     virtual AbstractChapter *chapter(std::size_t index);
     virtual std::size_t chapterCount() const;

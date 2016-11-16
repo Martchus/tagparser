@@ -42,6 +42,7 @@ public:
     MatroskaAttachment *attachment(std::size_t index);
     std::size_t attachmentCount() const;
     ElementPosition determineTagPosition() const;
+    ElementPosition determineIndexPosition() const;
 
     virtual bool supportsTitle() const;
     virtual std::size_t segmentCount() const;

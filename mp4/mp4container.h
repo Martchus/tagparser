@@ -26,6 +26,7 @@ public:
     bool isFragmented() const;
     void reset();
     ElementPosition determineTagPosition() const;
+    ElementPosition determineIndexPosition() const;
 
 protected:
     void internalParseHeader();
