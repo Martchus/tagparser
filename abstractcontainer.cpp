@@ -175,6 +175,9 @@ bool AbstractContainer::supportsTrackModifications() const
  * \brief Determines the position of the index.
  * \returns Returns ElementPosition::BeforeData or ElementPosition::AfterData if the position could
  *          be determined; otherwise returns ElementPosition::Keep.
+ * \remarks
+ * - It might be required to parse tracks before the index position can be determined.
+ * - Not be applicable for files composed of multiple segments.
  */
 ElementPosition AbstractContainer::determineIndexPosition() const
 {
@@ -329,6 +332,9 @@ void AbstractContainer::removeAllTags()
  * \brief Determines the position of the tags inside the file.
  * \returns Returns ElementPosition::BeforeData or ElementPosition::AfterData if the position could
  *          be determined; otherwise returns ElementPosition::Keep.
+ * \remarks
+ * - It might be required to parse tags before the tag position can be determined.
+ * - Not be applicable for files composed of multiple segments.
  */
 ElementPosition AbstractContainer::determineTagPosition() const
 {

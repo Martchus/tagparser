@@ -41,6 +41,7 @@ public:
     MatroskaAttachment *createAttachment();
     MatroskaAttachment *attachment(std::size_t index);
     std::size_t attachmentCount() const;
+    ElementPosition determineElementPosition(uint64 elementId) const;
     ElementPosition determineTagPosition() const;
     ElementPosition determineIndexPosition() const;
 

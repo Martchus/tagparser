@@ -332,14 +332,41 @@ generateRandomId:
     return attachment.get();
 }
 
+/*!
+ * \brief Determines the position of the element with the specified \a elementId.
+ * \sa determineTagPosition() and determineIndexPosition()
+ */
+ElementPosition MatroskaContainer::determineElementPosition(uint64 elementId) const
+{
+    if(m_firstElement && m_segmentCount == 1) {
+        if(const EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, true)) {
+            for(const EbmlElement *childElement = segmentElement->firstChild(); childElement; childElement = childElement->nextSibling()) {
+                if(childElement->id() == elementId) {
+                    return ElementPosition::BeforeData;
+                } else if(childElement->id() == MatroskaIds::Cluster) {
+                    for(const auto &seekInfo : m_seekInfos) {
+                        for(const auto &info : seekInfo->info()) {
+                            if(info.first == elementId) {
+                                return ElementPosition::AfterData;
+                            }
+                        }
+                    }
+                    return ElementPosition::Keep;
+                }
+            }
+        }
+    }
+    return ElementPosition::Keep;
+}
+
 ElementPosition MatroskaContainer::determineTagPosition() const
 {
-    return ElementPosition::Keep; // TODO
+    return determineElementPosition(MatroskaIds::Tags);
 }
 
 ElementPosition MatroskaContainer::determineIndexPosition() const
 {
-    return ElementPosition::Keep; // TODO
+    return determineElementPosition(MatroskaIds::Cues);
 }
 
 void MatroskaContainer::internalParseHeader()
