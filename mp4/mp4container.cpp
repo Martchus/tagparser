@@ -96,7 +96,7 @@ void Mp4Container::internalParseTags()
             m_tags.emplace_back(make_unique<Mp4Tag>());
             try {
                 m_tags.back()->parse(*metaAtom);
-            } catch(NoDataFoundException &) {
+            } catch(const NoDataFoundException &) {
                 m_tags.pop_back();
             }
             metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, false);
@@ -228,7 +228,6 @@ void Mp4Container::internalMakeFile()
     }
 
     // define variables needed to parse atoms of original file
-    //Mp4Atom *level0Atom = firstElement();
     if(!firstElement()) {
         addNotification(NotificationType::Critical, "No MP4 atoms could be found.", context);
         throw InvalidDataException();
@@ -239,8 +238,8 @@ void Mp4Container::internalMakeFile()
     const bool writeChunkByChunk = m_tracksAltered;
     // -> whether rewrite is required (always required when forced to rewrite or when tracks have been altered)
     bool rewriteRequired = fileInfo().isForcingRewrite() || writeChunkByChunk;
-    // -> use the preferred tag position by default (might be changed later if not forced)
-    ElementPosition newTagPos = fileInfo().tagPosition();
+    // -> use the preferred tag position/index position (force one wins, if both are force tag pos wins; might be changed later if none is forced)
+    ElementPosition newTagPos = fileInfo().forceTagPosition() || !fileInfo().forceIndexPosition() ? fileInfo().tagPosition() : fileInfo().indexPosition();
     // -> current tag position (determined later)
     ElementPosition currentTagPos;
     // -> holds new padding (before actual data)
@@ -481,7 +480,7 @@ calculatePadding:
         }
         if(rewriteRequired) {
             // can't put the tags before media data
-            if(!firstMovieFragmentAtom && !fileInfo().forceTagPosition() && newTagPos != ElementPosition::AfterData) {
+            if(!firstMovieFragmentAtom && !fileInfo().forceTagPosition() && !fileInfo().forceIndexPosition() && newTagPos != ElementPosition::AfterData) {
                 // writing tag before media data is not forced, its not a DASH file and tags aren't already at the end
                 // -> try to put the tags at the end
                 newTagPos = ElementPosition::AfterData;
