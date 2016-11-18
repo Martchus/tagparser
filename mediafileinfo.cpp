@@ -1481,7 +1481,7 @@ void MediaFileInfo::invalidated()
  */
 void MediaFileInfo::makeMp3File()
 {
-    static const string context("making MP3 file");
+    static const string context("making MP3/FLAC file");
     // there's no need to rewrite the complete file if there are no ID3v2 tags present or to be written
     if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty() && m_containerFormat != ContainerFormat::Flac) {
         if(m_actualExistingId3v1Tag) {
@@ -1619,6 +1619,7 @@ void MediaFileInfo::makeMp3File()
             } else {
                 // open the current file as backupStream and create a new outputStream at the specified "save file path"
                 try {
+                    close();
                     backupStream.exceptions(ios_base::badbit | ios_base::failbit);
                     backupStream.open(path(), ios_base::in | ios_base::binary);
                     outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
