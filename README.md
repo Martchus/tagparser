@@ -22,7 +22,10 @@ or appending the tag. Usage of padding can be configured:
 - minimum/maximum padding: The file is rewritten if the padding would fall below/exceed the specifed limits.
 - preferred padding: If the file needs to be rewritten the preferred padding is used.
 
-However, it is also possible to force rewriting the entire file.
+Default value for minimum and maximum padding is zero. Hence the library will almost always have to rewrite
+the entire file to apply changes. To prevent this, set at least the maximum padding to a higher value.
+
+It is also possible to force rewriting the entire file always.
 
 Taking advantage of padding is currently not supported when dealing with Ogg streams (it is supported when dealing with raw FLAC streams).
 

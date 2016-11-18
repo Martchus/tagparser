@@ -435,8 +435,10 @@ inline void MediaFileInfo::setForceRewrite(bool forceRewrite)
 /*!
  * \brief Returns the minimum padding to be written before the data blocks when applying changes.
  *
- * Padding in front of the file allows adding additional fields afterwards whithout needing
+ * Minimum padding in front of the file allows adding additional fields afterwards whithout needing
  * to rewrite the entire file or to put tag information at the end of the file.
+ *
+ * The default value is 0.
  *
  * \sa maxPadding()
  * \sa tagPosition()
@@ -460,8 +462,11 @@ inline void MediaFileInfo::setMinPadding(size_t minPadding)
 /*!
  * \brief Returns the maximum padding to be written before the data blocks when applying changes.
  *
- * Padding in front of the file allows adding additional fields afterwards whithout needing
+ * Maximum padding in front of the file allows adding additional fields afterwards whithout needing
  * to rewrite the entire file or to put tag information at the end of the file.
+ *
+ * The default value is 0 which will force the library to rewrite the entire file almost always when
+ * applying changes. Increate the value using setMaxPadding() to prevent this.
  *
  * \sa minPadding()
  * \sa tagPosition()
