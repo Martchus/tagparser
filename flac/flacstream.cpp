@@ -127,13 +127,17 @@ void FlacStream::internalParseHeader()
                     picture.parse(*m_istream, header.dataSize());
                     coverField.setTypeInfo(picture.pictureType());
 
-                    // add the cover to the Vorbis comment
-                    if(!m_vorbisComment) {
-                        // create one if none exists yet
-                        m_vorbisComment = make_unique<VorbisComment>();
-                        m_vorbisComment->setVendor(TagValue(APP_NAME " v" APP_VERSION, TagTextEncoding::Utf8));
+                    if(coverField.value().isEmpty()) {
+                        addNotification(NotificationType::Warning, "\"METADATA_BLOCK_PICTURE\" contains no picture.", context);
+                    } else {
+                        // add the cover to the Vorbis comment
+                        if(!m_vorbisComment) {
+                            // create one if none exists yet
+                            m_vorbisComment = make_unique<VorbisComment>();
+                            m_vorbisComment->setVendor(TagValue(APP_NAME " v" APP_VERSION, TagTextEncoding::Utf8));
+                        }
+                        m_vorbisComment->fields().insert(make_pair(coverField.id(), move(coverField)));
                     }
-                    m_vorbisComment->fields().insert(make_pair(coverField.id(), move(coverField)));
 
                 } catch(const TruncatedDataException &) {
                     addNotification(NotificationType::Critical, "\"METADATA_BLOCK_PICTURE\" is truncated and will be ignored.", context);

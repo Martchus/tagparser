@@ -96,9 +96,13 @@ void FlacMetaDataBlockPicture::parse(istream &inputStream, uint32 maxSize)
     inputStream.seekg(4 * 4, ios_base::cur);
     size = reader.readUInt32BE();
     CHECK_MAX_SIZE(size);
-    auto data = make_unique<char[]>(size);
-    inputStream.read(data.get(), size);
-    m_value.assignData(move(data), size, TagDataType::Picture);
+    if(size) {
+        auto data = make_unique<char[]>(size);
+        inputStream.read(data.get(), size);
+        m_value.assignData(move(data), size, TagDataType::Picture);
+    } else {
+        m_value.clearData();
+    }
 }
 
 /*!
