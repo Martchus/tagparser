@@ -377,13 +377,13 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag) :
     // ilst head
     m_ilstSize(8),
     // ensure there only one genre atom is written (prefer genre as string)
-    m_omitPreDefinedGenre(m_tag.fields().count(Mp4TagAtomIds::PreDefinedGenre) && m_tag.fields().count(Mp4TagAtomIds::Genre))
+    m_omitPreDefinedGenre(m_tag.fields().count(m_tag.hasField(Mp4TagAtomIds::Genre)))
 {
     m_tag.invalidateStatus();
     m_maker.reserve(m_tag.fields().size());
     for(auto &field : m_tag.fields()) {
         if(!field.second.value().isEmpty() &&
-                (!m_omitPreDefinedGenre || field.first == Mp4TagAtomIds::PreDefinedGenre)) {
+                (!m_omitPreDefinedGenre || field.first != Mp4TagAtomIds::PreDefinedGenre)) {
             try {
                 m_maker.emplace_back(field.second.prepareMaking());
                 m_ilstSize += m_maker.back().requiredSize();
