@@ -239,7 +239,8 @@ void Mp4Container::internalMakeFile()
     // -> whether rewrite is required (always required when forced to rewrite or when tracks have been altered)
     bool rewriteRequired = fileInfo().isForcingRewrite() || writeChunkByChunk;
     // -> use the preferred tag position/index position (force one wins, if both are force tag pos wins; might be changed later if none is forced)
-    ElementPosition newTagPos = fileInfo().forceTagPosition() || !fileInfo().forceIndexPosition() ? fileInfo().tagPosition() : fileInfo().indexPosition();
+    const ElementPosition initialNewTagPos = fileInfo().forceTagPosition() || !fileInfo().forceIndexPosition() ? fileInfo().tagPosition() : fileInfo().indexPosition();
+    ElementPosition newTagPos = initialNewTagPos;
     // -> current tag position (determined later)
     ElementPosition currentTagPos;
     // -> holds new padding (before actual data)
@@ -488,7 +489,7 @@ calculatePadding:
             } else {
                 // writing tag before media data is forced -> rewrite the file
                 // when rewriting anyways, ensure the preferred tag position is used
-                newTagPos = fileInfo().tagPosition() == ElementPosition::Keep ? currentTagPos : fileInfo().tagPosition();
+                newTagPos = initialNewTagPos == ElementPosition::Keep ? currentTagPos : initialNewTagPos;
             }
             // in any case: recalculate padding
             goto calculatePadding;
