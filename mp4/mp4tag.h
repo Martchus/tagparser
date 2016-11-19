@@ -99,6 +99,7 @@ public:
 
     uint32 fieldId(KnownField field) const;
     KnownField knownField(const uint32 &id) const;
+    bool supportsField(KnownField field) const;
     using FieldMapBasedTag<Mp4TagField>::value;
     const TagValue &value(KnownField value) const;
     std::vector<const TagValue *> values(KnownField field) const;
@@ -142,6 +143,16 @@ inline const char *Mp4Tag::typeName() const
 inline TagTextEncoding Mp4Tag::proposedTextEncoding() const
 {
     return TagTextEncoding::Utf8;
+}
+
+inline bool Mp4Tag::supportsField(KnownField field) const
+{
+    switch(field) {
+    case KnownField::EncoderSettings:
+        return true;
+    default:
+        return FieldMapBasedTag<Mp4TagField>::supportsField(field);
+    }
 }
 
 /*!
