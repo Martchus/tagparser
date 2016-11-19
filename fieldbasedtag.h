@@ -187,7 +187,12 @@ inline bool FieldMapBasedTag<FieldType, Compare>::hasField(KnownField field) con
 template <class FieldType, class Compare>
 inline bool FieldMapBasedTag<FieldType, Compare>::hasField(const typename FieldType::identifierType &id) const
 {
-    return m_fields.count(id);
+    for (auto range = m_fields.equal_range(id); range.first != range.second; ++range.first) {
+        if(!range.first->second.value().isEmpty()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 template <class FieldType, class Compare>
