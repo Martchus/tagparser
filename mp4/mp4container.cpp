@@ -239,7 +239,7 @@ void Mp4Container::internalMakeFile()
     // -> whether rewrite is required (always required when forced to rewrite or when tracks have been altered)
     bool rewriteRequired = fileInfo().isForcingRewrite() || writeChunkByChunk;
     // -> use the preferred tag position/index position (force one wins, if both are force tag pos wins; might be changed later if none is forced)
-    const ElementPosition initialNewTagPos = fileInfo().forceTagPosition() || !fileInfo().forceIndexPosition() ? fileInfo().tagPosition() : fileInfo().indexPosition();
+    ElementPosition initialNewTagPos = fileInfo().forceTagPosition() || !fileInfo().forceIndexPosition() ? fileInfo().tagPosition() : fileInfo().indexPosition();
     ElementPosition newTagPos = initialNewTagPos;
     // -> current tag position (determined later)
     ElementPosition currentTagPos;
@@ -323,6 +323,14 @@ void Mp4Container::internalMakeFile()
             }
         } else {
             currentTagPos = ElementPosition::Keep;
+        }
+
+        // ensure index and tags are always placed at the beginning when dealing with DASH files
+        if(firstMovieFragmentAtom) {
+            if(initialNewTagPos == ElementPosition::AfterData) {
+                addNotification(NotificationType::Warning, "Sorry, but putting index/tags at the end is not possible when dealing with DASH files.", context);
+            }
+            initialNewTagPos = newTagPos = ElementPosition::BeforeData;
         }
 
         // user data atom, meta atom, next sibling of meta atom
