@@ -220,7 +220,7 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
     // write header of "TagLanguage" element
     writer.writeUInt16BE(MatroskaIds::TagLanguage);
     if(m_field.value().language().empty()) {
-        stream.put(0x80 | 3);
+        stream.put(static_cast<ostream::char_type>(0x80 | 3));
         stream.write("und", 3);
     } else {
         sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.value().language().size(), buff);
@@ -229,7 +229,7 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
     }
     // write header of "TagDefault" element
     writer.writeUInt16BE(MatroskaIds::TagDefault);
-    stream.put(0x80 | 1);
+    stream.put(static_cast<ostream::char_type>(0x80 | 1));
     stream.put(m_field.isDefault() ? 1 : 0);
     // write header of "TagString"/"TagBinary" element
     if(m_isBinary) {
