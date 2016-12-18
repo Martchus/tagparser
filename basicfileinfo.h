@@ -4,9 +4,9 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/types.h>
+#include <c++utilities/io/nativefilestream.h>
 
 #include <string>
-#include <fstream>
 
 namespace Media {
 
@@ -26,8 +26,8 @@ public:
     bool isReadOnly() const;
     void close();
     void invalidate();
-    std::fstream &stream();
-    const std::fstream &stream() const;
+    IoUtilities::NativeFileStream &stream();
+    const IoUtilities::NativeFileStream &stream() const;
 
     // methods to get, set path (components)
     const std::string &path() const;
@@ -51,7 +51,7 @@ protected:
 
 private:
     std::string m_path;
-    std::fstream m_file;
+    IoUtilities::NativeFileStream m_file;
     uint64 m_size;
     bool m_readOnly;
 };
@@ -77,7 +77,7 @@ inline bool BasicFileInfo::isReadOnly() const
 /*!
  * \brief Returns the std::fstream for the current instance.
  */
-inline std::fstream &BasicFileInfo::stream()
+inline IoUtilities::NativeFileStream &BasicFileInfo::stream()
 {
     return m_file;
 }
@@ -85,7 +85,7 @@ inline std::fstream &BasicFileInfo::stream()
 /*!
  * \brief Returns the std::fstream for the current instance.
  */
-inline const std::fstream &BasicFileInfo::stream() const
+inline const IoUtilities::NativeFileStream &BasicFileInfo::stream() const
 {
     return m_file;
 }

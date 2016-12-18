@@ -25,7 +25,7 @@ BasicFileInfo::BasicFileInfo(const std::string &path) :
     m_size(0),
     m_readOnly(false)
 {
-    m_file.exceptions(fstream::failbit | fstream::badbit);
+    m_file.exceptions(ios_base::failbit | ios_base::badbit);
 }
 
 /*!
@@ -70,7 +70,7 @@ void BasicFileInfo::reopen(bool readOnly)
  */
 void BasicFileInfo::close()
 {
-    if(m_file.is_open()) {
+    if(isOpen()) {
         m_file.close();
     }
     m_file.clear();

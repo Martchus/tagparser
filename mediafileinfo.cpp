@@ -1601,8 +1601,8 @@ void MediaFileInfo::makeMp3File()
         // setup stream(s) for writing
         // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
         string backupPath;
-        fstream &outputStream = stream();
-        fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
+        NativeFileStream &outputStream = stream();
+        NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
 
         if(rewriteRequired) {
             if(m_saveFilePath.empty()) {

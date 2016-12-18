@@ -47,8 +47,8 @@ string &backupDirectory()
  * \brief Restores the original file from the specified backup file.
  * \param originalPath Specifies the path to the original file.
  * \param backupPath Specifies the path to the backup file.
- * \param originalStream A std::fstream instance for the original file.
- * \param backupStream A std::fstream instance for the backup file.
+ * \param originalStream Specifies a std::fstream instance for the original file.
+ * \param backupStream Specifies a std::fstream instance for the backup file.
  *
  * This helper function is used by MediaFileInfo and container implementations
  * to restore the original file from the specified backup file in the case a Failure
@@ -60,7 +60,7 @@ string &backupDirectory()
  *
  * \throws Throws std::ios_base::failure on failure.
  */
-void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream)
+void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {
     // ensure the orignal stream is closed
     if(originalStream.is_open()) {
@@ -117,7 +117,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
  *
  * \throws Throws std::ios_base::failure on failure.
  */
-void createBackupFile(const std::string &originalPath, std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream)
+void createBackupFile(const std::string &originalPath, std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {
     // determine the backup path
     const string &backupDir = backupDirectory();
@@ -251,7 +251,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
  *                     no backup file has been created.
  * \param context      Specifies the context used to add notifications.
  */
-void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, std::fstream &outputStream, std::fstream &backupStream, const std::string &context)
+void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, NativeFileStream &outputStream, NativeFileStream &backupStream, const std::string &context)
 {
     // reset the associated container in any case
     if(fileInfo.container()) {

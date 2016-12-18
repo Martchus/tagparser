@@ -8,7 +8,6 @@
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 
-#include <fstream>
 #include <type_traits>
 #include <string>
 

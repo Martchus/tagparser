@@ -328,7 +328,7 @@ void OggContainer::internalMakeFile()
     updateStatus("Prepare for rewriting OGG file ...");
     parseTags(); // tags need to be parsed before the file can be rewritten
     string backupPath;
-    fstream backupStream;
+    NativeFileStream backupStream;
 
     if(fileInfo().saveFilePath().empty()) {
         // move current file to temp dir and reopen it as backupStream, recreate original file

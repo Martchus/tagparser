@@ -520,8 +520,8 @@ calculatePadding:
 
     // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
     string backupPath;
-    fstream &outputStream = fileInfo().stream();
-    fstream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
+    NativeFileStream &outputStream = fileInfo().stream();
+    NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
     BinaryWriter outputWriter(&outputStream);
 
     if(rewriteRequired) {

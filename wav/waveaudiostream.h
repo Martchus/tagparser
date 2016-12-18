@@ -3,8 +3,6 @@
 
 #include "../abstracttrack.h"
 
-#include <fstream>
-
 namespace Media
 {
 

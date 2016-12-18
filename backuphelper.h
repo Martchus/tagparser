@@ -3,8 +3,7 @@
 
 #include "./global.h"
 
-#include <string>
-#include <fstream>
+#include <c++utilities/io/nativefilestream.h>
 
 namespace Media {
 
@@ -13,9 +12,9 @@ class MediaFileInfo;
 namespace BackupHelper {
 
 TAG_PARSER_EXPORT std::string &backupDirectory();
-TAG_PARSER_EXPORT void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream);
-TAG_PARSER_EXPORT void createBackupFile(const std::string &originalPath, std::string &backupPath, std::fstream &originalStream, std::fstream &backupStream);
-TAG_PARSER_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileInfo, const std::string &backupPath, std::fstream &outputStream, std::fstream &backupStream, const std::string &context = "making file");
+TAG_PARSER_EXPORT void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, IoUtilities::NativeFileStream &originalStream, IoUtilities::NativeFileStream &backupStream);
+TAG_PARSER_EXPORT void createBackupFile(const std::string &originalPath, std::string &backupPath, IoUtilities::NativeFileStream &originalStream, IoUtilities::NativeFileStream &backupStream);
+TAG_PARSER_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileInfo, const std::string &backupPath, IoUtilities::NativeFileStream &outputStream, IoUtilities::NativeFileStream &backupStream, const std::string &context = "making file");
 
 }
 

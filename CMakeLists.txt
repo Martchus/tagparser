@@ -166,7 +166,7 @@ set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 set(META_PRIVATE_COMPILE_DEFINITIONS LEGACY_API)
 
 # find c++utilities
-find_package(c++utilities 4.0.0 REQUIRED)
+find_package(c++utilities 4.4.0 REQUIRED)
 use_cpp_utilities()
 
 # find 3rd party libraries
