@@ -35,7 +35,7 @@ const char *Id3v1Tag::typeName() const
 
 bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 {
-    return (encoding == TagTextEncoding::Latin1) || (encoding == TagTextEncoding::Utf8);
+    return Tag::canEncodingBeUsed(encoding);
 }
 
 /*!
