@@ -148,30 +148,12 @@ TagDataType Id3v2Tag::proposedDataType(const uint32 &id) const
 
 const TagValue &Id3v2Tag::value(const typename Id3v2Frame::identifierType &id) const
 {
-    const TagValue &res = FieldMapBasedTag<Id3v2Frame, FrameComparer>::value(id);
-    if(res.isEmpty()) {
-        typename Id3v2Frame::identifierType alternativeId = Id3v2FrameIds::isLongId(id)
-                ? Id3v2FrameIds::convertToShortId(id)
-                : Id3v2FrameIds::convertToLongId(id);
-        if(alternativeId) {
-            return FieldMapBasedTag<Id3v2Frame, FrameComparer>::value(alternativeId);
-        } else {
-            return res;
-        }
-    }
-    return res;
+    return FieldMapBasedTag<Id3v2Frame, FrameComparer>::value(id);
 }
 
 bool Id3v2Tag::setValue(const typename Id3v2Frame::identifierType &id, const TagValue &value)
 {
-    typename Id3v2Frame::identifierType alternativeId = Id3v2FrameIds::isLongId(id)
-            ? Id3v2FrameIds::convertToShortId(id)
-            : Id3v2FrameIds::convertToLongId(id);
-    if(!alternativeId || fields().count(id) || !fields().count(alternativeId)) {
-        return FieldMapBasedTag<Id3v2Frame, FrameComparer>::setValue(id, value);
-    } else {
-        return FieldMapBasedTag<Id3v2Frame, FrameComparer>::setValue(alternativeId, value);
-    }
+    return FieldMapBasedTag<Id3v2Frame, FrameComparer>::setValue(id, value);
 }
 
 /*!
@@ -350,6 +332,13 @@ bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
     if(lhs == rhs) {
         return false;
     }
+    const bool lhsLong = Id3v2FrameIds::isLongId(lhs);
+    const bool rhsLong = Id3v2FrameIds::isLongId(rhs);
+    if(((lhsLong && !rhsLong) && (lhs == Id3v2FrameIds::convertToLongId(rhs)))
+            || ((!lhsLong && rhsLong) && (Id3v2FrameIds::convertToLongId(lhs) == rhs))) {
+        return false;
+    }
+
     if(lhs == Id3v2FrameIds::lUniqueFileId || lhs == Id3v2FrameIds::sUniqueFileId) {
         return true;
     }
