@@ -37,7 +37,7 @@ void OggIterator::clear(istream &stream, uint64 startOffset, uint64 streamSize)
  * \brief Resets the iterator to point at the first segment of the first page (matching the filter if set).
  *
  * Fetched pages (directly accessable through the page() method) remain after resetting the iterator. Use
- * the clear method to clear all pages.
+ * clear() to clear all pages.
  */
 void OggIterator::reset()
 {
@@ -131,7 +131,7 @@ void OggIterator::read(char *buffer, size_t count)
 {
     size_t bytesRead = 0;
     while(*this && count) {
-        uint32 available = currentSegmentSize() - m_bytesRead;
+        const uint32 available = currentSegmentSize() - m_bytesRead;
         stream().seekg(currentCharacterOffset());
         if(count <= available) {
             stream().read(buffer + bytesRead, count);
@@ -164,7 +164,7 @@ size_t OggIterator::readAll(char *buffer, size_t max)
 {
     size_t bytesRead = 0;
     while(*this && max) {
-        uint32 available = currentSegmentSize() - m_bytesRead;
+        const uint32 available = currentSegmentSize() - m_bytesRead;
         stream().seekg(currentCharacterOffset());
         if(max <= available) {
             stream().read(buffer + bytesRead, max);
