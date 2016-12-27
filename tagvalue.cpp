@@ -548,7 +548,7 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
 void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
 {
     m_type = TagDataType::Text;
-    m_encoding = textEncoding;
+    m_encoding = convertTo;
     if(textSize) {
         if(convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
             m_ptr = make_unique<char []>(m_size = textSize);
@@ -560,13 +560,13 @@ void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncodin
                 // use pre-defined methods when encoding to UTF-8
                 switch(convertTo) {
                 case TagTextEncoding::Latin1:
-                    encodedData = convertLatin1ToUtf8(text, textSize);
+                    encodedData = convertUtf8ToLatin1(text, textSize);
                     break;
                 case TagTextEncoding::Utf16LittleEndian:
-                    encodedData = convertUtf16LEToUtf8(text, textSize);
+                    encodedData = convertUtf8ToUtf16LE(text, textSize);
                     break;
                 case TagTextEncoding::Utf16BigEndian:
-                    encodedData = convertUtf16BEToUtf8(text, textSize);
+                    encodedData = convertUtf8ToUtf16BE(text, textSize);
                     break;
                 default:
                     ;
