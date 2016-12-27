@@ -44,7 +44,8 @@ API documentation can be generated using Doxygen with `make tagparser_apidoc`.
 
 ## Bugs, stability
 - Matroska files composed of more than one segment aren't tested yet and might not work
-- It is recommend you to create backups before editing because I can not test whether the library works with all kind of files
+- It is recommend to create backups before editing because I can not test whether the library
+  works with all kinds of files (when forcing rewrite a backup is always created)
 
 ## Build instructions
 The tagparser library depends on c++utilities and is built in the same way.
