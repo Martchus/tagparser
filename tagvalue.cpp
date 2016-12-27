@@ -401,7 +401,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            if(encoding == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
+            if(encoding == TagTextEncoding::Unspecified || dataEncoding() == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
                 result.assign(m_ptr.get(), m_size);
             } else {
                 StringData encodedData;
@@ -548,7 +548,7 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
 void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
 {
     m_type = TagDataType::Text;
-    m_encoding = convertTo;
+    m_encoding = convertTo == TagTextEncoding::Unspecified ? textEncoding : convertTo;
     if(textSize) {
         if(convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
             m_ptr = make_unique<char []>(m_size = textSize);

@@ -107,7 +107,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     if(find(expectedRawDataTypes.cbegin(), expectedRawDataTypes.cend(), m_parsedRawDataType) == expectedRawDataTypes.cend()) {
                         addNotification(NotificationType::Warning, "Unexpected data type indicator found.", context);
                     }
-                } catch(Failure &) {
+                } catch(const Failure &) {
                     // tag id is unknown, it is not possible to validate parsed data type
                 }
                 m_countryIndicator = reader.readUInt16BE();
