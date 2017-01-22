@@ -52,6 +52,8 @@ class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTagField>
 public:
     MatroskaTag();
 
+    static constexpr TagType tagType = TagType::MatroskaTag;
+    // FIXME: implement type() and typeName() in FieldMapBasedTag
     TagType type() const;
     const char *typeName() const;
     TagTextEncoding proposedTextEncoding() const;

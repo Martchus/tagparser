@@ -57,6 +57,7 @@ class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComp
 public:
     Id3v2Tag();
 
+    static constexpr TagType tagType = TagType::Id3v2Tag;
     TagType type() const;
     const char *typeName() const;
     TagTextEncoding proposedTextEncoding() const;

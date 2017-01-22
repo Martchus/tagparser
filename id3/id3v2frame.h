@@ -150,6 +150,9 @@ public:
     void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
     void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
 
+    static identifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static std::string fieldIdToString(identifierType id);
+
 protected:
     void cleared();
 
@@ -188,14 +191,11 @@ inline bool Id3v2Frame::hasPaddingReached() const
 
 /*!
  * \brief Returns the frame ID as string.
+ * \deprecated Will be removed in favour of generic idToString().
  */
 inline std::string Id3v2Frame::frameIdString() const
 {
-    if(Id3v2FrameIds::isLongId(id())) {
-        return ConversionUtilities::interpretIntegerAsString<uint32>(id());
-    } else {
-        return ConversionUtilities::interpretIntegerAsString<uint32>(id(), 1);
-    }
+    return idToString();
 }
 
 /*!
@@ -326,6 +326,29 @@ inline int32 Id3v2Frame::parsedVersion() const
 inline bool Id3v2Frame::supportsNestedFields() const
 {
     return true;
+}
+
+/*!
+ * \brief Converts the specified ID string representation to an actual ID.
+ */
+inline Id3v2Frame::identifierType Id3v2Frame::fieldIdFromString(const char *idString, std::size_t idStringSize)
+{
+    switch(idStringSize != std::string::npos ? idStringSize : std::strlen(idString)) {
+    case 3:
+        return ConversionUtilities::BE::toUInt24(idString);
+    case 4:
+        return ConversionUtilities::BE::toUInt32(idString);
+    default:
+        throw ConversionUtilities::ConversionException("ID3v2 ID must be 3 or 4 chars");
+    }
+}
+
+/*!
+ * \brief Returns the string representation for the specified \a id.
+ */
+inline std::string Id3v2Frame::fieldIdToString(Id3v2Frame::identifierType id)
+{
+    return ConversionUtilities::interpretIntegerAsString<uint32>(id, Id3v2FrameIds::isLongId(id) ? 0 : 1);
 }
 
 }

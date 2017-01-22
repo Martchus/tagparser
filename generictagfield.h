@@ -42,6 +42,7 @@ public:
     ~TagField();
 
     const identifierType &id() const;
+    std::string idToString() const;
     void setId(const identifierType &id);
     void clearId();
 
@@ -116,6 +117,12 @@ template <class ImplementationType>
 inline const typename TagField<ImplementationType>::identifierType &TagField<ImplementationType>::id() const
 {
     return m_id;
+}
+
+template<class ImplementationType>
+inline std::string TagField<ImplementationType>::idToString() const
+{
+    return ImplementationType::fieldIdToString(m_id);
 }
 
 /*!

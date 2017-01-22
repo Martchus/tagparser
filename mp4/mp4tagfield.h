@@ -5,6 +5,7 @@
 #include "../statusprovider.h"
 
 #include <c++utilities/io/binarywriter.h>
+#include <c++utilities/conversion/stringconversion.h>
 
 #include <vector>
 #include <sstream>
@@ -135,6 +136,9 @@ public:
     std::vector<uint32> expectedRawDataTypes() const;
     uint32 appropriateRawDataType() const;
 
+    static identifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static std::string fieldIdToString(identifierType id);
+
 protected:
     void cleared();
 
@@ -216,6 +220,33 @@ inline uint16 Mp4TagField::languageIndicator() const
 inline bool Mp4TagField::supportsNestedFields() const
 {
     return false;
+}
+
+/*!
+ * \brief Converts the specified ID string representation to an actual ID.
+ * \remarks The specified \a idString is assumed to be UTF-8 encoded. In order to get the ©-sign
+ *          correctly, it is converted to Latin-1.
+ */
+inline Mp4TagField::identifierType Mp4TagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
+{
+    const auto latin1 = ConversionUtilities::convertUtf8ToLatin1(idString, idStringSize != std::string::npos ? idStringSize : std::strlen(idString));
+    switch(latin1.second) {
+    case 4:
+        return ConversionUtilities::BE::toUInt32(latin1.first.get());
+    default:
+        throw ConversionUtilities::ConversionException("MP4 ID must be exactly 4 chars");
+    }
+}
+
+/*!
+ * \brief Returns the string representation for the specified \a id.
+ * \remarks The specified \a id is considered Latin-1 encoded. In order to get the ©-sign
+ *          correctly, it is converted to UTF-8.
+ */
+inline std::string Mp4TagField::fieldIdToString(Mp4TagField::identifierType id)
+{
+    const auto utf8 = ConversionUtilities::convertLatin1ToUtf8(ConversionUtilities::interpretIntegerAsString<uint32>(id).data(), 4);
+    return std::string(utf8.first.get(), utf8.second);
 }
 
 }

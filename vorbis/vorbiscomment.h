@@ -17,6 +17,7 @@ class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentFie
 public:
     VorbisComment();
 
+    static constexpr TagType tagType = TagType::VorbisComment;
     TagType type() const;
     const char *typeName() const;
     TagTextEncoding proposedTextEncoding() const;

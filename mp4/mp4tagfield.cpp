@@ -103,7 +103,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 }
                 setTypeInfo(m_parsedRawDataType = reader.readUInt24BE());
                 try { // try to show warning if parsed raw data type differs from expected raw data type for this atom id
-                    vector<uint32> expectedRawDataTypes = this->expectedRawDataTypes();
+                    const vector<uint32> expectedRawDataTypes = this->expectedRawDataTypes();
                     if(find(expectedRawDataTypes.cbegin(), expectedRawDataTypes.cend(), m_parsedRawDataType) == expectedRawDataTypes.cend()) {
                         addNotification(NotificationType::Warning, "Unexpected data type indicator found.", context);
                     }
@@ -134,7 +134,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     default:
                         ;
                     }
-                    streamsize coverSize = dataAtom->dataSize() - 8;
+                    const streamsize coverSize = dataAtom->dataSize() - 8;
                     unique_ptr<char []> coverData = make_unique<char []>(coverSize);
                     stream.read(coverData.get(), coverSize);
                     value().assignData(move(coverData), coverSize, TagDataType::Picture);
@@ -419,7 +419,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
         m_field.addNotification(NotificationType::Warning, "Invalid tag atom id.", "making MP4 tag field");
         throw InvalidDataException();
     }
-    const string context("making MP4 tag field " + ConversionUtilities::interpretIntegerAsString<Mp4TagField::identifierType>(m_field.id()));
+    const string context("making MP4 tag field " + Mp4TagField::fieldIdToString(m_field.id()));
     if(m_field.value().isEmpty() && (!m_field.mean().empty() || !m_field.name().empty())) {
         m_field.addNotification(NotificationType::Critical, "No tag value assigned.", context);
         throw InvalidDataException();

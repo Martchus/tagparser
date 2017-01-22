@@ -11,6 +11,7 @@ class TAG_PARSER_EXPORT Id3v1Tag : public Tag
 public:
     Id3v1Tag();
 
+    static constexpr TagType tagType = TagType::Id3v1Tag;
     TagType type() const;
     const char *typeName() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;

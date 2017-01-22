@@ -27,25 +27,25 @@ class FieldMapBasedTag : public Tag
 public:
     FieldMapBasedTag();
 
-    virtual const TagValue &value(const typename FieldType::identifierType &id) const;
+    virtual const TagValue &value(const typename FieldType::identifierType &id) const; // FIXME: use static polymorphism
     const TagValue &value(KnownField field) const;
     std::vector<const TagValue *> values(const typename FieldType::identifierType &id) const;
     std::vector<const TagValue *> values(KnownField field) const;
-    virtual bool setValue(const typename FieldType::identifierType &id, const TagValue &value);
+    virtual bool setValue(const typename FieldType::identifierType &id, const TagValue &value); // FIXME: use static polymorphism
     bool setValue(KnownField field, const TagValue &value);
     bool setValues(const typename FieldType::identifierType &id, const std::vector<TagValue> &values);
     bool setValues(KnownField field, const std::vector<TagValue> &values);
     bool hasField(KnownField field) const;
-    virtual bool hasField(const typename FieldType::identifierType &id) const;
+    virtual bool hasField(const typename FieldType::identifierType &id) const; // FIXME: use static polymorphism
     void removeAllFields();
     const std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields() const;
     std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields();
     unsigned int fieldCount() const;
-    virtual typename FieldType::identifierType fieldId(KnownField value) const = 0;
-    virtual KnownField knownField(const typename FieldType::identifierType &id) const = 0;
+    virtual typename FieldType::identifierType fieldId(KnownField value) const = 0; // FIXME: use static polymorphism
+    virtual KnownField knownField(const typename FieldType::identifierType &id) const = 0; // FIXME: use static polymorphism
     bool supportsField(KnownField field) const;
     using Tag::proposedDataType;
-    virtual TagDataType proposedDataType(const typename FieldType::identifierType &id) const;
+    virtual TagDataType proposedDataType(const typename FieldType::identifierType &id) const; // FIXME: use static polymorphism
     int insertFields(const FieldMapBasedTag<FieldType, Compare> &from, bool overwrite);
     unsigned int insertValues(const Tag &from, bool overwrite);
     void ensureTextValuesAreProperlyEncoded();

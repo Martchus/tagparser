@@ -92,6 +92,7 @@ class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4TagField>
 public:
     Mp4Tag();
 
+    static constexpr TagType tagType = TagType::Mp4Tag;
     TagType type() const;
     const char *typeName() const;
     TagTextEncoding proposedTextEncoding() const;
@@ -102,6 +103,7 @@ public:
     bool supportsField(KnownField field) const;
     using FieldMapBasedTag<Mp4TagField>::value;
     const TagValue &value(KnownField value) const;
+    using FieldMapBasedTag<Mp4TagField>::values;
     std::vector<const TagValue *> values(KnownField field) const;
 #ifdef LEGACY_API
     const TagValue &value(const std::string mean, const std::string name) const;
@@ -110,6 +112,7 @@ public:
     const TagValue &value(const char *mean, const char *name) const;
     using FieldMapBasedTag<Mp4TagField>::setValue;
     bool setValue(KnownField field, const TagValue &value);
+    using FieldMapBasedTag<Mp4TagField>::setValues;
     bool setValues(KnownField field, const std::vector<TagValue> &values);
 #ifdef LEGACY_API
     bool setValue(const std::string mean, const std::string name, const TagValue &value);
