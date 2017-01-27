@@ -8,11 +8,11 @@
 #include "../genericfileelement.h"
 
 #include <c++utilities/conversion/types.h>
+#include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 
 #include <iostream>
 #include <memory>
-#include <string>
-#include <sstream>
 
 namespace Media {
 
@@ -89,13 +89,13 @@ private:
  */
 inline std::string EbmlElement::idToString() const
 {
-    std::stringstream ss;
-    ss << "0x" << std::hex << id();
+    using namespace ConversionUtilities;
     const char *name = matroskaIdName(id());
-    if(std::char_traits<char>::length(name)) {
-        ss << " \"" << name << "\"";
+    if(*name) {
+        return '0' % 'x' % numberToString(id(), 16) % ' ' % '\"' % name + '\"';
+    } else {
+        return "0x" + numberToString(id(), 16);
     }
-    return ss.str();
 }
 
 /*!

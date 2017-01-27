@@ -4,9 +4,10 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/types.h>
+#include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 
 #include <string>
-#include <sstream>
 
 namespace Media {
 
@@ -122,10 +123,11 @@ inline constexpr bool Margin::isNull() const
  */
 inline std::string Margin::toString() const
 {
-    std::stringstream res;
-    res << "top: " << m_top << "; left: " << m_left;
-    res << "; bottom: " << m_bottom << "; right: " << m_right;
-    return std::string(res.str());
+    using namespace ConversionUtilities;
+    return "top: " % numberToString(m_top)
+            % "; left: " % numberToString(m_left)
+            % "; bottom: " % numberToString(m_bottom)
+            % "; right: " + numberToString(m_right);
 }
 
 }

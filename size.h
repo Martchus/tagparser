@@ -4,9 +4,10 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/types.h>
+#include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 
 #include <string>
-#include <sstream>
 
 namespace Media {
 
@@ -102,9 +103,8 @@ inline constexpr bool Size::operator==(const Size &other) const
  */
 inline std::string Size::toString() const
 {
-    std::stringstream res;
-    res << "width: " << m_width << ", height: " << m_height;
-    return std::string(res.str());
+    using namespace ConversionUtilities;
+    return "width: " % numberToString(m_width) % ", height: " + numberToString(m_height);
 }
 
 }

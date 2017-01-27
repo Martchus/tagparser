@@ -313,9 +313,7 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
 {
     m_majorVersion = majorVersion;
     m_revisionVersion = revisionVersion;
-    stringstream versionStream(stringstream::in | stringstream::out);
-    versionStream << "2." << static_cast<int>(majorVersion) << "." << static_cast<int>(revisionVersion);
-    m_version = versionStream.str();
+    m_version = '2' % '.' % numberToString(majorVersion) % '.' + numberToString(revisionVersion);
 }
 
 /*!

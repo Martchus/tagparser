@@ -6,8 +6,6 @@
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/conversion/stringconversion.h>
-#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>

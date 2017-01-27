@@ -3,6 +3,7 @@
 #include "./matroskaid.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/misc/memory.h>
 
 #include <string>
@@ -39,9 +40,7 @@ MatroskaEditionEntry::~MatroskaEditionEntry()
  */
 string MatroskaEditionEntry::label() const
 {
-    stringstream ss;
-    ss << "ID: " << id();
-    return ss.str();
+    return "ID: " + numberToString(id());
 }
 
 /*!

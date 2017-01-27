@@ -833,10 +833,12 @@ calculatePadding:
         if(rewriteRequired) {
             // check whether track count of new file equals track count of old file
             if(trackCount != tracks().size()) {
-                stringstream error;
-                error << "Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file (" << tracks().size()
-                      << ") differs from the number of tracks in the original file (" << trackCount << ").";
-                addNotification(NotificationType::Critical, error.str(), context);
+                addNotification(NotificationType::Critical,
+                                "Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file ("
+                                % numberToString(tracks().size())
+                                % ") differs from the number of tracks in the original file ("
+                                % numberToString(trackCount)
+                                + ").", context);
                 throw Failure();
             }
 
