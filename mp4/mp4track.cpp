@@ -12,6 +12,7 @@
 #include "../exceptions.h"
 #include "../mediaformat.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/bitreader.h>
@@ -1025,7 +1026,7 @@ void Mp4Track::makeMedia()
         if(m_language[charIndex] >= 'a' && m_language[charIndex] <= 'z') {
             language |= static_cast<uint16>(m_language[charIndex]) << (0xA - charIndex * 0x5);
         } else { // invalid character
-            addNotification(NotificationType::Warning, "Assigned language \"" + m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
+            addNotification(NotificationType::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
             language = 0x55C4; // und
             break;
         }
@@ -1469,7 +1470,8 @@ void Mp4Track::internalParseHeader()
                                 if(m_format.general == GeneralMediaFormat::Mpeg4Video && m_esInfo->videoSpecificConfig->profile) {
                                     m_format.sub = m_esInfo->videoSpecificConfig->profile;
                                     if(!m_esInfo->videoSpecificConfig->userData.empty()) {
-                                        m_formatId += " / " + m_esInfo->videoSpecificConfig->userData;
+                                        m_formatId += " / ";
+                                        m_formatId += m_esInfo->videoSpecificConfig->userData;
                                     }
                                 }
                             }

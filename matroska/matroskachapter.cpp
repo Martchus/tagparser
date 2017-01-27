@@ -2,10 +2,12 @@
 #include "./ebmlelement.h"
 #include "./matroskaid.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/misc/memory.h>
 
 using namespace std;
 using namespace ChronoUtilities;
+using namespace ConversionUtilities;
 
 namespace Media {
 
@@ -74,7 +76,7 @@ void MatroskaChapter::internalParse()
                     m_tracks.emplace_back(chapterTrackElement->readUInteger());
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "\"ChapterTrack\"-element contains unknown child element \"" + chapterAtomChild->idToString() + "\". It will be ignored.", context);
+                    addNotification(NotificationType::Warning, "\"ChapterTrack\"-element contains unknown child element \"" % chapterAtomChild->idToString() + "\". It will be ignored.", context);
                 }
             }
             break;
@@ -104,7 +106,7 @@ void MatroskaChapter::internalParse()
         case MatroskaIds::ChapterAtom:
             m_nestedChapters.emplace_back(make_unique<MatroskaChapter>(chapterAtomChild));
         default:
-            addNotification(NotificationType::Warning, "\"ChapterAtom\"-element contains unknown child element \"" + chapterAtomChild->idToString() + "\". It will be ignored.", context);
+            addNotification(NotificationType::Warning, "\"ChapterAtom\"-element contains unknown child element \"" % chapterAtomChild->idToString() + "\". It will be ignored.", context);
         }
     }
     // "eng" is default language

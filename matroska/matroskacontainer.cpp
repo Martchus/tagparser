@@ -12,6 +12,7 @@
 #include "resources/config.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/misc/memory.h>
 
@@ -141,7 +142,7 @@ void MatroskaContainer::validateIndex()
                                         case MatroskaIds::CueCodecState:
                                             // validate uniqueness
                                             if(ids.count(subElement->id())) {
-                                                addNotification(NotificationType::Warning, "\"CueTrackPositions\"-element contains multiple \"" + subElement->idToString() + "\" elements.", context);
+                                                addNotification(NotificationType::Warning, "\"CueTrackPositions\"-element contains multiple \"" % subElement->idToString() + "\" elements.", context);
                                             } else {
                                                 ids.insert(subElement->id());
                                             }
@@ -151,7 +152,7 @@ void MatroskaContainer::validateIndex()
                                         case MatroskaIds::CueReference:
                                             break;
                                         default:
-                                            addNotification(NotificationType::Warning, "\"CueTrackPositions\"-element contains unknown element \"" + subElement->idToString() + "\".", context);
+                                            addNotification(NotificationType::Warning, "\"CueTrackPositions\"-element contains unknown element \"" % subElement->idToString() + "\".", context);
                                         }
                                         switch(subElement->id()) {
                                         case EbmlIds::Void:
@@ -164,7 +165,7 @@ void MatroskaContainer::validateIndex()
                                             try {
                                             clusterElement->parse();
                                             if(clusterElement->id() != MatroskaIds::Cluster) {
-                                                addNotification(NotificationType::Critical, "\"CueClusterPosition\" element at " + numberToString(subElement->startOffset()) + " does not point to \"Cluster\"-element (points to " + numberToString(clusterElement->startOffset()) + ").", context);
+                                                addNotification(NotificationType::Critical, "\"CueClusterPosition\" element at " % numberToString(subElement->startOffset()) + " does not point to \"Cluster\"-element (points to " + numberToString(clusterElement->startOffset()) + ").", context);
                                             }
                                         } catch(const Failure &) {
                                                 addNotifications(context, *clusterElement);
@@ -204,7 +205,7 @@ void MatroskaContainer::validateIndex()
                                                 case MatroskaIds::BlockGroup:
                                                     break;
                                                 default:
-                                                    addNotification(NotificationType::Critical, "\"CueRelativePosition\" element does not point to \"Block\"-, \"BlockGroup\", or \"SimpleBlock\"-element (points to " + numberToString(referenceElement.startOffset()) + ").", context);
+                                                    addNotification(NotificationType::Critical, "\"CueRelativePosition\" element does not point to \"Block\"-, \"BlockGroup\", or \"SimpleBlock\"-element (points to " % numberToString(referenceElement.startOffset()) + ").", context);
                                                 }
                                             } catch(const Failure &) {
                                                 addNotifications(context, referenceElement);
@@ -216,7 +217,7 @@ void MatroskaContainer::validateIndex()
                                 case EbmlIds::Void:
                                     break;
                                 default:
-                                    addNotification(NotificationType::Warning, "\"CuePoint\"-element contains unknown element \"" + cuePointElement->idToString() + "\".", context);
+                                    addNotification(NotificationType::Warning, "\"CuePoint\"-element contains unknown element \"" % cuePointElement->idToString() + "\".", context);
                                 }
                             }
                             // validate existence of mandatory elements
@@ -243,13 +244,13 @@ void MatroskaContainer::validateIndex()
                         case MatroskaIds::Position:
                             // validate position
                             if((pos = clusterElementChild->readUInteger()) > 0 && (segmentChildElement->startOffset() - segmentElement->dataOffset() + currentOffset) != pos) {
-                                addNotification(NotificationType::Critical, "\"Position\"-element at " + numberToString(clusterElementChild->startOffset()) + " points to " + numberToString(pos) + " which is not the offset of the containing \"Cluster\"-element.", context);
+                                addNotification(NotificationType::Critical, "\"Position\"-element at " % numberToString(clusterElementChild->startOffset()) % " points to " % numberToString(pos) + " which is not the offset of the containing \"Cluster\"-element.", context);
                             }
                             break;
                         case MatroskaIds::PrevSize:
                             // validate prev size
                             if(clusterElementChild->readUInteger() != prevClusterSize) {
-                                addNotification(NotificationType::Critical, "\"PrevSize\"-element at " + numberToString(clusterElementChild->startOffset()) + " has invalid value.", context);
+                                addNotification(NotificationType::Critical, "\"PrevSize\"-element at " % numberToString(clusterElementChild->startOffset()) + " has invalid value.", context);
                             }
                             break;
                         default:
@@ -411,7 +412,7 @@ void MatroskaContainer::internalParseHeader()
                             m_maxIdLength = subElement->readUInteger();
                             if(m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
                                 addNotification(NotificationType::Critical, "Maximum EBML element ID length greather then "
-                                                + numberToString<uint32>(EbmlElement::maximumIdLengthSupported())
+                                                % numberToString<uint32>(EbmlElement::maximumIdLengthSupported())
                                                 + " bytes is not supported.", context);
                                 throw InvalidDataException();
                             }
@@ -420,7 +421,7 @@ void MatroskaContainer::internalParseHeader()
                             m_maxSizeLength = subElement->readUInteger();
                             if(m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
                                 addNotification(NotificationType::Critical, "Maximum EBML element size length greather then "
-                                                + numberToString<uint32>(EbmlElement::maximumSizeLengthSupported())
+                                                % numberToString<uint32>(EbmlElement::maximumSizeLengthSupported())
                                                 + " bytes is not supported.", context);
                                 throw InvalidDataException();
                             }
@@ -477,13 +478,13 @@ void MatroskaContainer::internalParseHeader()
                                 for(const auto &infoPair : (*i)->info()) {
                                     uint64 offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
                                     if(offset >= fileInfo().size()) {
-                                        addNotification(NotificationType::Critical, "Offset (" + numberToString(offset) + ") denoted by \"SeekHead\" element is invalid.", context);
+                                        addNotification(NotificationType::Critical, "Offset (" % numberToString(offset) + ") denoted by \"SeekHead\" element is invalid.", context);
                                     } else {
                                         auto element = make_unique<EbmlElement>(*this, offset);
                                         try {
                                             element->parse();
                                             if(element->id() != infoPair.first) {
-                                                addNotification(NotificationType::Critical, "ID of element " + element->idToString() + " at " + numberToString(offset) + " does not match the ID denoted in the \"SeekHead\" element (0x" + numberToString(infoPair.first, 16) + ").", context);
+                                                addNotification(NotificationType::Critical, "ID of element " % element->idToString() % " at " % numberToString(offset) % " does not match the ID denoted in the \"SeekHead\" element (0x" % numberToString(infoPair.first, 16) + ").", context);
                                             }
                                             switch(element->id()) {
                                             case MatroskaIds::SegmentInfo:
@@ -520,7 +521,7 @@ void MatroskaContainer::internalParseHeader()
                                                 ;
                                             }
                                         } catch(const Failure &) {
-                                            addNotification(NotificationType::Critical, "Can not parse element at " + numberToString(offset) + " (denoted using \"SeekHead\" element).", context);
+                                            addNotification(NotificationType::Critical, "Can not parse element at " % numberToString(offset) + " (denoted using \"SeekHead\" element).", context);
                                         }
                                     }
                                 }
@@ -548,7 +549,7 @@ void MatroskaContainer::internalParseHeader()
             addNotifications(*topLevelElement);
         } catch(const Failure &) {
             addNotifications(*topLevelElement);
-            addNotification(NotificationType::Critical, "Unable to parse top-level element at " + numberToString(topLevelElement->startOffset()) + ".", context);
+            addNotification(NotificationType::Critical, "Unable to parse top-level element at " % numberToString(topLevelElement->startOffset()) + ".", context);
             break;
         }
     }
@@ -625,7 +626,7 @@ void MatroskaContainer::internalParseTags()
                 } catch(NoDataFoundException &) {
                         m_tags.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse tag " + ConversionUtilities::numberToString(m_tags.size()) + ".", context);
+                        addNotification(NotificationType::Critical, "Unable to parse tag " % ConversionUtilities::numberToString(m_tags.size()) + ".", context);
                     }
                     break;
                 case EbmlIds::Crc32:
@@ -659,14 +660,14 @@ void MatroskaContainer::internalParseTracks()
                     } catch(const NoDataFoundException &) {
                         m_tracks.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse track " + ConversionUtilities::numberToString(m_tracks.size()) + ".", context);
+                        addNotification(NotificationType::Critical, "Unable to parse track " % ConversionUtilities::numberToString(m_tracks.size()) + ".", context);
                     }
                     break;
                 case EbmlIds::Crc32:
                 case EbmlIds::Void:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "\"Tracks\"-element contains unknown child element \"" + subElement->idToString() + "\". It will be ignored.", context);
+                    addNotification(NotificationType::Warning, "\"Tracks\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
         } catch(const Failure &) {
@@ -693,14 +694,14 @@ void MatroskaContainer::internalParseChapters()
                     } catch(const NoDataFoundException &) {
                         m_editionEntries.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse edition entry " + ConversionUtilities::numberToString(m_editionEntries.size()) + ".", context);
+                        addNotification(NotificationType::Critical, "Unable to parse edition entry " % ConversionUtilities::numberToString(m_editionEntries.size()) + ".", context);
                     }
                     break;
                 case EbmlIds::Crc32:
                 case EbmlIds::Void:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "\"Chapters\"-element contains unknown child element \"" + subElement->idToString() + "\". It will be ignored.", context);
+                    addNotification(NotificationType::Warning, "\"Chapters\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
         } catch(const Failure &) {
@@ -727,14 +728,14 @@ void MatroskaContainer::internalParseAttachments()
                     } catch(const NoDataFoundException &) {
                         m_attachments.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse attached file " + ConversionUtilities::numberToString(m_attachments.size()) + ".", context);
+                        addNotification(NotificationType::Critical, "Unable to parse attached file " % ConversionUtilities::numberToString(m_attachments.size()) + ".", context);
                     }
                     break;
                 case EbmlIds::Crc32:
                 case EbmlIds::Void:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "\"Attachments\"-element contains unknown child element \"" + subElement->idToString() + "\". It will be ignored.", context);
+                    addNotification(NotificationType::Warning, "\"Attachments\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
         } catch(const Failure &) {
@@ -942,7 +943,7 @@ void MatroskaContainer::internalMakeFile()
             }
 
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse content in top-level element at " + numberToString(level0Element->startOffset()) + " of original file.", context);
+            addNotification(NotificationType::Critical, "Unable to parse content in top-level element at " % numberToString(level0Element->startOffset()) + " of original file.", context);
             throw;
         }
 
@@ -1342,7 +1343,7 @@ nonRewriteCalculations:
 
             } default:
                 // just copy any unknown top-level elements
-                addNotification(NotificationType::Warning, "The top-level element \"" + level0Element->idToString() + "\" of the original file is unknown and will just be copied.", context);
+                addNotification(NotificationType::Warning, "The top-level element \"" % level0Element->idToString() + "\" of the original file is unknown and will just be copied.", context);
                 currentOffset += level0Element->totalSize();
                 readOffset += level0Element->totalSize();
             }

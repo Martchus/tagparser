@@ -1,6 +1,9 @@
 #include "./statusprovider.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
+
 using namespace std;
+using namespace ConversionUtilities;
 
 namespace Media {
 
@@ -91,7 +94,7 @@ void StatusProvider::addNotifications(const string &higherContext, const StatusP
         return;
     }
     for(const auto &notification : from.m_notifications) {
-        addNotification(notification.type(), notification.message(), higherContext + ", " + notification.context());
+        addNotification(notification.type(), notification.message(), higherContext % ',' % ' ' + notification.context());
     }
 }
 

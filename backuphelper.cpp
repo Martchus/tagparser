@@ -2,6 +2,7 @@
 #include "./mediafileinfo.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/catchiofailure.h>
 
 #ifdef PLATFORM_WINDOWS
@@ -90,7 +91,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
             // TODO: callback for progress updates
         } catch(...) {
             catchIoFailure();
-            throwIoFailure(("Unable to restore original file from backup file \"" + backupPath + "\" after failure.").data());
+            throwIoFailure(("Unable to restore original file from backup file \"" % backupPath + "\" after failure.").data());
         }
     }
 }
@@ -127,7 +128,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
     for(unsigned int i = 0; ; ++i) {
         if(backupDir.empty()) {
             if(i) {
-                backupPath = originalPath + '.' + numberToString(i) + ".bak";
+                backupPath = originalPath % '.' % numberToString(i) + ".bak";
             } else {
                 backupPath = originalPath + ".bak";
             }
@@ -226,7 +227,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
         // can't open the new file
         // -> try to re-rename backup file in the error case to restore previous state
         if(std::rename(backupPath.c_str(), originalPath.c_str()) != 0) {
-            throwIoFailure(("Unable to restore original file from backup file \"" + backupPath + "\" after failure.").data());
+            throwIoFailure(("Unable to restore original file from backup file \"" % backupPath + "\" after failure.").data());
         } else {
             throwIoFailure("Unable to open backup file.");
         }

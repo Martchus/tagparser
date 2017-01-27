@@ -6,6 +6,7 @@
 
 #include "../exceptions.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 
@@ -48,7 +49,7 @@ Mp4Atom::Mp4Atom(GenericFileElement::implementationType &parent, uint64 startOff
  */
 string Mp4Atom::parsingContext() const
 {
-    return "parsing " + idToString() + " atom at " + numberToString(startOffset());
+    return "parsing " % idToString() % " atom at " + numberToString(startOffset());
 }
 
 /*!
@@ -59,7 +60,7 @@ void Mp4Atom::internalParse()
     invalidateStatus();
     static const string context("parsing MP4 atom");
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid. The remaining size within the parent atom is " + numberToString(maxTotalSize()) + ".", context);
+        addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid. The remaining size within the parent atom is " % numberToString(maxTotalSize()) + ".", context);
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());

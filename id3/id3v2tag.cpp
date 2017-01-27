@@ -4,6 +4,7 @@
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 
 using namespace std;
 using namespace IoUtilities;
@@ -228,7 +229,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
                     if(frame.id()) {
                         // add frame if parsing was successfull
                         if(Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
-                            addNotification(NotificationType::Warning, "The text frame " + frame.frameIdString() + " exists more than once.", context);
+                            addNotification(NotificationType::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
                         }
                         fields().insert(make_pair(frame.id(), frame));
                     }

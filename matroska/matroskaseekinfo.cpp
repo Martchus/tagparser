@@ -3,6 +3,7 @@
 
 #include "../exceptions.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/binaryconversion.h>
 
 #include <string>
@@ -68,7 +69,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
                     break;
                 default:
                     addNotification(NotificationType::Warning, "The element \""
-                                    + seekElementChild->idToString()
+                                    % seekElementChild->idToString()
                                     + "\" within the \"Seek\" element is not a \"SeekID\"-element nor a \"SeekPosition\"-element and will be ignored.", context);
                 }
                 seekElementChild = seekElementChild->nextSibling();
@@ -83,7 +84,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
         case EbmlIds::Void:
             break;
         default:
-            addNotification(NotificationType::Warning, "The element " + seekElement->idToString() + " is not a seek element and will be ignored.", context);
+            addNotification(NotificationType::Warning, "The element " % seekElement->idToString() + " is not a seek element and will be ignored.", context);
         }
         seekElement = seekElement->nextSibling();
     }

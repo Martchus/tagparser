@@ -5,6 +5,7 @@
 #include "../mediafileinfo.h"
 #include "../backuphelper.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/copy.h>
@@ -714,7 +715,7 @@ calculatePadding:
                             const vector<uint64> &chunkOffsetTable = get<1>(trackInfos.back());
                             const vector<uint64> &chunkSizesTable = get<2>(trackInfos.back());
                             if(track->chunkCount() != chunkOffsetTable.size() || track->chunkCount() != chunkSizesTable.size()) {
-                                addNotification(NotificationType::Critical, "Chunks of track " + numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
+                                addNotification(NotificationType::Critical, "Chunks of track " % numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
                             }
 
                             // increase total chunk count and size
@@ -848,7 +849,7 @@ calculatePadding:
                     if(track->chunkCount() == chunkOffsetTable.size()) {
                         track->updateChunkOffsets(chunkOffsetTable);
                     } else {
-                        addNotification(NotificationType::Critical, "Unable to update chunk offsets of track " + numberToString(trackIndex + 1) + ": Number of chunks in the output file differs from the number of chunks in the orignal file.", context);
+                        addNotification(NotificationType::Critical, "Unable to update chunk offsets of track " % numberToString(trackIndex + 1) + ": Number of chunks in the output file differs from the number of chunks in the orignal file.", context);
                         throw Failure();
                     }
                 }
@@ -953,7 +954,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
             try {
                 track->parseHeader();
             } catch(const Failure &) {
-                addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated because the track seems to be invalid..", context);
+                addNotification(NotificationType::Warning, "The chunk offsets of track " % track->name() + " couldn't be updated because the track seems to be invalid..", context);
                 throw;
             }
         }
@@ -961,7 +962,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
             try {
                 track->updateChunkOffsets(oldMdatOffsets, newMdatOffsets);
             } catch(const Failure &) {
-                addNotification(NotificationType::Warning, "The chunk offsets of track " + track->name() + " couldn't be updated.", context);
+                addNotification(NotificationType::Warning, "The chunk offsets of track " % track->name() + " couldn't be updated.", context);
                 throw;
             }
         }

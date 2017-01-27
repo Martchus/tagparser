@@ -4,6 +4,7 @@
 #include "./matroskaid.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/misc/memory.h>
 
 using namespace std;
@@ -75,7 +76,7 @@ void MatroskaAttachment::parse(EbmlElement *attachedFileElement)
         case EbmlIds::Void:
             break;
         default:
-            addNotification(NotificationType::Warning, "Unknown child element \"" + subElement->idToString() + "\" found.", context);
+            addNotification(NotificationType::Warning, "Unknown child element \"" % subElement->idToString() + "\" found.", context);
         }
         subElement = subElement->nextSibling();
     }

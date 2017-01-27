@@ -5,6 +5,7 @@
 
 #include "../exceptions.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/misc/memory.h>
@@ -243,7 +244,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 stream.seekg(dataAtom->dataOffset() + 4);
                 m_name = reader.readString(dataAtom->dataSize() - 4);
             } else {
-                addNotification(NotificationType::Warning, "Unkown child atom \"" + dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
+                addNotification(NotificationType::Warning, "Unkown child atom \"" % dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
             }
         } catch(const Failure &) {
             addNotification(NotificationType::Warning, "Unable to parse all childs atom in tag atom (ilst child) found. (will be ignored)", context);
@@ -466,7 +467,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
                 } else if(number > 0) {
                     m_writer.writeUInt32BE(number);
                 } else {
-                    throw ConversionException("Negative integer can not be assigned to the field with the id \"" + interpretIntegerAsString<uint32>(m_field.id()) + "\".");
+                    throw ConversionException("Negative integer can not be assigned to the field with the id \"" % interpretIntegerAsString<uint32>(m_field.id()) + "\".");
                 }
                 break;
             } case RawDataType::Bmp: case RawDataType::Jpeg: case RawDataType::Png:
@@ -481,7 +482,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
                     if(pos.total() <= numeric_limits<int16>::max()) {
                         m_writer.writeInt16BE(static_cast<int16>(pos.total()));
                     } else {
-                        throw ConversionException("Integer can not be assigned to the field with the id \"" + interpretIntegerAsString<uint32>(m_field.id()) + "\" because it is to big.");
+                        throw ConversionException("Integer can not be assigned to the field with the id \"" % interpretIntegerAsString<uint32>(m_field.id()) + "\" because it is to big.");
                     }
                     m_writer.writeUInt16BE(0);
                     break;

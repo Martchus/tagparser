@@ -2,8 +2,9 @@
 #include "./mp4container.h"
 #include "./mp4ids.h"
 
-#include <c++utilities/io/binaryreader.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/io/binaryreader.h>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -35,7 +36,7 @@ Mpeg4Descriptor::Mpeg4Descriptor(implementationType &parent, uint64 startOffset)
  */
 string Mpeg4Descriptor::parsingContext() const
 {
-    return "parsing " + idToString() + " descriptor at " + numberToString(startOffset());
+    return "parsing " % idToString() % " descriptor at " + numberToString(startOffset());
 }
 
 /*!
@@ -54,7 +55,7 @@ void Mpeg4Descriptor::internalParse()
 {
     invalidateStatus();
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Descriptor is smaller then 2 byte and hence invalid. The maximum size within the encloding element is " + numberToString(maxTotalSize()) + ".", "parsing MPEG-4 descriptor");
+        addNotification(NotificationType::Critical, "Descriptor is smaller then 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize()) + '.', "parsing MPEG-4 descriptor");
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());

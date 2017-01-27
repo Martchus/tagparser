@@ -5,12 +5,14 @@
 #include "../mediafileinfo.h"
 #include "../backuphelper.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/copy.h>
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/misc/memory.h>
 
 using namespace std;
 using namespace IoUtilities;
+using namespace ConversionUtilities;
 
 namespace Media {
 
@@ -189,7 +191,7 @@ void OggContainer::internalParseHeader()
             const OggPage &page = m_iterator.currentPage();
             if(m_validateChecksums) {
                 if(page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {
-                    addNotification(NotificationType::Warning, "The denoted checksum of the OGG page at " + ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " does not match the computed checksum.", context);
+                    addNotification(NotificationType::Warning, "The denoted checksum of the OGG page at " % ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " does not match the computed checksum.", context);
                 }
             }
             OggStream *stream;
@@ -215,7 +217,7 @@ void OggContainer::internalParseHeader()
         addNotification(NotificationType::Critical, "The OGG file is truncated.", context);
     } catch(const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
-        addNotification(NotificationType::Critical, "Capture pattern \"OggS\" at " + ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " expected.", context);
+        addNotification(NotificationType::Critical, "Capture pattern \"OggS\" at " % numberToString(m_iterator.currentSegmentOffset()) + " expected.", context);
     }
 }
 
@@ -275,7 +277,7 @@ void OggContainer::internalParseTracks()
                 m_duration = stream->duration();
             }
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse stream at " + ConversionUtilities::numberToString(stream->startOffset()) + ".", context);
+            addNotification(NotificationType::Critical, "Unable to parse stream at " % numberToString(stream->startOffset()) + ".", context);
         }
     }
 }

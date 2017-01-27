@@ -7,6 +7,7 @@
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
@@ -54,7 +55,7 @@ EbmlElement::EbmlElement(EbmlElement &parent, uint64 startOffset) :
  */
 string EbmlElement::parsingContext() const
 {
-    return "parsing header of EBML element " + idToString() + " at " + numberToString(startOffset());
+    return "parsing header of EBML element " % idToString() % " at " + numberToString(startOffset());
 }
 
 /*!
@@ -69,7 +70,7 @@ void EbmlElement::internalParse()
     for(skipped = 0; /* TODO: add a sane limit here */; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
         if(maxTotalSize() < 2) {
-            addNotification(NotificationType::Critical, "The EBML element at " + numberToString(startOffset()) + " is truncated or does not exist.", context);
+            addNotification(NotificationType::Critical, "The EBML element at " % numberToString(startOffset()) + " is truncated or does not exist.", context);
             throw TruncatedDataException();
         }
         stream().seekg(startOffset());

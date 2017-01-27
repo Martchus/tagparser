@@ -2,11 +2,13 @@
 #include "./ebmlelement.h"
 #include "./matroskaid.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/misc/memory.h>
 
 #include <string>
 
 using namespace std;
+using namespace ConversionUtilities;
 
 namespace Media {
 
@@ -76,7 +78,7 @@ void MatroskaEditionEntry::parse()
             m_chapters.emplace_back(make_unique<MatroskaChapter>(entryChild));
             break;
         default:
-            addNotification(NotificationType::Warning, "\"EditionEntry\"-element contains unknown child element \"" + entryChild->idToString() + "\" which will be ingored.", context);
+            addNotification(NotificationType::Warning, "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ingored.", context);
         }
         entryChild = entryChild->nextSibling();
     }

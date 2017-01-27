@@ -5,6 +5,7 @@
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/misc/memory.h>
 
 #include <zlib.h>
@@ -126,13 +127,13 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         }
 
         // -> update context
-        context = "parsing " + frameIdString() + " frame";
+        context = "parsing " % frameIdString() + " frame";
 
         // -> read size, check whether frame is truncated
         m_dataSize = reader.readUInt24BE();
         m_totalSize = m_dataSize + 6;
         if(m_totalSize > maximalSize) {
-            addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", "parsing " + frameIdString() + " frame");
+            addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", context);
             throw TruncatedDataException();
         }
 
@@ -154,7 +155,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         }
 
         // -> update context
-        context = "parsing " + frameIdString() + " frame";
+        context = "parsing " % frameIdString() + " frame";
 
         // -> read size, check whether frame is truncated
         m_dataSize = version >= 4
@@ -357,7 +358,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
     m_version(version)
 {
     m_frame.invalidateStatus();
-    const string context("making " + m_frame.frameIdString() + " frame");
+    const string context("making " % m_frame.frameIdString() + " frame");
 
     // validate assigned data
     if(m_frame.value().isEmpty()) {
