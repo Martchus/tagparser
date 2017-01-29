@@ -313,7 +313,7 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
 {
     m_majorVersion = majorVersion;
     m_revisionVersion = revisionVersion;
-    m_version = '2' % '.' % numberToString(majorVersion) % '.' + numberToString(revisionVersion);
+    m_version = argsToString('2', '.', majorVersion, '.', revisionVersion);
 }
 
 /*!

@@ -128,7 +128,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
     for(unsigned int i = 0; ; ++i) {
         if(backupDir.empty()) {
             if(i) {
-                backupPath = originalPath % '.' % numberToString(i) + ".bak";
+                backupPath = originalPath % '.' % i + ".bak";
             } else {
                 backupPath = originalPath + ".bak";
             }

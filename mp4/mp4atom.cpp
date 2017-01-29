@@ -49,7 +49,7 @@ Mp4Atom::Mp4Atom(GenericFileElement::implementationType &parent, uint64 startOff
  */
 string Mp4Atom::parsingContext() const
 {
-    return "parsing " % idToString() % " atom at " + numberToString(startOffset());
+    return "parsing " % idToString() % " atom at " + startOffset();
 }
 
 /*!

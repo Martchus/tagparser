@@ -36,7 +36,7 @@ Mpeg4Descriptor::Mpeg4Descriptor(implementationType &parent, uint64 startOffset)
  */
 string Mpeg4Descriptor::parsingContext() const
 {
-    return "parsing " % idToString() % " descriptor at " + numberToString(startOffset());
+    return "parsing " % idToString() % " descriptor at " + startOffset();
 }
 
 /*!

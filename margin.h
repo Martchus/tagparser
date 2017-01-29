@@ -4,7 +4,6 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
 
 #include <string>
@@ -123,11 +122,7 @@ inline constexpr bool Margin::isNull() const
  */
 inline std::string Margin::toString() const
 {
-    using namespace ConversionUtilities;
-    return "top: " % numberToString(m_top)
-            % "; left: " % numberToString(m_left)
-            % "; bottom: " % numberToString(m_bottom)
-            % "; right: " + numberToString(m_right);
+    return ConversionUtilities::argsToString("top: ", m_top, "; left: ", m_left, "; bottom: ", m_bottom, "; right: ", m_right);
 }
 
 }

@@ -68,7 +68,7 @@ void EbmlElement::internalParse()
     for(skipped = 0; /* TODO: add a sane limit here */; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
         if(maxTotalSize() < 2) {
-            addNotification(NotificationType::Critical, "The EBML element at " % numberToString(startOffset()) + " is truncated or does not exist.", context);
+            addNotification(NotificationType::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
             throw TruncatedDataException();
         }
         stream().seekg(startOffset());

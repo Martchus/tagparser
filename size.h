@@ -4,7 +4,6 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/types.h>
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
 
 #include <string>
@@ -103,8 +102,7 @@ inline constexpr bool Size::operator==(const Size &other) const
  */
 inline std::string Size::toString() const
 {
-    using namespace ConversionUtilities;
-    return "width: " % numberToString(m_width) % ", height: " + numberToString(m_height);
+    return ConversionUtilities::argsToString("width: ", m_width, ", height: ", m_height);
 }
 
 }
