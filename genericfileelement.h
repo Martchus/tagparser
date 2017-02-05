@@ -7,7 +7,6 @@
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/copy.h>
-#include <c++utilities/misc/memory.h>
 
 #include <list>
 #include <initializer_list>

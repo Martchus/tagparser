@@ -8,7 +8,6 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/misc/memory.h>
 
 #include <algorithm>
 #include <memory>

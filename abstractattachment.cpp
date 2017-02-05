@@ -3,11 +3,11 @@
 #include "./mediafileinfo.h"
 #include "./exceptions.h"
 
-#include <c++utilities/misc/memory.h>
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/copy.h>
 
 #include <sstream>
+#include <memory>
 
 using namespace std;
 using namespace IoUtilities;

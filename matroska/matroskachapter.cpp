@@ -3,7 +3,8 @@
 #include "./matroskaid.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/misc/memory.h>
+
+#include <memory>
 
 using namespace std;
 using namespace ChronoUtilities;

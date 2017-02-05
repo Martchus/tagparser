@@ -6,12 +6,12 @@
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/misc/memory.h>
 
 #include <zlib.h>
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 
 using namespace std;
 using namespace ConversionUtilities;

@@ -8,7 +8,8 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/copy.h>
 #include <c++utilities/io/catchiofailure.h>
-#include <c++utilities/misc/memory.h>
+
+#include <memory>
 
 using namespace std;
 using namespace IoUtilities;

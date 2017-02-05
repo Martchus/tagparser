@@ -3,9 +3,8 @@
 
 #include "../abstracttrack.h"
 
-#include <c++utilities/misc/memory.h>
-
 #include <iosfwd>
+#include <memory>
 
 namespace Media {
 

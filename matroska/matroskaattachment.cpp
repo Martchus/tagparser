@@ -5,7 +5,8 @@
 
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/misc/memory.h>
+
+#include <memory>
 
 using namespace std;
 using namespace ConversionUtilities;

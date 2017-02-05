@@ -33,7 +33,6 @@
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/chrono/timespan.h>
-#include <c++utilities/misc/memory.h>
 
 #include <unistd.h>
 
@@ -43,6 +42,7 @@
 #include <ios>
 #include <system_error>
 #include <functional>
+#include <memory>
 
 using namespace std;
 using namespace std::placeholders;

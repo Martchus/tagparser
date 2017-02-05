@@ -3,11 +3,10 @@
 
 #include "./abstractcontainer.h"
 
-#include <c++utilities/misc/memory.h>
-
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <memory>
 
 namespace Media {
 

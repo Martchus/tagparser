@@ -4,9 +4,9 @@
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
-#include <c++utilities/misc/memory.h>
 
 #include <string>
+#include <memory>
 
 using namespace std;
 using namespace ConversionUtilities;

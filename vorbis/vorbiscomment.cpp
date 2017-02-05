@@ -8,9 +8,9 @@
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/copy.h>
-#include <c++utilities/misc/memory.h>
 
 #include <map>
+#include <memory>
 
 using namespace std;
 using namespace IoUtilities;

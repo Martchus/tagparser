@@ -10,12 +10,12 @@
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/copy.h>
 #include <c++utilities/io/catchiofailure.h>
-#include <c++utilities/misc/memory.h>
 
 #include <unistd.h>
 
 #include <tuple>
 #include <numeric>
+#include <memory>
 
 using namespace std;
 using namespace IoUtilities;

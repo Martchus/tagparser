@@ -6,7 +6,6 @@
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/chrono/datetime.h>
-#include <c++utilities/misc/memory.h>
 
 #include <iosfwd>
 #include <string>

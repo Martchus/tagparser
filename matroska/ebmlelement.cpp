@@ -9,11 +9,11 @@
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/misc/memory.h>
 
 #include <string>
 #include <sstream>
 #include <cstring>
+#include <memory>
 
 using namespace std;
 using namespace IoUtilities;

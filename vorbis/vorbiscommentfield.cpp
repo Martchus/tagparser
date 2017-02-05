@@ -14,9 +14,9 @@
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringconversion.h>
-#include <c++utilities/misc/memory.h>
 
 #include <iostream>
+#include <memory>
 
 using namespace std;
 using namespace IoUtilities;
