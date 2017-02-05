@@ -240,14 +240,18 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
 
         } else if((version >= 3 && id() == Id3v2FrameIds::lLength) || (version < 3 && id() == Id3v2FrameIds::sLength)) {
             // frame contains length
-            double milliseconds;
             try {
-                if(characterSize(dataEncoding) > 1) {
-                    milliseconds = ConversionUtilities::stringToNumber<double>(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
-                } else {
-                    milliseconds = ConversionUtilities::stringToNumber<double>(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding), 10);
+                string milliseconds;
+                if(dataEncoding == TagTextEncoding::Utf16BigEndian || dataEncoding == TagTextEncoding::Utf16LittleEndian) {
+                    const auto parsedStringRef = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                    const auto convertedStringData = dataEncoding == TagTextEncoding::Utf16BigEndian
+                            ? convertUtf16BEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef))
+                            : convertUtf16LEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef));
+                    milliseconds = string(convertedStringData.first.get(), convertedStringData.second);
+                } else { // Latin-1 or UTF-8
+                    milliseconds = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                 }
-                value().assignTimeSpan(TimeSpan::fromMilliseconds(milliseconds));
+                value().assignTimeSpan(TimeSpan::fromMilliseconds(stringToNumber<double>(milliseconds)));
             } catch (const ConversionException &) {
                 addNotification(NotificationType::Warning, "The value of the length frame is not numeric and will be ignored.", context);
             }
