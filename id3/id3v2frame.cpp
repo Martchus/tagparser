@@ -110,7 +110,8 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
 {
     invalidateStatus();
     clear();
-    string context("parsing ID3v2 frame");
+    static const string defaultContext("parsing ID3v2 frame");
+    string context;
 
     // parse header
     if(version < 3) {
@@ -122,7 +123,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         } else {
             // padding reached
             m_padding = true;
-            addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", context);
+            addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
             throw NoDataFoundException();
         }
 
@@ -150,7 +151,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         } else {
             // padding reached
             m_padding = true;
-            addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", context);
+            addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
             throw NoDataFoundException();
         }
 

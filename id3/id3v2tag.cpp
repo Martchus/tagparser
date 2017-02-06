@@ -168,7 +168,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
 {
     // prepare parsing
     invalidateStatus();
-    const string context("parsing ID3v2 tag");
+    static const string context("parsing ID3v2 tag");
     BinaryReader reader(&stream);
     uint64 startOffset = stream.tellg();
 
@@ -383,7 +383,7 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag) :
     m_framesSize(0)
 {
     tag.invalidateStatus();
-    const string context("making ID3v2 tag");
+    static const string context("making ID3v2 tag");
 
     // check if version is supported
     // (the version could have been changed using setVersion())
