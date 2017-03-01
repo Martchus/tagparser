@@ -107,7 +107,7 @@ void FlacStream::internalParseHeader()
 
             case FlacMetaDataBlockType::VorbisComment:
                 // parse Vorbis comment
-                // if more then one comment exist, simply thread those comments as one
+                // if more than one comment exist, simply thread those comments as one
                 if(!m_vorbisComment) {
                     m_vorbisComment = make_unique<VorbisComment>();
                 }

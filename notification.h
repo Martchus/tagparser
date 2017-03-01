@@ -26,7 +26,7 @@ enum class NotificationType
 
 
 /*!
- * \brief Sets \a lhs to \a rhs if \a rhs is worse then \a lhs and returns \a lhs.
+ * \brief Sets \a lhs to \a rhs if \a rhs is worse than \a lhs and returns \a lhs.
  */
 inline NotificationType& operator |=(NotificationType &lhs, const NotificationType &rhs)
 {

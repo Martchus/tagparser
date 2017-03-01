@@ -19,7 +19,7 @@ namespace Media {
  */
 
 /*!
- * \brief Shifts all offsets greather or equal then \a start by \a amount bytes.
+ * \brief Shifts all offsets greather or equal than \a start by \a amount bytes.
  */
 void MatroskaSeekInfo::shift(uint64 start, int64 amount)
 {

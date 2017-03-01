@@ -193,7 +193,7 @@ startParsingSignature:
             // save position of ID3v2 tag
             m_actualId3v2TagOffsets.push_back(m_containerOffset);
             if(m_actualId3v2TagOffsets.size() == 2) {
-                addNotification(NotificationType::Warning, "There is more then just one ID3v2 header at the beginning of the file.", context);
+                addNotification(NotificationType::Warning, "There is more than just one ID3v2 header at the beginning of the file.", context);
             }
 
             // read ID3v2 header

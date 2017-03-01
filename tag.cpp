@@ -63,7 +63,7 @@ std::vector<const TagValue *> Tag::values(KnownField field) const
 /*!
  * \brief Assigns the given \a values to the specified \a field.
  * \remarks
- * - There might me more then one value assigned to a \a field. Whereas setValue() only alters the first value, this
+ * - There might me more than one value assigned to a \a field. Whereas setValue() only alters the first value, this
  *   method will replace all currently assigned values with the specified \a values.
  * - However, the default implementation just sets the first value and discards additional values assuming
  *   multiple values per field are not supported by the tag.

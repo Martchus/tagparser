@@ -51,7 +51,7 @@ StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream,
     m_endOffset = s.tellg();
     s.seekg(currentPos);
     if(m_endOffset < m_startOffset) {
-        IoUtilities::throwIoFailure("End offset is less then start offset.");
+        IoUtilities::throwIoFailure("End offset is less than start offset.");
     }
 }
 

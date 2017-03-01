@@ -142,7 +142,7 @@ bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::id
 
 /*!
  * \brief Assigns the given \a values to the field with the specified \a id.
- * \remarks There might me more then one value assigned to an \a id. Whereas setValue() only alters the first value, this
+ * \remarks There might me more than one value assigned to an \a id. Whereas setValue() only alters the first value, this
  *          method will replace all currently assigned values with the specified \a values.
  * \sa Tag::setValues()
  */
@@ -168,7 +168,7 @@ bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::i
 
 /*!
  * \brief Assigns the given \a values to the field with the specified \a id.
- * \remarks There might me more then one value assigned to a \a field. Whereas setValue() only alters the first value, this
+ * \remarks There might me more than one value assigned to a \a field. Whereas setValue() only alters the first value, this
  *          method will replace all currently assigned values with the specified \a values.
  * \sa Tag::setValues()
  */

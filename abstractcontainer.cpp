@@ -280,7 +280,7 @@ Tag *AbstractContainer::createTag(const TagTarget &)
 /*!
  * \brief Returns the tag with the specified \a index.
  *
- * \a index must be less then tagCount().
+ * \a index must be less than tagCount().
  */
 Tag *AbstractContainer::tag(size_t )
 {
@@ -344,7 +344,7 @@ ElementPosition AbstractContainer::determineTagPosition() const
 /*!
  * \brief Returns the track with the specified \a index.
  *
- * \a index must be less then trackCount().
+ * \a index must be less than trackCount().
  */
 AbstractTrack *AbstractContainer::track(size_t )
 {
@@ -397,7 +397,7 @@ void AbstractContainer::removeAllTracks()
 /*!
  * \brief Returns the chapter with the specified \a index.
  *
- * \a index must be less then chapterCount().
+ * \a index must be less than chapterCount().
  */
 AbstractChapter *AbstractContainer::chapter(size_t )
 {
@@ -425,7 +425,7 @@ AbstractAttachment *AbstractContainer::createAttachment()
 /*!
  * \brief Returns the attachment with the specified \a index.
  *
- * \a index must be less then attachmentCount().
+ * \a index must be less than attachmentCount().
  */
 AbstractAttachment *AbstractContainer::attachment(size_t )
 {

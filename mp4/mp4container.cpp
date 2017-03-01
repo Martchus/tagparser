@@ -484,7 +484,7 @@ calculatePadding:
             // -> check whether the padding matches specifications
             //    min padding: says "at least ... byte should be reserved to prepend further tag info", so the padding at the end
             //                 shouldn't be tanken into account (it can't be used to prepend further tag info)
-            //    max padding: says "do not waste more then ... byte", so here all padding should be taken into account
+            //    max padding: says "do not waste more than ... byte", so here all padding should be taken into account
             newPadding = firstMediaDataAtom->startOffset() - currentOffset;
             rewriteRequired = (newPadding > 0 && newPadding < 8) || newPadding < fileInfo().minPadding() || (newPadding + newPaddingEnd) > fileInfo().maxPadding();
         }

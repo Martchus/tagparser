@@ -105,7 +105,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
  *
  * This helper function is used by MediaFileInfo and container implementations to create a backup file
  * when applying changes. The path of the created backup file is set to \a backup path.
- * The specified \a backupStream will be closed if currently open. Then is is
+ * The specified \a backupStream will be closed if currently open. Then it is
  * used to open the backup file using the flags ios_base::in and ios_base::binary.
  *
  * The specified \a originalStream is closed before performing the move operation.

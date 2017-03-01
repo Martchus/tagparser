@@ -435,7 +435,7 @@ vector<uint64> Mp4Track::readChunkSizes()
                 addChunkSizeEntries(chunkSizes, firstChunkIndex - previousChunkIndex, sampleIndex, samplesPerChunk);
             } else {
                 addNotification(NotificationType::Critical,
-                                "The first chunk index of a \"sample to chunk\" entry must be greather then the first chunk of the previous entry and not greather then the chunk count.", context);
+                                "The first chunk index of a \"sample to chunk\" entry must be greather than the first chunk of the previous entry and not greather than the chunk count.", context);
                 throw InvalidDataException();
             }
             previousChunkIndex = firstChunkIndex;

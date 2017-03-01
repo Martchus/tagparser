@@ -411,7 +411,7 @@ void MatroskaContainer::internalParseHeader()
                         case EbmlIds::MaxIdLength:
                             m_maxIdLength = subElement->readUInteger();
                             if(m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
-                                addNotification(NotificationType::Critical, "Maximum EBML element ID length greather then "
+                                addNotification(NotificationType::Critical, "Maximum EBML element ID length greather than "
                                                 % numberToString<uint32>(EbmlElement::maximumIdLengthSupported())
                                                 + " bytes is not supported.", context);
                                 throw InvalidDataException();
@@ -420,7 +420,7 @@ void MatroskaContainer::internalParseHeader()
                         case EbmlIds::MaxSizeLength:
                             m_maxSizeLength = subElement->readUInteger();
                             if(m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
-                                addNotification(NotificationType::Critical, "Maximum EBML element size length greather then "
+                                addNotification(NotificationType::Critical, "Maximum EBML element size length greather than "
                                                 % numberToString<uint32>(EbmlElement::maximumSizeLengthSupported())
                                                 + " bytes is not supported.", context);
                                 throw InvalidDataException();

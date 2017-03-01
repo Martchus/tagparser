@@ -55,7 +55,7 @@ void Mpeg4Descriptor::internalParse()
 {
     invalidateStatus();
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Descriptor is smaller then 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize()) + '.', "parsing MPEG-4 descriptor");
+        addNotification(NotificationType::Critical, "Descriptor is smaller than 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize()) + '.', "parsing MPEG-4 descriptor");
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());

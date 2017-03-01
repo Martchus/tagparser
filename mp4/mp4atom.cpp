@@ -60,7 +60,7 @@ void Mp4Atom::internalParse()
     invalidateStatus();
     static const string context("parsing MP4 atom");
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid. The remaining size within the parent atom is " % numberToString(maxTotalSize()) + ".", context);
+        addNotification(NotificationType::Critical, "Atom is smaller than 8 byte and hence invalid. The remaining size within the parent atom is " % numberToString(maxTotalSize()) + ".", context);
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());
@@ -74,7 +74,7 @@ void Mp4Atom::internalParse()
         throw NoDataFoundException();
     }
     if(m_dataSize < 8 && m_dataSize != 1) {
-        addNotification(NotificationType::Critical, "Atom is smaller then 8 byte and hence invalid.", context);
+        addNotification(NotificationType::Critical, "Atom is smaller than 8 byte and hence invalid.", context);
         throw TruncatedDataException();
     }
     m_id = reader().readUInt32BE();
@@ -83,7 +83,7 @@ void Mp4Atom::internalParse()
         m_dataSize = reader().readUInt64BE();
         m_sizeLength = 12; // 4 bytes indicate long size denotation + 8 bytes for actual size denotation
         if(dataSize() < 16 && m_dataSize != 1) {
-            addNotification(NotificationType::Critical, "Atom denoting 64-bit size is smaller then 16 byte and hence invalid.", parsingContext());
+            addNotification(NotificationType::Critical, "Atom denoting 64-bit size is smaller than 16 byte and hence invalid.", parsingContext());
             throw TruncatedDataException();
         }
     } else {

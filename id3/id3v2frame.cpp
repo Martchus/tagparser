@@ -191,7 +191,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
     if(isCompressed()) {
         uLongf decompressedSize = version >= 4 ? reader.readSynchsafeUInt32BE() : reader.readUInt32BE();
         if(decompressedSize < m_dataSize) {
-            addNotification(NotificationType::Critical, "The decompressed size is smaller then the compressed size.", context);
+            addNotification(NotificationType::Critical, "The decompressed size is smaller than the compressed size.", context);
             throw InvalidDataException();
         }
         auto bufferCompressed = make_unique<char[]>(m_dataSize);;

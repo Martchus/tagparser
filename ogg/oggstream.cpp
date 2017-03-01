@@ -117,7 +117,7 @@ void OggStream::internalParseHeader()
                         }
                         hasIdentificationHeader = true;
                     } else {
-                        addNotification(NotificationType::Critical, "Vorbis identification header appears more then once. Oversupplied occurrence will be ignored.", context);
+                        addNotification(NotificationType::Critical, "Vorbis identification header appears more than once. Oversupplied occurrence will be ignored.", context);
                     }
                     break;
                 case VorbisPackageTypes::Comments:
@@ -126,7 +126,7 @@ void OggStream::internalParseHeader()
                         m_container.announceComment(iterator.currentPageIndex(), iterator.currentSegmentIndex(), false, GeneralMediaFormat::Vorbis);
                         hasCommentHeader = true;
                     } else {
-                        addNotification(NotificationType::Critical, "Vorbis comment header appears more then once. Oversupplied occurrence will be ignored.", context);
+                        addNotification(NotificationType::Critical, "Vorbis comment header appears more than once. Oversupplied occurrence will be ignored.", context);
                     }
                     break;
                 case VorbisPackageTypes::Setup:
@@ -174,7 +174,7 @@ void OggStream::internalParseHeader()
                     }
                     hasIdentificationHeader = true;
                 } else {
-                    addNotification(NotificationType::Critical, "Opus identification header appears more then once. Oversupplied occurrence will be ignored.", context);
+                    addNotification(NotificationType::Critical, "Opus identification header appears more than once. Oversupplied occurrence will be ignored.", context);
                 }
 
             } else if(sig == 0x4F70757354616773u) {
@@ -197,7 +197,7 @@ void OggStream::internalParseHeader()
                     m_container.announceComment(iterator.currentPageIndex(), iterator.currentSegmentIndex(), false, GeneralMediaFormat::Opus);
                     hasCommentHeader = true;
                 } else {
-                    addNotification(NotificationType::Critical, "Opus tags/comment header appears more then once. Oversupplied occurrence will be ignored.", context);
+                    addNotification(NotificationType::Critical, "Opus tags/comment header appears more than once. Oversupplied occurrence will be ignored.", context);
                 }
 
             } else if((sig & 0xFFFFFFFFFF000000u) == 0x7F464C4143000000u) {
@@ -235,7 +235,7 @@ void OggStream::internalParseHeader()
                     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
                     hasIdentificationHeader = true;
                 } else {
-                    addNotification(NotificationType::Critical, "FLAC-to-Ogg mapping header appears more then once. Oversupplied occurrence will be ignored.", context);
+                    addNotification(NotificationType::Critical, "FLAC-to-Ogg mapping header appears more than once. Oversupplied occurrence will be ignored.", context);
                 }
 
                 if(!hasCommentHeader) {
