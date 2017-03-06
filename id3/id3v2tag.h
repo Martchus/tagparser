@@ -52,23 +52,33 @@ inline uint64 Id3v2TagMaker::requiredSize() const
     return m_requiredSize;
 }
 
-class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Frame, FrameComparer>
+/*!
+ * \brief Defines traits for the TagField implementation of the Id3v2Tag class.
+ */
+template <>
+class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Id3v2Tag>
+{
+public:
+    typedef Id3v2Tag implementationType;
+    typedef Id3v2Frame fieldType;
+    typedef FrameComparer compare;
+};
+
+class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag>
 {
 public:
     Id3v2Tag();
 
     static constexpr TagType tagType = TagType::Id3v2Tag;
-    TagType type() const;
-    const char *typeName() const;
+    static constexpr const char *tagName = "ID3v2 tag";
+    static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf16LittleEndian;
     TagTextEncoding proposedTextEncoding() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
     uint32 fieldId(KnownField value) const;
     KnownField knownField(const uint32 &id) const;
     TagDataType proposedDataType(const uint32 &id) const;
-    using FieldMapBasedTag<Id3v2Frame, FrameComparer>::value;
-    const TagValue &value(const typename Id3v2Frame::identifierType &id) const;
-    using FieldMapBasedTag<Id3v2Frame, FrameComparer>::setValue;
-    bool setValue(const typename Id3v2Frame::identifierType &id, const TagValue &value);
+    using FieldMapBasedTag<Id3v2Tag>::value;
+    using FieldMapBasedTag<Id3v2Tag>::setValue;
     bool supportsDescription(KnownField field) const;
     bool supportsMimeType(KnownField field) const;
 
@@ -108,16 +118,6 @@ inline Id3v2Tag::Id3v2Tag() :
     m_extendedHeaderSize(0),
     m_paddingSize(0)
 {}
-
-inline TagType Id3v2Tag::type() const
-{
-    return TagType::Id3v2Tag;
-}
-
-inline const char *Id3v2Tag::typeName() const
-{
-    return "ID3v2 tag";
-}
 
 inline TagTextEncoding Id3v2Tag::proposedTextEncoding() const
 {

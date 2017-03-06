@@ -12,15 +12,26 @@ namespace Media {
 class OggIterator;
 class VorbisComment;
 
-class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>
+/*!
+ * \brief Defines traits for the TagField implementation of the VorbisComment class.
+ */
+template <>
+class TAG_PARSER_EXPORT FieldMapBasedTagTraits<VorbisComment>
+{
+public:
+    typedef VorbisComment implementationType;
+    typedef VorbisCommentField fieldType;
+    typedef CaseInsensitiveStringComparer compare;
+};
+
+class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment>
 {
 public:
     VorbisComment();
 
     static constexpr TagType tagType = TagType::VorbisComment;
-    TagType type() const;
-    const char *typeName() const;
-    TagTextEncoding proposedTextEncoding() const;
+    static constexpr const char *tagName = "Vorbis comment";
+    static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
 
     const TagValue &value(KnownField field) const;
@@ -48,21 +59,6 @@ private:
  */
 inline VorbisComment::VorbisComment()
 {}
-
-inline TagType VorbisComment::type() const
-{
-    return TagType::VorbisComment;
-}
-
-inline const char *VorbisComment::typeName() const
-{
-    return "Vorbis comment";
-}
-
-inline TagTextEncoding VorbisComment::proposedTextEncoding() const
-{
-    return TagTextEncoding::Utf8;
-}
 
 inline bool VorbisComment::canEncodingBeUsed(TagTextEncoding encoding) const
 {

@@ -9,6 +9,16 @@
 namespace Media {
 
 /*!
+ * \class Media::FieldMapBasedTagTraits
+ * \brief Defines traits for the specified \a ImplementationType.
+ *
+ * A template specialization for each FieldMapBasedTag subclass must be provided.
+ */
+template<typename ImplementationType>
+class FieldMapBasedTagTraits
+{};
+
+/*!
  * \class Media::FieldMapBasedTag
  * \brief The FieldMapBasedTag provides a generic implementation of Tag which stores
  *        the tag fields using std::multimap.
@@ -21,38 +31,46 @@ namespace Media {
  *
  * \tparam Compare Specifies the key comparsion function. Default is std::less.
  */
-template <class FieldType, class Compare = std::less<typename FieldType::identifierType> >
+template <class ImplementationType>
 class FieldMapBasedTag : public Tag
 {
 public:
+    friend class FieldMapBasedTagTraits<ImplementationType>;
+    typedef typename FieldMapBasedTagTraits<ImplementationType>::implementationType implementationType;
+    typedef typename FieldMapBasedTagTraits<ImplementationType>::fieldType fieldType;
+    typedef typename FieldMapBasedTagTraits<ImplementationType>::fieldType::identifierType identifierType;
+    typedef typename FieldMapBasedTagTraits<ImplementationType>::compare compare;
+
     FieldMapBasedTag();
 
-    virtual const TagValue &value(const typename FieldType::identifierType &id) const; // FIXME: use static polymorphism
+    TagType type() const;
+    const char *typeName() const;
+    TagTextEncoding proposedTextEncoding() const;
+    virtual const TagValue &value(const identifierType &id) const; // FIXME: use static polymorphism
     const TagValue &value(KnownField field) const;
-    std::vector<const TagValue *> values(const typename FieldType::identifierType &id) const;
+    std::vector<const TagValue *> values(const identifierType &id) const;
     std::vector<const TagValue *> values(KnownField field) const;
-    virtual bool setValue(const typename FieldType::identifierType &id, const TagValue &value); // FIXME: use static polymorphism
+    virtual bool setValue(const identifierType &id, const TagValue &value); // FIXME: use static polymorphism
     bool setValue(KnownField field, const TagValue &value);
-    bool setValues(const typename FieldType::identifierType &id, const std::vector<TagValue> &values);
+    bool setValues(const identifierType &id, const std::vector<TagValue> &values);
     bool setValues(KnownField field, const std::vector<TagValue> &values);
     bool hasField(KnownField field) const;
-    virtual bool hasField(const typename FieldType::identifierType &id) const; // FIXME: use static polymorphism
+    virtual bool hasField(const identifierType &id) const; // FIXME: use static polymorphism
     void removeAllFields();
-    const std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields() const;
-    std::multimap<typename FieldType::identifierType, FieldType, Compare> &fields();
+    const std::multimap<identifierType, fieldType, compare> &fields() const;
+    std::multimap<identifierType, fieldType, compare> &fields();
     unsigned int fieldCount() const;
-    virtual typename FieldType::identifierType fieldId(KnownField value) const = 0; // FIXME: use static polymorphism
-    virtual KnownField knownField(const typename FieldType::identifierType &id) const = 0; // FIXME: use static polymorphism
+    virtual identifierType fieldId(KnownField value) const = 0; // FIXME: use static polymorphism
+    virtual KnownField knownField(const identifierType &id) const = 0; // FIXME: use static polymorphism
     bool supportsField(KnownField field) const;
     using Tag::proposedDataType;
-    virtual TagDataType proposedDataType(const typename FieldType::identifierType &id) const; // FIXME: use static polymorphism
-    int insertFields(const FieldMapBasedTag<FieldType, Compare> &from, bool overwrite);
+    virtual TagDataType proposedDataType(const identifierType &id) const; // FIXME: use static polymorphism
+    int insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite);
     unsigned int insertValues(const Tag &from, bool overwrite);
     void ensureTextValuesAreProperlyEncoded();
-    typedef FieldType fieldType;
 
 private:
-    std::multimap<typename FieldType::identifierType, FieldType, Compare> m_fields;
+    std::multimap<identifierType, fieldType, compare> m_fields;
 };
 
 /*!
@@ -72,23 +90,41 @@ private:
 /*!
  * \brief Constructs a new FieldMapBasedTag.
  */
-template <class FieldType, class Compare>
-FieldMapBasedTag<FieldType, Compare>::FieldMapBasedTag()
+template <class ImplementationType>
+FieldMapBasedTag<ImplementationType>::FieldMapBasedTag()
 {}
+
+template <class ImplementationType>
+TagType FieldMapBasedTag<ImplementationType>::type() const
+{
+    return ImplementationType::tagType;
+}
+
+template <class ImplementationType>
+const char *FieldMapBasedTag<ImplementationType>::typeName() const
+{
+    return ImplementationType::tagName;
+}
+
+template<class ImplementationType>
+TagTextEncoding FieldMapBasedTag<ImplementationType>::proposedTextEncoding() const
+{
+    return ImplementationType::defaultTextEncoding;
+}
 
 /*!
  * \brief Returns the value of the field with the specified \a id.
  * \sa Tag::value()
  */
-template <class FieldType, class Compare>
-inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(const typename FieldType::identifierType &id) const
+template <class ImplementationType>
+inline const TagValue &FieldMapBasedTag<ImplementationType>::value(const identifierType &id) const
 {
     auto i = m_fields.find(id);
     return i != m_fields.end() ? i->second.value() : TagValue::empty();
 }
 
-template <class FieldType, class Compare>
-inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField field) const
+template <class ImplementationType>
+inline const TagValue &FieldMapBasedTag<ImplementationType>::value(KnownField field) const
 {
     return value(fieldId(field));
 }
@@ -97,8 +133,8 @@ inline const TagValue &FieldMapBasedTag<FieldType, Compare>::value(KnownField fi
  * \brief Returns the values of the field with the specified \a id.
  * \sa Tag::values()
  */
-template <class FieldType, class Compare>
-inline std::vector<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(const typename FieldType::identifierType &id) const
+template <class ImplementationType>
+inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(const identifierType &id) const
 {
     auto range = m_fields.equal_range(id);
     std::vector<const TagValue *> values;
@@ -110,14 +146,14 @@ inline std::vector<const TagValue *> FieldMapBasedTag<FieldType, Compare>::value
     return values;
 }
 
-template <class FieldType, class Compare>
-inline std::vector<const TagValue *> FieldMapBasedTag<FieldType, Compare>::values(KnownField field) const
+template <class ImplementationType>
+inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(KnownField field) const
 {
     return values(fieldId(field));
 }
 
-template <class FieldType, class Compare>
-inline bool FieldMapBasedTag<FieldType, Compare>::setValue(KnownField field, const TagValue &value)
+template <class ImplementationType>
+inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, const TagValue &value)
 {
     return setValue(fieldId(field), value);
 }
@@ -126,14 +162,14 @@ inline bool FieldMapBasedTag<FieldType, Compare>::setValue(KnownField field, con
  * \brief Assigns the given \a value to the field with the specified \a id.
  * \sa Tag::setValue()
  */
-template <class FieldType, class Compare>
-bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::identifierType &id, const Media::TagValue &value)
+template <class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::setValue(const identifierType &id, const Media::TagValue &value)
 {
     auto i = m_fields.find(id);
     if(i != m_fields.end()) { // field already exists -> set its value
         i->second.setValue(value);
     } else if(!value.isEmpty())  { // field doesn't exist -> create new one if value is not null
-        m_fields.insert(std::make_pair(id, FieldType(id, value)));
+        m_fields.insert(std::make_pair(id, fieldType(id, value)));
     } else { // otherwise return false
         return false;
     }
@@ -146,8 +182,8 @@ bool FieldMapBasedTag<FieldType, Compare>::setValue(const typename FieldType::id
  *          method will replace all currently assigned values with the specified \a values.
  * \sa Tag::setValues()
  */
-template <class FieldType, class Compare>
-bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::identifierType &id, const std::vector<TagValue> &values)
+template <class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::setValues(const identifierType &id, const std::vector<TagValue> &values)
 {
     auto valuesIterator = values.cbegin();
     auto range = m_fields.equal_range(id);
@@ -161,7 +197,7 @@ bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::i
     }
     // add remaining specified values (there are more specified values than existing ones)
     for(; valuesIterator != values.cend(); ++valuesIterator) {
-        m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
+        m_fields.insert(std::make_pair(id, fieldType(id, *valuesIterator)));
     }
     // remove remaining existing values (there are more existing values than specified ones)
     for(; range.first != range.second; ++range.first) {
@@ -176,14 +212,14 @@ bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::i
  *          method will replace all currently assigned values with the specified \a values.
  * \sa Tag::setValues()
  */
-template <class FieldType, class Compare>
-bool FieldMapBasedTag<FieldType, Compare>::setValues(KnownField field, const std::vector<TagValue> &values)
+template <class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::setValues(KnownField field, const std::vector<TagValue> &values)
 {
     return setValues(fieldId(field), values);
 }
 
-template <class FieldType, class Compare>
-inline bool FieldMapBasedTag<FieldType, Compare>::hasField(KnownField field) const
+template <class ImplementationType>
+inline bool FieldMapBasedTag<ImplementationType>::hasField(KnownField field) const
 {
     return hasField(fieldId(field));
 }
@@ -191,8 +227,8 @@ inline bool FieldMapBasedTag<FieldType, Compare>::hasField(KnownField field) con
 /*!
  * \brief Returns an indication whether the field with the specified \a id is present.
  */
-template <class FieldType, class Compare>
-inline bool FieldMapBasedTag<FieldType, Compare>::hasField(const typename FieldType::identifierType &id) const
+template <class ImplementationType>
+inline bool FieldMapBasedTag<ImplementationType>::hasField(const identifierType &id) const
 {
     for (auto range = m_fields.equal_range(id); range.first != range.second; ++range.first) {
         if(!range.first->second.value().isEmpty()) {
@@ -202,8 +238,8 @@ inline bool FieldMapBasedTag<FieldType, Compare>::hasField(const typename FieldT
     return false;
 }
 
-template <class FieldType, class Compare>
-inline void FieldMapBasedTag<FieldType, Compare>::removeAllFields()
+template <class ImplementationType>
+inline void FieldMapBasedTag<ImplementationType>::removeAllFields()
 {
     m_fields.clear();
 }
@@ -211,8 +247,8 @@ inline void FieldMapBasedTag<FieldType, Compare>::removeAllFields()
 /*!
  * \brief Returns the fields of the tag by providing direct access to the field map of the tag.
  */
-template <class FieldType, class Compare>
-inline const std::multimap<typename FieldType::identifierType, FieldType, Compare> &FieldMapBasedTag<FieldType, Compare>::fields() const
+template <class ImplementationType>
+inline auto FieldMapBasedTag<ImplementationType>::fields() const -> const std::multimap<identifierType, fieldType, compare> &
 {
     return m_fields;
 }
@@ -220,14 +256,14 @@ inline const std::multimap<typename FieldType::identifierType, FieldType, Compar
 /*!
  * \brief Returns the fields of the tag by providing direct access to the field map of the tag.
  */
-template <class FieldType, class Compare>
-inline std::multimap<typename FieldType::identifierType, FieldType, Compare> &FieldMapBasedTag<FieldType, Compare>::fields()
+template <class ImplementationType>
+inline auto FieldMapBasedTag<ImplementationType>::fields() -> std::multimap<identifierType, fieldType, compare> &
 {
     return m_fields;
 }
 
-template <class FieldType, class Compare>
-unsigned int FieldMapBasedTag<FieldType, Compare>::fieldCount() const
+template <class ImplementationType>
+unsigned int FieldMapBasedTag<ImplementationType>::fieldCount() const
 {
     unsigned int count = 0;
     for(const auto &field : m_fields) {
@@ -238,18 +274,18 @@ unsigned int FieldMapBasedTag<FieldType, Compare>::fieldCount() const
     return count;
 }
 
-template <class FieldType, class Compare>
-inline bool FieldMapBasedTag<FieldType, Compare>::supportsField(KnownField field) const
+template <class ImplementationType>
+inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field) const
 {
-    static typename FieldType::identifierType def;
+    static identifierType def;
     return fieldId(field) != def;
 }
 
 /*!
  * \brief Returns the proposed data type for the field with the specified \a id.
  */
-template <class FieldType, class Compare>
-inline TagDataType FieldMapBasedTag<FieldType, Compare>::proposedDataType(const typename FieldType::identifierType &id) const
+template <class ImplementationType>
+inline TagDataType FieldMapBasedTag<ImplementationType>::proposedDataType(const identifierType &id) const
 {
     return Tag::proposedDataType(knownField(id));
 }
@@ -260,18 +296,18 @@ inline TagDataType FieldMapBasedTag<FieldType, Compare>::proposedDataType(const 
  * \param overwrite Indicates whether existing fields should be overwritten.
  * \return Returns the number of fields that have been inserted.
  */
-template <class FieldType, class Compare>
-int FieldMapBasedTag<FieldType, Compare>::insertFields(const FieldMapBasedTag<FieldType, Compare> &from, bool overwrite)
+template <class ImplementationType>
+int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite)
 {
     int fieldsInserted = 0;
     for(const auto &pair : from.fields()) {
-        const FieldType &fromField = pair.second;
+        const fieldType &fromField = pair.second;
         if(fromField.value().isEmpty())
             continue;
         bool fieldInserted = false;
         auto range = fields().equal_range(fromField.id());
         for(auto i = range.first; i != range.second; ++i) {
-            FieldType &ownField = i->second;
+            fieldType &ownField = i->second;
             if((fromField.isTypeInfoAssigned() && ownField.isTypeInfoAssigned()
                     && fromField.typeInfo() == ownField.typeInfo())
                     || (!fromField.isTypeInfoAssigned() && ! ownField.isTypeInfoAssigned())) {
@@ -291,19 +327,19 @@ int FieldMapBasedTag<FieldType, Compare>::insertFields(const FieldMapBasedTag<Fi
     return fieldsInserted;
 }
 
-template <class FieldType, class Compare>
-unsigned int FieldMapBasedTag<FieldType, Compare>::insertValues(const Tag &from, bool overwrite)
+template <class ImplementationType>
+unsigned int FieldMapBasedTag<ImplementationType>::insertValues(const Tag &from, bool overwrite)
 {
     if(type() == from.type()) {
         // the tags are of the same type, we can insert the fields directly
-        return insertFields(static_cast<const FieldMapBasedTag<FieldType, Compare> &>(from), overwrite);
+        return insertFields(static_cast<const FieldMapBasedTag<ImplementationType> &>(from), overwrite);
     } else {
         return Tag::insertValues(from, overwrite);
     }
 }
 
-template <class FieldType, class Compare>
-void FieldMapBasedTag<FieldType, Compare>::ensureTextValuesAreProperlyEncoded()
+template <class ImplementationType>
+void FieldMapBasedTag<ImplementationType>::ensureTextValuesAreProperlyEncoded()
 {
     for(auto &field : fields()) {
         field.second.value().convertDataEncodingForTag(this);

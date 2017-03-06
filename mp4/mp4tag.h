@@ -87,39 +87,50 @@ inline uint64 Mp4TagMaker::requiredSize() const
     return m_metaSize;
 }
 
-class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4TagField>
+/*!
+ * \brief Defines traits for the TagField implementation of the Mp4Tag class.
+ */
+template <>
+class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Mp4Tag>
+{
+public:
+    typedef Mp4Tag implementationType;
+    typedef Mp4TagField fieldType;
+    typedef std::less<typename fieldType::identifierType> compare;
+};
+
+class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag>
 {
 public:
     Mp4Tag();
 
     static constexpr TagType tagType = TagType::Mp4Tag;
-    TagType type() const;
-    const char *typeName() const;
-    TagTextEncoding proposedTextEncoding() const;
+    static constexpr const char *tagName = "MP4/iTunes tag";
+    static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
 
     uint32 fieldId(KnownField field) const;
     KnownField knownField(const uint32 &id) const;
     bool supportsField(KnownField field) const;
-    using FieldMapBasedTag<Mp4TagField>::value;
+    using FieldMapBasedTag<Mp4Tag>::value;
     const TagValue &value(KnownField value) const;
-    using FieldMapBasedTag<Mp4TagField>::values;
+    using FieldMapBasedTag<Mp4Tag>::values;
     std::vector<const TagValue *> values(KnownField field) const;
 #ifdef LEGACY_API
     const TagValue &value(const std::string mean, const std::string name) const;
 #endif
     const TagValue &value(const std::string &mean, const std::string &name) const;
     const TagValue &value(const char *mean, const char *name) const;
-    using FieldMapBasedTag<Mp4TagField>::setValue;
+    using FieldMapBasedTag<Mp4Tag>::setValue;
     bool setValue(KnownField field, const TagValue &value);
-    using FieldMapBasedTag<Mp4TagField>::setValues;
+    using FieldMapBasedTag<Mp4Tag>::setValues;
     bool setValues(KnownField field, const std::vector<TagValue> &values);
 #ifdef LEGACY_API
     bool setValue(const std::string mean, const std::string name, const TagValue &value);
 #endif
     bool setValue(const std::string &mean, const std::string &name, const TagValue &value);
     bool setValue(const char *mean, const char *name, const TagValue &value);
-    using FieldMapBasedTag<Mp4TagField>::hasField;
+    using FieldMapBasedTag<Mp4Tag>::hasField;
     bool hasField(KnownField value) const;
 
     void parse(Mp4Atom &metaAtom);
@@ -133,28 +144,13 @@ public:
 inline Mp4Tag::Mp4Tag()
 {}
 
-inline TagType Mp4Tag::type() const
-{
-    return TagType::Mp4Tag;
-}
-
-inline const char *Mp4Tag::typeName() const
-{
-    return "MP4/iTunes tag";
-}
-
-inline TagTextEncoding Mp4Tag::proposedTextEncoding() const
-{
-    return TagTextEncoding::Utf8;
-}
-
 inline bool Mp4Tag::supportsField(KnownField field) const
 {
     switch(field) {
     case KnownField::EncoderSettings:
         return true;
     default:
-        return FieldMapBasedTag<Mp4TagField>::supportsField(field);
+        return FieldMapBasedTag<Mp4Tag>::supportsField(field);
     }
 }
 
