@@ -59,16 +59,16 @@ const TagValue &Mp4Tag::value(KnownField field) const
 {
     switch(field) {
     case KnownField::Genre: {
-        const TagValue &value = FieldMapBasedTag<fieldType>::value(Mp4TagAtomIds::Genre);
+        const TagValue &value = FieldMapBasedTag<Mp4Tag>::value(Mp4TagAtomIds::Genre);
         if(!value.isEmpty()) {
             return value;
         } else {
-            return FieldMapBasedTag<fieldType>::value(Mp4TagAtomIds::PreDefinedGenre);
+            return FieldMapBasedTag<Mp4Tag>::value(Mp4TagAtomIds::PreDefinedGenre);
         }
     } case KnownField::EncoderSettings:
         return this->value(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::cdec);
     case KnownField::RecordLabel: {
-        const TagValue &value = FieldMapBasedTag<fieldType>::value(Mp4TagAtomIds::RecordLabel);
+        const TagValue &value = FieldMapBasedTag<Mp4Tag>::value(Mp4TagAtomIds::RecordLabel);
         if(!value.isEmpty()) {
             return value;
         } else {
@@ -76,13 +76,13 @@ const TagValue &Mp4Tag::value(KnownField field) const
         }
     }
     default:
-        return FieldMapBasedTag<fieldType>::value(field);
+        return FieldMapBasedTag<Mp4Tag>::value(field);
     }
 }
 
 std::vector<const TagValue *> Mp4Tag::values(KnownField field) const
 {
-    auto values = FieldMapBasedTag<fieldType>::values(field);
+    auto values = FieldMapBasedTag<Mp4Tag>::values(field);
     const Mp4ExtendedFieldId extendedId(field);
     if(extendedId) {
         auto range = fields().equal_range(Mp4TagAtomIds::Extended);
@@ -180,10 +180,10 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
         switch(value.type()) {
         case TagDataType::StandardGenreIndex:
             fields().erase(Mp4TagAtomIds::Genre);
-            return FieldMapBasedTag<fieldType>::setValue(Mp4TagAtomIds::PreDefinedGenre, value);
+            return FieldMapBasedTag<Mp4Tag>::setValue(Mp4TagAtomIds::PreDefinedGenre, value);
         default:
             fields().erase(Mp4TagAtomIds::PreDefinedGenre);
-            return FieldMapBasedTag<fieldType>::setValue(Mp4TagAtomIds::Genre, value);
+            return FieldMapBasedTag<Mp4Tag>::setValue(Mp4TagAtomIds::Genre, value);
         }
     case KnownField::EncoderSettings:
         return setValue(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::cdec, value);
@@ -193,7 +193,7 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
         }
         FALLTHROUGH;
     default:
-        return FieldMapBasedTag<fieldType>::setValue(field, value);
+        return FieldMapBasedTag<Mp4Tag>::setValue(field, value);
     }
 }
 
@@ -225,7 +225,7 @@ bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
             range.first->second.setValue(TagValue());
         }
     }
-    return FieldMapBasedTag<fieldType>::setValues(field, values);
+    return FieldMapBasedTag<Mp4Tag>::setValues(field, values);
 }
 
 /*!
@@ -260,10 +260,10 @@ bool Mp4Tag::hasField(KnownField field) const
 {
     switch(field) {
     case KnownField::Genre:
-        return FieldMapBasedTag<fieldType>::hasField(Mp4TagAtomIds::PreDefinedGenre)
-                || FieldMapBasedTag<fieldType>::hasField(Mp4TagAtomIds::Genre);
+        return FieldMapBasedTag<Mp4Tag>::hasField(Mp4TagAtomIds::PreDefinedGenre)
+                || FieldMapBasedTag<Mp4Tag>::hasField(Mp4TagAtomIds::Genre);
     default:
-        return FieldMapBasedTag<fieldType>::hasField(field);
+        return FieldMapBasedTag<Mp4Tag>::hasField(field);
     }
 }
 

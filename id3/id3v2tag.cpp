@@ -147,16 +147,6 @@ TagDataType Id3v2Tag::proposedDataType(const uint32 &id) const
     }
 }
 
-const TagValue &Id3v2Tag::value(const typename Id3v2Frame::identifierType &id) const
-{
-    return FieldMapBasedTag<Id3v2Frame, FrameComparer>::value(id);
-}
-
-bool Id3v2Tag::setValue(const typename Id3v2Frame::identifierType &id, const TagValue &value)
-{
-    return FieldMapBasedTag<Id3v2Frame, FrameComparer>::setValue(id, value);
-}
-
 /*!
  * \brief Parses tag information from the specified \a stream.
  *

@@ -12,6 +12,7 @@ public:
     Id3v1Tag();
 
     static constexpr TagType tagType = TagType::Id3v1Tag;
+    static constexpr const char *tagName = "ID3v1 tag";
     TagType type() const;
     const char *typeName() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;

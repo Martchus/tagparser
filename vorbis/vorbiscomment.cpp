@@ -29,7 +29,7 @@ const TagValue &VorbisComment::value(KnownField field) const
     case KnownField::Vendor:
         return vendor();
     default:
-        return FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>::value(field);
+        return FieldMapBasedTag<VorbisComment>::value(field);
     }
 }
 
@@ -40,7 +40,7 @@ bool VorbisComment::setValue(KnownField field, const TagValue &value)
         setVendor(value);
         return true;
     default:
-        return FieldMapBasedTag<VorbisCommentField, CaseInsensitiveStringComparer>::setValue(field, value);
+        return FieldMapBasedTag<VorbisComment>::setValue(field, value);
     }
 }
 

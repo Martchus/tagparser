@@ -47,16 +47,26 @@ inline uint64 MatroskaTagMaker::requiredSize() const
     return m_totalSize;
 }
 
-class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTagField>
+/*!
+ * \brief Defines traits for the TagField implementation of the MatroskaTag class.
+ */
+template <>
+class TAG_PARSER_EXPORT FieldMapBasedTagTraits<MatroskaTag>
+{
+public:
+    typedef MatroskaTag implementationType;
+    typedef MatroskaTagField fieldType;
+    typedef std::less<typename fieldType::identifierType> compare;
+};
+
+class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag>
 {
 public:
     MatroskaTag();
 
     static constexpr TagType tagType = TagType::MatroskaTag;
-    // FIXME: implement type() and typeName() in FieldMapBasedTag
-    TagType type() const;
-    const char *typeName() const;
-    TagTextEncoding proposedTextEncoding() const;
+    static constexpr const char *tagName = "Matroska tag";
+    static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
     bool supportsTarget() const;
     TagTargetLevel targetLevel() const;
@@ -86,21 +96,6 @@ inline bool MatroskaTag::supportsTarget() const
 inline TagTargetLevel MatroskaTag::targetLevel() const
 {
     return matroskaTagTargetLevel(m_target.level());
-}
-
-inline TagType MatroskaTag::type() const
-{
-    return TagType::MatroskaTag;
-}
-
-inline const char *MatroskaTag::typeName() const
-{
-    return "Matroska tag";
-}
-
-inline TagTextEncoding MatroskaTag::proposedTextEncoding() const
-{
-    return TagTextEncoding::Utf8;
 }
 
 inline bool MatroskaTag::canEncodingBeUsed(TagTextEncoding encoding) const

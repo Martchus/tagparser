@@ -12,7 +12,7 @@ class TagField;
  * \class Media::TagFieldTraits
  * \brief Defines traits for the specified \a ImplementationType.
  *
- * A template specialization for each TagField derivat must be provided.
+ * A template specialization for each TagField subclass must be provided.
  */
 template<typename ImplementationType>
 class TagFieldTraits

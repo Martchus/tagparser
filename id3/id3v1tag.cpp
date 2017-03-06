@@ -30,7 +30,7 @@ TagType Id3v1Tag::type() const
 
 const char *Id3v1Tag::typeName() const
 {
-    return "ID3v1 tag";
+    return tagName;
 }
 
 bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
