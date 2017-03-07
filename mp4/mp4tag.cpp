@@ -119,7 +119,7 @@ const TagValue &Mp4Tag::value(const string mean, const string name) const
     return (this->*static_cast<const TagValue &(Mp4Tag::*)(const string &, const string &) const>(&Mp4Tag::value))(mean, name);
 }
 
-Mp4Tag::identifierType Mp4Tag::internallyGetFieldId(KnownField field) const
+Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
 {
     using namespace Mp4TagAtomIds;
     switch(field) {
@@ -146,7 +146,7 @@ Mp4Tag::identifierType Mp4Tag::internallyGetFieldId(KnownField field) const
     }
 }
 
-KnownField Mp4Tag::internallyGetKnownField(const identifierType &id) const
+KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace Mp4TagAtomIds;
     switch(id) {
@@ -244,7 +244,7 @@ bool Mp4Tag::setValue(const char *mean, const char *name, const TagValue &value)
             return true;
         }
     }
-    fields().insert(make_pair(Mp4TagAtomIds::Extended, fieldType(mean, name, value)));
+    fields().insert(make_pair(Mp4TagAtomIds::Extended, FieldType(mean, name, value)));
     return true;
 }
 
@@ -320,7 +320,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
                 child->parse();
                 tagField.invalidateNotifications();
                 tagField.reparse(*child);
-                fields().insert(pair<fieldType::identifierType, fieldType>(child->id(), tagField));
+                fields().emplace(child->id(), tagField);
             } catch(const Failure &) {
             }
             addNotifications(context, *child);

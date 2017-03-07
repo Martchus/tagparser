@@ -15,7 +15,7 @@ namespace Media {
  * \brief Implementation of Media::Tag for the Matroska container.
  */
 
-MatroskaTag::identifierType MatroskaTag::internallyGetFieldId(KnownField field) const
+MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) const
 {
     using namespace MatroskaTagIds;
     switch(field) {
@@ -45,7 +45,7 @@ MatroskaTag::identifierType MatroskaTag::internallyGetFieldId(KnownField field) 
     }
 }
 
-KnownField MatroskaTag::internallyGetKnownField(const identifierType &id) const
+KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace MatroskaTagIds;
     static const map<string, KnownField> map({

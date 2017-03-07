@@ -44,7 +44,7 @@ bool VorbisComment::setValue(KnownField field, const TagValue &value)
     }
 }
 
-VorbisComment::identifierType VorbisComment::internallyGetFieldId(KnownField field) const
+VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField field) const
 {
     using namespace VorbisCommentIds;
     switch(field) {
@@ -70,7 +70,7 @@ VorbisComment::identifierType VorbisComment::internallyGetFieldId(KnownField fie
     }
 }
 
-KnownField VorbisComment::internallyGetKnownField(const identifierType &id) const
+KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace VorbisCommentIds;
     static const map<string, KnownField> fieldMap({
@@ -145,7 +145,7 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
                 // read fields
                 try {
                     field.parse(stream, maxSize);
-                    fields().insert(pair<fieldType::identifierType, fieldType>(fieldId, field));
+                    fields().emplace(fieldId, field);
                 } catch(const TruncatedDataException &) {
                     addNotifications(field);
                     throw;

@@ -26,25 +26,9 @@ template <>
 class TAG_PARSER_EXPORT FileElementTraits<EbmlElement>
 {
 public:
-    /*!
-     * \brief The container type used to store such elements is MatroskaContainer.
-     */
-    typedef MatroskaContainer containerType;
-
-    /*!
-     * \brief The type used to store element IDs is an unsigned 32-bit integer.
-     */
-    typedef uint32 identifierType;
-
-    /*!
-     * \brief The type used to store element sizes is an unsigned 64-bit integer.
-     */
-    typedef uint64 dataSizeType;
-
-    /*!
-     * \brief The implementation type is EbmlElement.
-     */
-    typedef EbmlElement implementationType;
+    typedef MatroskaContainer ContainerType;
+    typedef uint32 IdentifierType;
+    typedef uint64 DataSizeType;
 };
 
 class TAG_PARSER_EXPORT EbmlElement : public GenericFileElement<EbmlElement>
@@ -62,17 +46,17 @@ public:
     uint64 readUInteger();
     float64 readFloat();
 
-    static byte calculateIdLength(identifierType id);
+    static byte calculateIdLength(IdentifierType id);
     static byte calculateSizeDenotationLength(uint64 size);
-    static byte makeId(identifierType id, char *buff);
+    static byte makeId(IdentifierType id, char *buff);
     static byte makeSizeDenotation(uint64 size, char *buff);
     static byte makeSizeDenotation(uint64 size, char *buff, byte minBytes);
     static byte calculateUIntegerLength(uint64 integer);
     static byte makeUInteger(uint64 value, char *buff);
     static byte makeUInteger(uint64 value, char *buff, byte minBytes);
-    static void makeSimpleElement(std::ostream &stream, identifierType id, uint64 content);
-    static void makeSimpleElement(std::ostream &stream, identifierType id, const std::string &content);
-    static void makeSimpleElement(std::ostream &stream, GenericFileElement::identifierType id, const char *data, std::size_t dataSize);
+    static void makeSimpleElement(std::ostream &stream, IdentifierType id, uint64 content);
+    static void makeSimpleElement(std::ostream &stream, IdentifierType id, const std::string &content);
+    static void makeSimpleElement(std::ostream &stream, IdentifierType id, const char *data, std::size_t dataSize);
     static uint64 bytesToBeSkipped;
 
 protected:

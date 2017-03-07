@@ -17,25 +17,9 @@ template <>
 class TAG_PARSER_EXPORT FileElementTraits<Mpeg4Descriptor>
 {
 public:
-    /*!
-     * \brief The container type used to store such elements is Mp4Container.
-     */
-    typedef Mp4Container containerType;
-
-    /*!
-     * \brief The type used to store atom IDs is an unsigned 32-bit integer.
-     */
-    typedef byte identifierType;
-
-    /*!
-     * \brief The type used to store element sizes is an unsigned 32-bit integer.
-     */
-    typedef uint32 dataSizeType;
-
-    /*!
-     * \brief The implementation type is Mp4Atom.
-     */
-    typedef Mpeg4Descriptor implementationType;
+    typedef Mp4Container ContainerType;
+    typedef byte IdentifierType;
+    typedef uint32 DataSizeType;
 
     /*!
      * \brief Returns the minimal descriptor size which is 2 byte.
@@ -51,7 +35,7 @@ class TAG_PARSER_EXPORT Mpeg4Descriptor : public GenericFileElement<Mpeg4Descrip
     friend class GenericFileElement<Mpeg4Descriptor>;
 
 public:
-    Mpeg4Descriptor(containerType& container, uint64 startOffset, uint64 maxSize);
+    Mpeg4Descriptor(ContainerType &container, uint64 startOffset, uint64 maxSize);
 
     std::string idToString() const;
     bool isParent() const;
@@ -59,7 +43,7 @@ public:
     uint64 firstChildOffset() const;
 
 protected:
-    Mpeg4Descriptor(implementationType &parent, uint64 startOffset);
+    Mpeg4Descriptor(Mpeg4Descriptor &parent, uint64 startOffset);
 
     void internalParse();
 

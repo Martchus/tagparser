@@ -36,7 +36,7 @@ Mp4TagField::Mp4TagField() :
 /*!
  * \brief Constructs a new Mp4TagField with the specified \a id and \a value.
  */
-Mp4TagField::Mp4TagField(identifierType id, const TagValue &value) :
+Mp4TagField::Mp4TagField(IdentifierType id, const TagValue &value) :
     TagField<Mp4TagField>(id, value),
     m_parsedRawDataType(RawDataType::Reserved),
     m_countryIndicator(0),

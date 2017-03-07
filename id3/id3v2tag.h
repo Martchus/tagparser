@@ -59,9 +59,8 @@ template <>
 class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Id3v2Tag>
 {
 public:
-    typedef Id3v2Tag implementationType;
-    typedef Id3v2Frame fieldType;
-    typedef FrameComparer compare;
+    typedef Id3v2Frame FieldType;
+    typedef FrameComparer Compare;
 };
 
 class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag>
@@ -96,8 +95,8 @@ public:
     uint32 paddingSize() const;
 
 protected:
-    identifierType internallyGetFieldId(KnownField field) const;
-    KnownField internallyGetKnownField(const identifierType &id) const;
+    IdentifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const IdentifierType &id) const;
     TagDataType internallyGetProposedDataType(const uint32 &id) const;
 
 private:

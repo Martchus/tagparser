@@ -27,21 +27,21 @@ namespace Media {
 /*!
  * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::containerType &container, uint64 startOffset) :
+Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset) :
     GenericFileElement<Mp4Atom>(container, startOffset)
 {}
 
 /*!
  * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::containerType &container, uint64 startOffset, uint64 maxSize) :
+Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset, uint64 maxSize) :
     GenericFileElement<Mp4Atom>(container, startOffset, maxSize)
 {}
 
 /*!
  * \brief Constructs a new sub level atom with the specified \a parent at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::implementationType &parent, uint64 startOffset) :
+Mp4Atom::Mp4Atom(Mp4Atom &parent, uint64 startOffset) :
     GenericFileElement<Mp4Atom>(parent, startOffset)
 {}
 

@@ -81,11 +81,11 @@ void EbmlElement::internalParse()
         char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
         byte beg = static_cast<byte>(stream().peek()), mask = 0x80;
         m_idLength = 1;
-        while(m_idLength <= GenericFileElement<implementationType>::maximumIdLengthSupported() && (beg & mask) == 0) {
+        while(m_idLength <= maximumIdLengthSupported() && (beg & mask) == 0) {
             ++m_idLength;
             mask >>= 1;
         }
-        if(m_idLength > GenericFileElement<implementationType>::maximumIdLengthSupported()) {
+        if(m_idLength > maximumIdLengthSupported()) {
             if(!skipped) {
                 addNotification(NotificationType::Critical, argsToString("EBML ID length at ", startOffset(), " is not supported, trying to skip."), context);
             }
@@ -97,7 +97,7 @@ void EbmlElement::internalParse()
             }
             continue; // try again
         }
-        reader().read(buf + (GenericFileElement<implementationType>::maximumIdLengthSupported() - m_idLength), m_idLength);
+        reader().read(buf + (maximumIdLengthSupported() - m_idLength), m_idLength);
         m_id = BE::toUInt32(buf);
 
         // read size
@@ -108,11 +108,11 @@ void EbmlElement::internalParse()
             // -> just assume the element takes the maximum available size
             m_dataSize = maxTotalSize() - headerSize();
         } else {
-           while(m_sizeLength <= GenericFileElement<implementationType>::maximumSizeLengthSupported() && (beg & mask) == 0) {
+           while(m_sizeLength <= maximumSizeLengthSupported() && (beg & mask) == 0) {
                 ++m_sizeLength;
                 mask >>= 1;
             }
-            if(m_sizeLength > GenericFileElement<implementationType>::maximumSizeLengthSupported()) {
+            if(m_sizeLength > maximumSizeLengthSupported()) {
                 if(!skipped) {
                     addNotification(NotificationType::Critical, "EBML size length is not supported.", parsingContext());
                 }
@@ -125,9 +125,10 @@ void EbmlElement::internalParse()
                 continue; // try again
             }
             // read size into buffer
-            memset(buf, 0, sizeof(dataSizeType)); // reset buffer
-            reader().read(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
-            *(buf + (GenericFileElement<implementationType>::maximumSizeLengthSupported() - m_sizeLength)) ^= mask; // xor the first byte in buffer which has been read from the file with mask
+            memset(buf, 0, sizeof(DataSizeType)); // reset buffer
+            reader().read(buf + (maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
+            // xor the first byte in buffer which has been read from the file with mask
+            *(buf + (maximumSizeLengthSupported() - m_sizeLength)) ^= mask;
             m_dataSize = ConversionUtilities::BE::toUInt64(buf);
             // check if element is truncated
             if(totalSize() > maxTotalSize()) {
@@ -223,7 +224,7 @@ float64 EbmlElement::readFloat()
  * \brief Returns the length of the specified \a id in byte.
  * \throws Throws InvalidDataException() if \a id can not be represented.
  */
-byte EbmlElement::calculateIdLength(GenericFileElement::identifierType id)
+byte EbmlElement::calculateIdLength(GenericFileElement::IdentifierType id)
 {
     if(id <= 0xFF) {
         return 1;
@@ -271,7 +272,7 @@ byte EbmlElement::calculateSizeDenotationLength(uint64 size)
  * \returns Returns the number of bytes written to \a buff.
  * \throws Throws InvalidDataException() if \a id can not be represented.
  */
-byte EbmlElement::makeId(GenericFileElement::identifierType id, char *buff)
+byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
 {
     if(id <= 0xFF) {
         *buff = static_cast<byte>(id);
@@ -465,7 +466,7 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
  * \param id Specifies the element ID.
  * \param content Specifies the value of the element as unsigned integer.
  */
-void EbmlElement::makeSimpleElement(ostream &stream, identifierType id, uint64 content)
+void EbmlElement::makeSimpleElement(ostream &stream, IdentifierType id, uint64 content)
 {
     char buff1[8];
     char buff2[8];
@@ -483,7 +484,7 @@ void EbmlElement::makeSimpleElement(ostream &stream, identifierType id, uint64 c
  * \param id Specifies the element ID.
  * \param content Specifies the value of the element as string.
  */
-void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::identifierType id, const std::string &content)
+void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::IdentifierType id, const std::string &content)
 {
     char buff1[8];
     byte sizeLength = EbmlElement::makeId(id, buff1);
@@ -500,7 +501,7 @@ void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::id
  * \param data Specifies the data of the element.
  * \param dataSize Specifies the size of \a data.
  */
-void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::identifierType id, const char *data, std::size_t dataSize)
+void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::IdentifierType id, const char *data, std::size_t dataSize)
 {
     char buff1[8];
     byte sizeLength = EbmlElement::makeId(id, buff1);

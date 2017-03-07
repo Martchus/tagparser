@@ -32,19 +32,19 @@ class TagFieldTraits
 template <class ImplementationType>
 class TAG_PARSER_EXPORT TagField
 {
-public:
     friend class TagFieldTraits<ImplementationType>;
-    typedef typename TagFieldTraits<ImplementationType>::implementationType implementationType;
-    typedef typename TagFieldTraits<ImplementationType>::identifierType identifierType;
-    typedef typename TagFieldTraits<ImplementationType>::typeInfoType typeInfoType;
+
+public:
+    typedef typename TagFieldTraits<ImplementationType>::IdentifierType IdentifierType;
+    typedef typename TagFieldTraits<ImplementationType>::TypeInfoType TypeInfoType;
 
     TagField();
-    TagField(const identifierType &id, const TagValue &value);
+    TagField(const IdentifierType &id, const TagValue &value);
     ~TagField();
 
-    const identifierType &id() const;
+    const IdentifierType &id() const;
     std::string idToString() const;
-    void setId(const identifierType &id);
+    void setId(const IdentifierType &id);
     void clearId();
 
     TagValue &value();
@@ -52,8 +52,8 @@ public:
     void setValue(const TagValue &value);
     void clearValue();
 
-    const typeInfoType &typeInfo() const;
-    void setTypeInfo(const typeInfoType &typeInfo);
+    const TypeInfoType &typeInfo() const;
+    void setTypeInfo(const TypeInfoType &typeInfo);
     void removeTypeInfo();
     bool isTypeInfoAssigned() const;
 
@@ -72,9 +72,9 @@ private:
     void cleared();
 
 private:
-    identifierType m_id;
+    IdentifierType m_id;
     TagValue m_value;
-    typeInfoType m_typeInfo;
+    TypeInfoType m_typeInfo;
     bool m_typeInfoAssigned;
     bool m_default;
     std::vector<ImplementationType> m_nestedFields;
@@ -85,9 +85,9 @@ private:
  */
 template <class ImplementationType>
 TagField<ImplementationType>::TagField() :
-    m_id(identifierType()),
+    m_id(IdentifierType()),
     m_value(TagValue()),
-    m_typeInfo(typeInfoType()),
+    m_typeInfo(TypeInfoType()),
     m_typeInfoAssigned(false),
     m_default(false)
 {}
@@ -96,10 +96,10 @@ TagField<ImplementationType>::TagField() :
  * \brief Constructs a new TagField with the specified \a id and \a value.
  */
 template <class ImplementationType>
-TagField<ImplementationType>::TagField(const identifierType &id, const TagValue &value) :
+TagField<ImplementationType>::TagField(const IdentifierType &id, const TagValue &value) :
     m_id(id),
     m_value(value),
-    m_typeInfo(typeInfoType()),
+    m_typeInfo(TypeInfoType()),
     m_typeInfoAssigned(false),
     m_default(false)
 {}
@@ -115,7 +115,7 @@ TagField<ImplementationType>::~TagField()
  * \brief Returns the id of the current TagField.
  */
 template <class ImplementationType>
-inline const typename TagField<ImplementationType>::identifierType &TagField<ImplementationType>::id() const
+inline const typename TagField<ImplementationType>::IdentifierType &TagField<ImplementationType>::id() const
 {
     return m_id;
 }
@@ -130,7 +130,7 @@ inline std::string TagField<ImplementationType>::idToString() const
  * \brief Sets the id of the current Tag Field.
  */
 template <class ImplementationType>
-inline void TagField<ImplementationType>::setId(const identifierType &id)
+inline void TagField<ImplementationType>::setId(const IdentifierType &id)
 {
     m_id = id;
 }
@@ -141,7 +141,7 @@ inline void TagField<ImplementationType>::setId(const identifierType &id)
 template <class ImplementationType>
 inline void TagField<ImplementationType>::clearId()
 {
-    m_id = identifierType();
+    m_id = IdentifierType();
 }
 
 /*!
@@ -184,7 +184,7 @@ inline void TagField<ImplementationType>::clearValue()
  * \brief Returns the type info of the current TagField.
  */
 template <class ImplementationType>
-inline const typename TagField<ImplementationType>::typeInfoType &TagField<ImplementationType>::typeInfo() const
+inline const typename TagField<ImplementationType>::TypeInfoType &TagField<ImplementationType>::typeInfo() const
 {
     return m_typeInfo;
 }
@@ -193,7 +193,7 @@ inline const typename TagField<ImplementationType>::typeInfoType &TagField<Imple
  * \brief Sets the type info of the current TagField.
  */
 template <class ImplementationType>
-inline void TagField<ImplementationType>::setTypeInfo(const typeInfoType &typeInfo)
+inline void TagField<ImplementationType>::setTypeInfo(const TypeInfoType &typeInfo)
 {
     m_typeInfo = typeInfo;
     m_typeInfoAssigned = true;
@@ -205,7 +205,7 @@ inline void TagField<ImplementationType>::setTypeInfo(const typeInfoType &typeIn
 template <class ImplementationType>
 inline void TagField<ImplementationType>::removeTypeInfo()
 {
-    m_typeInfo = typeInfoType();
+    m_typeInfo = TypeInfoType();
     m_typeInfoAssigned = false;
 }
 
@@ -244,7 +244,7 @@ void TagField<ImplementationType>::clear()
 {
     clearId();
     clearValue();
-    m_typeInfo = typeInfoType();
+    m_typeInfo = TypeInfoType();
     m_typeInfoAssigned = false;
     m_default = true;
     static_cast<ImplementationType *>(this)->cleared();

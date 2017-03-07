@@ -124,7 +124,7 @@ MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment)
     }
     if(attachment.attachedFileElement()) {
         EbmlElement *child;
-        for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
+        for(auto id : initializer_list<EbmlElement::IdentifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
             if((child = attachment.attachedFileElement()->childById(id))) {
                 m_attachedFileElementSize += child->totalSize();
             }
@@ -156,7 +156,7 @@ void MatroskaAttachmentMaker::make(ostream &stream) const
     EbmlElement::makeSimpleElement(stream, MatroskaIds::FileUID, attachment().id());
     if(attachment().attachedFileElement()) {
         EbmlElement *child;
-        for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
+        for(auto id : initializer_list<EbmlElement::IdentifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
             if((child = attachment().attachedFileElement()->childById(id))) {
                 if(child->buffer()) {
                     child->copyBuffer(stream);
@@ -179,7 +179,7 @@ void MatroskaAttachmentMaker::bufferCurrentAttachments()
 {
     EbmlElement *child;
     if(attachment().attachedFileElement()) {
-        for(auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
+        for(auto id : initializer_list<EbmlElement::IdentifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
             if((child = attachment().attachedFileElement()->childById(id))) {
                 child->makeBuffer();
             }

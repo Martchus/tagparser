@@ -50,7 +50,7 @@ Id3v2Frame::Id3v2Frame() :
 /*!
  * \brief Constructs a new Id3v2Frame with the specified \a id, \a value, \a group and \a flag.
  */
-Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, const byte group, const int16 flag) :
+Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, const byte group, const int16 flag) :
     TagField<Id3v2Frame>(id, value),
     m_flag(flag),
     m_group(group),

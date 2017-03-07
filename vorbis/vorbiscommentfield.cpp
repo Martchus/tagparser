@@ -38,7 +38,7 @@ VorbisCommentField::VorbisCommentField()
 /*!
  * \brief Constructs a new Vorbis comment with the specified \a id and \a value.
  */
-VorbisCommentField::VorbisCommentField(const identifierType &id, const TagValue &value) :
+VorbisCommentField::VorbisCommentField(const IdentifierType &id, const TagValue &value) :
     TagField<VorbisCommentField>(id, value)
 {}
 
