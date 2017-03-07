@@ -24,18 +24,17 @@ class FieldMapBasedTagTraits
  *        the tag fields using std::multimap.
  *
  * The FieldMapBasedTag class only provides the interface and common functionality.
- * It is meant to be subclassed.
+ * It is meant to be subclassed using CRTP pattern.
  *
- * \tparam FieldType Specifies the class used to store the fields. Should be a subclass
- *                   of TagField.
- *
- * \tparam Compare Specifies the key comparsion function. Default is std::less.
+ * \remarks This template class is intended to be subclassed using
+ *          with the "Curiously recurring template pattern".
  */
 template <class ImplementationType>
 class FieldMapBasedTag : public Tag
 {
-public:
     friend class FieldMapBasedTagTraits<ImplementationType>;
+
+public:
     typedef typename FieldMapBasedTagTraits<ImplementationType>::implementationType implementationType;
     typedef typename FieldMapBasedTagTraits<ImplementationType>::fieldType fieldType;
     typedef typename FieldMapBasedTagTraits<ImplementationType>::fieldType::identifierType identifierType;
@@ -46,28 +45,36 @@ public:
     TagType type() const;
     const char *typeName() const;
     TagTextEncoding proposedTextEncoding() const;
-    virtual const TagValue &value(const identifierType &id) const; // FIXME: use static polymorphism
+    const TagValue &value(const identifierType &id) const;
     const TagValue &value(KnownField field) const;
     std::vector<const TagValue *> values(const identifierType &id) const;
     std::vector<const TagValue *> values(KnownField field) const;
-    virtual bool setValue(const identifierType &id, const TagValue &value); // FIXME: use static polymorphism
+    bool setValue(const identifierType &id, const TagValue &value);
     bool setValue(KnownField field, const TagValue &value);
     bool setValues(const identifierType &id, const std::vector<TagValue> &values);
     bool setValues(KnownField field, const std::vector<TagValue> &values);
     bool hasField(KnownField field) const;
-    virtual bool hasField(const identifierType &id) const; // FIXME: use static polymorphism
+    bool hasField(const identifierType &id) const;
     void removeAllFields();
     const std::multimap<identifierType, fieldType, compare> &fields() const;
     std::multimap<identifierType, fieldType, compare> &fields();
     unsigned int fieldCount() const;
-    virtual identifierType fieldId(KnownField value) const = 0; // FIXME: use static polymorphism
-    virtual KnownField knownField(const identifierType &id) const = 0; // FIXME: use static polymorphism
+    identifierType fieldId(KnownField value) const;
+    KnownField knownField(const identifierType &id) const;
     bool supportsField(KnownField field) const;
     using Tag::proposedDataType;
-    virtual TagDataType proposedDataType(const identifierType &id) const; // FIXME: use static polymorphism
+    TagDataType proposedDataType(const identifierType &id) const;
     int insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite);
     unsigned int insertValues(const Tag &from, bool overwrite);
     void ensureTextValuesAreProperlyEncoded();
+
+protected:
+    const TagValue &internallyGetValue(const identifierType &id) const;
+    bool internallySetValue(const identifierType &id, const TagValue &value);
+    bool internallyHasField(const identifierType &id) const;
+    // no default implementation: identifierType internallyGetFieldId(KnownField field) const;
+    // no default implementation: KnownField internallyGetKnownField(const identifierType &id) const;
+    TagDataType internallyGetProposedDataType(const identifierType &id) const;
 
 private:
     std::multimap<identifierType, fieldType, compare> m_fields;
@@ -113,14 +120,24 @@ TagTextEncoding FieldMapBasedTag<ImplementationType>::proposedTextEncoding() con
 }
 
 /*!
+ * \brief Default implementation for value().
+ * \remarks Shadow in subclass to provide custom implementation.
+ */
+template<class ImplementationType>
+const TagValue &FieldMapBasedTag<ImplementationType>::internallyGetValue(const identifierType &id) const
+{
+    auto i = m_fields.find(id);
+    return i != m_fields.end() ? i->second.value() : TagValue::empty();
+}
+
+/*!
  * \brief Returns the value of the field with the specified \a id.
  * \sa Tag::value()
  */
 template <class ImplementationType>
 inline const TagValue &FieldMapBasedTag<ImplementationType>::value(const identifierType &id) const
 {
-    auto i = m_fields.find(id);
-    return i != m_fields.end() ? i->second.value() : TagValue::empty();
+    return static_cast<const ImplementationType *>(this)->internallyGetValue(id);
 }
 
 template <class ImplementationType>
@@ -159,11 +176,11 @@ inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, con
 }
 
 /*!
- * \brief Assigns the given \a value to the field with the specified \a id.
- * \sa Tag::setValue()
+ * \brief Default implementation for setValue().
+ * \remarks Shadow in subclass to provide custom implementation.
  */
-template <class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::setValue(const identifierType &id, const Media::TagValue &value)
+template<class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::internallySetValue(const identifierType &id, const TagValue &value)
 {
     auto i = m_fields.find(id);
     if(i != m_fields.end()) { // field already exists -> set its value
@@ -174,6 +191,16 @@ bool FieldMapBasedTag<ImplementationType>::setValue(const identifierType &id, co
         return false;
     }
     return true;
+}
+
+/*!
+ * \brief Assigns the given \a value to the field with the specified \a id.
+ * \sa Tag::setValue()
+ */
+template <class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::setValue(const identifierType &id, const Media::TagValue &value)
+{
+    return static_cast<ImplementationType *>(this)->internallySetValue(id, value);
 }
 
 /*!
@@ -225,10 +252,11 @@ inline bool FieldMapBasedTag<ImplementationType>::hasField(KnownField field) con
 }
 
 /*!
- * \brief Returns an indication whether the field with the specified \a id is present.
+ * \brief Default implementation for hasField().
+ * \remarks Shadow in subclass to provide custom implementation.
  */
-template <class ImplementationType>
-inline bool FieldMapBasedTag<ImplementationType>::hasField(const identifierType &id) const
+template<class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::internallyHasField(const identifierType &id) const
 {
     for (auto range = m_fields.equal_range(id); range.first != range.second; ++range.first) {
         if(!range.first->second.value().isEmpty()) {
@@ -236,6 +264,15 @@ inline bool FieldMapBasedTag<ImplementationType>::hasField(const identifierType 
         }
     }
     return false;
+}
+
+/*!
+ * \brief Returns an indication whether the field with the specified \a id is present.
+ */
+template <class ImplementationType>
+inline bool FieldMapBasedTag<ImplementationType>::hasField(const identifierType &id) const
+{
+    return static_cast<const ImplementationType *>(this)->internallyHasField(id);
 }
 
 template <class ImplementationType>
@@ -274,6 +311,26 @@ unsigned int FieldMapBasedTag<ImplementationType>::fieldCount() const
     return count;
 }
 
+/*!
+ * \brief Returns the field ID for the specified \a value.
+ * \remarks Must be implemented in internallyGetFieldId() when creating subclass.
+ */
+template<class ImplementationType>
+inline typename FieldMapBasedTag<ImplementationType>::identifierType FieldMapBasedTag<ImplementationType>::fieldId(KnownField value) const
+{
+    return static_cast<const ImplementationType *>(this)->internallyGetFieldId(value);
+}
+
+/*!
+ * \brief Returns the KnownField for the specified \a id.
+ * \remarks Must be implemented in internallyGetKnownField() when creating subclass.
+ */
+template<class ImplementationType>
+inline KnownField FieldMapBasedTag<ImplementationType>::knownField(const identifierType &id) const
+{
+    return static_cast<FieldMapBasedTag<ImplementationType> *>(this)->internallyGetKnownField(id);
+}
+
 template <class ImplementationType>
 inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field) const
 {
@@ -282,12 +339,22 @@ inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field
 }
 
 /*!
+ * \brief Default implementation for proposedDataType().
+ * \remarks Shadow in subclass to provide custom implementation.
+ */
+template<class ImplementationType>
+inline TagDataType FieldMapBasedTag<ImplementationType>::internallyGetProposedDataType(const identifierType &id) const
+{
+    return Tag::proposedDataType(knownField(id));
+}
+
+/*!
  * \brief Returns the proposed data type for the field with the specified \a id.
  */
 template <class ImplementationType>
 inline TagDataType FieldMapBasedTag<ImplementationType>::proposedDataType(const identifierType &id) const
 {
-    return Tag::proposedDataType(knownField(id));
+    return static_cast<ImplementationType *>(this)->determineProposedDataType(id);
 }
 
 /*!

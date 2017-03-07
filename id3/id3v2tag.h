@@ -66,6 +66,8 @@ public:
 
 class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag>
 {
+    friend class FieldMapBasedTag<Id3v2Tag>;
+
 public:
     Id3v2Tag();
 
@@ -74,11 +76,6 @@ public:
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf16LittleEndian;
     TagTextEncoding proposedTextEncoding() const;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
-    uint32 fieldId(KnownField value) const;
-    KnownField knownField(const uint32 &id) const;
-    TagDataType proposedDataType(const uint32 &id) const;
-    using FieldMapBasedTag<Id3v2Tag>::value;
-    using FieldMapBasedTag<Id3v2Tag>::setValue;
     bool supportsDescription(KnownField field) const;
     bool supportsMimeType(KnownField field) const;
 
@@ -97,6 +94,11 @@ public:
     bool hasFooter() const;
     uint32 extendedHeaderSize() const;
     uint32 paddingSize() const;
+
+protected:
+    identifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const identifierType &id) const;
+    TagDataType internallyGetProposedDataType(const uint32 &id) const;
 
 private:
     byte m_majorVersion;

@@ -61,6 +61,8 @@ public:
 
 class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag>
 {
+    friend class FieldMapBasedTag<MatroskaTag>;
+
 public:
     MatroskaTag();
 
@@ -71,12 +73,13 @@ public:
     bool supportsTarget() const;
     TagTargetLevel targetLevel() const;
 
-    std::string fieldId(KnownField field) const;
-    KnownField knownField(const std::string &id) const;
-
     void parse(EbmlElement &tagElement);
     MatroskaTagMaker prepareMaking();
     void make(std::ostream &stream);
+
+protected:
+    identifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const identifierType &id) const;
 
 private:
     void parseTargets(EbmlElement &targetsElement);

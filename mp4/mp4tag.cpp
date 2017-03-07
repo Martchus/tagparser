@@ -119,7 +119,7 @@ const TagValue &Mp4Tag::value(const string mean, const string name) const
     return (this->*static_cast<const TagValue &(Mp4Tag::*)(const string &, const string &) const>(&Mp4Tag::value))(mean, name);
 }
 
-uint32 Mp4Tag::fieldId(KnownField field) const
+Mp4Tag::identifierType Mp4Tag::internallyGetFieldId(KnownField field) const
 {
     using namespace Mp4TagAtomIds;
     switch(field) {
@@ -146,7 +146,7 @@ uint32 Mp4Tag::fieldId(KnownField field) const
     }
 }
 
-KnownField Mp4Tag::knownField(const uint32 &id) const
+KnownField Mp4Tag::internallyGetKnownField(const identifierType &id) const
 {
     using namespace Mp4TagAtomIds;
     switch(id) {

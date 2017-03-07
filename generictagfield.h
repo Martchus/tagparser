@@ -25,7 +25,8 @@ class TagFieldTraits
  * might be assigned as well. The usage of the type info depends on the
  * particular tag implementation.
  *
- * \remarks This template class is intended to be used
+ * \tparam ImplementationType Specifies the type of the actual implementation.
+ * \remarks This template class is intended to be subclassed using
  *          with the "Curiously recurring template pattern".
  */
 template <class ImplementationType>
