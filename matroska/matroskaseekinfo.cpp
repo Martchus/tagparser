@@ -180,7 +180,7 @@ uint64 MatroskaSeekInfo::actualSize() const
  *
  * \returns Returns an indication whether the actualSize() has changed.
  */
-bool MatroskaSeekInfo::push(unsigned int index, EbmlElement::identifierType id, uint64 offset)
+bool MatroskaSeekInfo::push(unsigned int index, EbmlElement::IdentifierType id, uint64 offset)
 {
     unsigned int currentIndex = 0;
     for(auto &entry : info()) {
@@ -209,7 +209,7 @@ void MatroskaSeekInfo::clear()
 /*!
  * \brief Returns a pointer to the first pair with the specified \a offset or nullptr if no such pair could be found.
  */
-std::pair<EbmlElement::identifierType, uint64> *MatroskaSeekInfo::findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, uint64 offset)
+std::pair<EbmlElement::IdentifierType, uint64> *MatroskaSeekInfo::findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, uint64 offset)
 {
     for(auto &seekInfo : seekInfos) {
         for(auto &entry : seekInfo.info()) {

@@ -93,7 +93,7 @@ void MatroskaContainer::validateIndex()
     static const string context("validating Matroska file index (cues)");
     bool cuesElementsFound = false;
     if(m_firstElement) {
-        unordered_set<EbmlElement::identifierType> ids;
+        unordered_set<EbmlElement::IdentifierType> ids;
         bool cueTimeFound = false, cueTrackPositionsFound = false;
         unique_ptr<EbmlElement> clusterElement;
         uint64 pos, prevClusterSize = 0, currentOffset = 0;

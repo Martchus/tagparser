@@ -54,9 +54,8 @@ template <>
 class TAG_PARSER_EXPORT FieldMapBasedTagTraits<MatroskaTag>
 {
 public:
-    typedef MatroskaTag implementationType;
-    typedef MatroskaTagField fieldType;
-    typedef std::less<typename fieldType::identifierType> compare;
+    typedef MatroskaTagField FieldType;
+    typedef std::less<typename FieldType::IdentifierType> Compare;
 };
 
 class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag>
@@ -78,8 +77,8 @@ public:
     void make(std::ostream &stream);
 
 protected:
-    identifierType internallyGetFieldId(KnownField field) const;
-    KnownField internallyGetKnownField(const identifierType &id) const;
+    IdentifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const IdentifierType &id) const;
 
 private:
     void parseTargets(EbmlElement &targetsElement);

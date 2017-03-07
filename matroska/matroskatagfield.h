@@ -16,21 +16,8 @@ template <>
 class TAG_PARSER_EXPORT TagFieldTraits<MatroskaTagField>
 {
 public:
-    /*!
-     * \brief Fields in a Matroska tag are identified by strings.
-     */
-    typedef std::string identifierType;
-
-    /*!
-     * \brief The type info is stored using strings.
-     */
-    typedef std::string typeInfoType;
-
-    /*!
-     * \brief The implementation type is EbmlElement.
-     */
-    typedef MatroskaTagField implementationType;
-
+    typedef std::string IdentifierType;
+    typedef std::string TypeInfoType;
     static bool supportsNestedFields();
 };
 

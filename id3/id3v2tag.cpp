@@ -17,7 +17,7 @@ namespace Media {
  * \brief Implementation of Media::Tag for ID3v2 tags.
  */
 
-Id3v2Tag::identifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
+Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
 {
     using namespace Id3v2FrameIds;
     if(m_majorVersion >= 3) {
@@ -78,7 +78,7 @@ Id3v2Tag::identifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
     return 0;
 }
 
-KnownField Id3v2Tag::internallyGetKnownField(const identifierType &id) const
+KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace Id3v2FrameIds;
     switch(id) {

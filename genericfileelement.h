@@ -121,61 +121,56 @@ public:
     /*!
      * \brief Specifies the type of the corresponding container.
      */
-    typedef typename FileElementTraits<ImplementationType>::containerType containerType;
+    typedef typename FileElementTraits<ImplementationType>::ContainerType ContainerType;
 
     /*!
      * \brief Specifies the type used to store identifiers.
      */
-    typedef typename FileElementTraits<ImplementationType>::identifierType identifierType;
+    typedef typename FileElementTraits<ImplementationType>::IdentifierType IdentifierType;
 
     /*!
      * \brief Specifies the type used to store data sizes.
      */
-    typedef typename FileElementTraits<ImplementationType>::dataSizeType dataSizeType;
+    typedef typename FileElementTraits<ImplementationType>::DataSizeType DataSizeType;
 
-    /*!
-     * \brief Specifies the type of the actual implementation.
-     */
-    typedef typename FileElementTraits<ImplementationType>::implementationType implementationType;
-
-    GenericFileElement(containerType &container, uint64 startOffset);
-    GenericFileElement(implementationType &parent, uint64 startOffset);
-    GenericFileElement(containerType &container, uint64 startOffset, uint64 maxSize);
+    GenericFileElement(ContainerType &container, uint64 startOffset);
+    GenericFileElement(ImplementationType &parent, uint64 startOffset);
+    GenericFileElement(ContainerType &container, uint64 startOffset, uint64 maxSize);
     GenericFileElement(const GenericFileElement& other) = delete;
     GenericFileElement(GenericFileElement& other) = delete;
     GenericFileElement& operator =(const GenericFileElement& other) = delete;
 
-    containerType& container();
-    const containerType& container() const;
+    ContainerType& container();
+    const ContainerType& container() const;
     std::iostream &stream();
     IoUtilities::BinaryReader &reader();
     IoUtilities::BinaryWriter &writer();
     uint64 startOffset() const;
     uint64 relativeStartOffset() const;
-    const identifierType &id() const;
+    const IdentifierType &id() const;
     std::string idToString() const;
     uint32 idLength() const;
     uint32 headerSize() const;
-    dataSizeType dataSize() const;
+    DataSizeType dataSize() const;
     uint32 sizeLength() const;
     uint64 dataOffset() const;
     uint64 totalSize() const;
     uint64 endOffset() const;
     uint64 maxTotalSize() const;
-    implementationType* parent();
-    const implementationType* parent() const;
-    implementationType* nextSibling();
-    const implementationType* nextSibling() const;
-    implementationType* firstChild();
-    const implementationType* firstChild() const;
-    implementationType* subelementByPath(const std::initializer_list<identifierType> &path);
-    implementationType* subelementByPath(std::list<identifierType> &path);
-    implementationType* childById(const identifierType &id);
-    implementationType* siblingById(const identifierType &id, bool includeThis = false);
-    FileElementIterator<implementationType> begin();
-    FileElementIterator<implementationType> end();
-    const FileElementIterator<implementationType> begin() const;
-    const FileElementIterator<implementationType> end() const;
+    ImplementationType* parent();
+    const ImplementationType* parent() const;
+    ImplementationType* nextSibling();
+    const ImplementationType* nextSibling() const;
+    ImplementationType* firstChild();
+    const ImplementationType* firstChild() const;
+    ImplementationType* subelementByPath(const std::initializer_list<IdentifierType> &path);
+    ImplementationType* subelementByPath(std::list<IdentifierType> &path);
+    ImplementationType* childById(const IdentifierType &id);
+    ImplementationType* siblingById(const IdentifierType &id, bool includeThis = false);
+    FileElementIterator<ImplementationType> begin();
+    FileElementIterator<ImplementationType> end();
+    const FileElementIterator<ImplementationType> begin() const;
+    const FileElementIterator<ImplementationType> end() const;
     bool isParent() const;
     bool isPadding() const;
     uint64 firstChildOffset() const;
@@ -195,24 +190,24 @@ public:
     void copyBuffer(std::ostream &targetStream);
     void copyPreferablyFromBuffer(std::ostream &targetStream);
     const std::unique_ptr<char[]> &buffer();
-    implementationType *denoteFirstChild(uint32 offset);
+    ImplementationType *denoteFirstChild(uint32 offset);
 
 protected:
-    identifierType m_id;
+    IdentifierType m_id;
     uint64 m_startOffset;
     uint64 m_maxSize;
     uint32 m_idLength;
-    dataSizeType m_dataSize;
+    DataSizeType m_dataSize;
     uint32 m_sizeLength;
-    implementationType* m_parent;
-    std::unique_ptr<implementationType> m_nextSibling;
-    std::unique_ptr<implementationType> m_firstChild;
+    ImplementationType* m_parent;
+    std::unique_ptr<ImplementationType> m_nextSibling;
+    std::unique_ptr<ImplementationType> m_firstChild;
     std::unique_ptr<char[]> m_buffer;
 
 private:
     void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy);
 
-    containerType* m_container;
+    ContainerType* m_container;
     bool m_parsed;
 };
 
@@ -221,8 +216,8 @@ private:
  * \remarks The available size is obtained using the stream of the \a container.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::containerType &container, uint64 startOffset) :
-    m_id(identifierType()),
+GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset) :
+    m_id(IdentifierType()),
     m_startOffset(startOffset),
     m_idLength(0),
     m_dataSize(0),
@@ -244,8 +239,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
  * \brief Constructs a new sub level file element with the specified \a parent at the specified \a startOffset.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::implementationType &parent, uint64 startOffset) :
-    m_id(identifierType()),
+GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &parent, uint64 startOffset) :
+    m_id(IdentifierType()),
     m_startOffset(startOffset),
     m_maxSize(parent.startOffset() + parent.totalSize() - startOffset),
     m_idLength(0),
@@ -260,8 +255,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
  * \brief Constructs a new sub level file element with the specified \a container, \a startOffset and \a maxSize.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::containerType &container, uint64 startOffset, uint64 maxSize) :
-    m_id(identifierType()),
+GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset, uint64 maxSize) :
+    m_id(IdentifierType()),
     m_startOffset(startOffset),
     m_maxSize(maxSize),
     m_idLength(0),
@@ -276,7 +271,7 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
  * \brief Returns the related container.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::containerType& GenericFileElement<ImplementationType>::container()
+inline typename GenericFileElement<ImplementationType>::ContainerType& GenericFileElement<ImplementationType>::container()
 {
     return *m_container;
 }
@@ -285,7 +280,7 @@ inline typename GenericFileElement<ImplementationType>::containerType& GenericFi
  * \brief Returns the related container.
  */
 template <class ImplementationType>
-inline const typename GenericFileElement<ImplementationType>::containerType &GenericFileElement<ImplementationType>::container() const
+inline const typename GenericFileElement<ImplementationType>::ContainerType &GenericFileElement<ImplementationType>::container() const
 {
     return *m_container;
 }
@@ -339,7 +334,7 @@ inline uint64 GenericFileElement<ImplementationType>::relativeStartOffset() cons
  * \brief Returns the element ID.
  */
 template <class ImplementationType>
-inline const typename GenericFileElement<ImplementationType>::identifierType &GenericFileElement<ImplementationType>::id() const
+inline const typename GenericFileElement<ImplementationType>::IdentifierType &GenericFileElement<ImplementationType>::id() const
 {
     return m_id;
 }
@@ -379,7 +374,7 @@ inline uint32 GenericFileElement<ImplementationType>::headerSize() const
  * This is the size of the element excluding the header.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::dataSizeType GenericFileElement<ImplementationType>::dataSize() const
+inline typename GenericFileElement<ImplementationType>::DataSizeType GenericFileElement<ImplementationType>::dataSize() const
 {
     return m_dataSize;
 }
@@ -443,7 +438,7 @@ inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
  * If the current element is a top level element nullptr is returned.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::parent()
+inline ImplementationType *GenericFileElement<ImplementationType>::parent()
 {
     return m_parent;
 }
@@ -455,7 +450,7 @@ inline typename GenericFileElement<ImplementationType>::implementationType *Gene
  * If the current element is a top level element nullptr is returned.
  */
 template <class ImplementationType>
-inline const typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::parent() const
+inline const ImplementationType *GenericFileElement<ImplementationType>::parent() const
 {
     return m_parent;
 }
@@ -469,7 +464,7 @@ inline const typename GenericFileElement<ImplementationType>::implementationType
  * \remarks parse() needs to be called before.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::nextSibling()
+inline ImplementationType *GenericFileElement<ImplementationType>::nextSibling()
 {
     return m_nextSibling.get();
 }
@@ -483,7 +478,7 @@ inline typename GenericFileElement<ImplementationType>::implementationType *Gene
  * \remarks parse() needs to be called before.
  */
 template <class ImplementationType>
-inline const typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::nextSibling() const
+inline const ImplementationType *GenericFileElement<ImplementationType>::nextSibling() const
 {
     return m_nextSibling.get();
 }
@@ -497,7 +492,7 @@ inline const typename GenericFileElement<ImplementationType>::implementationType
  * \remarks parse() needs to be called before.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::firstChild()
+inline ImplementationType *GenericFileElement<ImplementationType>::firstChild()
 {
     return m_firstChild.get();
 }
@@ -511,7 +506,7 @@ inline typename GenericFileElement<ImplementationType>::implementationType *Gene
  * \remarks parse() needs to be called before.
  */
 template <class ImplementationType>
-inline const typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::firstChild() const
+inline const ImplementationType *GenericFileElement<ImplementationType>::firstChild() const
 {
     return m_firstChild.get();
 }
@@ -526,9 +521,9 @@ inline const typename GenericFileElement<ImplementationType>::implementationType
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::subelementByPath(const std::initializer_list<identifierType> &path)
+inline ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(const std::initializer_list<IdentifierType> &path)
 {
-    std::list<GenericFileElement<ImplementationType>::identifierType> list(path);
+    std::list<GenericFileElement<ImplementationType>::IdentifierType> list(path);
     return subelementByPath(list);
 }
 
@@ -543,13 +538,13 @@ inline typename GenericFileElement<ImplementationType>::implementationType *Gene
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::subelementByPath(std::list<GenericFileElement<ImplementationType>::identifierType> &path)
+ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(std::list<IdentifierType> &path)
 {
     parse(); // ensure element is parsed
     if(path.size()) {
         if(path.front() == id()) {
             if(path.size() == 1) {
-                return static_cast<implementationType*>(this);
+                return static_cast<ImplementationType *>(this);
             } else {
                 if(firstChild()) {
                     path.pop_front();
@@ -575,10 +570,10 @@ typename GenericFileElement<ImplementationType>::implementationType *GenericFile
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::childById(const GenericFileElement<ImplementationType>::identifierType &id)
+ImplementationType *GenericFileElement<ImplementationType>::childById(const IdentifierType &id)
 {
     parse(); // ensure element is parsed
-    for(implementationType *child = firstChild(); child; child = child->nextSibling()) {
+    for(ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
         child->parse();
         if(child->id() == id) {
             return child;
@@ -602,10 +597,10 @@ typename GenericFileElement<ImplementationType>::implementationType *GenericFile
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::siblingById(const GenericFileElement<ImplementationType>::identifierType &id, bool includeThis)
+ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, bool includeThis)
 {
     parse(); // ensure element is parsed
-    for(implementationType *sibling = includeThis ? static_cast<implementationType*>(this) : nextSibling(); sibling; sibling = sibling->nextSibling()) {
+    for(ImplementationType *sibling = includeThis ? static_cast<ImplementationType *>(this) : nextSibling(); sibling; sibling = sibling->nextSibling()) {
         sibling->parse();
         if(sibling->id() == id) {
             return sibling;
@@ -618,25 +613,25 @@ typename GenericFileElement<ImplementationType>::implementationType *GenericFile
  * \brief Returns an iterator for iterating over the element's childs.
  */
 template <class ImplementationType>
-FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::begin()
+FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::begin()
 {
-    return FileElementIterator<implementationType>(firstChild());
+    return FileElementIterator<ImplementationType>(firstChild());
 }
 
 /*!
  * \brief Returns an iterator for iterating over the element's childs (constant).
  */
 template <class ImplementationType>
-const FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::begin() const
+const FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::begin() const
 {
-    return FileElementIterator<implementationType>(firstChild());
+    return FileElementIterator<ImplementationType>(firstChild());
 }
 
 /*!
  * \brief Returns an invalid iterator.
  */
 template <class ImplementationType>
-FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::end()
+FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::end()
 {
     return FileElementIterator<ImplementationType>();
 }
@@ -645,7 +640,7 @@ FileElementIterator<typename GenericFileElement<ImplementationType>::implementat
  * \brief Returns an invalid iterator.
  */
 template <class ImplementationType>
-const FileElementIterator<typename GenericFileElement<ImplementationType>::implementationType> GenericFileElement<ImplementationType>::end() const
+const FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::end() const
 {
     return FileElementIterator<ImplementationType>();
 }
@@ -695,7 +690,7 @@ inline bool GenericFileElement<ImplementationType>::isParsed() const
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::clear()
 {
-    m_id = identifierType();
+    m_id = IdentifierType();
     //m_startOffset = 0;
     m_idLength = 0;
     m_dataSize = 0;
@@ -906,10 +901,10 @@ void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetSt
  * \remarks A new first child is constructed. A possibly existing subtree is invalidated.
  */
 template <class ImplementationType>
-typename GenericFileElement<ImplementationType>::implementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
+ImplementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
 {
     if(relativeFirstChildOffset + minimumElementSize() <= totalSize()) {
-        m_firstChild.reset(new implementationType(static_cast<implementationType &>(*this), startOffset() + relativeFirstChildOffset));
+        m_firstChild.reset(new ImplementationType(static_cast<ImplementationType &>(*this), startOffset() + relativeFirstChildOffset));
     } else {
         m_firstChild.reset();
     }
@@ -922,7 +917,7 @@ typename GenericFileElement<ImplementationType>::implementationType *GenericFile
 template <class ImplementationType>
 constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupported()
 {
-    return sizeof(identifierType);
+    return sizeof(IdentifierType);
 }
 
 /*!
@@ -931,7 +926,7 @@ constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupporte
 template <class ImplementationType>
 constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
 {
-    return sizeof(dataSizeType);
+    return sizeof(DataSizeType);
 }
 
 /*!

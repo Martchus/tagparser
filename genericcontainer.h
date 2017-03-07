@@ -52,10 +52,10 @@ public:
     void removeAllTracks();
     void reset();
 
-    typedef FileInfoType fileInfoType;
-    typedef TagType tagType;
-    typedef TrackType trackType;
-    typedef ElementType elementType;
+    typedef FileInfoType ContainerFileInfoType;
+    typedef TagType ContainerTagType;
+    typedef TrackType ContainerTrackType;
+    typedef ElementType ContainerElementType;
 
 protected:
     std::unique_ptr<ElementType> m_firstElement;

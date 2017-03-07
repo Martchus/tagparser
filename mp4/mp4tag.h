@@ -94,9 +94,8 @@ template <>
 class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Mp4Tag>
 {
 public:
-    typedef Mp4Tag implementationType;
-    typedef Mp4TagField fieldType;
-    typedef std::less<typename fieldType::identifierType> compare;
+    typedef Mp4TagField FieldType;
+    typedef std::less<typename FieldType::IdentifierType> Compare;
 };
 
 class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag>
@@ -138,8 +137,8 @@ public:
     void make(std::ostream &stream);
 
 protected:
-    identifierType internallyGetFieldId(KnownField field) const;
-    KnownField internallyGetKnownField(const identifierType &id) const;
+    IdentifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const IdentifierType &id) const;
 
 };
 

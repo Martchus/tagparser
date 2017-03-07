@@ -41,18 +41,8 @@ template <>
 class TAG_PARSER_EXPORT TagFieldTraits<VorbisCommentField>
 {
 public:
-    /*!
-     * \brief Fields in a Vorbis comment are identified by 32-bit unsigned integers.
-     */
-    typedef std::string identifierType;
-    /*!
-     * \brief The type info is stored using 32-bit unsigned integers.
-     */
-    typedef uint32 typeInfoType;
-    /*!
-     * \brief The implementation type is VorbisCommentField.
-     */
-    typedef VorbisCommentField implementationType;
+    typedef std::string IdentifierType;
+    typedef uint32 TypeInfoType;
 };
 
 class OggIterator;
@@ -63,7 +53,7 @@ class TAG_PARSER_EXPORT VorbisCommentField : public TagField<VorbisCommentField>
 
 public:
     VorbisCommentField();
-    VorbisCommentField(const identifierType &id, const TagValue &value);
+    VorbisCommentField(const IdentifierType &id, const TagValue &value);
 
     void parse(OggIterator &iterator);
     void parse(OggIterator &iterator, uint64 &maxSize);

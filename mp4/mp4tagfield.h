@@ -57,20 +57,8 @@ template <>
 class TAG_PARSER_EXPORT TagFieldTraits<Mp4TagField>
 {
 public:
-    /*!
-     * \brief Fields in a iTunes-style MP4 tag are identified by 32-bit unsigned integers.
-     */
-    typedef uint32 identifierType;
-
-    /*!
-     * \brief The type info is stored using 32-bit unsigned integers.
-     */
-    typedef uint32 typeInfoType;
-
-    /*!
-     * \brief The implementation type is Mp4TagField.
-     */
-    typedef Mp4TagField implementationType;
+    typedef uint32 IdentifierType;
+    typedef uint32 TypeInfoType;
 };
 
 class Mp4Atom;
@@ -117,7 +105,7 @@ class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField>, public Statu
 
 public:
     Mp4TagField();
-    Mp4TagField(identifierType id, const TagValue &value);
+    Mp4TagField(IdentifierType id, const TagValue &value);
     Mp4TagField(const std::string &mean, const std::string &name, const TagValue &value);
 
     void reparse(Mp4Atom &ilstChild);
@@ -136,8 +124,8 @@ public:
     std::vector<uint32> expectedRawDataTypes() const;
     uint32 appropriateRawDataType() const;
 
-    static identifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
-    static std::string fieldIdToString(identifierType id);
+    static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static std::string fieldIdToString(IdentifierType id);
 
 protected:
     void cleared();
@@ -227,7 +215,7 @@ inline bool Mp4TagField::supportsNestedFields() const
  * \remarks The specified \a idString is assumed to be UTF-8 encoded. In order to get the ©-sign
  *          correctly, it is converted to Latin-1.
  */
-inline Mp4TagField::identifierType Mp4TagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
+inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
 {
     const auto latin1 = ConversionUtilities::convertUtf8ToLatin1(idString, idStringSize != std::string::npos ? idStringSize : std::strlen(idString));
     switch(latin1.second) {
@@ -243,7 +231,7 @@ inline Mp4TagField::identifierType Mp4TagField::fieldIdFromString(const char *id
  * \remarks The specified \a id is considered Latin-1 encoded. In order to get the ©-sign
  *          correctly, it is converted to UTF-8.
  */
-inline std::string Mp4TagField::fieldIdToString(Mp4TagField::identifierType id)
+inline std::string Mp4TagField::fieldIdToString(Mp4TagField::IdentifierType id)
 {
     const auto utf8 = ConversionUtilities::convertLatin1ToUtf8(ConversionUtilities::interpretIntegerAsString<uint32>(id).data(), 4);
     return std::string(utf8.first.get(), utf8.second);

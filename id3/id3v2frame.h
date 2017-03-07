@@ -81,20 +81,8 @@ template <>
 class TAG_PARSER_EXPORT TagFieldTraits<Id3v2Frame>
 {
 public:
-    /*!
-     * \brief Fields in an ID3 tag are identified by 32-bit unsigned integers.
-     */
-    typedef uint32 identifierType;
-
-    /*!
-     * \brief The type info is stored using bytes.
-     */
-    typedef byte typeInfoType;
-
-    /*!
-     * \brief The implementation type is Id3v2Frame.
-     */
-    typedef Id3v2Frame implementationType;
+    typedef uint32 IdentifierType;
+    typedef byte TypeInfoType;
 };
 
 class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
@@ -103,7 +91,7 @@ class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusP
 
 public:
     Id3v2Frame();
-    Id3v2Frame(const identifierType &id, const TagValue &value, const byte group = 0, const int16 flag = 0);
+    Id3v2Frame(const IdentifierType &id, const TagValue &value, const byte group = 0, const int16 flag = 0);
 
     // parsing/making
     void parse(IoUtilities::BinaryReader &reader, const uint32 version, const uint32 maximalSize = 0);
@@ -153,8 +141,8 @@ public:
     void makeCommentConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version);
     void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
 
-    static identifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
-    static std::string fieldIdToString(identifierType id);
+    static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static std::string fieldIdToString(IdentifierType id);
 
 protected:
     void cleared();
@@ -334,7 +322,7 @@ inline bool Id3v2Frame::supportsNestedFields() const
 /*!
  * \brief Converts the specified ID string representation to an actual ID.
  */
-inline Id3v2Frame::identifierType Id3v2Frame::fieldIdFromString(const char *idString, std::size_t idStringSize)
+inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(const char *idString, std::size_t idStringSize)
 {
     switch(idStringSize != std::string::npos ? idStringSize : std::strlen(idString)) {
     case 3:
@@ -349,7 +337,7 @@ inline Id3v2Frame::identifierType Id3v2Frame::fieldIdFromString(const char *idSt
 /*!
  * \brief Returns the string representation for the specified \a id.
  */
-inline std::string Id3v2Frame::fieldIdToString(Id3v2Frame::identifierType id)
+inline std::string Id3v2Frame::fieldIdToString(Id3v2Frame::IdentifierType id)
 {
     return ConversionUtilities::interpretIntegerAsString<uint32>(id, Id3v2FrameIds::isLongId(id) ? 0 : 1);
 }

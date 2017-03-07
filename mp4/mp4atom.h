@@ -25,25 +25,9 @@ template <>
 class TAG_PARSER_EXPORT FileElementTraits<Mp4Atom>
 {
 public:
-    /*!
-     * \brief The container type used to store such elements is Mp4Container.
-     */
-    typedef Mp4Container containerType;
-
-    /*!
-     * \brief The type used to store atom IDs is an unsigned 32-bit integer.
-     */
-    typedef uint32 identifierType;
-
-    /*!
-     * \brief The type used to store element sizes is an unsigned 64-bit integer.
-     */
-    typedef uint64 dataSizeType;
-
-    /*!
-     * \brief The implementation type is Mp4Atom.
-     */
-    typedef Mp4Atom implementationType;
+    typedef Mp4Container ContainerType;
+    typedef uint32 IdentifierType;
+    typedef uint64 DataSizeType;
 
     /*!
      * \brief Returns the minimal atom size which is 8 byte.
@@ -59,7 +43,7 @@ class TAG_PARSER_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom>
     friend class GenericFileElement<Mp4Atom>;
 
 public:
-    Mp4Atom(containerType& container, uint64 startOffset);
+    Mp4Atom(ContainerType &container, uint64 startOffset);
 
     std::string idToString() const;
     bool isParent() const;
@@ -72,8 +56,8 @@ public:
     static void makeHeader(uint64 size, uint32 id, IoUtilities::BinaryWriter &writer);
 
 protected:
-    Mp4Atom(containerType& container, uint64 startOffset, uint64 maxSize);
-    Mp4Atom(implementationType &parent, uint64 startOffset);
+    Mp4Atom(ContainerType &container, uint64 startOffset, uint64 maxSize);
+    Mp4Atom(Mp4Atom &parent, uint64 startOffset);
 
     void internalParse();
 
@@ -86,7 +70,7 @@ private:
  */
 inline std::string Mp4Atom::idToString() const
 {
-    auto idString = ConversionUtilities::interpretIntegerAsString<identifierType>(id());
+    auto idString = ConversionUtilities::interpretIntegerAsString<IdentifierType>(id());
     for(char &c : idString) {
         if(c < ' ') {
             c = '?';

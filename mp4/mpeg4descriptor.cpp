@@ -20,14 +20,14 @@ namespace Media {
  * \brief Constructs a new top level descriptor with the specified \a container at the specified \a startOffset
  *        and with the specified \a maxSize.
  */
-Mpeg4Descriptor::Mpeg4Descriptor(containerType &container, uint64 startOffset, uint64 maxSize) :
+Mpeg4Descriptor::Mpeg4Descriptor(ContainerType &container, uint64 startOffset, uint64 maxSize) :
     GenericFileElement<Mpeg4Descriptor>(container, startOffset, maxSize)
 {}
 
 /*!
  * \brief Constructs a new sub level descriptor with the specified \a parent at the specified \a startOffset.
  */
-Mpeg4Descriptor::Mpeg4Descriptor(implementationType &parent, uint64 startOffset) :
+Mpeg4Descriptor::Mpeg4Descriptor(Mpeg4Descriptor &parent, uint64 startOffset) :
     GenericFileElement<Mpeg4Descriptor>(parent, startOffset)
 {}
 
@@ -75,12 +75,12 @@ void Mpeg4Descriptor::internalParse()
         m_dataSize = maxTotalSize(); // using max size instead
     }
     m_firstChild.reset();
-    implementationType *sibling = nullptr;
+    Mpeg4Descriptor *sibling = nullptr;
     if(totalSize() < maxTotalSize()) {
         if(parent()) {
-            sibling = new implementationType(*(parent()), startOffset() + totalSize());
+            sibling = new Mpeg4Descriptor(*(parent()), startOffset() + totalSize());
         } else {
-            sibling = new implementationType(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
+            sibling = new Mpeg4Descriptor(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
         }
     }
     m_nextSibling.reset(sibling);

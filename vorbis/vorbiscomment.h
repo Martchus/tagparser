@@ -19,9 +19,8 @@ template <>
 class TAG_PARSER_EXPORT FieldMapBasedTagTraits<VorbisComment>
 {
 public:
-    typedef VorbisComment implementationType;
-    typedef VorbisCommentField fieldType;
-    typedef CaseInsensitiveStringComparer compare;
+    typedef VorbisCommentField FieldType;
+    typedef CaseInsensitiveStringComparer Compare;
 };
 
 class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment>
@@ -49,8 +48,8 @@ public:
     void setVendor(const TagValue &vendor);
 
 protected:
-    identifierType internallyGetFieldId(KnownField field) const;
-    KnownField internallyGetKnownField(const identifierType &id) const;
+    IdentifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const IdentifierType &id) const;
 
 private:
     template<class StreamType>
