@@ -26,6 +26,8 @@ public:
 
 class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment>
 {
+    friend class FieldMapBasedTag<VorbisComment>;
+
 public:
     VorbisComment();
 
@@ -34,10 +36,10 @@ public:
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
 
+    using FieldMapBasedTag<VorbisComment>::value;
     const TagValue &value(KnownField field) const;
+    using FieldMapBasedTag<VorbisComment>::setValue;
     bool setValue(KnownField field, const TagValue &value);
-    std::string fieldId(KnownField field) const;
-    KnownField knownField(const std::string &id) const;
 
     void parse(OggIterator &iterator, VorbisCommentFlags flags = VorbisCommentFlags::None);
     void parse(std::istream &stream, uint64 maxSize, VorbisCommentFlags flags = VorbisCommentFlags::None);
@@ -45,6 +47,10 @@ public:
 
     const TagValue &vendor() const;
     void setVendor(const TagValue &vendor);
+
+protected:
+    identifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const identifierType &id) const;
 
 private:
     template<class StreamType>

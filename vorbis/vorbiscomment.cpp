@@ -44,7 +44,7 @@ bool VorbisComment::setValue(KnownField field, const TagValue &value)
     }
 }
 
-string VorbisComment::fieldId(KnownField field) const
+VorbisComment::identifierType VorbisComment::internallyGetFieldId(KnownField field) const
 {
     using namespace VorbisCommentIds;
     switch(field) {
@@ -70,7 +70,7 @@ string VorbisComment::fieldId(KnownField field) const
     }
 }
 
-KnownField VorbisComment::knownField(const string &id) const
+KnownField VorbisComment::internallyGetKnownField(const identifierType &id) const
 {
     using namespace VorbisCommentIds;
     static const map<string, KnownField> fieldMap({

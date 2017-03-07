@@ -108,8 +108,9 @@ class FileElementTraits
  * \class Media::GenericFileElement
  * \brief The GenericFileElement class helps to parse binary files which consist
  *        of an arboreal element strucutre.
- *
  * \tparam ImplementationType Specifies the type of the actual implementation.
+ * \remarks This template class is intended to be subclassed using
+ *          with the "Curiously recurring template pattern".
  */
 template <class ImplementationType>
 class TAG_PARSER_EXPORT GenericFileElement : public StatusProvider

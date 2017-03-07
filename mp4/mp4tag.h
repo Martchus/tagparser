@@ -101,6 +101,8 @@ public:
 
 class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag>
 {
+    friend class FieldMapBasedTag<Mp4Tag>;
+
 public:
     Mp4Tag();
 
@@ -109,8 +111,6 @@ public:
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const;
 
-    uint32 fieldId(KnownField field) const;
-    KnownField knownField(const uint32 &id) const;
     bool supportsField(KnownField field) const;
     using FieldMapBasedTag<Mp4Tag>::value;
     const TagValue &value(KnownField value) const;
@@ -136,6 +136,11 @@ public:
     void parse(Mp4Atom &metaAtom);
     Mp4TagMaker prepareMaking();
     void make(std::ostream &stream);
+
+protected:
+    identifierType internallyGetFieldId(KnownField field) const;
+    KnownField internallyGetKnownField(const identifierType &id) const;
+
 };
 
 /*!
