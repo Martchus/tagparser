@@ -262,7 +262,7 @@ void Mp4Container::internalMakeFile()
     const auto trackCount = this->trackCount();
 
     // find relevant atoms in original file
-    Mp4Atom *fileTypeAtom, *progressiveDownloadInfoAtom, *movieAtom, *firstMediaDataAtom, *firstMovieFragmentAtom, *userDataAtom, *metaAtom;
+    Mp4Atom *fileTypeAtom, *progressiveDownloadInfoAtom, *movieAtom, *firstMediaDataAtom, *firstMovieFragmentAtom, *userDataAtom;
     Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten;
     try {
         // file type atom (mandatory)
@@ -334,10 +334,8 @@ void Mp4Container::internalMakeFile()
             initialNewTagPos = newTagPos = ElementPosition::BeforeData;
         }
 
-        // user data atom, meta atom, next sibling of meta atom
-        if((userDataAtom = movieAtom->childById(Mp4AtomIds::UserData))) {
-            metaAtom = userDataAtom->childById(Mp4AtomIds::Meta);
-        }
+        // user data atom
+        userDataAtom = movieAtom->childById(Mp4AtomIds::UserData);
 
     } catch (const NotImplementedException &) {
         throw;
