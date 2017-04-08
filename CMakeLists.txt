@@ -144,6 +144,7 @@ set(TEST_HEADER_FILES
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
+    tests/testfilecheck.cpp
     tests/overall.cpp
 )
 
@@ -166,7 +167,7 @@ set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 set(META_PRIVATE_COMPILE_DEFINITIONS LEGACY_API)
 
 # find c++utilities
-find_package(c++utilities 4.6.0 REQUIRED)
+find_package(c++utilities 4.7.0 REQUIRED)
 use_cpp_utilities()
 
 # find 3rd party libraries
@@ -179,6 +180,18 @@ use_external_library_from_package(
     ZLIB_LIBRARIES
     AUTO_LINKAGE
     REQUIRED
+)
+# crypto (for tests)
+find_external_library_from_package(
+    crypto
+    OpenSSL ANY_VERSION
+    OPENSSL_INCLUDE_DIR
+    OPENSSL_CRYPTO_LIBRARY
+    AUTO_LINKAGE
+    REQUIRED
+)
+link_tests_against_library(
+    crypto AUTO_LINKAGE REQUIRED
 )
 
 # include modules to apply configuration
