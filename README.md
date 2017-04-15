@@ -49,7 +49,8 @@ API documentation can be generated using Doxygen with `make tagparser_apidoc`.
 
 ## Build instructions
 The tagparser library depends on c++utilities and is built in the same way.
-It also depends on zlib.
+It also depends on zlib. For checking integrity of testfiles, the OpenSSL crypto
+library is required.
 
 ## TODO
 - Support more formats (EXIF, PDF metadata, Theora, ...)

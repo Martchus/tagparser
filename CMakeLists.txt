@@ -181,18 +181,22 @@ use_external_library_from_package(
     AUTO_LINKAGE
     REQUIRED
 )
-# crypto (for tests)
+# crypto (optional for testing integrity of testfiles)
 find_external_library_from_package(
     crypto
     OpenSSL ANY_VERSION
     OPENSSL_INCLUDE_DIR
     OPENSSL_CRYPTO_LIBRARY
     AUTO_LINKAGE
-    REQUIRED
+    OPTIONAL
 )
 link_tests_against_library(
-    crypto AUTO_LINKAGE REQUIRED
+    crypto AUTO_LINKAGE OPTIONAL
 )
+if(NOT USE_crypto)
+    list(REMOVE_ITEM TEST_SRC_FILES tests/testfilecheck.cpp)
+    message(WARNING "Unable to check testfile integrity because OpenSSL is not available.")
+endif()
 
 # include modules to apply configuration
 include(BasicConfig)
