@@ -241,6 +241,7 @@ const char *MediaFormat::name() const
         case 2: return "Windows Media Video v2/v8";
         default: return "Windows Media Video";
         }
+    case GeneralMediaFormat::DvbSub: return "DVB subtitles";
     default: return "unknown";
     }
 }
@@ -410,6 +411,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::WavPack: return "WavPack";
     case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
     case GeneralMediaFormat::WindowsMediaVideo: return "WMV";
+    case GeneralMediaFormat::DvbSub: return "DVBSUB";
     default: return "";
     }
 }

@@ -191,6 +191,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::OggKate;
     } else if(part1 == "B_VOBBTN") {
         fmt.general = GeneralMediaFormat::VobBtn;
+    } else if(part1 == "S_DVBSUB") {
+        fmt.general = GeneralMediaFormat::DvbSub;
     } else if(part1 == "V_MSWMV") {
         fmt.general = GeneralMediaFormat::Vc1;
     }

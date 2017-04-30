@@ -94,6 +94,7 @@ enum class GeneralMediaFormat
     WavPack, /**< WavPack */
     WindowsMediaAudio, /**< Windows Media Audio */
     WindowsMediaVideo, /**< Windows Media Video */
+    DvbSub, /**< DVBSUB */
 };
 
 /*!
