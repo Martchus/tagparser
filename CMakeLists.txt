@@ -165,6 +165,7 @@ set(META_VERSION_PATCH 2)
 set(META_PUBLIC_SHARED_LIB_DEPENDS c++utilities)
 set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 set(META_PRIVATE_COMPILE_DEFINITIONS LEGACY_API)
+set(META_NO_TIDY ON)
 
 # find c++utilities
 find_package(c++utilities 4.7.0 REQUIRED)
