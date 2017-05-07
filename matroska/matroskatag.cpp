@@ -40,6 +40,7 @@ std::string MatroskaTag::fieldId(KnownField field) const
     case KnownField::Lyricist: return lyricist();
     case KnownField::Composer: return composer();
     case KnownField::Length: return duration();
+    case KnownField::Language: return language();
     default: return string();
     }
 }
@@ -67,7 +68,8 @@ KnownField MatroskaTag::knownField(const std::string &id) const
         {actor(), KnownField::Performers},
         {lyricist(), KnownField::Lyricist},
         {composer(), KnownField::Composer},
-        {duration(), KnownField::Length}
+        {duration(), KnownField::Length},
+        {language(), KnownField::Language},
     });
     try {
         return map.at(id);

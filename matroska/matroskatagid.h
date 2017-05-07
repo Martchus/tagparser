@@ -262,6 +262,9 @@ inline TAG_PARSER_EXPORT const char *bpm() {
 inline TAG_PARSER_EXPORT const char *duration() {
     return "DURATION";
 }
+inline TAG_PARSER_EXPORT const char *language() {
+    return "LANGUAGE";
+}
 inline TAG_PARSER_EXPORT const char *numberOfFrames() {
     return "NUMBER_OF_FRAMES";
 }
