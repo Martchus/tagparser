@@ -64,8 +64,7 @@ void EbmlElement::internalParse()
     invalidateStatus();
     static const string context("parsing EBML element header");
 
-    byte skipped;
-    for(skipped = 0; /* TODO: add a sane limit here */; ++m_startOffset, --m_maxSize, ++skipped) {
+    for(byte skipped = 0; /* TODO: add a sane limit here */; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
         if(maxTotalSize() < 2) {
             addNotification(NotificationType::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
@@ -74,8 +73,7 @@ void EbmlElement::internalParse()
         stream().seekg(startOffset());
         // read ID
         char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
-        byte beg, mask = 0x80;
-        beg = stream().peek();
+        byte beg = stream().peek(), mask = 0x80;
         m_idLength = 1;
         while(m_idLength <= GenericFileElement<implementationType>::maximumIdLengthSupported() && (beg & mask) == 0) {
             ++m_idLength;
@@ -97,9 +95,8 @@ void EbmlElement::internalParse()
         m_id = BE::toUInt32(buf);
 
         // read size
-        mask = 0x80;
+        beg = stream().peek(), mask = 0x80;
         m_sizeLength = 1;
-        beg = stream().peek();
         if(beg == 0xFF) {
             // this indicates that the element size is unknown
             // -> just assume the element takes the maximum available size
@@ -141,12 +138,9 @@ void EbmlElement::internalParse()
         }
 
         // check if there's a first child
-        if(const uint64 firstChildOffset = this->firstChildOffset()) {
-            if(firstChildOffset < dataSize()) {
-                m_firstChild.reset(new EbmlElement(static_cast<EbmlElement &>(*this), startOffset() + firstChildOffset));
-            } else {
-                m_firstChild.reset();
-            }
+        const uint64 firstChildOffset = this->firstChildOffset();
+        if(firstChildOffset && firstChildOffset < totalSize()) {
+            m_firstChild.reset(new EbmlElement(static_cast<EbmlElement &>(*this), startOffset() + firstChildOffset));
         } else {
             m_firstChild.reset();
         }
