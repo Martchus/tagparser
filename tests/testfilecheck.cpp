@@ -69,6 +69,7 @@ struct TestFile
     {"matroska_wave1/test6.mkv", {"7cad84b434116e023d340dd584ac833b93f03fb1bd7ea2727fa45de50af0abb9"}},
     {"matroska_wave1/test7.mkv", {"95b21c92ad5a4fe00914ff5009e2a64f12fd4c5fb9cb1c3c888ab50bf0ffe483"}},
     {"matroska_wave1/test8.mkv", {"9dddcd1550b814dae44d62e2b9f27c0eca31d5e190df2220cbf7492e3d6c63da"}},
+    {"mtx-test-data/mkv/handbrake-chapters-2.mkv", {"eccc55f3b59a77086b3ffb914525d312c7886eae34e3933352dea2f6f6a1974c"}},
     {"mp4/test1.m4a", {"4f16e0a22525bd13ba859431406d7f5991e0b4f155c51e10e5f32b0c97034b36"}},
     {"mtx-test-data/aac/he-aacv2-ps.m4a", {"be54be0ae45b0184583ced8a84a881a1652a449feb7f6a917e11f60efabb68ac"}},
     {"mtx-test-data/alac/othertest-itunes.m4a", {"5e9c64cde00902211533fbe38aaa67ef5f79a945e1d717951b78b4bbf9ff84e8"}},

@@ -72,6 +72,7 @@ public:
     void checkMkvTestfile6();
     void checkMkvTestfile7();
     void checkMkvTestfile8();
+    void checkMkvTestfileHandbrakeChapters();
     void checkMkvTestMetaData();
     void checkMkvPaddingConstraints();
 
@@ -531,6 +532,70 @@ void OverallTests::checkMkvTestfile8()
 }
 
 /*!
+ * \brief Checks "mtx-test-data/mkv/handbrake-chapters-2.mkv".
+ */
+void OverallTests::checkMkvTestfileHandbrakeChapters()
+{
+    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    const auto tracks = m_fileInfo.tracks();
+    CPPUNIT_ASSERT_EQUAL(2ul, tracks.size());
+    for(const auto &track : tracks) {
+        switch(track->id()) {
+        case 1:
+            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
+            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
+            CPPUNIT_ASSERT_EQUAL(4.0, track->version());
+            CPPUNIT_ASSERT(track->pixelSize() == Size(1280, 544));
+            CPPUNIT_ASSERT(track->displaySize() == Size(1280, 544));
+            CPPUNIT_ASSERT(track->fps() == 23);
+            break;
+        case 2:
+            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
+            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
+            CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
+            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            break;
+        default:
+            CPPUNIT_FAIL(argsToString("unknown track ID ", track->id()));
+        }
+    }
+    const auto chapters = m_fileInfo.chapters();
+    CPPUNIT_ASSERT_EQUAL(2ul, chapters.size());
+    for(const auto &chapter : chapters) {
+        switch(chapter->id()) {
+        case 1:
+            CPPUNIT_ASSERT(!strcmp(chapter->names().at(0).data(), "Kapitel 01"));
+            CPPUNIT_ASSERT_EQUAL(0l, chapter->startTime().totalTicks());
+            CPPUNIT_ASSERT_EQUAL(15, chapter->endTime().seconds());
+            break;
+        case 2:
+            CPPUNIT_ASSERT(!strcmp(chapter->names().at(0).data(), "Kapitel 02"));
+            CPPUNIT_ASSERT_EQUAL(15, chapter->startTime().seconds());
+            CPPUNIT_ASSERT_EQUAL(27, chapter->endTime().seconds());
+            break;
+        default:
+            CPPUNIT_FAIL(argsToString("unknown chapter ID ", chapter->id()));
+        }
+    }
+    const auto tags = m_fileInfo.tags();
+    switch(m_tagStatus) {
+    case TagStatus::Original:
+        CPPUNIT_ASSERT_EQUAL(2ul, tags.size());
+        CPPUNIT_ASSERT(tags[0]->target().isEmpty());
+        CPPUNIT_ASSERT_EQUAL(""s, static_cast<MatroskaTag *>(tags[0])->value("CREATION_TIME").toString());
+        CPPUNIT_ASSERT_EQUAL("Lavf55.12.0"s, tags[0]->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL(2ul, tags[1]->target().tracks().at(0));
+        CPPUNIT_ASSERT_EQUAL("eng"s, tags[1]->value(KnownField::Language).toString());
+        break;
+    case TagStatus::TestMetaDataPresent:
+        checkMkvTestMetaData();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT(tags.size() == 0);
+    }
+}
+
+/*!
  * \brief Checks whether test meta data for Matroska files has been applied correctly.
  */
 void OverallTests::checkMkvTestMetaData()
@@ -538,19 +603,19 @@ void OverallTests::checkMkvTestMetaData()
     // check tags
     const auto tags = m_fileInfo.tags();
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tags.size() == 2);
-    CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == m_testTitle.toString());
+    CPPUNIT_ASSERT_EQUAL(2ul, tags.size());
+    CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), tags.front()->value(KnownField::Title).toString());
     CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-    CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == m_testComment.toString());
-    CPPUNIT_ASSERT(tags[1]->target().level() == 30);
-    CPPUNIT_ASSERT(tags[1]->target().tracks().at(0) == tracks.at(0)->id());
-    CPPUNIT_ASSERT(tags[1]->value(KnownField::Album).toString() == m_testAlbum.toString());
-    CPPUNIT_ASSERT(tags[1]->value(KnownField::PartNumber).toInteger() == m_testPartNumber.toInteger());
-    CPPUNIT_ASSERT(tags[1]->value(KnownField::TotalParts).toInteger() == m_testTotalParts.toInteger());
+    CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), tags.front()->value(KnownField::Comment).toString());
+    CPPUNIT_ASSERT_EQUAL(30ul, tags[1]->target().level());
+    CPPUNIT_ASSERT_EQUAL(tracks.at(0)->id(), tags[1]->target().tracks().at(0));
+    CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(), tags[1]->value(KnownField::Album).toString());
+    CPPUNIT_ASSERT_EQUAL(m_testPartNumber.toInteger(), tags[1]->value(KnownField::PartNumber).toInteger());
+    CPPUNIT_ASSERT_EQUAL(m_testTotalParts.toInteger(), tags[1]->value(KnownField::TotalParts).toInteger());
 
     // check attachments
     const auto attachments = m_fileInfo.attachments();
-    CPPUNIT_ASSERT(attachments.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1ul, attachments.size());
     CPPUNIT_ASSERT(attachments[0]->mimeType() == "image/png");
     CPPUNIT_ASSERT(attachments[0]->name() == "cover.jpg");
     CPPUNIT_ASSERT(attachments[0]->data() != nullptr);
@@ -1134,9 +1199,13 @@ void OverallTests::checkFlacTestfile2()
 void OverallTests::setMkvTestMetaData()
 {
     // change the present tag
-    if(!m_fileInfo.container()->tagCount()) {
+    const string fileName(m_fileInfo.fileName());
+    if(fileName == "test4.mkv") {
         // test4.mkv has no tag, so one must be created first
         m_fileInfo.container()->createTag(TagTarget(50));
+    } else if(fileName == "handbrake-chapters-2.mkv") {
+        // remove 2nd tag
+        m_fileInfo.removeTag(m_fileInfo.tags().at(1));
     }
     Tag *firstTag = m_fileInfo.tags().at(0);
     firstTag->setValue(KnownField::Title, m_testTitle);
@@ -1245,6 +1314,7 @@ void OverallTests::testMkvParsing()
     parseFile(TestUtilities::testFilePath("matroska_wave1/test6.mkv"), &OverallTests::checkMkvTestfile6);
     parseFile(TestUtilities::testFilePath("matroska_wave1/test7.mkv"), &OverallTests::checkMkvTestfile7);
     parseFile(TestUtilities::testFilePath("matroska_wave1/test8.mkv"), &OverallTests::checkMkvTestfile8);
+    parseFile(TestUtilities::testFilePath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), &OverallTests::checkMkvTestfileHandbrakeChapters);
 }
 
 #ifdef PLATFORM_UNIX
@@ -1326,6 +1396,7 @@ void OverallTests::testMkvMaking()
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test6.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile6);
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test7.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile7);
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
+        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine, &OverallTests::checkMkvTestfileHandbrakeChapters);
     }
 }
 #endif
