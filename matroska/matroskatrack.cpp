@@ -100,6 +100,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         } else if(part2 == "L3") {
             fmt.sub = SubFormats::Mpeg1Layer3;
         }
+    } else if(part1 == "V_MPEGH" && part2 == "ISO" && part3 == "HEVC") {
+        fmt.general = GeneralMediaFormat::Hevc;
     } else if(part1 == "A_PCM") {
         fmt.general = GeneralMediaFormat::Pcm;
         if(part2 == "INT") {
