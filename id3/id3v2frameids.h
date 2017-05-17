@@ -32,6 +32,7 @@ enum KnownValue : uint32 {
     lUniqueFileId = 0x55464944,
     lComposer = 0x54434f4d,
     lRating = 0x504f504d,
+    lUserDefinedText = 0x54585858,
 
     sAlbum = 0x54414c,
     sArtist = 0x545031,
@@ -54,7 +55,8 @@ enum KnownValue : uint32 {
     sRecordLabel = 0x545042,
     sUniqueFileId = 0x554649,
     sComposer = 0x54434d,
-    sRating = 0x504f50
+    sRating = 0x504f50,
+    sUserDefinedText = 0x545858,
 };
 
 uint32 convertToShortId(uint32 id);
@@ -82,9 +84,9 @@ inline bool isShortId(uint32 id)
 inline bool isTextFrame(uint32 id)
 {
     if(isShortId(id)) {
-        return (id & 0x00FF0000u) == 0x00540000u;
+        return ((id & 0x00FF0000u) == 0x00540000u) && (id != Id3v2FrameIds::sUserDefinedText);
     } else {
-        return (id & 0xFF000000u) == 0x54000000u;
+        return (id & 0xFF000000u) == 0x54000000u && (id != Id3v2FrameIds::lUserDefinedText);
     }
 }
 

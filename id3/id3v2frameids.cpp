@@ -43,6 +43,7 @@ uint32 convertToShortId(uint32 id)
     case lUnsynchronizedLyrics: return sUnsynchronizedLyrics;
     case lGrouping: return sGrouping;
     case lRecordLabel: return sRecordLabel;
+    case lUserDefinedText: return sUserDefinedText;
     default: return 0;
     }
 }
@@ -72,6 +73,7 @@ uint32 convertToLongId(uint32 id)
     case sUnsynchronizedLyrics: return lUnsynchronizedLyrics;
     case sGrouping: return lGrouping;
     case sRecordLabel: return lRecordLabel;
+    case sUserDefinedText: return lUserDefinedText;
     default: return 0;
     }
 }
