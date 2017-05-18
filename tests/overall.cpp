@@ -25,6 +25,7 @@
 
 using namespace std;
 using namespace ConversionUtilities;
+using namespace TestUtilities;
 using namespace Media;
 
 using namespace CPPUNIT_NS;
@@ -53,7 +54,8 @@ class OverallTests : public TestFixture
     CPPUNIT_TEST(testMp3Making);
     CPPUNIT_TEST(testOggMaking);
     CPPUNIT_TEST(testFlacMaking);
-    CPPUNIT_TEST(testMkvMaking);
+    CPPUNIT_TEST(testMkvMakingWithDifferentSettings);
+    CPPUNIT_TEST(testMkvMakingNestedTags);
 #endif
     CPPUNIT_TEST_SUITE_END();
 
@@ -61,6 +63,7 @@ public:
     void setUp();
     void tearDown();
 
+private:
     void parseFile(const string &path, void (OverallTests::* checkRoutine)(void));
     void makeFile(const string &path, void (OverallTests::* modifyRoutine)(void), void (OverallTests::* checkRoutine)(void));
 
@@ -73,6 +76,7 @@ public:
     void checkMkvTestfile7();
     void checkMkvTestfile8();
     void checkMkvTestfileHandbrakeChapters();
+    void checkMkvTestfileNestedTags();
     void checkMkvTestMetaData();
     void checkMkvPaddingConstraints();
 
@@ -100,14 +104,18 @@ public:
     void setMp3TestMetaData();
     void setOggTestMetaData();
     void removeAllTags();
+    void noop();
+    void createMkvWithNestedTags();
 
+public:
     void testMkvParsing();
     void testMp4Parsing();
     void testMp3Parsing();
     void testOggParsing();
     void testFlacParsing();
 #ifdef PLATFORM_UNIX
-    void testMkvMaking();
+    void testMkvMakingWithDifferentSettings();
+    void testMkvMakingNestedTags();
     void testMp4Making();
     void testMp3Making();
     void testOggMaking();
@@ -123,6 +131,7 @@ private:
     TagValue m_testTotalParts;
     TagValue m_testPosition;
     queue<TagValue> m_preservedMetaData;
+    string m_nestedTagsMkvPath;
     TagStatus m_tagStatus;
     uint16 m_mode;
 };
@@ -143,7 +152,11 @@ void OverallTests::setUp()
 }
 
 void OverallTests::tearDown()
-{}
+{
+    if(!m_nestedTagsMkvPath.empty()) {
+        remove(m_nestedTagsMkvPath.data());
+    }
+}
 
 /*!
  * \brief Parses the specified file and tests the results using the specified check routine.
@@ -589,6 +602,42 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT(tags.size() == 0);
+    }
+}
+
+/*!
+ * \brief Checks "mtx-test-data/mkv/nested-tags.mkv" ("mtx-test-data/mkv/tags.mkv" where "mkv/nested-tags.xml" has been applied).
+ */
+void OverallTests::checkMkvTestfileNestedTags()
+{
+    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    const auto tags = m_fileInfo.tags();
+    bool generalTagFound = false;
+    switch(m_tagStatus) {
+    case TagStatus::Original:
+    case TagStatus::TestMetaDataPresent:
+        CPPUNIT_ASSERT_EQUAL(5ul, tags.size());
+        for(const Tag *tag : tags) {
+            CPPUNIT_ASSERT(tag->type() == TagType::MatroskaTag);
+            const auto *mkvTag = static_cast<const MatroskaTag *>(tag);
+            const auto &target = mkvTag->target();
+            if(target.level() == 50 && target.tracks().empty()) {
+                generalTagFound = true;
+                CPPUNIT_ASSERT_EQUAL("Vanilla Sky"s, tag->value(KnownField::Title).toString());
+                const auto &fields = mkvTag->fields();
+                const auto &artistField = fields.find(mkvTag->fieldId(KnownField::Artist));
+                CPPUNIT_ASSERT(artistField != fields.end());
+                CPPUNIT_ASSERT_EQUAL("Test artist"s, artistField->second.value().toString());
+                const auto &nestedFields = artistField->second.nestedFields();
+                CPPUNIT_ASSERT_EQUAL(1ul, nestedFields.size());
+                CPPUNIT_ASSERT_EQUAL("ADDRESS"s, nestedFields[0].idToString());
+                CPPUNIT_ASSERT_EQUAL("Test address"s, nestedFields[0].value().toString());
+            }
+        }
+        CPPUNIT_ASSERT(generalTagFound);
         break;
     case TagStatus::Removed:
         CPPUNIT_ASSERT(tags.size() == 0);
@@ -1299,6 +1348,47 @@ void OverallTests::removeAllTags()
 }
 
 /*!
+ * \brief Does nothing.
+ * \remarks Used to just resave the file.
+ */
+void OverallTests::noop()
+{
+}
+
+/*!
+ * \brief Creates a Matroska test file with nested tags from "mtx-test-data/mkv/nested-tags.mkv" using "mkv/nested-tags.xml".
+ * \remarks Requires mkvmerge.
+ * \todo Make mkvmerge path variable.
+ */
+void OverallTests::createMkvWithNestedTags()
+{
+#ifdef PLATFORM_UNIX
+    m_nestedTagsMkvPath = workingCopyPathMode("mtx-test-data/mkv/nested-tags.mkv", WorkingCopyMode::NoCopy);
+    remove(m_nestedTagsMkvPath.data());
+
+    cerr << "\n\ncreating testfile \"" << m_nestedTagsMkvPath << "\" with mkvmerge" << endl;
+    const string tagsMkvPath(testFilePath("mtx-test-data/mkv/tags.mkv"));
+    const string tagsXmlPath(testFilePath("mkv/nested-tags.xml"));
+    const char *const mkvmergeArgs[] = {
+        "--ui-language en_US",
+        "--output", m_nestedTagsMkvPath.data(),
+        "--no-global-tags", "--language", "0:und", "--default-track", "0:yes", "--language", "1:und", "--default-track", "1:yes",
+        "(", tagsMkvPath.data(), ")",
+        "--global-tags", tagsXmlPath.data(), "--track-order", "0:0,0:1", nullptr
+    };
+    string mkvmergeOutput, mkvmergeErrors;
+    int res = execHelperApp("/bin/mkvmerge", mkvmergeArgs, mkvmergeOutput, mkvmergeErrors);
+    cout << mkvmergeOutput << endl;
+    cerr << mkvmergeErrors << endl;
+    if(res) {
+        cerr << "Failure (exit code " << res << "); unable to test nested tags" << endl;
+        remove(m_nestedTagsMkvPath.data());
+        m_nestedTagsMkvPath.clear();
+    }
+#endif
+}
+
+/*!
  * \brief Tests the Matroska parser via MediaFileInfo.
  */
 void OverallTests::testMkvParsing()
@@ -1315,14 +1405,21 @@ void OverallTests::testMkvParsing()
     parseFile(TestUtilities::testFilePath("matroska_wave1/test7.mkv"), &OverallTests::checkMkvTestfile7);
     parseFile(TestUtilities::testFilePath("matroska_wave1/test8.mkv"), &OverallTests::checkMkvTestfile8);
     parseFile(TestUtilities::testFilePath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), &OverallTests::checkMkvTestfileHandbrakeChapters);
+    createMkvWithNestedTags();
+    if(!m_nestedTagsMkvPath.empty()) {
+        parseFile(m_nestedTagsMkvPath, &OverallTests::checkMkvTestfileNestedTags);
+    }
 }
 
 #ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the Matroska maker via MediaFileInfo.
+ *
+ * This method tests various combinations of the possible settings.
+ *
  * \remarks Relies on the parser to check results.
  */
-void OverallTests::testMkvMaking()
+void OverallTests::testMkvMakingWithDifferentSettings()
 {
     // full parse is required to determine padding
     m_fileInfo.setForceFullParse(true);
@@ -1397,6 +1494,23 @@ void OverallTests::testMkvMaking()
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test7.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile7);
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine, &OverallTests::checkMkvTestfileHandbrakeChapters);
+    }
+}
+
+/*!
+ * \brief Tests making a Matroska file with nested tags via MediaFileInfo.
+ * \remarks Relies on the parser to check results.
+ */
+void OverallTests::testMkvMakingNestedTags()
+{
+    createMkvWithNestedTags();
+    if(!m_nestedTagsMkvPath.empty()) {
+        cerr << endl << "Matroska maker - rewrite file with nested tags" << endl;
+        m_fileInfo.setMinPadding(0);
+        m_fileInfo.setMaxPadding(0);
+        m_fileInfo.setTagPosition(ElementPosition::BeforeData);
+        m_fileInfo.setIndexPosition(ElementPosition::BeforeData);
+        makeFile(m_nestedTagsMkvPath, &OverallTests::noop, &OverallTests::checkMkvTestfileNestedTags);
     }
 }
 #endif
