@@ -157,6 +157,8 @@ protected:
     void cleared();
 
 private:
+    std::size_t makeBom(char *buffer, TagTextEncoding encoding); // FIXME: add to public API in next minor release
+
     uint16 m_flag;
     byte m_group;
     uint32 m_parsedVersion;

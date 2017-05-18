@@ -579,7 +579,7 @@ byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
  * \param addWarnings Specifies whether warnings should be added to the status provider if the string is not terminated.
  * \returns Returns the start offset, the length of the string (without termination) and the end offset (after termination).
  * \remarks The length is always returned as the number of bytes, not as the number of characters (makes a difference for
- *          UTF-16 encodings).
+ *          Unicode encodings).
  */
 tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char *buffer, std::size_t bufferSize, TagTextEncoding &encoding, bool addWarnings)
 {
@@ -825,22 +825,45 @@ void Id3v2Frame::makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bu
     if(!data) {
         dataSize = 0;
     }
+    char *bufferDataAddress;
     switch(encoding) {
     case TagTextEncoding::Latin1:
     case TagTextEncoding::Utf8:
     case TagTextEncoding::Unspecified: // assumption
         // allocate buffer
         buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 1);
+        buffer[0] = makeTextEncodingByte(encoding); // set text encoding byte
+        bufferDataAddress = buffer.get() + 1;
         break;
     case TagTextEncoding::Utf16LittleEndian:
     case TagTextEncoding::Utf16BigEndian:
         // allocate buffer
-        buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 2);
+        buffer = make_unique<char[]>(bufferSize = 1 + 2 + dataSize + 2);
+        buffer[0] = makeTextEncodingByte(encoding); // set text encoding byte
+        ConversionUtilities::LE::getBytes(encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<uint16>(0xFEFF) : static_cast<uint16>(0xFFFE), buffer.get() + 1);
+        bufferDataAddress = buffer.get() + 3;
         break;
     }
-    buffer[0] = makeTextEncodingByte(encoding); // set text encoding byte
-    if(dataSize > 0) {
-        copy(data, data + dataSize, buffer.get() + 1); // write string data
+    if(dataSize) {
+        copy(data, data + dataSize, bufferDataAddress); // write string data
+    }
+}
+
+/*!
+ * \brief Writes the BOM for the specified \a encoding to the specified \a buffer.
+ * \returns Returns the number of bytes written to the buffer.
+ */
+size_t Id3v2Frame::makeBom(char *buffer, TagTextEncoding encoding)
+{
+    switch(encoding) {
+    case TagTextEncoding::Utf16LittleEndian:
+        ConversionUtilities::LE::getBytes(static_cast<uint16>(0xFEFF), buffer);
+        return 2;
+    case TagTextEncoding::Utf16BigEndian:
+        ConversionUtilities::BE::getBytes(static_cast<uint16>(0xFEFF), buffer);
+        return 2;
+    default:
+        return 0;
     }
 }
 
@@ -850,13 +873,13 @@ void Id3v2Frame::makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bu
 void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
     // calculate needed buffer size and create buffer
-    TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
-    uint32 dataSize = picture.dataSize();
-    string::size_type descriptionLength = picture.description().find('\0');
+    const TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
+    const uint32 dataSize = picture.dataSize();
+    string::size_type descriptionLength = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
     if(descriptionLength == string::npos) {
         descriptionLength = picture.description().length();
     }
-    buffer = make_unique<char[]>(bufferSize = 1             + 3            + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
+    buffer = make_unique<char[]>(bufferSize = 1             + 3            + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1) + dataSize);
     // note:                                  encoding byte + image format + picture type byte + description length + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
     char *offset = buffer.get();
     // write encoding byte
@@ -878,6 +901,7 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     // write picture type
     *(offset += 3) = typeInfo;
     // write description
+    offset += makeBom(offset + 1, descriptionEncoding);
     picture.description().copy(++offset, descriptionLength);
     *(offset += descriptionLength) = 0x00; // terminate description and increase data offset
     if(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
@@ -893,18 +917,18 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
 void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
     // calculate needed buffer size and create buffer
-    TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
-    uint32 dataSize = picture.dataSize();
+    const TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
+    const uint32 dataSize = picture.dataSize();
     string::size_type mimeTypeLength = picture.mimeType().find('\0');
     if(mimeTypeLength == string::npos) {
         mimeTypeLength = picture.mimeType().length();
     }
-    string::size_type descriptionLength = picture.description().find('\0');
+    string::size_type descriptionLength = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
     if(descriptionLength == string::npos) {
         descriptionLength = picture.description().length();
     }
-    buffer = make_unique<char[]>(bufferSize = 1             + mimeTypeLength   + 1      + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + dataSize);
-    // note:                                  encoding byte + mime type length + 0 byte + picture type byte + description length + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
+    buffer = make_unique<char[]>(bufferSize = 1             + mimeTypeLength   + 1      + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1) + dataSize);
+    // note:                                  encoding byte + mime type length + 0 byte + picture type byte + description length + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
     char *offset = buffer.get();
     // write encoding byte
     *offset = makeTextEncodingByte(descriptionEncoding);
@@ -914,6 +938,7 @@ void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
     // write picture type
     *(++offset) = typeInfo;
     // write description
+    offset += makeBom(offset + 1, descriptionEncoding);
     picture.description().copy(++offset, descriptionLength);
     *(offset += descriptionLength) = 0x00; // terminate description and increase data offset
     if(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
@@ -941,13 +966,13 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
         throw InvalidDataException();
     }
     // calculate needed buffer size and create buffer
-    string::size_type descriptionLength = comment.description().find('\0');
+    string::size_type descriptionLength = comment.description().find(encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
     if(descriptionLength == string::npos) {
         descriptionLength = comment.description().length();
     }
     const auto data = comment.toString();
-    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionLength  + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1) + data.size());
-    // note:                     encoding byte              + language + description length + 1 or 2 null bytes                                                                                       + data size
+    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionLength  + data.size() + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 6 : 1) + data.size());
+    // note:                     encoding byte              + language + description length + actual data size + BOMs and termination
     char *offset = buffer.get();
     // write encoding
     *offset = makeTextEncodingByte(encoding);
@@ -956,6 +981,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
         *(++offset) = (lng.length() > i) ? lng[i] : 0x00;
     }
     // write description
+    offset += makeBom(offset + 1, encoding);
     comment.description().copy(++offset, descriptionLength);
     offset += descriptionLength;
     *offset = 0x00; // terminate description and increase data offset
@@ -963,6 +989,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
         *(++offset) = 0x00;
     }
     // write actual data
+    offset += makeBom(offset + 1, encoding);
     data.copy(++offset, data.size());
 }
 
