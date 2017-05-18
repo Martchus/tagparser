@@ -544,48 +544,52 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
  * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
  *                  use \a textEncoding without any character set conversions.
  * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
  */
 void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
 {
     m_type = TagDataType::Text;
     m_encoding = convertTo == TagTextEncoding::Unspecified ? textEncoding : convertTo;
-    if(textSize) {
-        if(convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
-            m_ptr = make_unique<char []>(m_size = textSize);
-            copy(text, text + textSize, m_ptr.get());
-        } else {
-            StringData encodedData;
-            switch(textEncoding) {
-            case TagTextEncoding::Utf8:
-                // use pre-defined methods when encoding to UTF-8
-                switch(convertTo) {
-                case TagTextEncoding::Latin1:
-                    encodedData = convertUtf8ToLatin1(text, textSize);
-                    break;
-                case TagTextEncoding::Utf16LittleEndian:
-                    encodedData = convertUtf8ToUtf16LE(text, textSize);
-                    break;
-                case TagTextEncoding::Utf16BigEndian:
-                    encodedData = convertUtf8ToUtf16BE(text, textSize);
-                    break;
-                default:
-                    ;
-                }
-                break;
-            default: {
-                // otherwise, determine input and output parameter to use general covertString method
-                const auto inputParameter = encodingParameter(textEncoding);
-                const auto outputParameter = encodingParameter(convertTo);
-                encodedData = convertString(inputParameter.first, outputParameter.first, text, textSize, outputParameter.second / inputParameter.second);
-            }
-            }
-            // can't just move the encoded data because it needs to be deleted with free
-            m_ptr = make_unique<char []>(m_size = encodedData.second);
-            copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
-        }
-    } else {
+
+    stripBom(text, textSize, textEncoding);
+    if(!textSize) {
         m_size = 0;
         m_ptr.reset();
+        return;
+    }
+
+    if(convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
+        m_ptr = make_unique<char []>(m_size = textSize);
+        copy(text, text + textSize, m_ptr.get());
+    } else {
+        StringData encodedData;
+        switch(textEncoding) {
+        case TagTextEncoding::Utf8:
+            // use pre-defined methods when encoding to UTF-8
+            switch(convertTo) {
+            case TagTextEncoding::Latin1:
+                encodedData = convertUtf8ToLatin1(text, textSize);
+                break;
+            case TagTextEncoding::Utf16LittleEndian:
+                encodedData = convertUtf8ToUtf16LE(text, textSize);
+                break;
+            case TagTextEncoding::Utf16BigEndian:
+                encodedData = convertUtf8ToUtf16BE(text, textSize);
+                break;
+            default:
+                ;
+            }
+            break;
+        default: {
+            // otherwise, determine input and output parameter to use general covertString method
+            const auto inputParameter = encodingParameter(textEncoding);
+            const auto outputParameter = encodingParameter(convertTo);
+            encodedData = convertString(inputParameter.first, outputParameter.first, text, textSize, outputParameter.second / inputParameter.second);
+        }
+        }
+        // can't just move the encoded data because it needs to be deleted with free
+        m_ptr = make_unique<char []>(m_size = encodedData.second);
+        copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
     }
 }
 
@@ -623,6 +627,9 @@ void TagValue::assignStandardGenreIndex(int index)
  */
 void TagValue::assignData(const char *data, size_t length, TagDataType type, TagTextEncoding encoding)
 {
+    if(type == TagDataType::Text) {
+        stripBom(data, length, encoding);
+    }
     if(length > m_size) {
         m_ptr = make_unique<char[]>(length);
     }
@@ -646,6 +653,7 @@ void TagValue::assignData(const char *data, size_t length, TagDataType type, Tag
  * \param type Specifies the type of the data as TagDataType.
  * \param encoding Specifies the encoding of the data as TagTextEncoding. The
  *                 encoding will only be considered if a text is assigned.
+ * \remarks Does not strip the BOM so for consistency the caller must ensure there is no BOM present.
  */
 void TagValue::assignData(unique_ptr<char[]> &&data, size_t length, TagDataType type, TagTextEncoding encoding)
 {
@@ -653,6 +661,35 @@ void TagValue::assignData(unique_ptr<char[]> &&data, size_t length, TagDataType 
     m_type = type;
     m_encoding = encoding;
     m_ptr = move(data);
+}
+
+/*!
+ * \brief Strips the byte order mask from the specified \a text.
+ */
+void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encoding)
+{
+    switch(encoding) {
+    case TagTextEncoding::Utf8:
+        if((length >= 3) && (ConversionUtilities::BE::toUInt24(text) == 0x00EFBBBF)) {
+            text += 3;
+            length -= 3;
+        }
+        break;
+    case TagTextEncoding::Utf16LittleEndian:
+        if((length >= 2) && (ConversionUtilities::LE::toUInt16(text) == 0xFEFF)) {
+            text += 2;
+            length -= 2;
+        }
+        break;
+    case TagTextEncoding::Utf16BigEndian:
+        if((length >= 2) && (ConversionUtilities::BE::toUInt16(text) == 0xFEFF)) {
+            text += 2;
+            length -= 2;
+        }
+        break;
+    default:
+        ;
+    }
 }
 
 /*!

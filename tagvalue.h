@@ -124,6 +124,8 @@ public:
 
 
 private:
+    void stripBom(const char *&text, size_t &length, TagTextEncoding encoding);
+
     std::unique_ptr<char[]> m_ptr;
     std::string::size_type m_size;
     TagDataType m_type;
@@ -154,6 +156,7 @@ inline TagValue::TagValue() :
  * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
  *                  use \a textEncoding without any character set conversions.
  * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
  */
 inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo) :
     m_labeledAsReadonly(false),
@@ -169,6 +172,7 @@ inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncodin
  * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
  *                  use \a textEncoding without any character set conversions.
  * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
  */
 inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo) :
     m_labeledAsReadonly(false),
@@ -192,6 +196,7 @@ inline TagValue::TagValue(int value) :
  * \param type Specifies the type of the data as TagDataType.
  * \param encoding Specifies the encoding of the data as TagTextEncoding. The
  *                 encoding will only be considered if a text is assigned.
+ * \remarks Strips the BOM of the specified \a data if \a type is TagDataType::Text.
  */
 inline TagValue::TagValue(const char *data, size_t length, TagDataType type, TagTextEncoding encoding) :
     m_size(length),
@@ -201,8 +206,11 @@ inline TagValue::TagValue(const char *data, size_t length, TagDataType type, Tag
     m_descEncoding(TagTextEncoding::Latin1)
 {
     if(length) {
+        if(type == TagDataType::Text) {
+            stripBom(data, m_size, encoding);
+        }
         m_ptr = std::make_unique<char []>(m_size);
-        std::copy(data, data + length, m_ptr.get());
+        std::copy(data, data + m_size, m_ptr.get());
     }
 }
 
@@ -216,6 +224,7 @@ inline TagValue::TagValue(const char *data, size_t length, TagDataType type, Tag
  * \param type Specifies the type of the data as TagDataType.
  * \param encoding Specifies the encoding of the data as TagTextEncoding. The
  *                 encoding will only be considered if a text is assigned.
+ * \remarks Does not strip the BOM so for consistency the caller must ensure there is no BOM present.
  */
 inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type, TagTextEncoding encoding) :
     m_size(length),
@@ -253,6 +262,7 @@ inline bool TagValue::operator!=(const TagValue &other) const
  * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
  *                  use \a textEncoding without any character set conversions.
  * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
  */
 inline void TagValue::assignText(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
 {
