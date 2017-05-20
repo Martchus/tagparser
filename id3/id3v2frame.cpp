@@ -889,7 +889,7 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     // determine description
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
     StringData convertedDescription;
-    string::size_type descriptionSize = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+    string::size_type descriptionSize = picture.description().find("\0\0", 0, descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1);
     if(descriptionEncoding == TagTextEncoding::Utf8) {
         // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
         descriptionEncoding = TagTextEncoding::Utf16LittleEndian;
@@ -947,7 +947,7 @@ void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
     // determine description
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
     StringData convertedDescription;
-    string::size_type descriptionSize = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+    string::size_type descriptionSize = picture.description().find("\0\0", 0, descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1);
     if(descriptionEncoding == TagTextEncoding::Utf8) {
         // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
         descriptionEncoding = TagTextEncoding::Utf16LittleEndian;
@@ -1024,7 +1024,7 @@ void Id3v2Frame::makeCommentConsideringVersion(unique_ptr<char[]> &buffer, uint3
         convertedDescription = convertUtf8ToUtf16LE(comment.description().data(), comment.description().size());
         descriptionSize = convertedDescription.second;
     } else {
-        descriptionSize = comment.description().find(encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+        descriptionSize = comment.description().find("\0\0", 0, encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 2 : 1);
         if(descriptionSize == string::npos) {
             descriptionSize = comment.description().size();
         }
