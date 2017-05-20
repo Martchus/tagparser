@@ -8,7 +8,7 @@
 /*!
  * \brief Prints a TagTextEncoding to enable CPPUNIT_ASSERT_EQUAL for tag values.
  */
-std::ostream &operator <<(std::ostream &os, const Media::TagTextEncoding &encoding)
+inline std::ostream &operator <<(std::ostream &os, const Media::TagTextEncoding &encoding)
 {
     using namespace Media;
     switch(encoding) {
@@ -29,7 +29,7 @@ std::ostream &operator <<(std::ostream &os, const Media::TagTextEncoding &encodi
 /*!
  * \brief Prints a TagValue UTF-8 encoded to enable CPPUNIT_ASSERT_EQUAL for tag values.
  */
-std::ostream &operator <<(std::ostream &os, const Media::TagValue &tagValue)
+inline std::ostream &operator <<(std::ostream &os, const Media::TagValue &tagValue)
 {
     os << tagValue.toString(Media::TagTextEncoding::Utf8) << " (encoding: " << tagValue.dataEncoding() << ")";
     return os;

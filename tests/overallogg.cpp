@@ -1,3 +1,4 @@
+#include "./helper.h"
 #include "./overall.h"
 
 #include "../tag.h"
@@ -92,12 +93,12 @@ void OverallTests::checkOggTestMetaData()
     CPPUNIT_ASSERT(tag != nullptr);
 
     // check test meta data
-    CPPUNIT_ASSERT(tag->value(KnownField::Title) == m_testTitle);
-    CPPUNIT_ASSERT(tag->value(KnownField::Comment) == m_testComment);
-    CPPUNIT_ASSERT(tag->value(KnownField::Album) == m_testAlbum);
-    CPPUNIT_ASSERT(tag->value(KnownField::Artist) == m_preservedMetaData.front());
-    CPPUNIT_ASSERT(tag->value(KnownField::TrackPosition) == m_testPosition);
-    CPPUNIT_ASSERT(tag->value(KnownField::DiskPosition) == m_testPosition);
+    CPPUNIT_ASSERT_EQUAL(m_testTitle, tag->value(KnownField::Title));
+    CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), tag->value(KnownField::Comment).toString()); // loss of description is ok
+    CPPUNIT_ASSERT_EQUAL(m_testAlbum, tag->value(KnownField::Album));
+    CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), tag->value(KnownField::Artist));
+    CPPUNIT_ASSERT_EQUAL(m_testPosition, tag->value(KnownField::TrackPosition));
+    CPPUNIT_ASSERT_EQUAL(m_testPosition, tag->value(KnownField::DiskPosition));
     // TODO: check more fields
     m_preservedMetaData.pop();
 }

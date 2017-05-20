@@ -14,6 +14,7 @@ enum TestFlag
     PaddingConstraints = 0x4,
     Id3v1Only = 0x8,
     RemoveTag = Id3v2AndId3v1 & Id3v1Only,
+    UseId3v24 = 0x10,
 };
 }
 
@@ -112,16 +113,26 @@ void OverallTests::checkMp3TestMetaData()
     }
     if(id3v2Tag) {
         const TagValue &titleValue = id3v2Tag->value(KnownField::Title);
-        CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", titleValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
-        CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), titleValue.toString(TagTextEncoding::Utf8));
         const TagValue &commentValue = id3v2Tag->value(KnownField::Comment);
-        CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
-        CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.descriptionEncoding() == TagTextEncoding::Utf16LittleEndian);
-        CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), commentValue.toString(TagTextEncoding::Utf8));
-        CPPUNIT_ASSERT_EQUAL_MESSAGE("description is also converted to UTF-16", "s\0o\0m\0e\0 \0d\0e\0s\0c\0r\0i\0p\0t\0i\0\xf3\0n\0"s, commentValue.description());
-        CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(TagTextEncoding::Utf8), id3v2Tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
-        CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v2Tag->value(KnownField::Artist));
-        // TODO: check more fields
+
+        if(m_mode & UseId3v24) {
+            CPPUNIT_ASSERT_EQUAL(m_testTitle, titleValue);
+            CPPUNIT_ASSERT_EQUAL(m_testComment, commentValue);
+            CPPUNIT_ASSERT_EQUAL(m_testAlbum, id3v2Tag->value(KnownField::Album));
+            CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v2Tag->value(KnownField::Artist));
+            // TODO: check more fields
+        } else {
+            CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", titleValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
+            CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), titleValue.toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
+            CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.descriptionEncoding() == TagTextEncoding::Utf16LittleEndian);
+            CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), commentValue.toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("description is also converted to UTF-16", "s\0o\0m\0e\0 \0d\0e\0s\0c\0r\0i\0p\0t\0i\0\xf3\0n\0"s, commentValue.description());
+            CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(TagTextEncoding::Utf8), id3v2Tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v2Tag->value(KnownField::Artist));
+            // TODO: check more fields
+        }
+
         m_preservedMetaData.pop();
     }
 
@@ -175,6 +186,9 @@ void OverallTests::setMp3TestMetaData()
         m_fileInfo.removeId3v1Tag();
         id3v2Tag = m_fileInfo.createId3v2Tag();
     }
+    if(!(m_mode & Id3v1Only) && m_mode & UseId3v24) {
+        id3v2Tag->setVersion(4, 0);
+    }
 
     // assign some test meta data
     for(Tag *tag : initializer_list<Tag *>{id3v1Tag, id3v2Tag}) {
@@ -212,11 +226,16 @@ void OverallTests::testMp3Making()
     m_fileInfo.setForceFullParse(true);
 
     // do the test under different conditions
-    for(m_mode = 0; m_mode != 0x10; ++m_mode) {
+    for(m_mode = 0; m_mode != 0x20; ++m_mode) {
         using namespace Mp3TestFlags;
 
         // setup test conditions
         m_fileInfo.setForceRewrite(m_mode & ForceRewring);
+        if(m_mode & UseId3v24) {
+            if(m_mode & Id3v1Only) {
+                continue;
+            }
+        }
         m_fileInfo.setTagPosition(ElementPosition::Keep);
         m_fileInfo.setIndexPosition(ElementPosition::Keep);
         m_fileInfo.setPreferredPadding(m_mode & PaddingConstraints ? 4096 : 0);
@@ -243,6 +262,9 @@ void OverallTests::testMp3Making()
         }
         if(m_mode & PaddingConstraints) {
             testConditions.emplace_back("padding constraints");
+        }
+        if(m_mode & UseId3v24) {
+            testConditions.emplace_back("use ID3v2.4");
         }
         cerr << endl << "MP3 maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
 
