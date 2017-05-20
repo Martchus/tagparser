@@ -141,11 +141,17 @@ set(SRC_FILES
     mediaformat.cpp
 )
 set(TEST_HEADER_FILES
+    tests/overall.h
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
     tests/testfilecheck.cpp
-    tests/overall.cpp
+    tests/overallgeneral.cpp
+    tests/overallmkv.cpp
+    tests/overallmp4.cpp
+    tests/overallmp3.cpp
+    tests/overallogg.cpp
+    tests/overallflac.cpp
 )
 
 set(DOC_FILES
