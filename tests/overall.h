@@ -1,3 +1,6 @@
+#ifndef TAGPARSER_OVERALL_TESTS_H
+#define TAGPARSER_OVERALL_TESTS_H
+
 #include "../mediafileinfo.h"
 #include "../tagvalue.h"
 
@@ -24,44 +27,6 @@ enum class TagStatus
     TestMetaDataPresent,
     Removed
 };
-
-namespace MkvTestFlags {
-enum TestFlag
-{
-    ForceRewring = 0x1,
-    KeepTagPos = 0x2,
-    TagsBeforeData = 0x40,
-    RemoveTag = KeepTagPos & TagsBeforeData,
-    KeepIndexPos = 0x4,
-    IndexBeforeData = 0x80,
-    PaddingConstraints = 0x8,
-    ForceTagPos = 0x10,
-    ForceIndexPos = 0x20,
-};
-}
-
-namespace Mp4TestFlags {
-enum TestFlag
-{
-    ForceRewring = 0x1,
-    KeepTagPos = 0x2,
-    TagsBeforeData = 0x10,
-    RemoveTag = KeepTagPos & TagsBeforeData,
-    PaddingConstraints = 0x4,
-    ForceTagPos = 0x8,
-};
-}
-
-namespace Mp3TestFlags {
-enum TestFlag
-{
-    ForceRewring = 0x1,
-    Id3v2AndId3v1 = 0x2,
-    PaddingConstraints = 0x4,
-    Id3v1Only = 0x8,
-    RemoveTag = Id3v2AndId3v1 & Id3v1Only,
-};
-}
 
 namespace SimpleTestFlags {
 enum TestFlag
@@ -139,6 +104,7 @@ private:
     void removeAllTags();
     void noop();
     void createMkvWithNestedTags();
+    void createFlacFiles();
 
 public:
     void testMkvParsing();
@@ -166,6 +132,10 @@ private:
     string m_testCover;
     queue<TagValue> m_preservedMetaData;
     string m_nestedTagsMkvPath;
+    string m_rawFlacPath;
+    string m_flacInOggPath;
     TagStatus m_tagStatus;
     uint16 m_mode;
 };
+
+#endif // TAGPARSER_OVERALL_TESTS_H

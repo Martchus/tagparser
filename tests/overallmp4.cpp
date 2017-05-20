@@ -4,6 +4,18 @@
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4tag.h"
 
+namespace Mp4TestFlags {
+enum TestFlag
+{
+    ForceRewring = 0x1,
+    KeepTagPos = 0x2,
+    TagsBeforeData = 0x10,
+    RemoveTag = KeepTagPos & TagsBeforeData,
+    PaddingConstraints = 0x4,
+    ForceTagPos = 0x8,
+};
+}
+
 /*!
  * \brief Checks "mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"
  */

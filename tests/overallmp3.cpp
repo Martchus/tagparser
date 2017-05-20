@@ -6,6 +6,17 @@
 #include "../id3/id3v1tag.h"
 #include "../id3/id3v2tag.h"
 
+namespace Mp3TestFlags {
+enum TestFlag
+{
+    ForceRewring = 0x1,
+    Id3v2AndId3v1 = 0x2,
+    PaddingConstraints = 0x4,
+    Id3v1Only = 0x8,
+    RemoveTag = Id3v2AndId3v1 & Id3v1Only,
+};
+}
+
 /*!
  * \brief Checks "mtx-test-data/mp3/id3-tag-and-xing-header.mp3"
  */

@@ -11,6 +11,21 @@
 #include <fstream>
 #include <cstring>
 
+namespace MkvTestFlags {
+enum TestFlag
+{
+    ForceRewring = 0x1,
+    KeepTagPos = 0x2,
+    TagsBeforeData = 0x40,
+    RemoveTag = KeepTagPos & TagsBeforeData,
+    KeepIndexPos = 0x4,
+    IndexBeforeData = 0x80,
+    PaddingConstraints = 0x8,
+    ForceTagPos = 0x10,
+    ForceIndexPos = 0x20,
+};
+}
+
 /*!
  * \brief Checks "matroska_wave1/test1.mkv".
  */
