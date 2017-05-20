@@ -20,6 +20,16 @@ using namespace IoUtilities;
 
 namespace Media {
 
+namespace Id3v2TextEncodingBytes {
+enum Id3v2TextEncodingByte : byte
+{
+    Ascii,
+    Utf16WithBom,
+    Utf16BigEndianWithoutBom,
+    Utf8
+};
+}
+
 /*!
  * \class Media::Id3v2Frame
  * \brief The Id3v2Frame class is used by Id3v2Tag to store the fields.
@@ -422,7 +432,13 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
                 m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toStandardGenreIndex()), TagTextEncoding::Latin1);
             } else {
                 // any other text frame
-                m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(), m_frame.value().dataEncoding()); // the same as a normal text frame
+                if(version <= 3 && m_frame.value().dataEncoding() == TagTextEncoding::Utf8) {
+                    // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
+                    m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(TagTextEncoding::Utf16LittleEndian), TagTextEncoding::Utf16LittleEndian);
+                } else {
+                    // just keep encoding of the assigned value
+                    m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(), m_frame.value().dataEncoding());
+                }
             }
 
         } else if(version >= 3 && m_frameId == Id3v2FrameIds::lCover) {
@@ -438,13 +454,11 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
                   || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
                       || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
             // the comment frame or the unsynchronized lyrics frame
-            m_frame.makeComment(m_data, m_decompressedSize, m_frame.value());
+            m_frame.makeCommentConsideringVersion(m_data, m_decompressedSize, m_frame.value(), version);
 
         } else  {
             // an unknown frame
-            // create buffer
             m_data = make_unique<char[]>(m_decompressedSize = m_frame.value().dataSize());
-            // just write the data
             copy(m_frame.value().dataPointer(), m_frame.value().dataPointer() + m_decompressedSize, m_data.get());
         }
     } catch(const ConversionException &) {
@@ -534,13 +548,13 @@ void Id3v2FrameMaker::make(BinaryWriter &writer)
 TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte)
 {
     switch(textEncodingByte) {
-    case 0: // Ascii
+    case Id3v2TextEncodingBytes::Ascii:
         return TagTextEncoding::Latin1;
-    case 1: // Utf 16 with bom
+    case Id3v2TextEncodingBytes::Utf16WithBom:
         return TagTextEncoding::Utf16LittleEndian;
-    case 2: // Utf 16 without bom
+    case Id3v2TextEncodingBytes::Utf16BigEndianWithoutBom:
         return TagTextEncoding::Utf16BigEndian;
-    case 3: // Utf 8
+    case Id3v2TextEncodingBytes::Utf8:
         return TagTextEncoding::Utf8;
     default:
         addNotification(NotificationType::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + frameIdString());
@@ -555,13 +569,13 @@ byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
 {
     switch(textEncoding) {
     case TagTextEncoding::Latin1:
-        return 0;
+        return Id3v2TextEncodingBytes::Ascii;
     case TagTextEncoding::Utf8:
-        return 3;
+        return Id3v2TextEncodingBytes::Utf8;
     case TagTextEncoding::Utf16LittleEndian:
-        return 1;
+        return Id3v2TextEncodingBytes::Utf16WithBom;
     case TagTextEncoding::Utf16BigEndian:
-        return 2;
+        return Id3v2TextEncodingBytes::Utf16WithBom;
     default:
         return 0;
     }
@@ -585,20 +599,43 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
 {
     tuple<const char *, size_t, const char *> res(buffer, 0, buffer + bufferSize);
     switch(encoding) {
+    case TagTextEncoding::Unspecified:
+    case TagTextEncoding::Latin1:
+    case TagTextEncoding::Utf8: {
+        if((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
+            if(encoding == TagTextEncoding::Latin1) {
+                addNotification(NotificationType::Critical, "Denoted character set is Latin-1 but an UTF-8 BOM is present - assuming UTF-8.", "parsing frame " + frameIdString());
+                encoding = TagTextEncoding::Utf8;
+            }
+            get<0>(res) += 3;
+        }
+        const char *pos = get<0>(res);
+        for(; *pos != 0x00; ++pos) {
+            if(pos < get<2>(res)) {
+                ++get<1>(res);
+            } else {
+                if(addWarnings) {
+                    addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
+                }
+                break;
+            }
+        }
+        get<2>(res) = pos + 1;
+        break;
+    }
     case TagTextEncoding::Utf16BigEndian:
     case TagTextEncoding::Utf16LittleEndian: {
         if(bufferSize >= 2) {
-            if(ConversionUtilities::LE::toUInt16(buffer) == 0xFEFF) {
-                if(encoding != TagTextEncoding::Utf16LittleEndian) {
-                    addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Little Endian.", "parsing frame " + frameIdString());
+            switch(ConversionUtilities::LE::toUInt16(buffer)) {
+            case 0xFEFF:
+                if(encoding == TagTextEncoding::Utf16BigEndian) {
+                    addNotification(NotificationType::Critical, "Denoted character set is UTF-16 Big Endian but UTF-16 Little Endian BOM is present - assuming UTF-16 LE.", "parsing frame " + frameIdString());
                     encoding = TagTextEncoding::Utf16LittleEndian;
                 }
                 get<0>(res) += 2;
-            } else if(ConversionUtilities::BE::toUInt16(buffer) == 0xFEFF) {
-                if(encoding != TagTextEncoding::Utf16BigEndian) {
-                    addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-16 Big Endian.", "parsing frame " + frameIdString());
-                    encoding = TagTextEncoding::Utf16BigEndian;
-                }
+                break;
+            case 0xFFFE:
+                encoding = TagTextEncoding::Utf16BigEndian;
                 get<0>(res) += 2;
             }
         }
@@ -613,29 +650,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
                 break;
             }
         }
-        get<2>(res) = reinterpret_cast<const char *>(++pos);
-        break;
-    }
-    default: {
-        if((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
-            get<0>(res) += 3;
-            if(encoding != TagTextEncoding::Utf8) {
-                addNotification(NotificationType::Critical, "Denoted character set doesn't match present BOM - assuming UTF-8.", "parsing frame " + frameIdString());
-                encoding = TagTextEncoding::Utf8;
-            }
-        }
-        const char *pos = get<0>(res);
-        for(; *pos != 0x00; ++pos) {
-            if(pos < get<2>(res)) {
-                ++get<1>(res);
-            } else {
-                if(addWarnings) {
-                    addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
-                }
-                break;
-            }
-        }
-        get<2>(res) = ++pos;
+        get<2>(res) = reinterpret_cast<const char *>(pos + 1);
         break;
     }
     }
@@ -725,7 +740,6 @@ void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, Tag
     }
     const char *end = buffer + maxSize;
     auto dataEncoding = parseTextEncodingByte(*buffer); // the first byte stores the encoding
-    //auto imageFormat = parseSubstring(buffer + 1, 3, TagTextEncoding::Latin1);
     typeInfo = static_cast<unsigned char>(*(buffer + 4));
     auto substr = parseSubstring(buffer + 5, end - 5 - buffer, dataEncoding, true);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
@@ -872,15 +886,25 @@ size_t Id3v2Frame::makeBom(char *buffer, TagTextEncoding encoding)
  */
 void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
-    // calculate needed buffer size and create buffer
-    const TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
-    const uint32 dataSize = picture.dataSize();
-    string::size_type descriptionLength = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
-    if(descriptionLength == string::npos) {
-        descriptionLength = picture.description().length();
+    // determine description
+    TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
+    StringData convertedDescription;
+    string::size_type descriptionSize = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+    if(descriptionEncoding == TagTextEncoding::Utf8) {
+        // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
+        descriptionEncoding = TagTextEncoding::Utf16LittleEndian;
+        convertedDescription = convertUtf8ToUtf16LE(picture.description().data(), picture.description().size());
+        descriptionSize = convertedDescription.second;
+    } else {
+        descriptionSize = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+        if(descriptionSize == string::npos) {
+            descriptionSize = picture.description().size();
+        }
     }
-    buffer = make_unique<char[]>(bufferSize = 1             + 3            + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1) + dataSize);
-    // note:                                  encoding byte + image format + picture type byte + description length + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
+    // calculate needed buffer size and create buffer
+    const uint32 dataSize = picture.dataSize();
+    buffer = make_unique<char[]>(bufferSize = 1             + 3            + 1                 + descriptionSize  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1) + dataSize);
+    // note:                                  encoding byte + image format + picture type byte + description size + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
     char *offset = buffer.get();
     // write encoding byte
     *offset = makeTextEncodingByte(descriptionEncoding);
@@ -902,8 +926,12 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     *(offset += 3) = typeInfo;
     // write description
     offset += makeBom(offset + 1, descriptionEncoding);
-    picture.description().copy(++offset, descriptionLength);
-    *(offset += descriptionLength) = 0x00; // terminate description and increase data offset
+    if(convertedDescription.first) {
+        copy(convertedDescription.first.get(), convertedDescription.first.get() + descriptionSize, ++offset);
+    } else {
+        picture.description().copy(++offset, descriptionSize);
+    }
+    *(offset += descriptionSize) = 0x00; // terminate description and increase data offset
     if(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;
     }
@@ -916,31 +944,46 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
  */
 void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
 {
+    // determine description
+    TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
+    StringData convertedDescription;
+    string::size_type descriptionSize = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+    if(descriptionEncoding == TagTextEncoding::Utf8) {
+        // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
+        descriptionEncoding = TagTextEncoding::Utf16LittleEndian;
+        convertedDescription = convertUtf8ToUtf16LE(picture.description().data(), picture.description().size());
+        descriptionSize = convertedDescription.second;
+    } else {
+        descriptionSize = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+        if(descriptionSize == string::npos) {
+            descriptionSize = picture.description().size();
+        }
+    }
+    // determine mime-type
+    string::size_type mimeTypeSize = picture.mimeType().find('\0');
+    if(mimeTypeSize == string::npos) {
+        mimeTypeSize = picture.mimeType().length();
+    }
     // calculate needed buffer size and create buffer
-    const TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
     const uint32 dataSize = picture.dataSize();
-    string::size_type mimeTypeLength = picture.mimeType().find('\0');
-    if(mimeTypeLength == string::npos) {
-        mimeTypeLength = picture.mimeType().length();
-    }
-    string::size_type descriptionLength = picture.description().find(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
-    if(descriptionLength == string::npos) {
-        descriptionLength = picture.description().length();
-    }
-    buffer = make_unique<char[]>(bufferSize = 1             + mimeTypeLength   + 1      + 1                 + descriptionLength  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1) + dataSize);
-    // note:                                  encoding byte + mime type length + 0 byte + picture type byte + description length + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
+    buffer = make_unique<char[]>(bufferSize = 1             + mimeTypeSize   + 1      + 1                 + descriptionSize  + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1) + dataSize);
+    // note:                                  encoding byte + mime type size + 0 byte + picture type byte + description size + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
     char *offset = buffer.get();
     // write encoding byte
     *offset = makeTextEncodingByte(descriptionEncoding);
     // write mime type
-    picture.mimeType().copy(++offset, mimeTypeLength);
-    *(offset += mimeTypeLength) = 0x00; // terminate mime type
+    picture.mimeType().copy(++offset, mimeTypeSize);
+    *(offset += mimeTypeSize) = 0x00; // terminate mime type
     // write picture type
     *(++offset) = typeInfo;
     // write description
     offset += makeBom(offset + 1, descriptionEncoding);
-    picture.description().copy(++offset, descriptionLength);
-    *(offset += descriptionLength) = 0x00; // terminate description and increase data offset
+    if(convertedDescription.first) {
+        copy(convertedDescription.first.get(), convertedDescription.first.get() + descriptionSize, ++offset);
+    } else {
+        picture.description().copy(++offset, descriptionSize);
+    }
+    *(offset += descriptionSize) = 0x00; // terminate description and increase data offset
     if(descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;
     }
@@ -952,6 +995,14 @@ void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
  * \brief Writes the specified comment to the specified buffer.
  */
 void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment)
+{
+    makeCommentConsideringVersion(buffer, bufferSize, comment, 3);
+}
+
+/*!
+ * \brief Writes the specified comment to the specified buffer.
+ */
+void Id3v2Frame::makeCommentConsideringVersion(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version)
 {
     static const string context("making comment frame");
     // check type and other values are valid
@@ -965,14 +1016,23 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
         addNotification(NotificationType::Critical, "The language must be 3 bytes long (ISO-639-2).", context);
         throw InvalidDataException();
     }
-    // calculate needed buffer size and create buffer
-    string::size_type descriptionLength = comment.description().find(encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
-    if(descriptionLength == string::npos) {
-        descriptionLength = comment.description().length();
+    StringData convertedDescription;
+    string::size_type descriptionSize;
+    if(version < 4 && encoding == TagTextEncoding::Utf8) {
+        // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
+        encoding = TagTextEncoding::Utf16LittleEndian;
+        convertedDescription = convertUtf8ToUtf16LE(comment.description().data(), comment.description().size());
+        descriptionSize = convertedDescription.second;
+    } else {
+        descriptionSize = comment.description().find(encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? "\0\0" : "\0");
+        if(descriptionSize == string::npos) {
+            descriptionSize = comment.description().size();
+        }
     }
-    const auto data = comment.toString();
-    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionLength  + data.size() + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 6 : 1) + data.size());
-    // note:                     encoding byte              + language + description length + actual data size + BOMs and termination
+    // calculate needed buffer size and create buffer
+    const auto data = comment.toString(encoding);
+    buffer = make_unique<char[]>(bufferSize = 1             + 3        + descriptionSize  + data.size() + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 6 : 1) + data.size());
+    // note:                     encoding byte              + language + description size + actual data size + BOMs and termination
     char *offset = buffer.get();
     // write encoding
     *offset = makeTextEncodingByte(encoding);
@@ -982,8 +1042,12 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
     }
     // write description
     offset += makeBom(offset + 1, encoding);
-    comment.description().copy(++offset, descriptionLength);
-    offset += descriptionLength;
+    if(convertedDescription.first) {
+        copy(convertedDescription.first.get(), convertedDescription.first.get() + descriptionSize, ++offset);
+    } else {
+        comment.description().copy(++offset, descriptionSize);
+    }
+    offset += descriptionSize;
     *offset = 0x00; // terminate description and increase data offset
     if(encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;

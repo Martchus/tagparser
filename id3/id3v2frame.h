@@ -100,6 +100,7 @@ public:
 class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
 {
     friend class TagField<Id3v2Frame>;
+    friend class Id3v2FrameMaker; // FIXME: remove when making methods public in next minor release
 
 public:
     Id3v2Frame();
@@ -157,7 +158,9 @@ protected:
     void cleared();
 
 private:
-    std::size_t makeBom(char *buffer, TagTextEncoding encoding); // FIXME: add to public API in next minor release
+    // FIXME: add to public API in next minor release
+    void makeCommentConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version);
+    std::size_t makeBom(char *buffer, TagTextEncoding encoding);
 
     uint16 m_flag;
     byte m_group;

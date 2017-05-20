@@ -142,6 +142,7 @@ set(SRC_FILES
 )
 set(TEST_HEADER_FILES
     tests/overall.h
+    tests/helper.h
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp

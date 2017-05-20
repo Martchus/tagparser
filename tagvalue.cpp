@@ -84,6 +84,7 @@ bool TagValue::operator==(const TagValue &other) const
         switch(m_type) {
         case TagDataType::Text:
             if(m_size != other.m_size && m_encoding != other.m_encoding) {
+                // don't consider differently encoded text values equal
                 return false;
             }
             return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
