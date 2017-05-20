@@ -11,6 +11,7 @@
 
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/io/misc.h>
 #include <c++utilities/tests/testutils.h>
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -25,6 +26,7 @@
 
 using namespace std;
 using namespace ConversionUtilities;
+using namespace IoUtilities;
 using namespace TestUtilities;
 using namespace Media;
 
@@ -130,6 +132,7 @@ private:
     TagValue m_testPartNumber;
     TagValue m_testTotalParts;
     TagValue m_testPosition;
+    string m_testCover;
     queue<TagValue> m_preservedMetaData;
     string m_nestedTagsMkvPath;
     TagStatus m_tagStatus;
@@ -667,9 +670,17 @@ void OverallTests::checkMkvTestMetaData()
     CPPUNIT_ASSERT_EQUAL(1ul, attachments.size());
     CPPUNIT_ASSERT(attachments[0]->mimeType() == "image/png");
     CPPUNIT_ASSERT(attachments[0]->name() == "cover.jpg");
-    CPPUNIT_ASSERT(attachments[0]->data() != nullptr);
-    CPPUNIT_ASSERT(attachments[0]->data()->size() == 11964);
-    // TODO: validate actual data
+    const StreamDataBlock *attachmentData = attachments[0]->data();
+    CPPUNIT_ASSERT(attachmentData != nullptr);
+    if (m_testCover.empty()) {
+        m_testCover = readFile(testFilePath("matroska_wave1/logo3_256x256.png"), 20000);
+    }
+    CPPUNIT_ASSERT_EQUAL(m_testCover.size(), static_cast<size_t>(attachmentData->size()));
+    istream &attachmentSteam = attachmentData->stream();
+    attachmentSteam.seekg(attachmentData->startOffset());
+    for (char expectedChar : m_testCover) {
+        CPPUNIT_ASSERT_EQUAL(expectedChar, static_cast<char>(attachmentSteam.get()));
+    }
 }
 
 /*!
