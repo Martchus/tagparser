@@ -178,6 +178,7 @@ bool AbstractContainer::supportsTrackModifications() const
  * \remarks
  * - It might be required to parse tracks before the index position can be determined.
  * - Not be applicable for files composed of multiple segments.
+ * \sa MediaFileInfo::indexPosition()
  */
 ElementPosition AbstractContainer::determineIndexPosition() const
 {
@@ -335,6 +336,7 @@ void AbstractContainer::removeAllTags()
  * \remarks
  * - It might be required to parse tags before the tag position can be determined.
  * - Not be applicable for files composed of multiple segments.
+ * \sa MediaFileInfo::tagPosition()
  */
 ElementPosition AbstractContainer::determineTagPosition() const
 {

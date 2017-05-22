@@ -511,6 +511,7 @@ inline void MediaFileInfo::setPreferredPadding(size_t preferredPadding)
 /*!
  * \brief Returns the position (in the output file) where the tag information is written when applying changes.
  * \sa setTagPosition()
+ * \remarks To determine the current tag position, use AbstractContainer::determineTagPosition().
  */
 inline ElementPosition MediaFileInfo::tagPosition() const
 {
@@ -555,7 +556,7 @@ inline void MediaFileInfo::setForceTagPosition(bool forceTagPosition)
 /*!
  * \brief Returns the position (in the output file) where the index is written when applying changes.
  * \sa setIndexPosition()
- *
+ * \remarks To determine the current index position, use AbstractContainer::determineIndexPosition().
  */
 inline ElementPosition MediaFileInfo::indexPosition() const
 {
