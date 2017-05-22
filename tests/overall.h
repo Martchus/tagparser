@@ -76,7 +76,7 @@ private:
     void checkMkvTestfileHandbrakeChapters();
     void checkMkvTestfileNestedTags();
     void checkMkvTestMetaData();
-    void checkMkvPaddingConstraints();
+    void checkMkvConstraints();
 
     void checkMp4Testfile1();
     void checkMp4Testfile2();
@@ -84,7 +84,7 @@ private:
     void checkMp4Testfile4();
     void checkMp4Testfile5();
     void checkMp4TestMetaData();
-    void checkMp4PaddingConstraints();
+    void checkMp4Constraints();
 
     void checkMp3Testfile1();
     void checkMp3TestMetaData();
@@ -136,6 +136,8 @@ private:
     string m_flacInOggPath;
     TagStatus m_tagStatus;
     uint16 m_mode;
+    ElementPosition m_expectedTagPos;
+    ElementPosition m_expectedIndexPos;
 };
 
 #endif // TAGPARSER_OVERALL_TESTS_H

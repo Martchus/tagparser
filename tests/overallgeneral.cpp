@@ -53,6 +53,41 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     m_fileInfo.setPath(path);
     m_fileInfo.reopen(true);
     m_fileInfo.parseEverything();
+
+    // determine expected tag and index position
+    switch(m_fileInfo.containerFormat()) {
+    case ContainerFormat::Mp4:
+        CPPUNIT_ASSERT(m_fileInfo.container());
+        if(m_fileInfo.tagPosition() != ElementPosition::Keep) {
+            m_expectedTagPos = m_fileInfo.tagPosition();
+        } else {
+            m_expectedTagPos = m_fileInfo.container()->determineTagPosition();
+            if(m_expectedTagPos == ElementPosition::Keep) {
+                // if there is no tag present, the resulting tag position should equal the
+                // current index position
+                m_expectedTagPos = m_fileInfo.container()->determineIndexPosition();
+            }
+        }
+        break;
+    case ContainerFormat::Matroska:
+        CPPUNIT_ASSERT(m_fileInfo.container());
+        // since a tag is always created, it can always be expected at the specified position
+        if(m_fileInfo.tagPosition() != ElementPosition::Keep) {
+            m_expectedTagPos = m_fileInfo.tagPosition();
+        } else {
+            m_expectedTagPos = m_fileInfo.container()->determineTagPosition();
+        }
+        // an index is only present if the file had one before, hence specifying the index position
+        // might not have an effect
+        m_expectedIndexPos = m_fileInfo.container()->determineIndexPosition();
+        if(m_fileInfo.indexPosition() != ElementPosition::Keep && m_expectedIndexPos != ElementPosition::Keep) {
+            m_expectedIndexPos = m_fileInfo.indexPosition();
+        }
+        break;
+    default:
+        ;
+    }
+
     // invoke testroutine to do and apply changes
     (this->*modifyRoutine)();
     // apply changes and ensure that the previous parsing results are cleared
@@ -64,10 +99,10 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     // invoke suitable testroutine to check padding constraints
     switch(m_fileInfo.containerFormat()) {
     case ContainerFormat::Matroska:
-        checkMkvPaddingConstraints();
+        checkMkvConstraints();
         break;
     case ContainerFormat::Mp4:
-        checkMp4PaddingConstraints();
+        checkMp4Constraints();
         break;
     case ContainerFormat::MpegAudioFrames:
     case ContainerFormat::Adts:
@@ -76,6 +111,7 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     default:
         ;
     }
+
     // close and remove file and backup files
     m_fileInfo.close();
     remove(path.c_str());

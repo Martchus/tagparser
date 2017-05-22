@@ -268,19 +268,22 @@ void OverallTests::checkMp4TestMetaData()
 }
 
 /*!
- * \brief Checks whether padding constraints are met.
+ * \brief Checks whether padding and element position constraints are met.
  */
-void OverallTests::checkMp4PaddingConstraints()
+void OverallTests::checkMp4Constraints()
 {
     using namespace Mp4TestFlags;
 
+    CPPUNIT_ASSERT(m_fileInfo.container());
     if(m_mode & PaddingConstraints) {
         if(m_mode & ForceRewring) {
-            CPPUNIT_ASSERT(m_fileInfo.paddingSize() == 4096);
+            CPPUNIT_ASSERT_EQUAL(4096ul, m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
-            // TODO: check tag position and rewriting behaviour
+        }
+        if(!(m_mode & RemoveTag) && (m_fileInfo.container()->documentType() != "dash") && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
+            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineTagPosition());
         }
     }
 }
@@ -330,6 +333,7 @@ void OverallTests::testMp4Making()
         using namespace Mp4TestFlags;
 
         // setup test conditions
+
         m_fileInfo.setForceRewrite(m_mode & ForceRewring);
         if(m_mode & KeepTagPos) {
             m_fileInfo.setTagPosition(ElementPosition::Keep);

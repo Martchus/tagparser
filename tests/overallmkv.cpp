@@ -492,19 +492,25 @@ void OverallTests::checkMkvTestMetaData()
 }
 
 /*!
- * \brief Checks whether padding constraints are met.
+ * \brief Checks whether padding and element position constraints are met.
  */
-void OverallTests::checkMkvPaddingConstraints()
+void OverallTests::checkMkvConstraints()
 {
     using namespace MkvTestFlags;
 
+    CPPUNIT_ASSERT(m_fileInfo.container());
     if(m_mode & PaddingConstraints) {
         if(m_mode & ForceRewring) {
-            CPPUNIT_ASSERT(m_fileInfo.paddingSize() == 4096);
+            CPPUNIT_ASSERT_EQUAL(4096ul, m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
-            // TODO: check tag/index position and rewriting behaviour
+        }
+        if(!(m_mode & RemoveTag) && (m_expectedTagPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
+            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineTagPosition());
+        }
+        if((m_expectedIndexPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceIndexPos))) {
+            CPPUNIT_ASSERT_EQUAL(m_expectedIndexPos, m_fileInfo.container()->determineIndexPosition());
         }
     }
 }
@@ -557,7 +563,7 @@ void OverallTests::createMkvWithNestedTags()
     m_nestedTagsMkvPath = workingCopyPathMode("mtx-test-data/mkv/nested-tags.mkv", WorkingCopyMode::NoCopy);
     remove(m_nestedTagsMkvPath.data());
 
-    cerr << "\n- creating testfile \"" << m_nestedTagsMkvPath << "\" with mkvmerge" << endl;
+    cerr << "\n\n- Create testfile \"" << m_nestedTagsMkvPath << "\" with mkvmerge" << endl;
     const string tagsMkvPath(testFilePath("mtx-test-data/mkv/tags.mkv"));
     const string tagsXmlPath(testFilePath("mkv/nested-tags.xml"));
     const char *const mkvmergeArgs[] = {
