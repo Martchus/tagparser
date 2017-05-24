@@ -146,6 +146,7 @@ set(TEST_HEADER_FILES
 )
 set(TEST_SRC_FILES
     tests/cppunit.cpp
+    tests/helper.cpp
     tests/testfilecheck.cpp
     tests/overallgeneral.cpp
     tests/overallmkv.cpp
