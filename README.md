@@ -43,9 +43,8 @@ For examples check out the command line interface of [Tag Editor](https://github
 API documentation can be generated using Doxygen with `make tagparser_apidoc`.
 
 ## Bugs, stability
-- Matroska files composed of more than one segment aren't tested yet and might not work
-- It is recommend to create backups before editing because I can not test whether the library
-  works with all kinds of files (when forcing rewrite a backup is always created)
+It is recommend to create backups before editing because I can not test whether the library
+works with all kinds of files (when forcing rewrite a backup is always created).
 
 ## Build instructions
 The tagparser library depends on [c++utilities](https://github.com/Martchus/cpp-utilities) and is built
@@ -55,5 +54,4 @@ library is required.
 
 ## TODO
 - Support more formats (EXIF, PDF metadata, Theora, ...)
-- Do tests with Matroska files which have multiple segments
 - Support adding cue-sheet to FLAC files
