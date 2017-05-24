@@ -58,8 +58,6 @@ struct TestFile
     Sha256Checksum computeSha256Sum() const;
     void verifyChecksum() const;
 } const testFiles[] = {
-    {"flac/test.flac", {"0414965fae95b6c1191b7924f39fadafee68826ace0dc1ab7e0b5f539ee47fd3"}},
-    {"flac/test.ogg", {"9f99b02fc373c37ce89da47ba0e23147a145e47bad4047f8c2e005808baed085"}},
     {"matroska_wave1/logo3_256x256.png", {"810b9172607e281d9a3969018c7d6521de240cc3688fecf598444e666aa6b4dc"}},
     {"matroska_wave1/test1.mkv", {"0996a309ff2095910b9d30d5253b044d637154297ddf7d0bda7f3adedf5addc1"}},
     {"matroska_wave1/test2.mkv", {"5b53d306e56f9bda6e80c3fbd9f3ccd20cc885770449d1fc0b5bec35c71d61e2"}},
