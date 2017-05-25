@@ -64,6 +64,7 @@ public:
     uint64 size() const;
     uint32 trackNumber() const;
     uint64 id() const;
+    void setId(uint64 id);
     const std::string name() const;
     const ChronoUtilities::TimeSpan &duration() const;
     double bitrate() const;
@@ -326,6 +327,14 @@ inline uint64 AbstractTrack::id() const
 }
 
 /*!
+ * \brief Sets the track ID.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setId(uint64 id)
+{
+    m_id = id;
+}
+
  * \brief Returns the track name if known; otherwise returns an empty string.
  */
 inline const std::string AbstractTrack::name() const
