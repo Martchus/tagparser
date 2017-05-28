@@ -86,7 +86,13 @@ private:
  */
 inline std::string Mp4Atom::idToString() const
 {
-    return ConversionUtilities::interpretIntegerAsString<identifierType>(id());
+    auto idString = ConversionUtilities::interpretIntegerAsString<identifierType>(id());
+    for(char &c : idString) {
+        if(c < ' ') {
+            c = '?';
+        }
+    }
+    return idString;
 }
 
 /*!
