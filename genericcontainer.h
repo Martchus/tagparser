@@ -294,7 +294,9 @@ inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::rem
  * \sa areTracksParsed()
  * \sa parseTracks()
  *
- * \remarks The container takes ownership over the specified \a track if it was possible to add the track.
+ * \remarks The container takes ownership over the specified \a track if it was possible
+ *          to add the track. This makes adding a track from another container impossible
+ *          without removing it from the other container first.
  *
  * \returns Returns an indication whether the \a track could be added.
  */
@@ -302,6 +304,17 @@ template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::addTrack(TrackType *track)
 {
     if(areTracksParsed() && supportsTrackModifications()) {
+        // ensure ID is unique
+        auto id = track->id();
+        ensureIdIsUnique:
+        for(const auto &track : m_tracks) {
+            if(track->id() == id) {
+                ++id;
+                goto ensureIdIsUnique;
+            }
+        }
+        track->setId(id);
+
         m_tracks.emplace_back(track);
         return m_tracksAltered = true;
     }
