@@ -4,6 +4,7 @@
 #include "../abstracttrack.h"
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4tag.h"
+#include "../mp4/mp4container.h"
 
 namespace Mp4TestFlags {
 enum TestFlag
@@ -11,7 +12,7 @@ enum TestFlag
     ForceRewring = 0x1,
     KeepTagPos = 0x2,
     TagsBeforeData = 0x10,
-    RemoveTag = KeepTagPos & TagsBeforeData,
+    RemoveTagOrTrack = KeepTagPos & TagsBeforeData,
     PaddingConstraints = 0x4,
     ForceTagPos = 0x8,
 };
@@ -28,11 +29,11 @@ void OverallTests::checkMp4Testfile1()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2012);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(2012, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -63,38 +64,38 @@ void OverallTests::checkMp4Testfile2()
 {
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 5);
+    CPPUNIT_ASSERT_EQUAL(5ul, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
             CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
             CPPUNIT_ASSERT(track->format().sub == SubFormats::AvcHighProfile);
-            CPPUNIT_ASSERT(track->version() == 4);
+            CPPUNIT_ASSERT_EQUAL(4.0, track->version());
             CPPUNIT_ASSERT(track->creationTime().year() == 2013);
             CPPUNIT_ASSERT(track->pixelSize() == Size(1920, 750));
             break;
         case 2:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->format().sub == SubFormats::AacMpeg4LowComplexityProfile);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::SpectralBandReplication));
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::ParametricStereo));
-            CPPUNIT_ASSERT(track->language() == "eng");
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         case 3:
             CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Ac3);
-            CPPUNIT_ASSERT(track->language() == "eng");
+            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
             CPPUNIT_ASSERT(track->creationTime().year() == 2013);
             break;
         case 4:
             CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::DtsHd);
-            CPPUNIT_ASSERT(track->language() == "eng");
+            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
             CPPUNIT_ASSERT(track->creationTime().year() == 2013);
             break;
         case 6:
@@ -109,13 +110,13 @@ void OverallTests::checkMp4Testfile2()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0ul, tags.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0ul, tags.size());
     }
 }
 
@@ -245,6 +246,81 @@ void OverallTests::checkMp4Testfile5()
 }
 
 /*!
+ * \brief Checks "mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4" after adding/removing track.
+ */
+void OverallTests::checkMp4Testfile6()
+{
+    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
+    const auto tracks = m_fileInfo.tracks();
+    if(m_mode & Mp4TestFlags::RemoveTagOrTrack) {
+        CPPUNIT_ASSERT(tracks.size() == 4);
+    } else {
+        CPPUNIT_ASSERT(tracks.size() == 6);
+    }
+    bool track2Present = false, track5Present = false;
+    for(const auto &track : tracks) {
+        switch(track->id()) {
+        case 1:
+            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
+            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
+            CPPUNIT_ASSERT(track->format().sub == SubFormats::AvcHighProfile);
+            CPPUNIT_ASSERT(track->version() == 4);
+            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT(track->pixelSize() == Size(1920, 750));
+            break;
+        case 2:
+            CPPUNIT_ASSERT(track2Present = !track2Present);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
+            CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::SpectralBandReplication));
+            CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::ParametricStereo));
+            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            break;
+        case 3:
+            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
+            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Ac3);
+            CPPUNIT_ASSERT(track->language() == "eng");
+            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            break;
+        case 4:
+            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
+            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::DtsHd);
+            CPPUNIT_ASSERT(track->language() == "eng");
+            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            break;
+        case 5:
+            CPPUNIT_ASSERT(track5Present = !track5Present);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(2012, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            break;
+        case 6:
+            CPPUNIT_ASSERT(track->mediaType() == MediaType::Text);
+            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::TimedText);
+            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            break;
+        default:
+            CPPUNIT_FAIL("unknown track ID");
+        }
+    }
+    if(m_mode & Mp4TestFlags::RemoveTagOrTrack) {
+        CPPUNIT_ASSERT(!track2Present);
+        CPPUNIT_ASSERT(!track5Present);
+    } else {
+        CPPUNIT_ASSERT(track2Present);
+        CPPUNIT_ASSERT(track5Present);
+    }
+
+    CPPUNIT_ASSERT(m_fileInfo.tags().size() == 0);
+}
+
+/*!
  * \brief Checks whether test meta data for MP4 files has been applied correctly.
  */
 void OverallTests::checkMp4TestMetaData()
@@ -282,12 +358,18 @@ void OverallTests::checkMp4Constraints()
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
         }
-        if(!(m_mode & RemoveTag) && (m_fileInfo.container()->documentType() != "dash") && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
-            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineTagPosition());
+        if(!(m_mode & RemoveTagOrTrack) && (m_fileInfo.container()->documentType() != "dash") && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
+            const ElementPosition currentTagPos = m_fileInfo.container()->determineTagPosition();
+            if(currentTagPos == ElementPosition::Keep) {
+                CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineIndexPosition());
+            }
         }
     }
 }
 
+/*!
+ * \brief Sets test meta data in the file to be tested.
+ */
 void OverallTests::setMp4TestMetaData()
 {
     // ensure a tag exists
@@ -301,6 +383,25 @@ void OverallTests::setMp4TestMetaData()
     tag->setValue(KnownField::TrackPosition, m_testPosition);
     tag->setValue(KnownField::DiskPosition, m_testPosition);
     // TODO: set more fields
+}
+
+/*!
+ * \brief Adds all tracks from mtx-test-data/mp4/10-DanseMacabreOp.40.m4a to the file to be tested.
+ */
+void OverallTests::addMp4Track()
+{
+    m_additionalFileInfo.setPath(TestUtilities::testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
+    m_additionalFileInfo.reopen(true);
+    m_additionalFileInfo.parseContainerFormat();
+    m_additionalFileInfo.parseTracks();
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_additionalFileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
+    const auto &tracks = m_additionalFileInfo.tracks();
+    CPPUNIT_ASSERT_EQUAL(1ul, tracks.size());
+    CPPUNIT_ASSERT_EQUAL(TrackType::Mp4Track, tracks[0]->type());
+    auto *track = static_cast<Mp4Track *>(tracks[0]);
+    CPPUNIT_ASSERT(static_cast<Mp4Container *>(m_additionalFileInfo.container())->removeTrack(track));
+    static_cast<Mp4Container *>(m_fileInfo.container())->addTrack(track);
 }
 
 /*!
@@ -353,7 +454,7 @@ void OverallTests::testMp4Making()
             testConditions.emplace_back("forcing rewrite");
         }
         if(m_mode & KeepTagPos) {
-            if(m_mode & RemoveTag) {
+            if(m_mode & RemoveTagOrTrack) {
                 testConditions.emplace_back("removing tag");
             } else {
                 testConditions.emplace_back("keeping tag position");
@@ -372,13 +473,18 @@ void OverallTests::testMp4Making()
         cerr << endl << "MP4 maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
 
         // do actual tests
-        m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
-        void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setMp4TestMetaData;
+        // -> either remove tags or set test meta data
+        m_tagStatus = (m_mode & RemoveTagOrTrack) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
+        void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeAllTags : &OverallTests::setMp4TestMetaData;
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile1);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile2);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile3);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/alac/othertest-itunes.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile4);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
+        // -> add/remove tracks
+        modifyRoutine = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeSecondTrack : &OverallTests::addMp4Track;
+        m_fileInfo.setTagPosition(ElementPosition::Keep);
+        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile6);
     }
 }
 #endif

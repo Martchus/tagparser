@@ -128,8 +128,18 @@ void OverallTests::removeAllTags()
 
 /*!
  * \brief Does nothing.
- * \remarks Used to just resave the file.
+ * \remarks Used to just resave the file without modifications.
  */
 void OverallTests::noop()
 {
+}
+
+/*!
+ * \brief Removes the second track of the file to be tested.
+ */
+void OverallTests::removeSecondTrack()
+{
+    CPPUNIT_ASSERT(m_fileInfo.container());
+    CPPUNIT_ASSERT(m_fileInfo.container()->trackCount() >= 2);
+    m_fileInfo.container()->removeTrack(m_fileInfo.container()->track(1));
 }

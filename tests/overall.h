@@ -83,6 +83,7 @@ private:
     void checkMp4Testfile3();
     void checkMp4Testfile4();
     void checkMp4Testfile5();
+    void checkMp4Testfile6();
     void checkMp4TestMetaData();
     void checkMp4Constraints();
 
@@ -104,7 +105,8 @@ private:
     void removeAllTags();
     void noop();
     void createMkvWithNestedTags();
-    void createFlacFiles();
+    void addMp4Track();
+    void removeSecondTrack();
 
 public:
     void testMkvParsing();
@@ -123,6 +125,7 @@ public:
 
 private:
     MediaFileInfo m_fileInfo;
+    MediaFileInfo m_additionalFileInfo;
     TagValue m_testTitle;
     TagValue m_testComment;
     TagValue m_testAlbum;
