@@ -579,6 +579,16 @@ calculatePadding:
             progressiveDownloadInfoAtom->discardBuffer();
         }
 
+        // set input/output streams of each track
+        for(auto &track : tracks()) {
+            // ensure the track reads from the original file
+            if(&track->inputStream() == &outputStream) {
+                track->setInputStream(backupStream);
+            }
+            // ensure the track writes to the output file
+            track->setOutputStream(outputStream);
+        }
+
         // write movie atom / padding and media data
         for(byte pass = 0; pass != 2; ++pass) {
             if(newTagPos == (pass ? ElementPosition::AfterData : ElementPosition::BeforeData)) {
@@ -701,11 +711,6 @@ calculatePadding:
                                 throw OperationAbortedException();
                             }
 
-                            // ensure the track reads from the original file
-                            if(&track->inputStream() == &outputStream) {
-                                track->setInputStream(backupStream);
-                            }
-
                             // emplace information
                             trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsets(), track->readChunkSizes());
 
@@ -718,7 +723,7 @@ calculatePadding:
 
                             // increase total chunk count and size
                             totalChunkCount += track->chunkCount();
-                            totalMediaDataSize = accumulate(chunkSizesTable.cbegin(), chunkSizesTable.cend(), totalMediaDataSize);
+                            totalMediaDataSize += accumulate(chunkSizesTable.cbegin(), chunkSizesTable.cend(), totalMediaDataSize);
                         }
 
                         // write media data chunk-by-chunk
@@ -758,7 +763,7 @@ calculatePadding:
                             }
 
                             // incrase chunk index within track, update progress percentage
-                            if(++chunkIndexWithinTrack % 10) {
+                            if(!(++chunkIndexWithinTrack % 10)) {
                                 updatePercentage(static_cast<double>(totalChunksCopied) / totalChunkCount);
                             }
 
@@ -832,24 +837,24 @@ calculatePadding:
             // check whether track count of new file equals track count of old file
             if(trackCount != tracks().size()) {
                 addNotification(NotificationType::Critical,
-                                "Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file ("
-                                % numberToString(tracks().size())
-                                % ") differs from the number of tracks in the original file ("
-                                % numberToString(trackCount)
-                                + ").", context);
+                                argsToString("Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file (",
+                                tracks().size(),
+                                ") differs from the number of tracks in the original file (",
+                                trackCount,
+                                ")."), context);
                 throw Failure();
             }
 
             // update chunk offset table
             if(writeChunkByChunk) {
                 updateStatus("Updating chunk offset table for each track ...");
-                for(size_t trackIndex = 0; trackIndex < trackCount; ++trackIndex) {
+                for(size_t trackIndex = 0; trackIndex != trackCount; ++trackIndex) {
                     const auto &track = tracks()[trackIndex];
                     const auto &chunkOffsetTable = get<1>(trackInfos[trackIndex]);
                     if(track->chunkCount() == chunkOffsetTable.size()) {
                         track->updateChunkOffsets(chunkOffsetTable);
                     } else {
-                        addNotification(NotificationType::Critical, "Unable to update chunk offsets of track " % numberToString(trackIndex + 1) + ": Number of chunks in the output file differs from the number of chunks in the orignal file.", context);
+                        addNotification(NotificationType::Critical, argsToString("Unable to update chunk offsets of track ", (trackIndex + 1), ": Number of chunks in the output file differs from the number of chunks in the orignal file."), context);
                         throw Failure();
                     }
                 }

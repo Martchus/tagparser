@@ -919,41 +919,79 @@ void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
 }
 
 /*!
+ * \brief Returns the number of bytes written when calling makeTrack().
+ * \todo Get rid of const_cast. This is currently required because GenericFileElement::childById() is
+ *       not const.
+ */
+uint64 Mp4Track::requiredSize() const
+{
+    // add size of
+    // ... trak header and tkhd total size
+    uint64 size = 8 + 100;
+    // ... tref atom (if one exists)
+    if(Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference)) {
+        size += trefAtom->totalSize();
+    }
+    // ... edts atom (if one exists)
+    if(Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit)) {
+        size += edtsAtom->totalSize();
+    }
+    // ... mdia header + mdhd total size + hdlr total size + minf header
+    size += 8 + 44 + (33 + m_name.size()) + 8;
+    // ... minf childs
+    bool dinfAtomWritten = false;
+    if(m_minfAtom) {
+        if(Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader)) {
+            size += vmhdAtom->totalSize();
+        }
+        if(Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader)) {
+            size += smhdAtom->totalSize();
+        }
+        if(Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader)) {
+            size += hmhdAtom->totalSize();
+        }
+        if(Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox)) {
+            size += nmhdAtom->totalSize();
+        }
+        if(Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation)) {
+            size += dinfAtom->totalSize();
+            dinfAtomWritten = true;
+        }
+        if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable)) {
+            size += stblAtom->totalSize();
+        }
+    }
+    if(!dinfAtomWritten) {
+        size += 36;
+    }
+    return size;
+}
+
+/*!
  * \brief Makes the track entry ("trak"-atom) for the track. The data is written to the assigned output stream
  *        at the current position.
  * \remarks Currently the "trak"-atom from the source file is just copied to the output stream.
  */
 void Mp4Track::makeTrack()
 {
-    /*
     // write header
     ostream::pos_type trakStartOffset = outputStream().tellp();
-    writer.writeUInt32(0); // write size later
-    writer.writeUInt32(Mp4AtomIds::Track);
+    m_writer.writeUInt32BE(0); // write size later
+    m_writer.writeUInt32BE(Mp4AtomIds::Track);
     // write tkhd atom
     makeTrackHeader();
     // write tref atom (if one exists)
     if(Mp4Atom *trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference)) {
-        trefAtom->copyEntireAtomToStream(outputStream());
+        trefAtom->copyEntirely(outputStream());
     }
     // write edts atom (if one exists)
     if(Mp4Atom *edtsAtom = trakAtom().childById(Mp4AtomIds::Edit)) {
-        edtsAtom->copyEntireAtomToStream(outputStream());
+        edtsAtom->copyEntirely(outputStream());
     }
     // write mdia atom
     makeMedia();
     // write size (of trak atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), trakStartOffset, false);
-    */
-    trakAtom().copyEntirely(outputStream());
-}
-
-/*!
- * \brief Returns the number of bytes written when calling makeTrack().
- */
-uint64 Mp4Track::requiredSize() const
-{
-    return m_trakAtom->totalSize();
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), trakStartOffset);
 }
 
 /*!
@@ -1013,7 +1051,8 @@ void Mp4Track::makeMedia()
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::Media);
     // write mdhd atom
-    writer().writeUInt32BE(36); // size
+    writer().writeUInt32BE(44); // size
+    writer().writeUInt32BE(Mp4AtomIds::MediaHeader);
     writer().writeByte(1); // version
     writer().writeUInt24BE(0); // flags
     writer().writeUInt64BE(static_cast<uint64>((m_creationTime - startDate).totalSeconds()));
@@ -1022,9 +1061,10 @@ void Mp4Track::makeMedia()
     writer().writeUInt64BE(static_cast<uint64>(m_duration.totalSeconds() * m_timeScale));
     // convert and write language
     uint16 language = 0;
-    for(size_t charIndex = 0; charIndex < m_language.length() && charIndex < 3; ++charIndex) {
-        if(m_language[charIndex] >= 'a' && m_language[charIndex] <= 'z') {
-            language |= static_cast<uint16>(m_language[charIndex]) << (0xA - charIndex * 0x5);
+    for(size_t charIndex = 0; charIndex < m_language.size() && charIndex != 3; ++charIndex) {
+        const char langChar = m_language[charIndex];
+        if(langChar >= 'a' && langChar <= 'z') {
+            language |= static_cast<uint16>(langChar - 0x60) << (0xA - charIndex * 0x5);
         } else { // invalid character
             addNotification(NotificationType::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
             language = 0x55C4; // und
@@ -1034,7 +1074,7 @@ void Mp4Track::makeMedia()
     writer().writeUInt16BE(language);
     writer().writeUInt16BE(0); // pre defined
     // write hdlr atom
-    writer().writeUInt32BE(33 + m_name.length()); // size
+    writer().writeUInt32BE(33 + m_name.size()); // size
     writer().writeUInt32BE(Mp4AtomIds::HandlerReference);
     writer().writeUInt64BE(0); // version, flags, pre defined
     switch(m_mediaType) {
@@ -1112,7 +1152,18 @@ void Mp4Track::makeMediaInfo()
         writer().writeUInt24BE(0x000001); // flags (media data is in the same file as the movie box)
     }
     // write stbl atom
-    makeSampleTable();
+    // -> just copy existing stbl atom because makeSampleTable() is not fully implemented (yet)
+    bool stblAtomWritten = false;
+    if(m_minfAtom) {
+        if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable)) {
+            stblAtom->copyEntirely(outputStream());
+            stblAtomWritten = true;
+        }
+    }
+    if(!stblAtomWritten) {
+        addNotification(NotificationType::Critical, "Unable to make stbl atom from scratch.", "making stbl atom");
+        throw NotImplementedException();
+    }
     // write size (of minf atom)
     Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset);
 }
@@ -1151,6 +1202,7 @@ void Mp4Track::makeSampleTable()
         cttsAtom->copyEntirely(outputStream());
     }
     // write stsc atom (sample-to-chunk table)
+    throw NotImplementedException();
 
     // write stsz atom (sample sizes)
 
@@ -1287,10 +1339,11 @@ void Mp4Track::internalParseHeader()
     }
     uint16 tmp = reader.readUInt16BE();
     if(tmp) {
-        char buff[3];
-        buff[0] = ((tmp & 0x7C00) >> 0xA) + 0x60;
-        buff[1] = ((tmp & 0x03E0) >> 0x5) + 0x60;
-        buff[2] = ((tmp & 0x001F) >> 0x0) + 0x60;
+        const char buff[] = {
+            static_cast<char>(((tmp & 0x7C00) >> 0xA) + 0x60),
+            static_cast<char>(((tmp & 0x03E0) >> 0x5) + 0x60),
+            static_cast<char>(((tmp & 0x001F) >> 0x0) + 0x60),
+        };
         m_language = string(buff, 3);
     } else {
         m_language.clear();

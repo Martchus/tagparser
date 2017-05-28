@@ -282,8 +282,8 @@ startParsingSignature:
  *
  * This method parses the tracks of the current file if not been parsed yet.
  * After calling this method the methods trackCount(), tracks(), and
- * hasTracksOfType() will return the parsed
- * information.
+ * hasTracksOfType() will return the parsed information.
+ *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
@@ -777,13 +777,21 @@ const char *MediaFileInfo::mimeType() const
 vector<AbstractTrack *> MediaFileInfo::tracks() const
 {
     vector<AbstractTrack *> res;
+    size_t trackCount = 0;
+    size_t containerTrackCount = 0;
+    if(m_singleTrack) {
+        trackCount = 1;
+    }
+    if(m_container) {
+        trackCount += (containerTrackCount = m_container->trackCount());
+    }
+    res.reserve(trackCount);
+
     if(m_singleTrack) {
         res.push_back(m_singleTrack.get());
     }
-    if(m_container) {
-        for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
-            res.push_back(m_container->track(i));
-        }
+    for(size_t i = 0; i != containerTrackCount; ++i) {
+        res.push_back(m_container->track(i));
     }
     return res;
 }

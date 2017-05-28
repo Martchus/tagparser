@@ -170,19 +170,18 @@ inline std::istream &AbstractTrack::inputStream()
 }
 
 /*!
- * \brief Assigns an other input stream.
+ * \brief Assigns another input stream.
  *
  * The track will read from the \a stream to perform
  * particular operations such as reading header information.
  */
 inline void AbstractTrack::setInputStream(std::istream &stream)
 {
-    m_istream = &stream;
-    m_reader.setStream(m_istream);
+    m_reader.setStream(m_istream = &stream);
 }
 
 /*!
- * \brief Returns the associated input stream.
+ * \brief Returns the associated output stream.
  */
 inline std::ostream &AbstractTrack::outputStream()
 {
@@ -190,15 +189,14 @@ inline std::ostream &AbstractTrack::outputStream()
 }
 
 /*!
- * \brief Assigns an other output stream.
+ * \brief Assigns another output stream.
  *
  * The track will write to the \a stream to perform
  * particular operations such as updating or making header information.
  */
 inline void AbstractTrack::setOutputStream(std::ostream &stream)
 {
-    m_ostream = &stream;
-    m_writer.setStream(m_ostream);
+    m_writer.setStream(m_ostream = &stream);
 }
 
 /*!
@@ -335,6 +333,7 @@ inline void AbstractTrack::setId(uint64 id)
     m_id = id;
 }
 
+/*!
  * \brief Returns the track name if known; otherwise returns an empty string.
  */
 inline const std::string AbstractTrack::name() const
