@@ -712,7 +712,7 @@ calculatePadding:
                             }
 
                             // emplace information
-                            trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsets(), track->readChunkSizes());
+                            trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsetsSupportingFragments(fileInfo().isForcingFullParse()), track->readChunkSizes());
 
                             // check whether the chunks could be parsed correctly
                             const vector<uint64> &chunkOffsetTable = get<1>(trackInfos.back());

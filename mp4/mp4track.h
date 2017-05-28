@@ -139,6 +139,7 @@ public:
 
     // methods to read the "index" (chunk offsets and sizes)
     std::vector<uint64> readChunkOffsets();
+    std::vector<uint64> readChunkOffsetsSupportingFragments(bool parseFragments = false);
     std::vector<std::tuple<uint32, uint32, uint32> > readSampleToChunkTable();
     std::vector<uint64> readChunkSizes();
 
