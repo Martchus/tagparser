@@ -73,6 +73,7 @@ public:
     static void makeSimpleElement(std::ostream &stream, identifierType id, uint64 content);
     static void makeSimpleElement(std::ostream &stream, identifierType id, const std::string &content);
     static void makeSimpleElement(std::ostream &stream, GenericFileElement::identifierType id, const char *data, std::size_t dataSize);
+    static uint64 bytesToBeSkipped;
 
 protected:
     EbmlElement(EbmlElement &parent, uint64 startOffset);

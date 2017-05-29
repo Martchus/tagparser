@@ -28,6 +28,11 @@ namespace Media {
  */
 
 /*!
+ * \brief Specifies the number of bytes to be skipped till a valid EBML element is found in the stream.
+ */
+uint64 EbmlElement::bytesToBeSkipped = 0x4000;
+
+/*!
  * \brief Constructs a new top level element with the specified \a container at the specified \a startOffset.
  */
 EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset) :
@@ -53,7 +58,7 @@ EbmlElement::EbmlElement(EbmlElement &parent, uint64 startOffset) :
  */
 string EbmlElement::parsingContext() const
 {
-    return "parsing header of EBML element " % idToString() % " at " + numberToString(startOffset());
+    return ("parsing header of EBML element " % idToString() % " at ") + startOffset();
 }
 
 /*!
@@ -64,7 +69,7 @@ void EbmlElement::internalParse()
     invalidateStatus();
     static const string context("parsing EBML element header");
 
-    for(byte skipped = 0; /* TODO: add a sane limit here */; ++m_startOffset, --m_maxSize, ++skipped) {
+    for(uint64 skipped = 0; skipped < bytesToBeSkipped; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
         if(maxTotalSize() < 2) {
             addNotification(NotificationType::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
