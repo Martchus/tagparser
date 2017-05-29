@@ -145,10 +145,13 @@ public:
 
     // making helper
     byte makeTextEncodingByte(TagTextEncoding textEncoding);
+    std::size_t makeBom(char *buffer, TagTextEncoding encoding);
     void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
     void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t m_dataSize);
     void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
     void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
+    void makePictureConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version);
+    void makeCommentConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version);
     void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
 
     static identifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
@@ -158,10 +161,6 @@ protected:
     void cleared();
 
 private:
-    // FIXME: add to public API in next minor release
-    void makeCommentConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version);
-    std::size_t makeBom(char *buffer, TagTextEncoding encoding);
-
     uint16 m_flag;
     byte m_group;
     uint32 m_parsedVersion;
