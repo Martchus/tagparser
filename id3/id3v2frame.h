@@ -100,7 +100,6 @@ public:
 class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
 {
     friend class TagField<Id3v2Frame>;
-    friend class Id3v2FrameMaker; // FIXME: remove when making methods public in next minor release
 
 public:
     Id3v2Frame();
