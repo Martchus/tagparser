@@ -177,7 +177,7 @@ set(META_NO_TIDY ON)
 set(META_REQUIRED_CPP_UNIT_VERSION 1.14.0)
 
 # find c++utilities
-find_package(c++utilities 4.7.0 REQUIRED)
+find_package(c++utilities 4.8.0 REQUIRED)
 use_cpp_utilities()
 
 # find 3rd party libraries

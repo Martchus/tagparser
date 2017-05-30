@@ -64,7 +64,7 @@ void OverallTests::checkMp4Testfile2()
 {
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT_EQUAL(5ul, tracks.size());
+    CPPUNIT_ASSERT_EQUAL(5_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
@@ -110,13 +110,13 @@ void OverallTests::checkMp4Testfile2()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT_EQUAL(0ul, tags.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0ul, tags.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -353,7 +353,7 @@ void OverallTests::checkMp4Constraints()
     CPPUNIT_ASSERT(m_fileInfo.container());
     if(m_mode & PaddingConstraints) {
         if(m_mode & ForceRewring) {
-            CPPUNIT_ASSERT_EQUAL(4096ul, m_fileInfo.paddingSize());
+            CPPUNIT_ASSERT_EQUAL(4096_st, m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
@@ -397,7 +397,7 @@ void OverallTests::addMp4Track()
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_additionalFileInfo.containerFormat());
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
     const auto &tracks = m_additionalFileInfo.tracks();
-    CPPUNIT_ASSERT_EQUAL(1ul, tracks.size());
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     CPPUNIT_ASSERT_EQUAL(TrackType::Mp4Track, tracks[0]->type());
     auto *track = static_cast<Mp4Track *>(tracks[0]);
     CPPUNIT_ASSERT(static_cast<Mp4Container *>(m_additionalFileInfo.container())->removeTrack(track));

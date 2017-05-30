@@ -362,7 +362,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
 {
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT_EQUAL(2ul, tracks.size());
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
@@ -384,7 +384,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         }
     }
     const auto chapters = m_fileInfo.chapters();
-    CPPUNIT_ASSERT_EQUAL(2ul, chapters.size());
+    CPPUNIT_ASSERT_EQUAL(2_st, chapters.size());
     for(const auto &chapter : chapters) {
         switch(chapter->id()) {
         case 1:
@@ -404,11 +404,11 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT_EQUAL(2ul, tags.size());
+        CPPUNIT_ASSERT_EQUAL(2_st, tags.size());
         CPPUNIT_ASSERT(tags[0]->target().isEmpty());
         CPPUNIT_ASSERT_EQUAL(""s, static_cast<MatroskaTag *>(tags[0])->value("CREATION_TIME").toString());
         CPPUNIT_ASSERT_EQUAL("Lavf55.12.0"s, tags[0]->value(KnownField::Encoder).toString());
-        CPPUNIT_ASSERT_EQUAL(2ul, tags[1]->target().tracks().at(0));
+        CPPUNIT_ASSERT_EQUAL(2_st, tags[1]->target().tracks().at(0));
         CPPUNIT_ASSERT_EQUAL("eng"s, tags[1]->value(KnownField::Language).toString());
         break;
     case TagStatus::TestMetaDataPresent:
@@ -430,7 +430,7 @@ void OverallTests::checkMkvTestfileNestedTags()
     switch(m_tagStatus) {
     case TagStatus::Original:
     case TagStatus::TestMetaDataPresent:
-        CPPUNIT_ASSERT_EQUAL(5ul, tags.size());
+        CPPUNIT_ASSERT_EQUAL(5_st, tags.size());
         for(const Tag *tag : tags) {
             CPPUNIT_ASSERT(tag->type() == TagType::MatroskaTag);
             const auto *mkvTag = static_cast<const MatroskaTag *>(tag);
@@ -443,7 +443,7 @@ void OverallTests::checkMkvTestfileNestedTags()
                 CPPUNIT_ASSERT(artistField != fields.end());
                 CPPUNIT_ASSERT_EQUAL("Test artist"s, artistField->second.value().toString());
                 const auto &nestedFields = artistField->second.nestedFields();
-                CPPUNIT_ASSERT_EQUAL(1ul, nestedFields.size());
+                CPPUNIT_ASSERT_EQUAL(1_st, nestedFields.size());
                 CPPUNIT_ASSERT_EQUAL("ADDRESS"s, nestedFields[0].idToString());
                 CPPUNIT_ASSERT_EQUAL("Test address"s, nestedFields[0].value().toString());
             }
@@ -463,11 +463,11 @@ void OverallTests::checkMkvTestMetaData()
     // check tags
     const auto tags = m_fileInfo.tags();
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT_EQUAL(2ul, tags.size());
+    CPPUNIT_ASSERT_EQUAL(2_st, tags.size());
     CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), tags.front()->value(KnownField::Title).toString());
     CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
     CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), tags.front()->value(KnownField::Comment).toString());
-    CPPUNIT_ASSERT_EQUAL(30ul, tags[1]->target().level());
+    CPPUNIT_ASSERT_EQUAL(30_st, tags[1]->target().level());
     CPPUNIT_ASSERT_EQUAL(tracks.at(0)->id(), tags[1]->target().tracks().at(0));
     CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(), tags[1]->value(KnownField::Album).toString());
     CPPUNIT_ASSERT_EQUAL(m_testPartNumber.toInteger(), tags[1]->value(KnownField::PartNumber).toInteger());
@@ -475,7 +475,7 @@ void OverallTests::checkMkvTestMetaData()
 
     // check attachments
     const auto attachments = m_fileInfo.attachments();
-    CPPUNIT_ASSERT_EQUAL(1ul, attachments.size());
+    CPPUNIT_ASSERT_EQUAL(1_st, attachments.size());
     CPPUNIT_ASSERT(attachments[0]->mimeType() == "image/png");
     CPPUNIT_ASSERT(attachments[0]->name() == "cover.jpg");
     const StreamDataBlock *attachmentData = attachments[0]->data();
@@ -501,7 +501,7 @@ void OverallTests::checkMkvConstraints()
     CPPUNIT_ASSERT(m_fileInfo.container());
     if(m_mode & PaddingConstraints) {
         if(m_mode & ForceRewring) {
-            CPPUNIT_ASSERT_EQUAL(4096ul, m_fileInfo.paddingSize());
+            CPPUNIT_ASSERT_EQUAL(4096_st, m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));

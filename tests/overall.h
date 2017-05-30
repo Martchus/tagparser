@@ -17,6 +17,7 @@ using namespace std;
 using namespace ConversionUtilities;
 using namespace IoUtilities;
 using namespace TestUtilities;
+using namespace TestUtilities::Literals;
 using namespace Media;
 
 using namespace CPPUNIT_NS;
