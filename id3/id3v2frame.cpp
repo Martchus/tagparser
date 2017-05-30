@@ -65,13 +65,10 @@ Id3v2Frame::Id3v2Frame(const identifierType &id, const TagValue &value, const by
  * \returns Returns the genre index or -1 if the specified string does not denote a genre index.
  */
 template<class stringtype>
-int parseGenreIndex(const stringtype &denotation, bool isBigEndian = false)
+int parseGenreIndex(const stringtype &denotation)
 {
     int index = -1;
     for(auto c : denotation) {
-        if(sizeof(typename stringtype::value_type) == 2 && isBigEndian != CONVERSION_UTILITIES_IS_BYTE_ORDER_BIG_ENDIAN) {
-            c = swapOrder(static_cast<uint16>(c));
-        }
         if(index == -1) {
             switch(c) {
             case ' ':
@@ -272,7 +269,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
             int genreIndex;
             if(characterSize(dataEncoding) > 1) {
                 auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
-                genreIndex = parseGenreIndex(genreDenotation, dataEncoding == TagTextEncoding::Utf16BigEndian);
+                genreIndex = parseGenreIndex(genreDenotation);
             } else {
                 auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
                 genreIndex = parseGenreIndex(genreDenotation);
@@ -675,20 +672,7 @@ u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTe
 {
     auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
     u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
-    if(encoding !=
-        #if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
-            TagTextEncoding::Utf16LittleEndian
-        #elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
-            TagTextEncoding::Utf16BigEndian
-        #else
-        # error "Host byte order not supported"
-        #endif
-            ) {
-        // ensure byte order matches host byte order
-        for(auto &c : res) {
-            c = ((c >> 8) & 0x00FF) | ((c << 8) & 0xFF00);
-        }
-    }
+    TagValue::ensureHostByteOrder(res, encoding);
     return res;
 }
 

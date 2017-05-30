@@ -249,8 +249,9 @@ PositionInSet TagValue::toPositionInSet() const
                 return PositionInSet(string(m_ptr.get(), m_size));
             case TagTextEncoding::Utf16LittleEndian:
             case TagTextEncoding::Utf16BigEndian:
-                // FIXME: Ensure endianness is correctly
-                return PositionInSet(u16string(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2));
+                u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+                ensureHostByteOrder(u16str, m_encoding);
+                return PositionInSet(u16str);
             }
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
@@ -702,6 +703,27 @@ void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encod
         break;
     default:
         ;
+    }
+}
+
+/*!
+ * \brief Ensures the byte-order of the specified UTF-16 string matches the byte-order of the machine.
+ * \remarks Does nothing if \a currentEncoding already matches the byte-order of the machine.
+ */
+void TagValue::ensureHostByteOrder(u16string &u16str, TagTextEncoding currentEncoding)
+{
+    if(currentEncoding !=
+        #if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
+            TagTextEncoding::Utf16LittleEndian
+        #elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
+            TagTextEncoding::Utf16BigEndian
+        #else
+        # error "Host byte order not supported"
+        #endif
+            ) {
+        for(auto &c : u16str) {
+            c = swapOrder(static_cast<uint16>(c));
+        }
     }
 }
 

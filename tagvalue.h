@@ -14,6 +14,7 @@
 namespace Media {
 
 class Tag;
+class Id3v2Frame;
 
 /*!
  * \brief Specifies the text encoding.
@@ -62,6 +63,8 @@ enum class TagDataType : unsigned int
 
 class TAG_PARSER_EXPORT TagValue
 {
+    friend class Id3v2Frame; // FIXME: make ensureHostByteOrder() public in next minor release
+
 public:
     // constructor, destructor
     TagValue();
@@ -124,7 +127,8 @@ public:
 
 
 private:
-    void stripBom(const char *&text, size_t &length, TagTextEncoding encoding);
+    static void stripBom(const char *&text, size_t &length, TagTextEncoding encoding);
+    static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
 
     std::unique_ptr<char[]> m_ptr;
     std::string::size_type m_size;
