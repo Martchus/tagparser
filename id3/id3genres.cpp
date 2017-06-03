@@ -47,7 +47,7 @@ const char **Id3Genres::genreNames()
 }
 
 /*!
- * \brief Returns the numerical denotation of the specified \a genre.
+ * \brief Returns the numerical denotation of the specified \a genre or -1 if \a genre is unknown.
  */
 int Id3Genres::indexFromString(const string &genre)
 {
@@ -57,7 +57,7 @@ int Id3Genres::indexFromString(const string &genre)
             return index;
         }
     }
-    return 0;
+    return -1;
 }
 
 }
