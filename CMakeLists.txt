@@ -154,6 +154,7 @@ set(TEST_SRC_FILES
     tests/overallmp3.cpp
     tests/overallogg.cpp
     tests/overallflac.cpp
+    tests/tagvalue.cpp
 )
 
 set(DOC_FILES
@@ -169,7 +170,7 @@ set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
 set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags")
 set(META_VERSION_MAJOR 6)
 set(META_VERSION_MINOR 3)
-set(META_VERSION_PATCH 0)
+set(META_VERSION_PATCH 1)
 set(META_PUBLIC_SHARED_LIB_DEPENDS c++utilities)
 set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 set(META_PRIVATE_COMPILE_DEFINITIONS LEGACY_API)
