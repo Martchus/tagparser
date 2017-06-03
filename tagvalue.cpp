@@ -166,7 +166,17 @@ int32 TagValue::toInteger() const
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            return ConversionUtilities::stringToNumber<int32>(string(m_ptr.get(), m_size));
+            switch(m_encoding) {
+            case TagTextEncoding::Unspecified:
+            case TagTextEncoding::Latin1:
+            case TagTextEncoding::Utf8:
+                return ConversionUtilities::stringToNumber<int32>(m_ptr.get());
+            case TagTextEncoding::Utf16LittleEndian:
+            case TagTextEncoding::Utf16BigEndian:
+                u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+                ensureHostByteOrder(u16str, m_encoding);
+                return ConversionUtilities::stringToNumber<int32>(u16str);
+            }
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
         case TagDataType::StandardGenreIndex:
