@@ -310,7 +310,7 @@ DateTime TagValue::toDateTime() const
         case TagDataType::Text:
             return DateTime::fromString(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
-        case TagDataType::TimeSpan:
+        case TagDataType::DateTime:
             if(m_size == sizeof(int32)) {
                 return DateTime(*(reinterpret_cast<int32 *>(m_ptr.get())));
             } else if(m_size == sizeof(int64)) {
