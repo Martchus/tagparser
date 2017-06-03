@@ -462,6 +462,9 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         case TagDataType::TimeSpan:
             result = toTimeSpan().toString();
             break;
+        case TagDataType::DateTime:
+            result = toDateTime().toString();
+            break;
         default:
             throw ConversionException("Can not convert binary data/picture to string.");
         }
