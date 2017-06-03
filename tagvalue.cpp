@@ -72,7 +72,9 @@ TagValue &TagValue::operator=(const TagValue &other)
  * \brief Returns whether both instances are equal.
  *
  * If the data types are not equal, two instances are still considered equal if the string representation
- * is identical. The encoding and meta data must be equal as well (if relevant for the data type).
+ * is identical. The encoding and meta data must be equal as well if relevant for the data type.
+ *
+ * \sa TagValueTests::testEqualityOperator()
  */
 bool TagValue::operator==(const TagValue &other) const
 {
@@ -113,7 +115,7 @@ bool TagValue::operator==(const TagValue &other) const
         try {
             // try to convert both values to string
             // if the string representations are equal, both values can also be considered equal
-            return toString() == other.toString();
+            return toString() == other.toString(m_encoding);
         } catch(const ConversionException &) {
             return false;
         }
