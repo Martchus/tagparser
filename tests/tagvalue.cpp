@@ -160,12 +160,15 @@ void TagValueTests::testString()
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to int", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toInteger());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to int", TagValue("15ä", 4, TagTextEncoding::Utf8).toInteger(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to pos", PositionInSet(4, 15), TagValue("4 / 15", 6, TagTextEncoding::Utf8).toPositionInSet());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to int", PositionInSet(15), TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toPositionInSet());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to pos", PositionInSet(15), TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toPositionInSet());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion pos", TagValue("a4 / 15", 7, TagTextEncoding::Utf8).toPositionInSet(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to date", DateTime::fromDate(2004, 4, 15), TagValue("2004-04-15", 10, TagTextEncoding::Utf8).toDateTime());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to date", TagValue("_", 1, TagTextEncoding::Utf8).toDateTime(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to time span", TimeSpan::fromHours(1.5), TagValue("01:30:00", 10, TagTextEncoding::Utf8).toTimeSpan());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to time span", TagValue("_", 1, TagTextEncoding::Utf8).toTimeSpan(), ConversionException);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to genre from index", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toStandardGenreIndex());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to genre from name", 2, TagValue("Country", 7, TagTextEncoding::Latin1).toStandardGenreIndex());
+    CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to genre", TagValue("Kountry", 7, TagTextEncoding::Latin1).toStandardGenreIndex(), ConversionException);
 }
 
 void TagValueTests::testEqualityOperator()

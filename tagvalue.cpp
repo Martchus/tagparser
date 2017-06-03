@@ -205,17 +205,22 @@ int TagValue::toStandardGenreIndex() const
         int index = 0;
         switch(m_type) {
         case TagDataType::Text: {
-            string s(m_ptr.get(), m_size);
+            const string s(toString());
             try {
-                index = ConversionUtilities::stringToNumber<int32>(s);
-            } catch (ConversionException &) {
-                index = Id3Genres::indexFromString(s);
+                index = toInteger();
+            } catch (const ConversionException &) {
+                TagTextEncoding encoding = TagTextEncoding::Utf8;
+                if(m_encoding == TagTextEncoding::Latin1) {
+                    // no need to convert Latin-1 to UTF-8 (makes no difference in case of genre strings)
+                    encoding = TagTextEncoding::Unspecified;
+                }
+                index = Id3Genres::indexFromString(toString(encoding));
             }
             break;
         } case TagDataType::StandardGenreIndex:
         case TagDataType::Integer:
-            if(m_size == sizeof(int)) {
-                index = *reinterpret_cast<int *>(m_ptr.get());
+            if(m_size == sizeof(int32)) {
+                index = static_cast<int>(*reinterpret_cast<int32 *>(m_ptr.get()));
             } else {
                 throw ConversionException("The assigned data is of unappropriate size.");
             }
