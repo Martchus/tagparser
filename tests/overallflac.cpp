@@ -41,7 +41,7 @@ void OverallTests::checkFlacTestfile1()
         checkOggTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 
@@ -71,7 +71,7 @@ void OverallTests::checkFlacTestfile2()
         checkOggTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 

@@ -42,7 +42,7 @@ void OverallTests::checkOggTestfile1()
         checkOggTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 
@@ -77,7 +77,7 @@ void OverallTests::checkOggTestfile2()
         checkOggTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 

@@ -106,7 +106,7 @@ private:
     void removeAllTags();
     void noop();
     void createMkvWithNestedTags();
-    void addMp4Track();
+    void alterMp4Tracks();
     void removeSecondTrack();
 
 public:

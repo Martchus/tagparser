@@ -53,7 +53,7 @@ void OverallTests::checkMp4Testfile1()
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 
@@ -68,11 +68,11 @@ void OverallTests::checkMp4Testfile2()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->format().sub == SubFormats::AvcHighProfile);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AvcHighProfile), track->format().sub);
             CPPUNIT_ASSERT_EQUAL(4.0, track->version());
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             CPPUNIT_ASSERT(track->pixelSize() == Size(1920, 750));
             break;
         case 2:
@@ -87,21 +87,21 @@ void OverallTests::checkMp4Testfile2()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         case 3:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Ac3);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Ac3, track->format().general);
             CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 4:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::DtsHd);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::DtsHd, track->format().general);
             CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 6:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Text);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::TimedText);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Text, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::TimedText, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -147,13 +147,13 @@ void OverallTests::checkMp4Testfile3()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 
@@ -169,8 +169,8 @@ void OverallTests::checkMp4Testfile4()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Alac);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Alac, track->format().general);
             CPPUNIT_ASSERT(track->creationTime().year() == 2008);
             CPPUNIT_ASSERT(track->channelCount() == 2);
             CPPUNIT_ASSERT(track->bitsPerSample() == 16);
@@ -199,7 +199,7 @@ void OverallTests::checkMp4Testfile4()
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 
@@ -215,9 +215,9 @@ void OverallTests::checkMp4Testfile5()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->format().sub == SubFormats::AacMpeg4LowComplexityProfile);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT(track->format().extension & ExtensionFormats::SpectralBandReplication);
             CPPUNIT_ASSERT(track->format().extension & ExtensionFormats::ParametricStereo);
             CPPUNIT_ASSERT(track->creationTime().year() == 2014);
@@ -235,13 +235,13 @@ void OverallTests::checkMp4Testfile5()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 }
 
@@ -253,19 +253,19 @@ void OverallTests::checkMp4Testfile6()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
     const auto tracks = m_fileInfo.tracks();
     if(m_mode & Mp4TestFlags::RemoveTagOrTrack) {
-        CPPUNIT_ASSERT(tracks.size() == 4);
+        CPPUNIT_ASSERT_EQUAL(4_st, tracks.size());
     } else {
-        CPPUNIT_ASSERT(tracks.size() == 6);
+        CPPUNIT_ASSERT_EQUAL(6_st, tracks.size());
     }
     bool track2Present = false, track5Present = false;
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->format().sub == SubFormats::AvcHighProfile);
-            CPPUNIT_ASSERT(track->version() == 4);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AvcHighProfile), track->format().sub);
+            CPPUNIT_ASSERT_EQUAL(4.0, track->version());
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             CPPUNIT_ASSERT(track->pixelSize() == Size(1920, 750));
             break;
         case 2:
@@ -275,22 +275,23 @@ void OverallTests::checkMp4Testfile6()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::SpectralBandReplication));
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::ParametricStereo));
-            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+            CPPUNIT_ASSERT_EQUAL("test"s, track->name());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         case 3:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Ac3);
-            CPPUNIT_ASSERT(track->language() == "eng");
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Ac3, track->format().general);
+            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 4:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::DtsHd);
-            CPPUNIT_ASSERT(track->language() == "eng");
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::DtsHd, track->format().general);
+            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 5:
             CPPUNIT_ASSERT(track5Present = !track5Present);
@@ -299,11 +300,12 @@ void OverallTests::checkMp4Testfile6()
             CPPUNIT_ASSERT_EQUAL(2012, track->creationTime().year());
             CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL("new track"s, track->name());
             break;
         case 6:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Text);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::TimedText);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2013);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Text, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::TimedText, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -317,7 +319,7 @@ void OverallTests::checkMp4Testfile6()
         CPPUNIT_ASSERT(track5Present);
     }
 
-    CPPUNIT_ASSERT(m_fileInfo.tags().size() == 0);
+    CPPUNIT_ASSERT_EQUAL(0_st, m_fileInfo.tags().size());
 }
 
 /*!
@@ -386,9 +388,13 @@ void OverallTests::setMp4TestMetaData()
 }
 
 /*!
- * \brief Adds all tracks from mtx-test-data/mp4/10-DanseMacabreOp.40.m4a to the file to be tested.
+ * \brief Alters the tracks of the file to be testd.
+ *
+ * - Adds track from mtx-test-data/mp4/10-DanseMacabreOp.40.m4a
+ * - Sets the language of the 2nd track to German
+ * - Sets the name of the 2nd track to "test".
  */
-void OverallTests::addMp4Track()
+void OverallTests::alterMp4Tracks()
 {
     m_additionalFileInfo.setPath(TestUtilities::testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
     m_additionalFileInfo.reopen(true);
@@ -401,7 +407,15 @@ void OverallTests::addMp4Track()
     CPPUNIT_ASSERT_EQUAL(TrackType::Mp4Track, tracks[0]->type());
     auto *track = static_cast<Mp4Track *>(tracks[0]);
     CPPUNIT_ASSERT(static_cast<Mp4Container *>(m_additionalFileInfo.container())->removeTrack(track));
-    static_cast<Mp4Container *>(m_fileInfo.container())->addTrack(track);
+    CPPUNIT_ASSERT_EQUAL(0_st, m_additionalFileInfo.trackCount());
+    track->setName("new track");
+    auto *container = static_cast<Mp4Container *>(m_fileInfo.container());
+    CPPUNIT_ASSERT_EQUAL(5_st, container->trackCount());
+    container->addTrack(track);
+    CPPUNIT_ASSERT_EQUAL(6_st, container->trackCount());
+    auto &secondTrack = container->tracks()[1];
+    secondTrack->setLanguage("ger");
+    secondTrack->setName("test");
 }
 
 /*!
@@ -482,7 +496,7 @@ void OverallTests::testMp4Making()
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/alac/othertest-itunes.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile4);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
         // -> add/remove tracks
-        modifyRoutine = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeSecondTrack : &OverallTests::addMp4Track;
+        modifyRoutine = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeSecondTrack : &OverallTests::alterMp4Tracks;
         m_fileInfo.setTagPosition(ElementPosition::Keep);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile6);
     }

@@ -66,12 +66,14 @@ public:
     uint64 id() const;
     void setId(uint64 id);
     const std::string name() const;
+    void setName(const std::string &name);
     const ChronoUtilities::TimeSpan &duration() const;
     double bitrate() const;
     double maxBitrate() const;
     const ChronoUtilities::DateTime &creationTime() const;
     const ChronoUtilities::DateTime &modificationTime() const;
     const std::string &language() const;
+    void setLanguage(const std::string &language);
     uint32 samplingFrequency() const;
     uint32 extensionSamplingFrequency() const;
     uint16 bitsPerSample() const;
@@ -86,6 +88,7 @@ public:
     const Size &displaySize() const;
     const Size &resolution() const;
     const std::string &compressorName() const;
+    void setCompressorName(const std::string &compressorName);
     uint16 depth() const;
     uint32 fps() const;
     const char *chromaFormat() const;
@@ -93,8 +96,11 @@ public:
     bool isInterlaced() const;
     uint32 timeScale() const;
     bool isEnabled() const;
+    void setEnabled(bool enabled);
     bool isDefault() const;
+    void setDefault(bool isDefault);
     bool isForced() const;
+    void setForced(bool forced);
     bool hasLacing() const;
     bool isEncrypted() const;
     uint32 colorSpace() const;
@@ -342,6 +348,15 @@ inline const std::string AbstractTrack::name() const
 }
 
 /*!
+ * \brief Sets the name.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setName(const std::string &name)
+{
+    m_name = name;
+}
+
+/*!
  * \brief Returns the duration if known; otherwise returns a TimeSpan of zero ticks.
  */
 inline const ChronoUtilities::TimeSpan &AbstractTrack::duration() const
@@ -389,6 +404,15 @@ inline const ChronoUtilities::DateTime &AbstractTrack::modificationTime() const
 inline const std::string &AbstractTrack::language() const
 {
     return m_language;
+}
+
+/*!
+ * \brief Sets the language of the track.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setLanguage(const std::string &language)
+{
+    m_language = language;
 }
 
 /*!
@@ -494,6 +518,15 @@ inline const std::string &AbstractTrack::compressorName() const
 }
 
 /*!
+ * \brief Returns the compressor name if known; otherwise returns an empty string.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setCompressorName(const std::string &compressorName)
+{
+    m_compressorName = compressorName;
+}
+
+/*!
  * \brief Returns the bit depth if known; otherwise returns 0.
  */
 inline uint16 AbstractTrack::depth() const
@@ -558,6 +591,15 @@ inline bool AbstractTrack::isEnabled() const
 }
 
 /*!
+ * \brief Sets whether the track is enabled.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}
+
+/*!
  * \brief Returns true if the track is denoted as default; otherwise returns false.
  */
 inline bool AbstractTrack::isDefault() const
@@ -566,11 +608,29 @@ inline bool AbstractTrack::isDefault() const
 }
 
 /*!
+ * \brief Sets whether the track is a default track.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setDefault(bool isDefault)
+{
+    m_default = isDefault;
+}
+
+/*!
  * \brief Returns true if the track is denoted as forced; otherwise returns false.
  */
 inline bool AbstractTrack::isForced() const
 {
     return m_forced;
+}
+
+/*!
+ * \brief Sets whether the track is forced.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setForced(bool forced)
+{
+    m_forced = forced;
 }
 
 /*!

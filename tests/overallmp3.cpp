@@ -77,7 +77,7 @@ void OverallTests::checkMp3Testfile1()
         checkMp3TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT(tags.size() == 0);
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 
 }
