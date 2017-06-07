@@ -157,6 +157,7 @@ void TagValueTests::testString()
                                  "t\0\xe4\0s\0t\0"s, TagValue("\xfe\xfft\0\xe4\0s\0t\0", 10, TagTextEncoding::Utf16BigEndian).toString(TagTextEncoding::Unspecified));
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion via c'tor",
                                  "15\xe4"s, TagValue("\xef\xbb\xbf\x31\x35ä", 7, TagTextEncoding::Utf8, TagTextEncoding::Latin1).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to int", -15, TagValue(" - 156", 5, TagTextEncoding::Utf8).toInteger());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to int", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toInteger());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to int", TagValue("15ä", 4, TagTextEncoding::Utf8).toInteger(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to pos", PositionInSet(4, 15), TagValue("4 / 15", 6, TagTextEncoding::Utf8).toPositionInSet());

@@ -170,7 +170,7 @@ int32 TagValue::toInteger() const
             case TagTextEncoding::Unspecified:
             case TagTextEncoding::Latin1:
             case TagTextEncoding::Utf8:
-                return ConversionUtilities::stringToNumber<int32>(m_ptr.get());
+                return ConversionUtilities::bufferToNumber<int32>(m_ptr.get(), m_size);
             case TagTextEncoding::Utf16LittleEndian:
             case TagTextEncoding::Utf16BigEndian:
                 u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
@@ -181,12 +181,10 @@ int32 TagValue::toInteger() const
         case TagDataType::PositionInSet:
         case TagDataType::StandardGenreIndex:
             if(m_size == sizeof(int32)) {
-                auto res = *reinterpret_cast<int32 *>(m_ptr.get());
-                return res;
+                return *reinterpret_cast<int32 *>(m_ptr.get());
             } else {
                 throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
             }
-            break;
         default:
             throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
         }
