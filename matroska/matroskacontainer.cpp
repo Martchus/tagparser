@@ -411,18 +411,18 @@ void MatroskaContainer::internalParseHeader()
                         case EbmlIds::MaxIdLength:
                             m_maxIdLength = subElement->readUInteger();
                             if(m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
-                                addNotification(NotificationType::Critical, "Maximum EBML element ID length greather than "
-                                                % numberToString<uint32>(EbmlElement::maximumIdLengthSupported())
-                                                + " bytes is not supported.", context);
+                                addNotification(NotificationType::Critical,
+                                                argsToString("Maximum EBML element ID length greather than ", EbmlElement::maximumIdLengthSupported(), " bytes is not supported."),
+                                                context);
                                 throw InvalidDataException();
                             }
                             break;
                         case EbmlIds::MaxSizeLength:
                             m_maxSizeLength = subElement->readUInteger();
                             if(m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
-                                addNotification(NotificationType::Critical, "Maximum EBML element size length greather than "
-                                                % numberToString<uint32>(EbmlElement::maximumSizeLengthSupported())
-                                                + " bytes is not supported.", context);
+                                addNotification(NotificationType::Critical,
+                                                argsToString("Maximum EBML element size length greather than ", EbmlElement::maximumSizeLengthSupported(), " bytes is not supported."),
+                                                context);
                                 throw InvalidDataException();
                             }
                             break;
@@ -478,13 +478,13 @@ void MatroskaContainer::internalParseHeader()
                                 for(const auto &infoPair : (*i)->info()) {
                                     uint64 offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
                                     if(offset >= fileInfo().size()) {
-                                        addNotification(NotificationType::Critical, "Offset (" % numberToString(offset) + ") denoted by \"SeekHead\" element is invalid.", context);
+                                        addNotification(NotificationType::Critical, argsToString("Offset (", offset, ") denoted by \"SeekHead\" element is invalid."), context);
                                     } else {
                                         auto element = make_unique<EbmlElement>(*this, offset);
                                         try {
                                             element->parse();
                                             if(element->id() != infoPair.first) {
-                                                addNotification(NotificationType::Critical, "ID of element " % element->idToString() % " at " % numberToString(offset) % " does not match the ID denoted in the \"SeekHead\" element (0x" % numberToString(infoPair.first, 16) + ").", context);
+                                                addNotification(NotificationType::Critical, argsToString("ID of element ", element->idToString(), " at ", offset, " does not match the ID denoted in the \"SeekHead\" element (0x", numberToString(infoPair.first, 16), ")."), context);
                                             }
                                             switch(element->id()) {
                                             case MatroskaIds::SegmentInfo:
@@ -521,7 +521,7 @@ void MatroskaContainer::internalParseHeader()
                                                 ;
                                             }
                                         } catch(const Failure &) {
-                                            addNotification(NotificationType::Critical, "Can not parse element at " % numberToString(offset) + " (denoted using \"SeekHead\" element).", context);
+                                            addNotification(NotificationType::Critical, argsToString("Can not parse element at ", offset, " (denoted using \"SeekHead\" element)."), context);
                                         }
                                     }
                                 }
@@ -549,7 +549,7 @@ void MatroskaContainer::internalParseHeader()
             addNotifications(*topLevelElement);
         } catch(const Failure &) {
             addNotifications(*topLevelElement);
-            addNotification(NotificationType::Critical, "Unable to parse top-level element at " % numberToString(topLevelElement->startOffset()) + ".", context);
+            addNotification(NotificationType::Critical, argsToString("Unable to parse top-level element at ", topLevelElement->startOffset(), '.'), context);
             break;
         }
     }
@@ -626,7 +626,7 @@ void MatroskaContainer::internalParseTags()
                 } catch(NoDataFoundException &) {
                         m_tags.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse tag " % ConversionUtilities::numberToString(m_tags.size()) + ".", context);
+                        addNotification(NotificationType::Critical, argsToString("Unable to parse tag ", m_tags.size(), '.'), context);
                     }
                     break;
                 case EbmlIds::Crc32:
@@ -660,7 +660,7 @@ void MatroskaContainer::internalParseTracks()
                     } catch(const NoDataFoundException &) {
                         m_tracks.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse track " % ConversionUtilities::numberToString(m_tracks.size()) + ".", context);
+                        addNotification(NotificationType::Critical, argsToString("Unable to parse track ", m_tracks.size(), '.'), context);
                     }
                     break;
                 case EbmlIds::Crc32:
@@ -694,7 +694,7 @@ void MatroskaContainer::internalParseChapters()
                     } catch(const NoDataFoundException &) {
                         m_editionEntries.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse edition entry " % ConversionUtilities::numberToString(m_editionEntries.size()) + ".", context);
+                        addNotification(NotificationType::Critical, argsToString("Unable to parse edition entry ", m_editionEntries.size(), '.'), context);
                     }
                     break;
                 case EbmlIds::Crc32:
@@ -728,7 +728,7 @@ void MatroskaContainer::internalParseAttachments()
                     } catch(const NoDataFoundException &) {
                         m_attachments.pop_back();
                     } catch(const Failure &) {
-                        addNotification(NotificationType::Critical, "Unable to parse attached file " % ConversionUtilities::numberToString(m_attachments.size()) + ".", context);
+                        addNotification(NotificationType::Critical, argsToString("Unable to parse attached file ", m_attachments.size(), '.'), context);
                     }
                     break;
                 case EbmlIds::Crc32:
