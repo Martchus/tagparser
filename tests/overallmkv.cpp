@@ -62,7 +62,7 @@ void OverallTests::checkMkvTestfile1()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -102,7 +102,7 @@ void OverallTests::checkMkvTestfile2()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -142,7 +142,7 @@ void OverallTests::checkMkvTestfile3()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -176,7 +176,7 @@ void OverallTests::checkMkvTestfile4()
     switch(m_tagStatus) {
     case TagStatus::Original:
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -226,7 +226,7 @@ void OverallTests::checkMkvTestfile5()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -267,7 +267,7 @@ void OverallTests::checkMkvTestfile6()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -309,7 +309,7 @@ void OverallTests::checkMkvTestfile7()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -351,7 +351,7 @@ void OverallTests::checkMkvTestfile8()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -415,7 +415,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         checkMkvTestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
