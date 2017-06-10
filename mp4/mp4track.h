@@ -11,7 +11,7 @@ namespace Media
 
 class Mp4Atom;
 class Mpeg4Descriptor;
-class AvcConfiguration;
+struct AvcConfiguration;
 
 class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig
 {

@@ -167,30 +167,28 @@ inline SliceInfo::SliceInfo() :
     pps(0)
 {}
 
-class TAG_PARSER_EXPORT AvcFrame {
+struct TAG_PARSER_EXPORT AvcFrame {
     AvcFrame();
-
-private:
-    uint64 m_start;
-    uint64 m_end;
-    uint64 m_ref1;
-    uint64 m_ref2;
-    bool m_keyframe;
-    bool m_hasProvidedTimecode;
-    SliceInfo m_sliceInfo;
-    uint32 m_presentationOrder;
-    uint32 m_decodeOrder;
+    uint64 start;
+    uint64 end;
+    uint64 ref1;
+    uint64 ref2;
+    bool keyframe;
+    bool hasProvidedTimecode;
+    SliceInfo sliceInfo;
+    uint32 presentationOrder;
+    uint32 decodeOrder;
 };
 
 inline AvcFrame::AvcFrame() :
-    m_start(0),
-    m_end(0),
-    m_ref1(0),
-    m_ref2(0),
-    m_keyframe(false),
-    m_hasProvidedTimecode(false),
-    m_presentationOrder(0),
-    m_decodeOrder(0)
+    start(0),
+    end(0),
+    ref1(0),
+    ref2(0),
+    keyframe(false),
+    hasProvidedTimecode(false),
+    presentationOrder(0),
+    decodeOrder(0)
 {}
 
 
