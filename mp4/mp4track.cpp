@@ -220,11 +220,12 @@ std::vector<uint64> Mp4Track::readChunkOffsetsSupportingFragments(bool parseFrag
                             if(flags & 0x000020) { // default-sample-flags present
                                 calculatedDataSize += 4;
                             }
+                            // some variables are currently skipped because they are currently not interesting
                             //uint64 baseDataOffset = moofAtom->startOffset();
                             //uint32 defaultSampleDescriptionIndex = 0;
                             uint32 defaultSampleDuration = 0;
                             uint32 defaultSampleSize = 0;
-                            uint32 defaultSampleFlags = 0;
+                            //uint32 defaultSampleFlags = 0;
                             if(tfhdAtom->dataSize() < calculatedDataSize) {
                                 addNotification(NotificationType::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
                             } else {
@@ -238,14 +239,14 @@ std::vector<uint64> Mp4Track::readChunkOffsetsSupportingFragments(bool parseFrag
                                 }
                                 if(flags & 0x000008) { // default-sample-duration present
                                     defaultSampleDuration = reader().readUInt32BE();
-                                    //m_stream->seekg(4, ios_base::cur);
+                                    //inputStream().seekg(4, ios_base::cur);
                                 }
                                 if(flags & 0x000010) { // default-sample-size present
                                     defaultSampleSize = reader().readUInt32BE();
                                 }
                                 if(flags & 0x000020) { // default-sample-flags present
-                                    defaultSampleFlags = reader().readUInt32BE();
-                                    //m_stream->seekg(4, ios_base::cur);
+                                    //defaultSampleFlags = reader().readUInt32BE();
+                                    inputStream().seekg(4, ios_base::cur);
                                 }
                             }
                             for(Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun); trunAtom; trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, false)) {
