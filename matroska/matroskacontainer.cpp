@@ -816,11 +816,17 @@ void MatroskaContainer::internalMakeFile()
 
     // define variables needed for precalculation of "Tags"- and "Attachments"-element
     vector<MatroskaTagMaker> tagMaker;
+    tagMaker.reserve(tags().size());
     uint64 tagElementsSize = 0;
     uint64 tagsSize;
     vector<MatroskaAttachmentMaker> attachmentMaker;
+    attachmentMaker.reserve(m_attachments.size());
     uint64 attachedFileElementsSize = 0;
     uint64 attachmentsSize;
+    vector<MatroskaTrackHeaderMaker> trackHeaderMaker;
+    trackHeaderMaker.reserve(tracks().size());
+    uint64 trackHeaderElementsSize = 0;
+    uint64 trackHeaderSize;
 
     // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
     // current segment index
@@ -903,6 +909,23 @@ void MatroskaContainer::internalMakeFile()
             }
         }
         attachmentsSize = attachedFileElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(attachedFileElementsSize) + attachedFileElementsSize : 0;
+
+        // calculate size of "Tracks"-element
+        for(auto &track : tracks()) {
+            track->invalidateNotifications();
+            try {
+                trackHeaderMaker.emplace_back(track->prepareMakingHeader());
+                if(trackHeaderMaker.back().requiredSize() > 3) {
+                    // a track header of 3 bytes size is empty and can be skipped
+                    trackHeaderElementsSize += trackHeaderMaker.back().requiredSize();
+                }
+            } catch(const Failure &) {
+                // nothing to do because notifications will be added anyways
+            }
+            addNotifications(*track);
+        }
+        trackHeaderSize = trackHeaderElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(trackHeaderElementsSize) + trackHeaderElementsSize : 0;
+
 
         // inspect layout of original file
         //  - number of segments
@@ -1063,17 +1086,26 @@ calculateSegmentSize:
                     }
                 }
 
-                // pretend writing "Tracks"- and "Chapters"-element
-                for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
-                    for(level1Element = level0Element->childById(id), index = 0; level1Element; level1Element = level1Element->siblingById(id), ++index) {
-                        // update offset in "SeekHead"-element
-                        if(segment.seekInfo.push(index, id, currentPosition + segment.totalDataSize)) {
-                            goto calculateSegmentSize;
-                        } else {
-                            // add size of element
-                            level1Element->makeBuffer();
-                            segment.totalDataSize += level1Element->totalSize();
-                        }
+                // pretend writing "Tracks"-element
+                if(trackHeaderSize) {
+                    // update offsets in "SeekHead"-element
+                    if(segment.seekInfo.push(0, MatroskaIds::Tracks, currentPosition + segment.totalDataSize)) {
+                        goto calculateSegmentSize;
+                    } else {
+                        // add size of "Tracks"-element
+                        segment.totalDataSize += trackHeaderSize;
+                    }
+                }
+
+                // pretend writing "Chapters"-element
+                for(level1Element = level0Element->childById(MatroskaIds::Chapters), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Chapters), ++index) {
+                    // update offset in "SeekHead"-element
+                    if(segment.seekInfo.push(index, MatroskaIds::Chapters, currentPosition + segment.totalDataSize)) {
+                        goto calculateSegmentSize;
+                    } else {
+                        // add size of element
+                        level1Element->makeBuffer();
+                        segment.totalDataSize += level1Element->totalSize();
                     }
                 }
 
@@ -1502,7 +1534,6 @@ nonRewriteCalculations:
                         default:
                             level2Element->copyBuffer(outputStream);
                             level2Element->discardBuffer();
-                            //level2Element->copyEntirely(outputStream);
                         }
                     }
                     // -> write "Title"-element
@@ -1517,13 +1548,21 @@ nonRewriteCalculations:
                     EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp, appInfo, appInfoElementDataSize);
                 }
 
-                // write "Tracks"- and "Chapters"-element
-                for(const auto id : initializer_list<EbmlElement::identifierType>{MatroskaIds::Tracks, MatroskaIds::Chapters}) {
-                    for(level1Element = level0Element->childById(id); level1Element; level1Element = level1Element->siblingById(id)) {
-                        level1Element->copyBuffer(outputStream);
-                        level1Element->discardBuffer();
-                        //level1Element->copyEntirely(outputStream);
+                // write "Tracks"-element
+                if(trackHeaderElementsSize) {
+                    outputWriter.writeUInt32BE(MatroskaIds::Tracks);
+                    sizeLength = EbmlElement::makeSizeDenotation(trackHeaderElementsSize, buff);
+                    outputStream.write(buff, sizeLength);
+                    for(auto &maker : trackHeaderMaker) {
+                        maker.make(outputStream);
                     }
+                    // no need to add notifications; this has been done when creating the maker
+                }
+
+                // write "Chapters"-element
+                for(level1Element = level0Element->childById(MatroskaIds::Chapters); level1Element; level1Element = level1Element->siblingById(MatroskaIds::Chapters)) {
+                    level1Element->copyBuffer(outputStream);
+                    level1Element->discardBuffer();
                 }
 
                 if(newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
@@ -1535,7 +1574,7 @@ nonRewriteCalculations:
                         for(auto &maker : tagMaker) {
                             maker.make(outputStream);
                         }
-                        // no need to add notifications; this has been done when creating the make
+                        // no need to add notifications; this has been done when creating the maker
                     }
                     // write "Attachments"-element
                     if(attachmentsSize) {
@@ -1545,7 +1584,7 @@ nonRewriteCalculations:
                         for(auto &maker : attachmentMaker) {
                             maker.make(outputStream);
                         }
-                        // no need to add notifications; this has been done when creating the make
+                        // no need to add notifications; this has been done when creating the maker
                     }
                 }
 
@@ -1562,12 +1601,11 @@ nonRewriteCalculations:
 
                 // write padding / "Void"-element
                 if(segment.newPadding) {
-
                     // calculate length
                     uint64 voidLength;
                     if(segment.newPadding < 64) {
                         sizeLength = 1;
-                        *buff = (voidLength = segment.newPadding - 2) | 0x80;
+                        *buff = static_cast<char>(voidLength = segment.newPadding - 2) | 0x80;
                     } else {
                         sizeLength = 8;
                         BE::getBytes(static_cast<uint64>((voidLength = segment.newPadding - 9) | 0x100000000000000), buff);
@@ -1584,7 +1622,6 @@ nonRewriteCalculations:
                 // write media data / "Cluster"-elements
                 level1Element = level0Element->childById(MatroskaIds::Cluster);
                 if(rewriteRequired) {
-
                     // update status, check whether the operation has been aborted
                     if(isAborted()) {
                         throw OperationAbortedException();

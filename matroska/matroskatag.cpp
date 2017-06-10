@@ -115,11 +115,12 @@ void MatroskaTag::parse(EbmlElement &tagElement)
  * \brief Prepares making.
  * \returns Returns a MatroskaTagMaker object which can be used to actually make the tag.
  * \remarks The tag must NOT be mutated after making is prepared when it is intended to actually
- *          make the tag using the make method of the returned object.
+ *          make the tag using the make() method of the returned object.
  * \throws Throws Media::Failure or a derived exception when a making error occurs.
  *
  * This method might be useful when it is necessary to know the size of the tag before making it.
  * \sa make()
+ * \todo Make inline in next major release.
  */
 MatroskaTagMaker MatroskaTag::prepareMaking()
 {
@@ -132,6 +133,7 @@ MatroskaTagMaker MatroskaTag::prepareMaking()
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  * \sa prepareMaking()
+ * \todo Make inline in next major release.
  */
 void MatroskaTag::make(ostream &stream)
 {

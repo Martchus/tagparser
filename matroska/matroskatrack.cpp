@@ -435,6 +435,7 @@ void MatroskaTrack::internalParseHeader()
                 addNotification(NotificationType::Critical, "AVC configuration is invalid.", context);
             }
         }
+        break;
     default:
         ;
     }
@@ -456,6 +457,43 @@ void MatroskaTrack::internalParseHeader()
     if(!m_displaySize.height()) {
         m_displaySize.setHeight(m_pixelSize.height());
     }
+}
+
+/*!
+ * \class Media::MatroskaTrackHeaderMaker
+ * \brief The MatroskaTrackHeaderMaker class helps writing Matroska "TrackEntry"-elements storing track header information.
+ *
+ * An instance can be obtained using the MatroskaTrack::prepareMakingHeader() method.
+ */
+
+/*!
+ * \brief Prepares making the header for the specified \a track.
+ * \sa See MatroskaTrack::prepareMakingHeader() for more information.
+ */
+MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track) :
+    m_track(track)
+{
+    m_track.m_trackElement->makeBuffer();
+}
+
+/*!
+ * \brief Returns the associated tag.
+ */
+uint64 MatroskaTrackHeaderMaker::requiredSize() const
+{
+    return m_track.m_trackElement->totalSize();
+}
+
+/*!
+ * \brief Saves the header for the track (specified when constructing the object) to the
+ *        specified \a stream (makes a "TrackEntry"-element).
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Assumes the data is already validated and thus does NOT
+ *                throw Media::Failure or a derived exception.
+ */
+void MatroskaTrackHeaderMaker::make(ostream &stream) const
+{
+    m_track.m_trackElement->copyBuffer(stream);
 }
 
 }

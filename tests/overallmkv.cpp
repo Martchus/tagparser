@@ -33,7 +33,7 @@ void OverallTests::checkMkvTestfile1()
 {
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 2422994868:
@@ -167,6 +167,17 @@ void OverallTests::checkMkvTestfile4()
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Vorbis);
             CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
             CPPUNIT_ASSERT(track->channelCount() == 2);
+            switch(m_tagStatus) {
+            case TagStatus::Original:
+            case TagStatus::Removed:
+                CPPUNIT_ASSERT_EQUAL("und"s, track->language());
+                break;
+            case TagStatus::TestMetaDataPresent:
+                // not implemented yet, so currently still undefined instead of German
+                CPPUNIT_ASSERT_EQUAL("und"s, track->language());
+                //CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+                break;
+            }
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -520,11 +531,18 @@ void OverallTests::checkMkvConstraints()
  */
 void OverallTests::setMkvTestMetaData()
 {
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    auto *container = static_cast<MatroskaContainer *>(m_fileInfo.container());
+
     // change the present tag
     const string fileName(m_fileInfo.fileName());
     if(fileName == "test4.mkv") {
         // test4.mkv has no tag, so one must be created first
-        m_fileInfo.container()->createTag(TagTarget(50));
+        container->createTag(TagTarget(50));
+        // also change language of track "3171450505" to German
+        MatroskaTrack *track = container->trackById(3171450505);
+        CPPUNIT_ASSERT(track);
+        track->setLanguage("ger");
     } else if(fileName == "handbrake-chapters-2.mkv") {
         // remove 2nd tag
         m_fileInfo.removeTag(m_fileInfo.tags().at(1));
@@ -535,21 +553,17 @@ void OverallTests::setMkvTestMetaData()
     // add an additional tag targeting the first track
     TagTarget::IdContainerType trackIds;
     trackIds.emplace_back(m_fileInfo.tracks().at(0)->id());
-    if(Tag *newTag = m_fileInfo.container()->createTag(TagTarget(30, trackIds))) {
-        newTag->setValue(KnownField::Album, m_testAlbum);
-        newTag->setValue(KnownField::PartNumber, m_testPartNumber);
-        newTag->setValue(KnownField::TotalParts, m_testTotalParts);
-    } else {
-        CPPUNIT_FAIL("can not create tag");
-    }
+    Tag *newTag = container->createTag(TagTarget(30, trackIds));
+    CPPUNIT_ASSERT_MESSAGE("create tag", newTag);
+    newTag->setValue(KnownField::Album, m_testAlbum);
+    newTag->setValue(KnownField::PartNumber, m_testPartNumber);
+    newTag->setValue(KnownField::TotalParts, m_testTotalParts);
     // assign an attachment
-    if(AbstractAttachment *attachment = m_fileInfo.container()->createAttachment()) {
-        attachment->setFile(TestUtilities::testFilePath("matroska_wave1/logo3_256x256.png"));
-        attachment->setMimeType("image/png");
-        attachment->setName("cover.jpg");
-    } else {
-        CPPUNIT_FAIL("can not create attachment");
-    }
+    AbstractAttachment *attachment = container->createAttachment();
+    CPPUNIT_ASSERT_MESSAGE("create attachment", attachment);
+    attachment->setFile(TestUtilities::testFilePath("matroska_wave1/logo3_256x256.png"));
+    attachment->setMimeType("image/png");
+    attachment->setName("cover.jpg");
 }
 
 /*!
