@@ -37,6 +37,7 @@ public:
     TagType *tag(std::size_t index);
     std::size_t tagCount() const;
     TrackType *track(std::size_t index);
+    TrackType *trackById(uint64 id);
     std::size_t trackCount() const;
     const std::vector<std::unique_ptr<TagType> > &tags() const;
     std::vector<std::unique_ptr<TagType> > &tags();
@@ -175,6 +176,17 @@ template <class FileInfoType, class TagType, class TrackType, class ElementType>
 inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::track(std::size_t index)
 {
     return m_tracks[index].get();
+}
+
+template<class FileInfoType, class TagType, class TrackType, class ElementType>
+inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::trackById(uint64 id)
+{
+    for (auto &track : m_tracks) {
+        if(track->id() == id) {
+            return track.get();
+        }
+    }
+    return nullptr;
 }
 
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
