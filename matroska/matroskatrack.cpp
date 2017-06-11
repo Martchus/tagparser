@@ -471,17 +471,39 @@ void MatroskaTrack::internalParseHeader()
  * \sa See MatroskaTrack::prepareMakingHeader() for more information.
  */
 MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track) :
-    m_track(track)
+    m_track(track),
+    m_dataSize(0)
 {
-    m_track.m_trackElement->makeBuffer();
-}
-
-/*!
- * \brief Returns the associated tag.
- */
-uint64 MatroskaTrackHeaderMaker::requiredSize() const
-{
-    return m_track.m_trackElement->totalSize();
+    for(EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
+        switch(trackInfoElement->id()) {
+        case MatroskaIds::TrackNumber:
+            m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.trackNumber());
+            break;
+        case MatroskaIds::TrackUID:
+            m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.id());
+            break;
+        case MatroskaIds::TrackName:
+            m_dataSize += 2 + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
+            break;
+        case MatroskaIds::TrackLanguage:
+            m_dataSize += 3 + EbmlElement::calculateSizeDenotationLength(m_track.language().size()) + m_track.language().size();
+            break;
+        case MatroskaIds::TrackFlagEnabled:
+            m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isEnabled());
+            break;
+        case MatroskaIds::TrackFlagDefault:
+            m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isDefault());
+            break;
+        case MatroskaIds::TrackFlagForced:
+            m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.isForced());
+            break;
+        default:
+            trackInfoElement->makeBuffer();
+            m_dataSize += trackInfoElement->totalSize();
+        }
+    }
+    m_sizeDenotationLength = EbmlElement::calculateSizeDenotationLength(m_dataSize);
+    m_requiredSize = 2 + m_sizeDenotationLength + m_dataSize;
 }
 
 /*!
@@ -493,7 +515,40 @@ uint64 MatroskaTrackHeaderMaker::requiredSize() const
  */
 void MatroskaTrackHeaderMaker::make(ostream &stream) const
 {
-    m_track.m_trackElement->copyBuffer(stream);
+    // make ID and size
+    char buffer[10];
+    BE::getBytes(static_cast<uint16>(MatroskaIds::TrackEntry), buffer);
+    EbmlElement::makeSizeDenotation(m_dataSize, buffer + 2);
+    stream.write(buffer, 2 + m_sizeDenotationLength);
+
+    // make child elements
+    for(EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
+        switch(trackInfoElement->id()) {
+        case MatroskaIds::TrackNumber:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackNumber, m_track.trackNumber());
+            break;
+        case MatroskaIds::TrackUID:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackUID, m_track.id());
+            break;
+        case MatroskaIds::TrackName:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackName, m_track.name());
+            break;
+        case MatroskaIds::TrackLanguage:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguage, m_track.language());
+            break;
+        case MatroskaIds::TrackFlagEnabled:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagEnabled, m_track.isEnabled());
+            break;
+        case MatroskaIds::TrackFlagDefault:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagDefault, m_track.isDefault());
+            break;
+        case MatroskaIds::TrackFlagForced:
+            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagForced, m_track.isForced());
+            break;
+        default:
+            trackInfoElement->copyBuffer(stream);
+        }
+    }
 }
 
 }

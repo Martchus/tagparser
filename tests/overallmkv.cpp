@@ -174,8 +174,7 @@ void OverallTests::checkMkvTestfile4()
                 break;
             case TagStatus::TestMetaDataPresent:
                 // not implemented yet, so currently still undefined instead of German
-                CPPUNIT_ASSERT_EQUAL("und"s, track->language());
-                //CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+                CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
                 break;
             }
             break;

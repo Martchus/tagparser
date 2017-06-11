@@ -22,6 +22,9 @@ private:
     MatroskaTrackHeaderMaker(const MatroskaTrack &track);
 
     const MatroskaTrack &m_track;
+    uint64 m_dataSize;
+    uint64 m_requiredSize;
+    byte m_sizeDenotationLength;
 };
 
 /*!
@@ -30,6 +33,14 @@ private:
 inline const MatroskaTrack &MatroskaTrackHeaderMaker::track() const
 {
     return m_track;
+}
+
+/*!
+ * \brief Returns the number of bytes which will be written when calling make().
+ */
+inline uint64 MatroskaTrackHeaderMaker::requiredSize() const
+{
+    return m_requiredSize;
 }
 
 class TAG_PARSER_EXPORT MatroskaTrack : public AbstractTrack

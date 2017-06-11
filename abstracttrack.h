@@ -63,6 +63,7 @@ public:
     const char *mediaTypeName() const;
     uint64 size() const;
     uint32 trackNumber() const;
+    void setTrackNumber(uint32 trackNumber);
     uint64 id() const;
     void setId(uint64 id);
     const std::string name() const;
@@ -320,6 +321,15 @@ inline uint64 AbstractTrack::size() const
 inline uint32 AbstractTrack::trackNumber() const
 {
     return m_trackNumber;
+}
+
+/*!
+ * \brief Sets the track number.
+ * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ */
+inline void AbstractTrack::setTrackNumber(uint32 trackNumber)
+{
+    m_trackNumber = trackNumber;
 }
 
 /*!
