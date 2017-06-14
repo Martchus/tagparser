@@ -37,13 +37,13 @@ void OverallTests::checkMkvTestfile1()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 2422994868:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::MicrosoftMpeg4);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::MicrosoftMpeg4, track->format().general);
             break;
         case 3653291187:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Mpeg1Audio);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -171,10 +171,17 @@ void OverallTests::checkMkvTestfile4()
             case TagStatus::Original:
             case TagStatus::Removed:
                 CPPUNIT_ASSERT_EQUAL("und"s, track->language());
+                CPPUNIT_ASSERT_EQUAL(string(), track->name());
+                CPPUNIT_ASSERT(track->isEnabled());
+                CPPUNIT_ASSERT(!track->isForced());
+                CPPUNIT_ASSERT(!track->isDefault());
                 break;
             case TagStatus::TestMetaDataPresent:
-                // not implemented yet, so currently still undefined instead of German
                 CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+                CPPUNIT_ASSERT_EQUAL("the name"s, track->name());
+                CPPUNIT_ASSERT(track->isEnabled());
+                CPPUNIT_ASSERT(track->isForced());
+                CPPUNIT_ASSERT(track->isDefault());
                 break;
             }
             break;
@@ -538,10 +545,14 @@ void OverallTests::setMkvTestMetaData()
     if(fileName == "test4.mkv") {
         // test4.mkv has no tag, so one must be created first
         container->createTag(TagTarget(50));
-        // also change language of track "3171450505" to German
+        // also change language, name, forced and default of track "3171450505" to German
         MatroskaTrack *track = container->trackById(3171450505);
         CPPUNIT_ASSERT(track);
         track->setLanguage("ger");
+        track->setName("the name");
+        track->setDefault(true);
+        track->setEnabled(true);
+        track->setForced(true);
     } else if(fileName == "handbrake-chapters-2.mkv") {
         // remove 2nd tag
         m_fileInfo.removeTag(m_fileInfo.tags().at(1));

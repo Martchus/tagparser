@@ -151,15 +151,19 @@ bool FieldMapBasedTag<FieldType, Compare>::setValues(const typename FieldType::i
 {
     auto valuesIterator = values.cbegin();
     auto range = m_fields.equal_range(id);
+    // iterate through all specified and all existing values
     for(; valuesIterator != values.cend() && range.first != range.second; ++valuesIterator) {
+        // replace existing value with non-empty specified value
         if(!valuesIterator->isEmpty()) {
             range.first->second.setValue(*valuesIterator);
             ++range.first;
         }
     }
+    // add remaining specified values (there are more specified values than existing ones)
     for(; valuesIterator != values.cend(); ++valuesIterator) {
         m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
     }
+    // remove remaining existing values (there are more existing values than specified ones)
     for(; range.first != range.second; ++range.first) {
         range.first->second.setValue(TagValue());
     }

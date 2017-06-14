@@ -474,28 +474,30 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track) :
     m_track(track),
     m_dataSize(0)
 {
+    // calculate size for recognized elements
+    m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.id());
+    m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.trackNumber());
+    m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isEnabled());
+    m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isDefault());
+    m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.isForced());
+    if(!m_track.name().empty()) {
+        m_dataSize += 2 + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
+    }
+    if(!m_track.language().empty()) {
+        m_dataSize += 3 + EbmlElement::calculateSizeDenotationLength(m_track.language().size()) + m_track.language().size();
+    }
+
+    // calculate size for other elements
     for(EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
         switch(trackInfoElement->id()) {
         case MatroskaIds::TrackNumber:
-            m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.trackNumber());
-            break;
         case MatroskaIds::TrackUID:
-            m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.id());
-            break;
         case MatroskaIds::TrackName:
-            m_dataSize += 2 + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
-            break;
         case MatroskaIds::TrackLanguage:
-            m_dataSize += 3 + EbmlElement::calculateSizeDenotationLength(m_track.language().size()) + m_track.language().size();
-            break;
         case MatroskaIds::TrackFlagEnabled:
-            m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isEnabled());
-            break;
         case MatroskaIds::TrackFlagDefault:
-            m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isDefault());
-            break;
         case MatroskaIds::TrackFlagForced:
-            m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.isForced());
+            // skip recognized elements
             break;
         default:
             trackInfoElement->makeBuffer();
@@ -521,29 +523,30 @@ void MatroskaTrackHeaderMaker::make(ostream &stream) const
     EbmlElement::makeSizeDenotation(m_dataSize, buffer + 2);
     stream.write(buffer, 2 + m_sizeDenotationLength);
 
-    // make child elements
+    // make recognized elements
+    EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackUID, m_track.id());
+    EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackNumber, m_track.trackNumber());
+    EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagEnabled, m_track.isEnabled());
+    EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagDefault, m_track.isDefault());
+    EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagForced, m_track.isForced());
+    if(!m_track.name().empty()) {
+        EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackName, m_track.name());
+    }
+    if(!m_track.language().empty()) {
+        EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguage, m_track.language());
+    }
+
+    // make other elements
     for(EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
         switch(trackInfoElement->id()) {
         case MatroskaIds::TrackNumber:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackNumber, m_track.trackNumber());
-            break;
         case MatroskaIds::TrackUID:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackUID, m_track.id());
-            break;
         case MatroskaIds::TrackName:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackName, m_track.name());
-            break;
         case MatroskaIds::TrackLanguage:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguage, m_track.language());
-            break;
         case MatroskaIds::TrackFlagEnabled:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagEnabled, m_track.isEnabled());
-            break;
         case MatroskaIds::TrackFlagDefault:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagDefault, m_track.isDefault());
-            break;
         case MatroskaIds::TrackFlagForced:
-            EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagForced, m_track.isForced());
+            // skip recognized elements
             break;
         default:
             trackInfoElement->copyBuffer(stream);
