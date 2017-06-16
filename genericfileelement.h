@@ -192,6 +192,7 @@ public:
     void makeBuffer();
     void discardBuffer();
     void copyBuffer(std::ostream &targetStream);
+    void copyPreferablyFromBuffer(std::ostream &targetStream);
     const std::unique_ptr<char[]> &buffer();
     implementationType *denoteFirstChild(uint32 offset);
 
@@ -843,6 +844,16 @@ template <class ImplementationType>
 inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
 {
     targetStream.write(m_buffer.get(), totalSize());
+}
+
+/*!
+ * \brief Copies buffered data to \a targetStream if data has been buffered; copies from input stream otherwise.
+ * \remarks So this is copyBuffer() with a fallback to copyEntirely().
+ */
+template <class ImplementationType>
+inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(std::ostream &targetStream)
+{
+    m_buffer ? copyBuffer(targetStream) : copyEntirely(targetStream);
 }
 
 /*!
