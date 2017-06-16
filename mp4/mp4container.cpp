@@ -393,11 +393,7 @@ void Mp4Container::internalMakeFile()
                     }
                     break;
                 case Mp4AtomIds::Track:
-                    // add size of track atoms only if not writing chunk-by-chunk (otherwise sizes are added separately)
-                    if(!writeChunkByChunk) {
-                        movieAtomSize += level1Atom->totalSize();
-                        level1Atom->makeBuffer();
-                    }
+                    // ignore track atoms here; they are added separately
                     break;
                 default:
                     // add size of unknown childs of the movie atom
@@ -413,12 +409,9 @@ void Mp4Container::internalMakeFile()
             movieAtomSize += userDataAtomSize;
         }
 
-        // add size of track atoms when writing chunk-by-chunk
-        if(writeChunkByChunk) {
-            // note: Mp4Track API has to be changed when Mp4Track::makeTrack() gets a real implementation.
-            for(const auto &track : tracks()) {
-                movieAtomSize += track->requiredSize();
-            }
+        // add size of track atoms
+        for(const auto &track : tracks()) {
+            movieAtomSize += track->requiredSize();
         }
 
         // add header size
@@ -555,6 +548,11 @@ calculatePadding:
         // TODO: reduce code duplication
 
     } else { // !rewriteRequired
+        // ensure everything to make track atoms is buffered before altering the source file
+        for(const auto &track : tracks()) {
+            track->bufferTrackAtoms();
+        }
+
         // reopen original file to ensure it is opened for writing
         try {
             fileInfo().close();
@@ -596,12 +594,9 @@ calculatePadding:
                 // -> write movie atom header
                 Mp4Atom::makeHeader(movieAtomSize, Mp4AtomIds::Movie, outputWriter);
 
-                // -> write track atoms (only if writing chunk-by-chunk; otherwise track atoms are written with other children)
-                if(writeChunkByChunk) {
-                    // note: Mp4Track API has to be changed when Mp4Track::makeTrack() gets a real implementation.
-                    for(auto &track : tracks()) {
-                        track->makeTrack();
-                    }
+                // -> write track atoms
+                for(auto &track : tracks()) {
+                    track->makeTrack();
                 }
 
                 // -> write other movie atom children
@@ -609,13 +604,8 @@ calculatePadding:
                     for(level1Atom = level0Atom->firstChild(); level1Atom; level1Atom = level1Atom->nextSibling()) {
                         switch(level1Atom->id()) {
                         case Mp4AtomIds::UserData:
-                            break;
                         case Mp4AtomIds::Track:
-                            // write buffered data
-                            if(!writeChunkByChunk) {
-                                level1Atom->copyBuffer(outputStream);
-                                level1Atom->discardBuffer();
-                            }
+                            // track and user data atoms are written separately
                             break;
                         default:
                             // write buffered data

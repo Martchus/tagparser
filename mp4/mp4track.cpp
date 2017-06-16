@@ -929,9 +929,46 @@ void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
 }
 
 /*!
+ * \brief Buffers all atoms required by the makeTrack() method.
+ *
+ * This allows to invoke makeTrack() also when the input stream is going to be
+ * modified (eg. to apply changed tags without rewriting the file).
+ */
+void Mp4Track::bufferTrackAtoms()
+{
+    if(m_tkhdAtom) {
+        m_tkhdAtom->makeBuffer();
+    }
+    if(Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference)) {
+        trefAtom->makeBuffer();
+    }
+    if(Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit)) {
+        edtsAtom->makeBuffer();
+    }
+    if(m_minfAtom) {
+        if(Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader)) {
+            vmhdAtom->makeBuffer();
+        }
+        if(Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader)) {
+            smhdAtom->makeBuffer();
+        }
+        if(Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader)) {
+            hmhdAtom->makeBuffer();
+        }
+        if(Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox)) {
+            nmhdAtom->makeBuffer();
+        }
+        if(Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation)) {
+            dinfAtom->makeBuffer();
+        }
+        if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable)) {
+            stblAtom->makeBuffer();
+        }
+    }
+}
+
+/*!
  * \brief Returns the number of bytes written when calling makeTrack().
- * \todo Get rid of const_cast. This is currently required because GenericFileElement::childById() is
- *       not const.
  */
 uint64 Mp4Track::requiredSize() const
 {
@@ -978,9 +1015,12 @@ uint64 Mp4Track::requiredSize() const
 }
 
 /*!
- * \brief Makes the track entry ("trak"-atom) for the track. The data is written to the assigned output stream
- *        at the current position.
- * \remarks Currently the "trak"-atom from the source file is just copied to the output stream.
+ * \brief Makes the track entry ("trak"-atom) for the track.
+ *
+ * The data is written to the assigned output stream at the current position. Note that this method
+ * uses the assigned input stream to copy some parts from the source file. Hence the input stream must
+ * still be valid when calling this method. To avoid this limitation call bufferTrackAtoms() before
+ * invalidating the input stream.
  */
 void Mp4Track::makeTrack()
 {
@@ -992,11 +1032,11 @@ void Mp4Track::makeTrack()
     makeTrackHeader();
     // write tref atom (if one exists)
     if(Mp4Atom *trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference)) {
-        trefAtom->copyEntirely(outputStream());
+        trefAtom->copyPreferablyFromBuffer(outputStream());
     }
     // write edts atom (if one exists)
     if(Mp4Atom *edtsAtom = trakAtom().childById(Mp4AtomIds::Edit)) {
-        edtsAtom->copyEntirely(outputStream());
+        edtsAtom->copyPreferablyFromBuffer(outputStream());
     }
     // write mdia atom
     makeMedia();
@@ -1033,17 +1073,21 @@ void Mp4Track::makeTrackHeader()
     writer().writeUInt32BE(0); // reserved
     if(m_tkhdAtom) {
         // use existing values
-        char buffer[48];
-        m_istream->seekg(m_tkhdAtom->startOffset() + 52);
-        m_istream->read(buffer, sizeof(buffer));
-        m_ostream->write(buffer, sizeof(buffer));
+        if(m_tkhdAtom->buffer()) {
+            m_ostream->write(m_tkhdAtom->buffer().get() + 52, 48);
+        } else {
+            char buffer[48];
+            m_istream->seekg(m_tkhdAtom->startOffset() + 52);
+            m_istream->read(buffer, sizeof(buffer));
+            m_ostream->write(buffer, sizeof(buffer));
+        }
     } else {
         // write default values
         writer().writeInt16BE(0); // layer
         writer().writeInt16BE(0); // alternate group
         writer().writeFixed8BE(1.0); // volume
         writer().writeUInt16BE(0); // reserved
-        for(int32 value : {0x00010000,0,0,0,0x00010000,0,0,0,0x40000000}) { // unity matrix
+        for(const int32 value : {0x00010000,0,0,0,0x00010000,0,0,0,0x40000000}) { // unity matrix
             writer().writeInt32BE(value);
         }
         writer().writeFixed16BE(1.0); // width
@@ -1126,23 +1170,23 @@ void Mp4Track::makeMediaInfo()
     if(m_minfAtom) {
         // copy existing vmhd atom
         if(Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader)) {
-            vmhdAtom->copyEntirely(outputStream());
+            vmhdAtom->copyPreferablyFromBuffer(outputStream());
         }
         // copy existing smhd atom
         if(Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader)) {
-            smhdAtom->copyEntirely(outputStream());
+            smhdAtom->copyPreferablyFromBuffer(outputStream());
         }
         // copy existing hmhd atom
         if(Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader)) {
-            hmhdAtom->copyEntirely(outputStream());
+            hmhdAtom->copyPreferablyFromBuffer(outputStream());
         }
         // copy existing nmhd atom
         if(Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox)) {
-            nmhdAtom->copyEntirely(outputStream());
+            nmhdAtom->copyPreferablyFromBuffer(outputStream());
         }
         // copy existing dinf atom
         if(Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation)) {
-            dinfAtom->copyEntirely(outputStream());
+            dinfAtom->copyPreferablyFromBuffer(outputStream());
             dinfAtomWritten = true;
         }
     }
@@ -1166,13 +1210,12 @@ void Mp4Track::makeMediaInfo()
     bool stblAtomWritten = false;
     if(m_minfAtom) {
         if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable)) {
-            stblAtom->copyEntirely(outputStream());
+            stblAtom->copyPreferablyFromBuffer(outputStream());
             stblAtomWritten = true;
         }
     }
     if(!stblAtomWritten) {
-        addNotification(NotificationType::Critical, "Unable to make stbl atom from scratch.", "making stbl atom");
-        throw NotImplementedException();
+        addNotification(NotificationType::Critical, "Source track does not contain mandatory stbl atom and the tagparser lib is unable to make one from scratch.", "making stbl atom");
     }
     // write size (of minf atom)
     Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset);

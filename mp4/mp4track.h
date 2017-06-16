@@ -144,8 +144,9 @@ public:
     std::vector<uint64> readChunkSizes();
 
     // methods to make the track header
-    void makeTrack();
+    void bufferTrackAtoms();
     uint64 requiredSize() const;
+    void makeTrack();
     void makeTrackHeader();
     void makeMedia();
     void makeMediaInfo();
@@ -177,8 +178,6 @@ private:
     Mp4Atom *m_stscAtom;
     Mp4Atom *m_stcoAtom;
     Mp4Atom *m_stszAtom;
-    //Mp4Atom *m_codecConfigAtom;
-    //Mp4Atom *m_esDescAtom;
     uint16 m_framesPerSample;
     std::vector<uint32> m_sampleSizes;
     unsigned int m_chunkOffsetSize;
