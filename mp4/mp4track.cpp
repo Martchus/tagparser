@@ -1115,8 +1115,8 @@ void Mp4Track::makeMedia()
     writer().writeUInt64BE(static_cast<uint64>(m_duration.totalSeconds() * m_timeScale));
     // convert and write language
     uint16 language = 0;
-    for(size_t charIndex = 0; charIndex < m_language.size() && charIndex != 3; ++charIndex) {
-        const char langChar = m_language[charIndex];
+    for(size_t charIndex = 0; charIndex != 3; ++charIndex) {
+        const char langChar = charIndex < m_language.size() ? m_language[charIndex] : 0;
         if(langChar >= 'a' && langChar <= 'z') {
             language |= static_cast<uint16>(langChar - 0x60) << (0xA - charIndex * 0x5);
         } else { // invalid character
@@ -1124,6 +1124,9 @@ void Mp4Track::makeMedia()
             language = 0x55C4; // und
             break;
         }
+    }
+    if(m_language.size() > 3) {
+        addNotification(NotificationType::Warning, "Assigned language \"" % m_language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
     }
     writer().writeUInt16BE(language);
     writer().writeUInt16BE(0); // pre defined
