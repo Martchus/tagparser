@@ -62,7 +62,7 @@ void TagValueTests::testBinary()
 {
     const TagValue binary("123", 3, TagDataType::Binary);
     CPPUNIT_ASSERT_EQUAL(TagDataType::Binary, binary.type());
-    CPPUNIT_ASSERT_EQUAL("123"s, string(binary.dataPointer()));
+    CPPUNIT_ASSERT_EQUAL("123"s, string(binary.dataPointer(), binary.dataSize()));
     CPPUNIT_ASSERT_THROW(binary.toString(), ConversionException);
     CPPUNIT_ASSERT_THROW(binary.toInteger(), ConversionException);
     CPPUNIT_ASSERT_THROW(binary.toPositionInSet(), ConversionException);

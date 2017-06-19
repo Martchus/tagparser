@@ -147,13 +147,13 @@ void OverallTests::checkMp4Testfile3()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
@@ -235,13 +235,13 @@ void OverallTests::checkMp4Testfile5()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 }
 
