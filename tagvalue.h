@@ -51,14 +51,15 @@ inline int characterSize(TagTextEncoding encoding) {
 enum class TagDataType : unsigned int
 {
     Text, /**< text/string */
-    Integer, /**< integer */
+    Integer, /**< integer, up to 64-bit */
     PositionInSet, /**< position in set, see Media::PositionInSet */
     StandardGenreIndex, /**< pre-defined genre name denoted by numerical code */
     TimeSpan, /**< time span, see ChronoUtils::TimeSpan */
     DateTime, /**< date time, see ChronoUtils::DateTime */
     Picture, /**< picture file */
     Binary, /**< unspecified binary data */
-    Undefined /**< undefined/invalid data type */
+    Undefined, /**< undefined/invalid data type */
+    Float, /**< IEEE float, 32- or 64-bit */
 };
 
 class TAG_PARSER_EXPORT TagValue
@@ -95,6 +96,8 @@ public:
     std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     void toWString(std::u16string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     int32 toInteger() const;
+    template<typename NumberType>
+    NumberType toNumber() const;
     int toStandardGenreIndex() const;
     PositionInSet toPositionInSet() const;
     ChronoUtilities::TimeSpan toTimeSpan() const;

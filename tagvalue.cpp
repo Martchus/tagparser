@@ -177,6 +177,7 @@ int32 TagValue::toInteger() const
                 ensureHostByteOrder(u16str, m_encoding);
                 return ConversionUtilities::stringToNumber<int32>(u16str);
             }
+            break;
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
         case TagDataType::StandardGenreIndex:
@@ -185,6 +186,59 @@ int32 TagValue::toInteger() const
             } else {
                 throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
             }
+        default:
+            throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
+        }
+    }
+    return 0;
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent integer representation.
+ * \tparam Specifies the integer type to convert to.
+ * \remarks Precision loss or overflow might occur if \a NumberType isn't suitable to hold the assigned
+ *          number.
+ * \throws Throws ConversionException on failure.
+ */
+template<typename NumberType>
+NumberType TagValue::toNumber() const
+{
+    if(!isEmpty()) {
+        switch(m_type) {
+        case TagDataType::Text:
+            switch(m_encoding) {
+            case TagTextEncoding::Unspecified:
+            case TagTextEncoding::Latin1:
+            case TagTextEncoding::Utf8:
+                return ConversionUtilities::bufferToNumber<NumberType>(m_ptr.get(), m_size);
+            case TagTextEncoding::Utf16LittleEndian:
+            case TagTextEncoding::Utf16BigEndian:
+                u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+                ensureHostByteOrder(u16str, m_encoding);
+                return ConversionUtilities::stringToNumber<NumberType>(u16str);
+            }
+            break;
+        case TagDataType::Integer:
+        case TagDataType::PositionInSet:
+        case TagDataType::StandardGenreIndex:
+            if(m_size == sizeof(int32)) {
+                return static_cast<NumberType>(*reinterpret_cast<int32 *>(m_ptr.get()));
+            } else(m_size == sizeof(int64)) {
+                // maybe support assignment of 64-bit int in the future
+                return static_cast<NumberType>(*reinterpret_cast<int64 *>(m_ptr.get()));
+            } else {
+                throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
+            }
+            break;
+        case TagDataType::Float:
+            if(m_size == sizeof(float)) {
+                return static_cast<NumberType>(*reinterpret_cast<float *>(m_ptr.get()));
+            } else if(m_size == sizeof(double)) {
+                return static_cast<NumberType>(*reinterpret_cast<double *>(m_ptr.get()));
+            } else {
+                throw ConversionException("Can not convert assigned float to integer because the data size is not appropriate.");
+            }
+            break;
         default:
             throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
         }
@@ -283,7 +337,17 @@ TimeSpan TagValue::toTimeSpan() const
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            return TimeSpan::fromString(string(m_ptr.get(), m_size));
+            switch(m_encoding) {
+            case TagTextEncoding::Unspecified:
+            case TagTextEncoding::Latin1:
+            case TagTextEncoding::Utf8:
+                return TimeSpan::fromString(string(m_ptr.get(), m_size));
+            case TagTextEncoding::Utf16LittleEndian:
+                return TimeSpan::fromString(convertUtf16LEToUtf8(m_ptr.get(), m_size));
+            case TagTextEncoding::Utf16BigEndian:
+                return TimeSpan::fromString(convertUtf16BEToUtf8(m_ptr.get(), m_size));
+            }
+            break;
         case TagDataType::Integer:
         case TagDataType::TimeSpan:
             switch(m_size) {
@@ -311,7 +375,17 @@ DateTime TagValue::toDateTime() const
     if(!isEmpty()) {
         switch(m_type) {
         case TagDataType::Text:
-            return DateTime::fromString(string(m_ptr.get(), m_size));
+            switch(m_encoding) {
+            case TagTextEncoding::Unspecified:
+            case TagTextEncoding::Latin1:
+            case TagTextEncoding::Utf8:
+                return DateTime::fromString(string(m_ptr.get(), m_size));
+            case TagTextEncoding::Utf16LittleEndian:
+                return DateTime::fromString(convertUtf16LEToUtf8(m_ptr.get(), m_size));
+            case TagTextEncoding::Utf16BigEndian:
+                return DateTime::fromString(convertUtf16BEToUtf8(m_ptr.get(), m_size));
+            }
+            break;
         case TagDataType::Integer:
         case TagDataType::DateTime:
             if(m_size == sizeof(int32)) {
