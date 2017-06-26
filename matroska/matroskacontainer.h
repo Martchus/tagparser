@@ -60,7 +60,7 @@ protected:
 
 private:
     void parseSegmentInfo();
-    void fetchEditionEntryElements();
+    void readTrackStatisticsFromTags();
 
     uint64 m_maxIdLength;
     uint64 m_maxSizeLength;

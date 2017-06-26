@@ -8,6 +8,7 @@ namespace Media {
 class EbmlElement;
 class MatroskaContainer;
 class MatroskaTrack;
+class MatroskaTag;
 
 class TAG_PARSER_EXPORT MatroskaTrackHeaderMaker
 {
@@ -55,6 +56,7 @@ public:
     TrackType type() const;
 
     static MediaFormat codecIdToMediaFormat(const std::string &codecId);
+    void readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags);
     MatroskaTrackHeaderMaker prepareMakingHeader() const;
     void makeHeader(std::ostream &stream) const;
 
@@ -62,6 +64,9 @@ protected:
     void internalParseHeader();
 
 private:
+    template<typename PropertyType, typename ConversionFunction>
+    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &integer, const ConversionFunction &conversionFunction);
+
     EbmlElement *m_trackElement;
 };
 

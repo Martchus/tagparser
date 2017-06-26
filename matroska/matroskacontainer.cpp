@@ -610,6 +610,21 @@ void MatroskaContainer::parseSegmentInfo()
     }
 }
 
+/*!
+ * \brief Reads track-specific statistics from tags.
+ * \remarks Tags and tracks must have been parsed before calling this method.
+ * \sa MatroskaTrack::readStatisticsFromTags()
+ */
+void MatroskaContainer::readTrackStatisticsFromTags()
+{
+    if(tracks().empty() || tags().empty()) {
+        return;
+    }
+    for(const auto &track : tracks()) {
+        track->readStatisticsFromTags(tags());
+    }
+}
+
 void MatroskaContainer::internalParseTags()
 {
     static const string context("parsing tags of Matroska container");
@@ -622,8 +637,8 @@ void MatroskaContainer::internalParseTags()
                 case MatroskaIds::Tag:
                     m_tags.emplace_back(make_unique<MatroskaTag>());
                     try {
-                    m_tags.back()->parse(*subElement);
-                } catch(NoDataFoundException &) {
+                        m_tags.back()->parse(*subElement);
+                    } catch(const NoDataFoundException &) {
                         m_tags.pop_back();
                     } catch(const Failure &) {
                         addNotification(NotificationType::Critical, argsToString("Unable to parse tag ", m_tags.size(), '.'), context);
@@ -638,9 +653,11 @@ void MatroskaContainer::internalParseTags()
             }
         } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Element structure seems to be invalid.", context);
+            readTrackStatisticsFromTags();
             throw;
         }
     }
+    readTrackStatisticsFromTags();
 }
 
 void MatroskaContainer::internalParseTracks()
@@ -672,9 +689,11 @@ void MatroskaContainer::internalParseTracks()
             }
         } catch(const Failure &) {
             addNotification(NotificationType::Critical, "Element structure seems to be invalid.", context);
+            readTrackStatisticsFromTags();
             throw;
         }
     }
+    readTrackStatisticsFromTags();
 }
 
 void MatroskaContainer::internalParseChapters()

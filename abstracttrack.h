@@ -472,7 +472,7 @@ inline byte AbstractTrack::channelConfig() const
 }
 
 /*!
- * \brief Returns the number of samples if known; otherwise returns 0.
+ * \brief Returns the number of samples/frames if known; otherwise returns 0.
  */
 inline uint64 AbstractTrack::sampleCount() const
 {

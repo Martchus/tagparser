@@ -337,6 +337,35 @@ inline TAG_PARSER_EXPORT const char *termsOfUse() {
     return "TERMS_OF_USE";
 }
 
+/*!
+ * \brief Encapsulates track-specific Matroska tag IDs written by mkvmerge 7.0.0 or newer.
+ * \sa https://github.com/mbunkus/mkvtoolnix/wiki/Automatic-tag-generation
+ */
+namespace TrackSpecific {
+inline TAG_PARSER_EXPORT const char *numberOfBytes() {
+    return "NUMBER_OF_BYTES";
+}
+inline TAG_PARSER_EXPORT const char *numberOfFrames() {
+    return "NUMBER_OF_FRAMES";
+}
+inline TAG_PARSER_EXPORT const char *duration() {
+    return "DURATION";
+}
+/// \brief The track's bit rate in bits per second.
+inline TAG_PARSER_EXPORT const char *bitrate() {
+    return "BPS";
+}
+inline TAG_PARSER_EXPORT const char *writingApp() {
+    return "_STATISTICS_WRITING_APP";
+}
+inline TAG_PARSER_EXPORT const char *writingDate() {
+    return "_STATISTICS_WRITING_DATE_UTC";
+}
+inline TAG_PARSER_EXPORT const char *statisticsTags() {
+    return "_STATISTICS_TAGS";
+}
+}
+
 }
 
 /*!
