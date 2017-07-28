@@ -496,17 +496,17 @@ void MediaFileInfo::parseEverything()
  * \param id3TransferValuesOnRemoval Indicates whether values of removed ID3 tags (according to \a id3v1usage and \a id3v2usage) should be transfered to remaining ID3 tags (no values will be overwritten).
  * \param mergeMultipleSuccessiveId3v2Tags Specifies whether multiple successive ID3v2 tags should be merged (see mergeId3v2Tags()).
  * \param keepExistingId3v2version Specifies whether the version of existing ID3v2 tags should be adjusted to \a id3v2version (otherwise \a id3v2version is only used when creating a new ID3v2 tag).
- * \param id3v2version Specifies the ID3v2 version to be used. Valid values are 2, 3 and 4.
+ * \param id3v2MajorVersion Specifies the ID3v2 version to be used. Valid values are 2, 3 and 4.
  * \param requiredTargets Specifies the required targets. If targets are not supported by the container an informal notification is added.
  * \return Returns whether appropriate tags could be created for the file.
  * \remarks
- *  - Tags must have been parsed  before invoking this method (otherwise it will just return false).
+ *  - Tags must have been parsed before invoking this method (otherwise it will just return false).
  *  - The ID3 related arguments are only practiced when the file format is MP3 or when the file format is unknown and \a treatUnknownFilesAsMp3Files is true.
  *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed if \a id3v1Usage is set to TagUsage::Never.
- *  - The method might do nothing if present tag already match the given specifications.
+ *  - The method might do nothing if present tag(s) already match the given specifications.
  *  - This is only a convenience method. The task could be done by manually using the methods createId3v1Tag(), createId3v2Tag(), removeId3v1Tag() ... as well.
  *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transfered.
- *  - TODO: Refactoring required, there are too much params (not sure how to refactor though, since not all of the params are simple flags).
+ * \todo Refactoring required, there are too much params (not sure how to refactor though, since not all of the params are simple flags).
  */
 bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool id3InitOnCreate, bool id3TransferValuesOnRemoval, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, byte id3v2MajorVersion, const std::vector<TagTarget> &requiredTargets)
 {
