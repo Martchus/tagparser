@@ -1,3 +1,4 @@
+
 #include "./oggcontainer.h"
 
 #include "../flac/flacmetadata.h"
@@ -295,7 +296,7 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
         comment->make(buffer);
         break;
     case GeneralMediaFormat::Opus:
-        ConversionUtilities::BE::getBytes(0x4F70757354616773u, copyHelper.buffer());
+        ConversionUtilities::BE::getBytes(static_cast<uint64>(0x4F70757354616773u), copyHelper.buffer());
         buffer.write(copyHelper.buffer(), 8);
         comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
         break;
