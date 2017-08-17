@@ -244,13 +244,13 @@ void MatroskaContainer::validateIndex()
                         case MatroskaIds::Position:
                             // validate position
                             if((pos = clusterElementChild->readUInteger()) > 0 && (segmentChildElement->startOffset() - segmentElement->dataOffset() + currentOffset) != pos) {
-                                addNotification(NotificationType::Critical, "\"Position\"-element at " % numberToString(clusterElementChild->startOffset()) % " points to " % numberToString(pos) + " which is not the offset of the containing \"Cluster\"-element.", context);
+                                addNotification(NotificationType::Critical, argsToString("\"Position\"-element at ", clusterElementChild->startOffset(), " points to ", pos, " which is not the offset of the containing \"Cluster\"-element."), context);
                             }
                             break;
                         case MatroskaIds::PrevSize:
                             // validate prev size
-                            if(clusterElementChild->readUInteger() != prevClusterSize) {
-                                addNotification(NotificationType::Critical, "\"PrevSize\"-element at " % numberToString(clusterElementChild->startOffset()) + " has invalid value.", context);
+                            if((pos = clusterElementChild->readUInteger()) != prevClusterSize) {
+                                addNotification(NotificationType::Critical, argsToString("\"PrevSize\"-element at ", clusterElementChild->startOffset(), " should be ", prevClusterSize, " but is ", pos, "."), context);
                             }
                             break;
                         default:
@@ -268,7 +268,7 @@ void MatroskaContainer::validateIndex()
     }
     // add a warning when no index could be found
     if(!cuesElementsFound) {
-        addNotification(NotificationType::Warning, "No \"Cues\"-elements (index) found.", context);
+        addNotification(NotificationType::Information, "No \"Cues\"-elements (index) found.", context);
     }
 }
 
