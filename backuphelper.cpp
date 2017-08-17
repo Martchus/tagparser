@@ -182,8 +182,6 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
         } // else: the backup file already exists -> find another file name
     }
 
-    // remove backup file if already exists
-    std::remove(backupPath.c_str());
     // ensure original file is closed
     if(originalStream.is_open()) {
         originalStream.close();
