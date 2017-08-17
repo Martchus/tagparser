@@ -866,6 +866,36 @@ unordered_set<string> MediaFileInfo::availableLanguages(MediaType type) const
 }
 
 /*!
+ * \brief Generates a short technical summary about the file's tracks.
+ *
+ * parseTracks() needs to be called before. Otherwise this
+ * method always returns an empty string.
+ *
+ * Example (exact format might change in the future!):
+ * "H.264-720p / HE-AAC-6ch-eng / HE-AAC-2ch-ger / SRT-eng / SRT-ger"
+ *
+ * \sa parseTracks()
+ */
+string MediaFileInfo::technicalSummary() const
+{
+    if(m_container) {
+        const size_t trackCount = m_container->trackCount();
+        vector<string> parts;
+        parts.reserve(trackCount);
+        for(size_t i = 0; i != trackCount; ++i) {
+            const string description(m_container->track(i)->description());
+            if(!description.empty()) {
+                parts.emplace_back(move(description));
+            }
+        }
+        return joinStrings(parts, " / ");
+    } else if(m_singleTrack) {
+        return m_singleTrack->description();
+    }
+    return string();
+}
+
+/*!
  * \brief Removes a possibly assigned ID3v1 tag from the current file.
  *
  * To apply the removal and other changings call the applyChanges() method.
