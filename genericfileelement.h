@@ -166,6 +166,8 @@ public:
     const ImplementationType* nextSibling() const;
     ImplementationType* firstChild();
     const ImplementationType* firstChild() const;
+    ImplementationType* lastChild();
+    const ImplementationType* lastChild() const;
     ImplementationType* subelementByPath(const std::initializer_list<IdentifierType> &path);
     ImplementationType* subelementByPath(std::list<IdentifierType> &path);
     ImplementationType* childById(const IdentifierType &id);
@@ -555,6 +557,39 @@ template <class ImplementationType>
 inline const ImplementationType *GenericFileElement<ImplementationType>::firstChild() const
 {
     return m_firstChild.get();
+}
+
+/*!
+ * \brief Returns the last child of the element.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no childs are present nullptr is returned.
+ *
+ * \remarks parse() needs to be called before.
+ */
+template <class ImplementationType>
+inline ImplementationType *GenericFileElement<ImplementationType>::lastChild()
+{
+    for(ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
+        if(!child->m_nextSibling) {
+            return child;
+        }
+    }
+    return nullptr;
+}
+
+/*!
+ * \brief Returns the last child of the element.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no childs are present nullptr is returned.
+ *
+ * \remarks parse() needs to be called before.
+ */
+template <class ImplementationType>
+inline const ImplementationType *GenericFileElement<ImplementationType>::lastChild() const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->lastChild();
 }
 
 /*!
