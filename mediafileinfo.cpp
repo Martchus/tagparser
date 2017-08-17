@@ -1374,15 +1374,14 @@ void MediaFileInfo::mergeId3v2Tags()
  *
  * Effectively merges all ID3 tags into a single ID3v2 tag.
  *
- * Does nothing if there are currently no ID3 tags assigned and the file format
- * isn't known to support ID3 tags.
- *
- * This method does nothing the tags of the current file haven't been parsed using
- * the parseTags() method.
+ * \remarks Does nothing if
+ * - there is no ID3v1 tag assigned.
+ * - the file format isn't known to support ID3 tags (unless there is an ID3 tag present).
+ * - the tags of the current file haven't been parsed using the parseTags() method.
  */
 bool MediaFileInfo::id3v1ToId3v2()
 {
-    if(!areTagsSupported() || !m_container) {
+    if(tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v1Tag()) {
         return createAppropriateTags(false, TagUsage::Never, TagUsage::Always, true, true, 3);
     } else {
         return false;
@@ -1394,15 +1393,14 @@ bool MediaFileInfo::id3v1ToId3v2()
  *
  * Effectively merges all ID3 tags into a single ID3v1 tag.
  *
- * Does nothing if there are currently no ID3 tags assigned and the file format
- * isn't known to support ID3 tags.
- *
- * This method does nothing the tags of the current file haven't been parsed using
- * the parseTags() method.
+ * \remarks Does nothing if
+ * - there is not at least one ID3v2 tag assigned.
+ * - the file format isn't known to support ID3 tags (unless there is an ID3 tag present).
+ * - the tags of the current file haven't been parsed using the parseTags() method.
  */
 bool MediaFileInfo::id3v2ToId3v1()
 {
-    if(!areTagsSupported() || !m_container) {
+    if(tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v2Tag()) {
         return createAppropriateTags(false, TagUsage::Always, TagUsage::Never, true, true, 3);
     } else {
         return false;
