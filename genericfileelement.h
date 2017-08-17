@@ -911,7 +911,7 @@ typename GenericFileElement<ImplementationType>::implementationType *GenericFile
  * \brief Returns the maximum id length supported by the class in byte.
  */
 template <class ImplementationType>
-inline constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupported()
+constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupported()
 {
     return sizeof(identifierType);
 }
@@ -920,7 +920,7 @@ inline constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthS
  * \brief Returns the maximum size length supported by the class in byte.
  */
 template <class ImplementationType>
-inline constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
+constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
 {
     return sizeof(dataSizeType);
 }
@@ -929,7 +929,7 @@ inline constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengt
  * \brief Returns the mimimum element size.
  */
 template <class ImplementationType>
-inline constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
+constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
 {
     return FileElementTraits<ImplementationType>::minimumElementSize();
 }

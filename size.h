@@ -52,7 +52,7 @@ constexpr Size::Size(uint32 width, uint32 height) :
 /*!
  * \brief Returns the width.
  */
-inline constexpr uint32 Size::width() const
+constexpr uint32 Size::width() const
 {
     return m_width;
 }
@@ -60,7 +60,7 @@ inline constexpr uint32 Size::width() const
 /*!
  * \brief Returns the height.
  */
-inline constexpr uint32 Size::height() const
+constexpr uint32 Size::height() const
 {
     return m_height;
 }
@@ -84,7 +84,7 @@ inline void Size::setHeight(uint32 value)
 /*!
  * \brief Returns an indication whether both the width and height is 0.
  */
-inline constexpr bool Size::isNull() const
+constexpr bool Size::isNull() const
 {
     return (m_width == 0) && (m_height == 0);
 }
@@ -92,7 +92,7 @@ inline constexpr bool Size::isNull() const
 /*!
  * \brief Returns whether this instance equals \a other.
  */
-inline constexpr bool Size::operator==(const Size &other) const
+constexpr bool Size::operator==(const Size &other) const
 {
     return (m_width == other.m_width) && (m_height == other.m_height);
 }

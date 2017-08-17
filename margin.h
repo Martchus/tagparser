@@ -48,7 +48,7 @@ constexpr Margin::Margin(uint32 top, uint32 left, uint32 bottom, uint32 right) :
 /*!
  * \brief Returns the top margin.
  */
-inline constexpr uint32 Margin::top() const
+constexpr uint32 Margin::top() const
 {
     return m_top;
 }
@@ -64,7 +64,7 @@ inline void Margin::setTop(uint32 top)
 /*!
  * \brief Returns the left margin.
  */
-inline constexpr uint32 Margin::left() const
+constexpr uint32 Margin::left() const
 {
     return m_left;
 }
@@ -80,7 +80,7 @@ inline void Margin::setLeft(uint32 left)
 /*!
  * \brief Returns the bottom margin.
  */
-inline constexpr uint32 Margin::bottom() const
+constexpr uint32 Margin::bottom() const
 {
     return m_bottom;
 }
@@ -96,7 +96,7 @@ inline void Margin::setBottom(uint32 bottom)
 /*!
  * \brief Returns the right margin.
  */
-inline constexpr uint32 Margin::right() const
+constexpr uint32 Margin::right() const
 {
     return m_right;
 }
@@ -112,7 +112,7 @@ inline void Margin::setRight(uint32 right)
 /*!
  * \brief Returns true if all margins are is 0; otherwise returns false;
  */
-inline constexpr bool Margin::isNull() const
+constexpr bool Margin::isNull() const
 {
     return m_top == 0 && m_left == 0 && m_bottom == 0 && m_right == 0;
 }
