@@ -111,6 +111,7 @@ set(SRC_FILES
     flac/flacmetadata.cpp
     flac/flacstream.cpp
     signature.cpp
+    size.cpp
     statusprovider.cpp
     tag.cpp
     tagtarget.cpp

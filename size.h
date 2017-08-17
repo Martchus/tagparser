@@ -23,9 +23,12 @@ public:
     constexpr uint32 height() const;
     void setWidth(uint32 value);
     void setHeight(uint32 value);
+    constexpr uint32 resolution() const;
+    const char *abbreviation() const;
 
     bool constexpr isNull() const;
     bool constexpr operator==(const Size &other) const;
+    bool constexpr operator>=(const Size &other) const;
     std::string toString() const;
 
 private:
@@ -82,6 +85,14 @@ inline void Size::setHeight(uint32 value)
 }
 
 /*!
+ * \brief Returns the resolution of the current instance (product of with and height).
+ */
+constexpr uint32 Size::resolution() const
+{
+    return m_width * m_height;
+}
+
+/*!
  * \brief Returns an indication whether both the width and height is 0.
  */
 constexpr bool Size::isNull() const
@@ -95,6 +106,15 @@ constexpr bool Size::isNull() const
 constexpr bool Size::operator==(const Size &other) const
 {
     return (m_width == other.m_width) && (m_height == other.m_height);
+}
+
+/*!
+ * \brief Returns whether this instance is greather than \a other.
+ * \remarks Both dimensions must be greather. This operator does *not* take the resolution() into account.
+ */
+constexpr bool Size::operator>=(const Size &other) const
+{
+    return (m_width >= other.m_width) && (m_height >= other.m_height);
 }
 
 /*!
