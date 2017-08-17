@@ -489,7 +489,51 @@ enum KnownValues {
 
 }
 
+enum class MatroskaElementLevel : byte {
+    TopLevel = 0x0,
+    Level1,
+    Level2,
+    Level3,
+    Level4,
+    Level5,
+    Level6,
+    Global = 0xFE,
+    Unknown = 0xFF,
+};
+
+constexpr bool operator>(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
+{
+    return static_cast<byte>(lhs) < static_cast<byte>(MatroskaElementLevel::Global)
+            && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
+            && static_cast<byte>(lhs) > static_cast<byte>(rhs);
+}
+
+constexpr bool operator>(byte lhs, MatroskaElementLevel rhs)
+{
+    return lhs < static_cast<byte>(MatroskaElementLevel::Global)
+            && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
+            && static_cast<byte>(lhs) > static_cast<byte>(rhs);
+}
+
+constexpr bool operator<(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
+{
+    return static_cast<byte>(lhs) < static_cast<byte>(MatroskaElementLevel::Global)
+            && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
+            && static_cast<byte>(lhs) < static_cast<byte>(rhs);
+}
+
+constexpr bool operator>=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
+{
+    return lhs == rhs || lhs > rhs;
+}
+
+constexpr bool operator<=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
+{
+    return lhs == rhs || lhs < rhs;
+}
+
 TAG_PARSER_EXPORT const char *matroskaIdName(uint32 matroskaId);
+TAG_PARSER_EXPORT MatroskaElementLevel matroskaIdLevel(uint32 matroskaId);
 
 }
 
