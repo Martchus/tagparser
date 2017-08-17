@@ -157,6 +157,7 @@ public:
     uint64 totalSize() const;
     uint64 endOffset() const;
     uint64 maxTotalSize() const;
+    byte level() const;
     ImplementationType* parent();
     const ImplementationType* parent() const;
     ImplementationType* nextSibling();
@@ -434,6 +435,18 @@ template <class ImplementationType>
 inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
 {
     return m_maxSize;
+}
+
+/*!
+ * \brief Returns how deep the element is nested (0 for top-level elements, 1 for children of
+ *        top-level elements, ...).
+ */
+template<class ImplementationType>
+byte GenericFileElement<ImplementationType>::level() const
+{
+    byte level = 0;
+    for(const ImplementationType *parent = m_parent; parent; ++level, parent = parent->m_parent);
+    return level;
 }
 
 /*!
