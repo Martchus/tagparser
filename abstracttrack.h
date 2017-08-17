@@ -107,6 +107,7 @@ public:
     uint32 colorSpace() const;
     const Margin &cropping() const;
     std::string label() const;
+    std::string description() const;
 
     void parseHeader();
     bool isHeaderValid() const;

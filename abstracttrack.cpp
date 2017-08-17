@@ -139,6 +139,58 @@ string AbstractTrack::label() const
 }
 
 /*!
+ * \brief Returns a short description about the track.
+ *
+ * The description contains the abbreviated format and further information depending on the media
+ * type (eg. display size in case of video, language in case of audio/text). It is intended to be joined
+ * with descriptions of other tracks to get a short technical description about the file.
+ *
+ * Examples (exact format might change in the future!):
+ * - H.264-720p
+ * - HE-AAC-6ch-eng
+ */
+string AbstractTrack::description() const
+{
+    // use abbreviated format
+    const char *format = m_format.shortAbbreviation();
+    if(!format || !*format) {
+        // fall back to media type name if no abbreviation available
+        format = mediaTypeName();
+    }
+
+    // find additional info
+    const char *additionalInfo = nullptr;
+    switch(m_mediaType) {
+    case MediaType::Video:
+        if(!displaySize().isNull()) {
+            additionalInfo = displaySize().abbreviation();
+        } else if(!pixelSize().isNull()) {
+            additionalInfo = pixelSize().abbreviation();
+        }
+        break;
+    case MediaType::Audio:
+    case MediaType::Text:
+        if(channelCount()) {
+            if(!language().empty() && language() != "und") {
+                return argsToString(format, '-', channelCount(), "ch-", language());
+            } else {
+                return argsToString(format, '-', channelCount(), 'c', 'h');
+            }
+        } else if(!language().empty() && language() != "und") {
+            additionalInfo = language().data();
+        }
+        break;
+    default:
+        ;
+    }
+
+    if(additionalInfo) {
+        return argsToString(format, '-', additionalInfo);
+    }
+    return format;
+}
+
+/*!
  * \brief Parses technical information about the track from the header.
  *
  * The information will be read from the associated stream. The stream and the
