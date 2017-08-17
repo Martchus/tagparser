@@ -209,6 +209,8 @@ private:
 
     ContainerType* m_container;
     bool m_parsed;
+protected:
+    bool m_sizeUnknown;
 };
 
 /*!
@@ -224,7 +226,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
     m_sizeLength(0),
     m_parent(nullptr),
     m_container(&container),
-    m_parsed(false)
+    m_parsed(false),
+    m_sizeUnknown(false)
 {
     m_maxSize = container.fileInfo().size();
     if(m_maxSize > startOffset) {
@@ -248,7 +251,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &p
     m_sizeLength(0),
     m_parent(&parent),
     m_container(&parent.container()),
-    m_parsed(false)
+    m_parsed(false),
+    m_sizeUnknown(false)
 {}
 
 /*!
@@ -264,7 +268,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
     m_sizeLength(0),
     m_parent(nullptr),
     m_container(&container),
-    m_parsed(false)
+    m_parsed(false),
+    m_sizeUnknown(false)
 {}
 
 /*!
