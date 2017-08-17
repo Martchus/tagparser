@@ -160,6 +160,8 @@ public:
     byte level() const;
     ImplementationType* parent();
     const ImplementationType* parent() const;
+    ImplementationType* parent(byte n);
+    const ImplementationType* parent(byte n) const;
     ImplementationType* nextSibling();
     const ImplementationType* nextSibling() const;
     ImplementationType* firstChild();
@@ -471,6 +473,32 @@ template <class ImplementationType>
 inline const ImplementationType *GenericFileElement<ImplementationType>::parent() const
 {
     return m_parent;
+}
+
+/*!
+ * \brief Returns the n-th parent of the element.
+ * \remarks
+ * - The returned element has ownership (at least indirect) over the current instance.
+ * - Returns nullptr if level() < \a n.
+ */
+template <class ImplementationType>
+ImplementationType *GenericFileElement<ImplementationType>::parent(byte n)
+{
+    ImplementationType *parent = static_cast<ImplementationType *>(this);
+    for(; n && parent; --n, parent = parent->m_parent);
+    return parent;
+}
+
+/*!
+ * \brief Returns the n-th parent of the element.
+ * \remarks
+ * - The returned element has ownership (at least indirect) over the current instance.
+ * - Returns nullptr if level() < \a n.
+ */
+template <class ImplementationType>
+inline const ImplementationType *GenericFileElement<ImplementationType>::parent(byte n) const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->parent(n);
 }
 
 /*!
