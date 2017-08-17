@@ -4,8 +4,9 @@
 #include "../mediafileinfo.h"
 #include "../tagvalue.h"
 
-#include <c++utilities/tests/testutils.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/tests/testutils.h>
+using namespace TestUtilities;
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/TestFixture.h>

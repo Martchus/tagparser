@@ -2,8 +2,11 @@
 #define TAGPARSER_TEST_HELPER
 
 #include "../tagvalue.h"
+#include "../notification.h"
 
 #include <ostream>
+
+namespace TestUtilities {
 
 std::ostream &operator <<(std::ostream &os, const Media::TagTextEncoding &encoding);
 
@@ -23,5 +26,6 @@ inline std::ostream &operator <<(std::ostream &os, const Media::PositionInSet &p
     return os << pos.toString();
 }
 
+}
 
 #endif // TAGPARSER_TEST_HELPER

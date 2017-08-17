@@ -1,5 +1,7 @@
 #include "./helper.h"
 
+namespace TestUtilities {
+
 /*!
  * \brief Prints a TagTextEncoding to enable CPPUNIT_ASSERT_EQUAL for tag values.
  */
@@ -19,4 +21,6 @@ std::ostream &operator <<(std::ostream &os, const Media::TagTextEncoding &encodi
         return os << "UTF-16 BE";
     }
     return os;
+}
+
 }
