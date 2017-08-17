@@ -52,6 +52,7 @@ public:
     const ChronoUtilities::DateTime &creationTime() const;
     static constexpr inline NotificationType worstNotificationType();
     static void sortByTime(NotificationList &notifications);
+    bool operator==(const Notification &other) const;
 
 private:
     NotificationType m_type;
@@ -98,6 +99,15 @@ inline const ChronoUtilities::DateTime &Notification::creationTime() const
 constexpr NotificationType Notification::worstNotificationType()
 {
     return NotificationType::Critical;
+}
+
+/*!
+ * \brief Returns whether the current instance equals \a other.
+ * \remarks The creation time is *not* taken into account.
+ */
+inline bool Notification::operator==(const Notification &other) const
+{
+    return m_type == other.m_type && m_msg == other.m_msg && m_context == other.m_context;
 }
 
 }
