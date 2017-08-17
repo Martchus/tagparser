@@ -294,7 +294,7 @@ inline ParsingStatus MediaFileInfo::tracksParsingStatus() const
  */
 inline size_t MediaFileInfo::trackCount() const
 {
-    return m_singleTrack ? 1 : 0 + m_container->trackCount();
+    return m_singleTrack ? 1 : (m_container ? m_container->trackCount() : 0);
 }
 
 /*!
