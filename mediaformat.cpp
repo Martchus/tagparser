@@ -60,13 +60,13 @@ const char *MediaFormat::name() const
         }
     case GeneralMediaFormat::Bitmap: return "Windows Bitmap";
     case GeneralMediaFormat::Dirac: return "Dirac";
-    case GeneralMediaFormat::Dts: return "DTS";
+    case GeneralMediaFormat::Dts:
         switch(sub) {
         case DtsLossless: return "DTS Lossless";
         case DtsExpress: return "DTS Express";
         default: return "DTS";
         }
-    case GeneralMediaFormat::DtsHd: return "DTS-HD";
+    case GeneralMediaFormat::DtsHd:
         switch(sub) {
         case DtsHdHighResolution: return "DTS-HD High Resolution";
         case DtsHdMasterAudio: return "DTS-HD Master Audio";
@@ -280,13 +280,13 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::Avc: return "H.264";
     case GeneralMediaFormat::Bitmap: return "BMP";
     case GeneralMediaFormat::Dirac: return "Dirac";
-    case GeneralMediaFormat::Dts: return "DTS";
+    case GeneralMediaFormat::Dts:
         switch(sub) {
         case DtsLossless: return "DTS Lossless";
         case DtsExpress: return "DTS LBR";
         default: return "DTS";
         }
-    case GeneralMediaFormat::DtsHd: return "DTS-HD";
+    case GeneralMediaFormat::DtsHd:
         switch(sub) {
         case DtsHdHighResolution: return "DTS-HD High Resolution";
         case DtsHdMasterAudio: return "DTS-HD Master Audio";
