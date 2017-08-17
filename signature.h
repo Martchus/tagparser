@@ -58,7 +58,8 @@ enum class ContainerFormat
     Webm, /**< WebM (subset of Matroska) */
     WindowsBitmap, /**< Microsoft Windows Bitmap */
     WindowsIcon, /**< Microsoft Windows Icon */
-    Zip /**< ZIP archive */
+    Zip, /**< ZIP archive */
+    Xz /**< xz compressed file */
 };
 
 TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);

@@ -34,7 +34,8 @@ enum Sig48 : uint64
 {
     Gif87a = 0x474946383761ul,
     Gif89a = 0x474946383961ul,
-    SevenZ = 0x377ABCAF271Cul
+    SevenZ = 0x377ABCAF271Cul,
+    Xz = 0xFD377A585A00ul,
 };
 
 /*!
@@ -148,6 +149,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::Gif89a;
     case SevenZ:
         return ContainerFormat::SevenZ;
+    case Xz:
+        return ContainerFormat::Xz;
     default:
         ;
     }
@@ -306,6 +309,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::QuickTime: return "mov";
     case ContainerFormat::Zip: return "zip";
     case ContainerFormat::SevenZ: return "7z";
+    case ContainerFormat::Xz: return "xz";
     default: return "";
     }
 }
@@ -396,6 +400,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "7z archive";
     case ContainerFormat::QuickTime:
         return "Quick Time";
+    case ContainerFormat::Xz:
+        return "xz compressed file";
     case ContainerFormat::Zip:
         return "ZIP archive";
     default:
@@ -486,6 +492,8 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
         return "application/zip";
     case ContainerFormat::SevenZ:
         return "application/x-7z-compressed";
+    case ContainerFormat::Xz:
+        return "application/x-xz";
     case ContainerFormat::WindowsBitmap:
         return "image/bmp";
     case ContainerFormat::WindowsIcon:
