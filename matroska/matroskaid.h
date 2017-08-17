@@ -50,10 +50,10 @@ enum SegmentInfoIds {
     DateUTC = 0x4461,
     SegmentUID = 0x73A4,
     SegmentFileName = 0x7384,
-    PrevUId = 0x3CB923,
+    PrevUID = 0x3CB923,
     PrevFileName = 0x3C83AB,
-    NexUId = 0x3EB923,
-    NexFileName = 0x3E83BB,
+    NexUID = 0x3EB923,
+    NextFileName = 0x3E83BB,
     Title = 0x7BA9,
     SegmentFamily = 0x4444,
     ChapterTranslate = 0x6924
@@ -261,10 +261,10 @@ enum SimpleTagIds {
 enum TargetsIds {
     TargetTypeValue = 0x68ca,
     TargetType = 0x63ca,
-    TagTrackUId = 0x63c5,
-    TagEditionUId = 0x63c9,
-    TagChapterUId = 0x63c4,
-    TagAttachmentUId = 0x63c6
+    TagTrackUID = 0x63c5,
+    TagEditionUID = 0x63c9,
+    TagChapterUID = 0x63c4,
+    TagAttachmentUID = 0x63c6
 };
 
 /*!

@@ -63,10 +63,10 @@ const char *matroskaIdName(uint32 matroskaId)
     case DateUTC: return "date UTC";
     case SegmentUID: return "unique segment ID";
     case SegmentFileName: return "segment file name";
-    case PrevUId: return "previous unique id";
+    case PrevUID: return "previous unique id";
     case PrevFileName: return "previous file name";
-    case NexUId: return "next unique ID";
-    case NexFileName: return "next file name";
+    case NexUID: return "next unique ID";
+    case NextFileName: return "next file name";
     case Title: return "title";
     case SegmentFamily: return "segment family";
     case ChapterTranslate: return "chapter translate";
@@ -184,10 +184,10 @@ const char *matroskaIdName(uint32 matroskaId)
         // IDs in the Targets master
     case TargetTypeValue: return "target type value";
     case TargetType: return "target type";
-    case TagTrackUId: return "tag track UID";
-    case TagEditionUId: return "tag edition UID";
-    case TagChapterUId: return "tag chapter UID";
-    case TagAttachmentUId: return "tag attachment UID";
+    case TagTrackUID: return "tag track UID";
+    case TagEditionUID: return "tag edition UID";
+    case TagChapterUID: return "tag chapter UID";
+    case TagAttachmentUID: return "tag attachment UID";
 
         // IDs in the Cues master
     case CuePoint: return "cue point";
