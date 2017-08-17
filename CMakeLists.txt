@@ -157,6 +157,7 @@ set(TEST_SRC_FILES
     tests/overallflac.cpp
     tests/tagvalue.cpp
     tests/mediafileinfo.cpp
+    tests/utils.cpp
 )
 
 set(DOC_FILES
