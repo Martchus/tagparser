@@ -61,7 +61,7 @@ void BasicFileInfo::reopen(bool readOnly)
     invalidated();
     m_file.open(m_path, (m_readOnly = readOnly) ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
     m_file.seekg(0, ios_base::end);
-    m_size = m_file.tellg();
+    m_size = static_cast<uint64>(m_file.tellg());
     m_file.seekg(0, ios_base::beg);
 }
 

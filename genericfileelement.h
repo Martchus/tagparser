@@ -230,8 +230,7 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
     m_container(&container),
     m_parsed(false)
 {
-    stream().seekg(0, std::ios_base::end);
-    m_maxSize = static_cast<uint64>(stream().tellg());
+    m_maxSize = container.fileInfo().size();
     if(m_maxSize > startOffset) {
         m_maxSize -= startOffset;
         stream().seekg(startOffset, std::ios_base::beg);
