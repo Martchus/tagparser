@@ -178,16 +178,16 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
                 addNotification(NotificationType::Warning, "Targets element contains multiple TargetType elements. Surplus elements will be ignored.", context);
             }
             break;
-        case MatroskaIds::TagTrackUId:
+        case MatroskaIds::TagTrackUID:
             m_target.tracks().emplace_back(child->readUInteger());
             break;
-        case MatroskaIds::TagEditionUId:
+        case MatroskaIds::TagEditionUID:
             m_target.editions().emplace_back(child->readUInteger());
             break;
-        case MatroskaIds::TagChapterUId:
+        case MatroskaIds::TagChapterUID:
             m_target.chapters().emplace_back(child->readUInteger());
             break;
-        case MatroskaIds::TagAttachmentUId:
+        case MatroskaIds::TagAttachmentUID:
             m_target.attachments().emplace_back(child->readUInteger());
             break;
         default:
@@ -285,7 +285,7 @@ void MatroskaTagMaker::make(ostream &stream) const
     }
     // write UIDs
     typedef pair<uint16, vector<uint64> > p;
-    for(const auto &pair : initializer_list<p>{p(MatroskaIds::TagTrackUId, t.tracks()), p(MatroskaIds::TagEditionUId, t.editions()), p(MatroskaIds::TagChapterUId, t.chapters()), p(MatroskaIds::TagAttachmentUId, t.attachments())}) {
+    for(const auto &pair : initializer_list<p>{p(MatroskaIds::TagTrackUID, t.tracks()), p(MatroskaIds::TagEditionUID, t.editions()), p(MatroskaIds::TagChapterUID, t.chapters()), p(MatroskaIds::TagAttachmentUID, t.attachments())}) {
         if(!pair.second.empty()) {
             BE::getBytes(pair.first, buff);
             for(auto uid : pair.second) {
