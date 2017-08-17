@@ -3,6 +3,7 @@
 #include "./matroskacontainer.h"
 #include "./matroskaid.h"
 
+#include "../mediafileinfo.h"
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/types.h>

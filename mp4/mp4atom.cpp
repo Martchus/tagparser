@@ -4,6 +4,7 @@
 #include "./mp4ids.h"
 #include "./mp4container.h"
 
+#include "../mediafileinfo.h"
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
