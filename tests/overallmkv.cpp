@@ -152,8 +152,7 @@ void OverallTests::checkMkvTestfile3()
 
 /*!
  * \brief Checks "matroska_wave1/test4.mkv".
- * \remarks This file is using the EBML feature that allows Master elements to have no known size. Handling
- *          such files is not supported yet.
+ * \remarks This file is using the EBML feature that allows Master elements to have no known size.
  */
 void OverallTests::checkMkvTestfile4()
 {
