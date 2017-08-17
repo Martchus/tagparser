@@ -123,6 +123,9 @@ const char *AbstractTrack::extensionChannelConfigString() const
 
 /*!
  * \brief Returns a label for the track.
+ *
+ * The label contains the ID, type, name and language of the track. It is intended to be used in a menu for
+ * selecting a track from the file.
  */
 string AbstractTrack::label() const
 {

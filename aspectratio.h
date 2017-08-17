@@ -30,6 +30,7 @@ constexpr AspectRatio::AspectRatio() :
 
 /*!
  * \brief Constructs a aspect ratio with the specified \a numerator and \a denominator.
+ * \remarks Allows defining a custom aspect ratio, hence counts as "extended" (see isExtended()).
  */
 constexpr AspectRatio::AspectRatio(uint16 numerator, uint16 denominator) :
     type(0xFF),

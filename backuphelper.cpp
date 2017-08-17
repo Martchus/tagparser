@@ -60,6 +60,7 @@ string &backupDirectory()
  * file will be restored by copying.
  *
  * \throws Throws std::ios_base::failure on failure.
+ * \todo Implement callback for progress updates (copy).
  */
 void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {
@@ -104,7 +105,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
  * \param backupStream Specifies a std::fstream for creating the backup file.
  *
  * This helper function is used by MediaFileInfo and container implementations to create a backup file
- * when applying changes. The path of the created backup file is set to \a backup path.
+ * when applying changes. The specified \a backupPath is set to the path of the created backup file.
  * The specified \a backupStream will be closed if currently open. Then it is
  * used to open the backup file using the flags ios_base::in and ios_base::binary.
  *
@@ -117,6 +118,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
  * the created backup file can be restored using restoreOriginalFileFromBackupFile().
  *
  * \throws Throws std::ios_base::failure on failure.
+ * \todo Implement callback for progress updates (copy).
  */
 void createBackupFile(const std::string &originalPath, std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {

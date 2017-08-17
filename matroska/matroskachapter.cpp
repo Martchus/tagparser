@@ -31,13 +31,11 @@ MatroskaChapter::~MatroskaChapter()
 {}
 
 /*!
- * \fn MatroskaChapter::parse()
  * \brief Parses the "ChapterAtom"-element which has been specified when constructing the object.
  * \remarks
  * - Fetches nested chapters but does not parse them.
  * - Clears all previous parsing results.
  */
-
 void MatroskaChapter::internalParse()
 {
     // clear previous values and status
