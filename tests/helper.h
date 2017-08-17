@@ -19,11 +19,19 @@ inline std::ostream &operator <<(std::ostream &os, const Media::TagValue &tagVal
 }
 
 /*!
- * \brief Prints a PositionInSet to enable CPPUNIT_ASSERT_EQUAL for tag values.
+ * \brief Prints a PositionInSet to enable using it in CPPUNIT_ASSERT_EQUAL.
  */
 inline std::ostream &operator <<(std::ostream &os, const Media::PositionInSet &pos)
 {
     return os << pos.toString();
+}
+
+/*!
+ * \brief Prints a Notification to enable using it in CPPUNIT_ASSERT_EQUAL.
+ */
+inline std::ostream &operator <<(std::ostream &os, const Media::Notification &n)
+{
+    return os << n.typeName() << ':' << ' ' << n.message() << ' ' << '(' << n.context() << ')';
 }
 
 }

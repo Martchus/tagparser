@@ -33,8 +33,9 @@ void OverallTests::checkOggTestfile1()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "ffmpeg2theora 0.13");
+        CPPUNIT_ASSERT(m_fileInfo.hasAnyTag());
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("ffmpeg2theora 0.13"s, tags.front()->value(KnownField::Encoder).toString());
         // Theora tags are currently not supported and hence only the Vorbis comment is
         // taken into account here
         break;
@@ -70,8 +71,9 @@ void OverallTests::checkOggTestfile2()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "opusenc from opus-tools 0.1.6");
+        CPPUNIT_ASSERT(m_fileInfo.hasAnyTag());
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("opusenc from opus-tools 0.1.6"s, tags.front()->value(KnownField::Encoder).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkOggTestMetaData();
