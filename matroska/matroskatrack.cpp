@@ -533,6 +533,11 @@ void MatroskaTrack::internalParseHeader()
     if(!m_displaySize.height()) {
         m_displaySize.setHeight(m_pixelSize.height());
     }
+
+    // set English if no language has been specified (it is default value of MatroskaIds::TrackLanguage)
+    if(m_language.empty()) {
+        m_language = "eng";
+    }
 }
 
 /*!
