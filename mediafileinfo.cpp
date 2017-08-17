@@ -810,7 +810,7 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
         if(m_singleTrack && m_singleTrack->mediaType() == type) {
             return true;
         } else if(m_container) {
-            for(size_t i = 0, count = m_container->trackCount(); i < count; ++i) {
+            for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
                 if(m_container->track(i)->mediaType() == type) {
                     return true;
                 }
@@ -831,15 +831,36 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
  */
 ChronoUtilities::TimeSpan MediaFileInfo::duration() const
 {
-    TimeSpan res;
     if(m_container) {
-        res = m_container->duration();
-    } else {
-        for(const AbstractTrack *track : tracks()) {
-            if(track->duration() > res) {
-                res = track->duration();
+        return m_container->duration();
+    } else if(m_singleTrack) {
+        return m_singleTrack->duration();
+    }
+    return TimeSpan();
+}
+
+/*!
+ * \brief Determines the available languages for specified media type (by default MediaType::Audio).
+ *
+ * If \a type is MediaType::Unknown, all media types are considered.
+ *
+ * parseTracks() needs to be called before. Otherwise this
+ * method always returns an empty set.
+ *
+ * \sa parseTracks()
+ */
+unordered_set<string> MediaFileInfo::availableLanguages(MediaType type) const
+{
+    unordered_set<string> res;
+    if(m_container) {
+        for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
+            const AbstractTrack *track = m_container->track(i);
+            if((type == MediaType::Unknown || track->mediaType() == type) && !track->language().empty() && track->language() != "und") {
+                res.emplace(track->language());
             }
         }
+    } else if(m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type) && !m_singleTrack->language().empty() && m_singleTrack->language() != "und") {
+        res.emplace(m_singleTrack->language());
     }
     return res;
 }

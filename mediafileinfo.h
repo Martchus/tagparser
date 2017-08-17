@@ -7,6 +7,7 @@
 #include "./abstractcontainer.h"
 
 #include <vector>
+#include <unordered_set>
 #include <memory>
 
 namespace Media {
@@ -95,6 +96,7 @@ public:
     std::vector<AbstractTrack *> tracks() const;
     bool hasTracksOfType(Media::MediaType type) const;
     ChronoUtilities::TimeSpan duration() const;
+    std::unordered_set<std::string> availableLanguages(Media::MediaType type = Media::MediaType::Audio) const;
     bool areTracksSupported() const;
     // ... the tags
     ParsingStatus tagsParsingStatus() const;
