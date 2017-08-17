@@ -21,7 +21,7 @@ AspectRatio::AspectRatio(byte aspectRatioType)
         AspectRatio(64, 33), AspectRatio(160, 99), AspectRatio(4, 3), AspectRatio(3, 2),
         AspectRatio(2, 1)
     };
-    if(aspectRatioType < sizeof(predefinedPars)) {
+    if(aspectRatioType < (sizeof(predefinedPars) / sizeof(AspectRatio))) {
         *this = predefinedPars[aspectRatioType];
     } else {
         numerator = denominator = 0;
