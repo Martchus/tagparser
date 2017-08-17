@@ -77,6 +77,7 @@ void EbmlElement::internalParse()
             throw TruncatedDataException();
         }
         stream().seekg(startOffset());
+
         // read ID
         char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
         byte beg = static_cast<byte>(stream().peek()), mask = 0x80;
@@ -100,10 +101,50 @@ void EbmlElement::internalParse()
         reader().read(buf + (maximumIdLengthSupported() - m_idLength), m_idLength);
         m_id = BE::toUInt32(buf);
 
+        // check whether this element is actually a sibling of one of its parents rather then a child
+        // (might be the case if the parent's size is unknown and hence assumed to be the max file size)
+        if(m_parent && m_parent->m_sizeUnknown) {
+            // check at which level in the hierarchy the element is supposed to occour using its ID
+            // (the only chance to find out whether the element belongs higher up in the hierarchy)
+            const MatroskaElementLevel supposedLevel = matroskaIdLevel(m_id);
+            const byte actualLevel = level();
+            if(actualLevel > supposedLevel) {
+                // the file belongs higher up in the hierarchy so find a better parent
+                if(EbmlElement *betterParent = m_parent->parent(actualLevel - static_cast<byte>(supposedLevel))) {
+                    // recompute the parent size (assumption - which was rest of the available space - was wrong)
+                    m_parent->m_dataSize = m_startOffset - m_parent->m_startOffset - m_parent->headerSize();
+                    m_parent->m_sizeUnknown = false;
+                    // detatch from ...
+                    if(m_parent->firstChild() == this) {
+                        // ... parent
+                        m_parent->m_firstChild.release();
+                        m_parent->m_firstChild = move(m_nextSibling);
+                    } else {
+                        // ... previous sibling
+                        for(EbmlElement *sibling = m_parent->firstChild(); sibling; sibling = sibling->nextSibling()) {
+                            if(sibling->nextSibling() == this) {
+                                sibling->m_nextSibling.release();
+                                sibling->m_nextSibling = move(m_nextSibling);
+                                break;
+                            }
+                        }
+                    }
+                    // insert as child of better parent
+                    if(EbmlElement *previousSibling = betterParent->lastChild()) {
+                        previousSibling->m_nextSibling.reset(this);
+                    } else {
+                        betterParent->m_firstChild.reset(this);
+                    }
+                    // update own reference to parent
+                    m_parent = betterParent;
+                }
+            }
+        }
+
         // read size
         beg = static_cast<byte>(stream().peek()), mask = 0x80;
         m_sizeLength = 1;
-        if(beg == 0xFF) {
+        if((m_sizeUnknown = (beg == 0xFF))) {
             // this indicates that the element size is unknown
             // -> just assume the element takes the maximum available size
             m_dataSize = maxTotalSize() - headerSize();
