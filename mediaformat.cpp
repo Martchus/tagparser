@@ -417,6 +417,158 @@ const char *MediaFormat::abbreviation() const
 }
 
 /*!
+ * \brief Returns a short abbreviation of the media format as C-style string.
+ *
+ * Returns an empty string if no abbreviation is available.
+ */
+const char *MediaFormat::shortAbbreviation() const
+{
+    switch(general) {
+    case GeneralMediaFormat::Aac:
+        switch(sub) {
+        case AacMpeg2MainProfile:
+        case AacMpeg4MainProfile: return "AAC-Main";
+        case AacMpeg2LowComplexityProfile:
+        case AacMpeg4LowComplexityProfile:
+        case AacMpeg4ERLowComplecityProfile:
+            switch(extension) {
+            using namespace ExtensionFormats;
+            case SpectralBandReplication:
+            case ParametricStereo:
+            case (SpectralBandReplication | ParametricStereo):
+                return "HE-AAC";
+            default:
+                return "AAC-LC";
+            }
+        case AacMpeg4ERScalableSampingRateProfile: return "AAC-LC";
+        case AacMpeg2ScalableSamplingRateProfile:
+        case AacMpeg4ScalableSamplingRateProfile: return "AAC-SSR";
+        case AacMpeg4LongTermPrediction:
+        case AacMpeg4ERLongTermPrediction: return "AAC-LTP";
+        case AacMpeg4ERLowDelay: return "AAC-LD";
+        case AacMpeg4EREnhancedLowDelay: return "AAC-ELD";
+        default: return "AAC";
+        }
+    case GeneralMediaFormat::Ac3: return "AC3";
+    case GeneralMediaFormat::Ac4: return "AC4";
+    case GeneralMediaFormat::AdpcmAcm: return "ADPCM-ACM";
+    case GeneralMediaFormat::AfxStream: return "AFX";
+    case GeneralMediaFormat::Alac: return "ALAC";
+    case GeneralMediaFormat::Als: return "ALS";
+    case GeneralMediaFormat::Amr: return "AMR";
+    case GeneralMediaFormat::Avc: return "H.264";
+    case GeneralMediaFormat::Bitmap: return "BMP";
+    case GeneralMediaFormat::Dirac: return "Dirac";
+    case GeneralMediaFormat::Dts:
+        switch(sub) {
+        case DtsLossless: return "DTS-Lossless";
+        case DtsExpress: return "DTS-LBR";
+        default: return "DTS";
+        }
+    case GeneralMediaFormat::DtsHd: return "DTS-HD";
+    case GeneralMediaFormat::EAc3: return "E-AC-3";
+    case GeneralMediaFormat::Evrc: return "EVRC";
+    case GeneralMediaFormat::Flac: return "FLAC";
+    case GeneralMediaFormat::FontDataStream: return "FDS";
+    case GeneralMediaFormat::Gif: return "GIF";
+    case GeneralMediaFormat::Gpp2Cmf: return "3GPP2-CMF";
+    case GeneralMediaFormat::Hevc: return "H.265";
+    case GeneralMediaFormat::ImaadpcmAcm: return "IMAADPCM-ACM";
+    case GeneralMediaFormat::ImageSubtitle: return "BMP";
+    case GeneralMediaFormat::Jpeg: return "JPEG";
+    case GeneralMediaFormat::OggKate: return "OggKate";
+    case GeneralMediaFormat::Opus: return "Opus";
+    case GeneralMediaFormat::MicrosoftAudioCodecManager: return "MS-ACM";
+    case GeneralMediaFormat::MicrosoftMpeg4: return "MS-MPEG-4";
+    case GeneralMediaFormat::MicrosoftVideoCodecManager: return "MS-VCM";
+    case GeneralMediaFormat::DolbyMlp: return "TrueHD";
+    case GeneralMediaFormat::Mpeg1Audio:
+        switch(sub) {
+        case Mpeg1Layer1: return "MP1";
+        case Mpeg1Layer2: return "MP2";
+        default:
+            // since MP3 is backward compatible, it is ok to use it also as fallback
+            return "MP3";
+        }
+    case GeneralMediaFormat::Mpeg1Video: return "MP1";
+    case GeneralMediaFormat::Mpeg2Audio:
+        switch(sub) {
+        case Mpeg1Layer1: return "MP1";
+        case Mpeg1Layer2: return "MP2";
+        default:
+            // since MP3 is backward compatible, it is ok to use it also as fallback
+            return "MP3";
+        }
+    case GeneralMediaFormat::Mpeg2Video:
+        switch(sub) {
+        case Mpeg2SimpleProfile: return "MPEG-2-SP";
+        case Mpeg2MainProfile: return "MPEG-2-Main";
+        case Mpeg2SnrProfile: return "MPEG-2-SNR";
+        case Mpeg2SpatialProfile: return "MPEG-2-Spatial";
+        case Mpeg2HighProfile: return "MPEG-2-High";
+        case Mpeg2422Profile: return "MPEG-2-422";
+        default: return "MPEG-2";
+        }
+    case GeneralMediaFormat::Mpeg4Video:
+        switch(sub) {
+        case Mpeg4SimpleProfile1:
+        case Mpeg4SimpleProfile2:
+        case Mpeg4SimpleProfile3:
+        case Mpeg4SimpleProfile0:
+            return "MPEG-4-SP";
+        case Mpeg4AdvancedSimpleProfile0:
+        case Mpeg4AdvancedSimpleProfile1:
+        case Mpeg4AdvancedSimpleProfile2:
+        case Mpeg4AdvancedSimpleProfile3:
+        case Mpeg4AdvancedSimpleProfile4:
+        case Mpeg4AdvancedSimpleProfile5:
+        case Mpeg4AdvancedSimpleProfile3b:
+            return "H.263";
+        case Mpeg4AvcProfile:
+            return "H.264";
+        default: return "MPEG-4-Visual";
+        }
+    case GeneralMediaFormat::Mpc: return "MPC";
+    case GeneralMediaFormat::Pcm: return "PCM";
+    case GeneralMediaFormat::Png: return "PNG";
+    case GeneralMediaFormat::ProRes: return "ProRes";
+    case GeneralMediaFormat::Qcelp: return "QCELP";
+    case GeneralMediaFormat::QuicktimeAudio: return "Qt-Audio";
+    case GeneralMediaFormat::QuicktimeVideo: return "Qt-Video";
+    case GeneralMediaFormat::RealAudio: return "Real-Audio";
+    case GeneralMediaFormat::RealVideo: return "Real-Video";
+    case GeneralMediaFormat::Sa0c: return "SAOC";
+    case GeneralMediaFormat::Smv: return "SMV";
+    case GeneralMediaFormat::Systems: return "Systems";
+    case GeneralMediaFormat::TextSubtitle:
+        switch(sub) {
+        case SubFormats::PlainUtf8Subtitle: return "UTF-8";
+        case SubFormats::SubStationAlpha: return "SSA";
+        case SubFormats::AdvancedSubStationAlpha: return "ASS";
+        case SubFormats::UniversalSubtitleFormat: return "USF";
+        case SubFormats::WebVideoTextTracksFormat: return "WebVTT";
+        default: return "";
+        }
+    case GeneralMediaFormat::Theora: return "Theora";
+    case GeneralMediaFormat::Tiff: return "TIFF";
+    case GeneralMediaFormat::TimedText: return "Timed-Text";
+    case GeneralMediaFormat::Tta: return "TTA";
+    case GeneralMediaFormat::UncompressedVideoFrames: return "RAW";
+    case GeneralMediaFormat::Vc1: return "VC-1";
+    case GeneralMediaFormat::VobBtn: return "VobBtn";
+    case GeneralMediaFormat::VobSub: return "VobSub";
+    case GeneralMediaFormat::Vorbis: return "Vorbis";
+    case GeneralMediaFormat::Vp8: return "VP8";
+    case GeneralMediaFormat::Vp9: return "VP9";
+    case GeneralMediaFormat::WavPack: return "WavPack";
+    case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
+    case GeneralMediaFormat::WindowsMediaVideo: return "WMV";
+    case GeneralMediaFormat::DvbSub: return "DVBSUB";
+    default: return "";
+    }
+}
+
+/*!
  * \brief Returns the abbreviation of the media format as C-style string.
  *
  * Returns an empty string if no abbreviation is available.

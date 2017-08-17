@@ -261,6 +261,7 @@ public:
 
     const char *name() const;
     const char *abbreviation() const;
+    const char *shortAbbreviation() const;
     const char *extensionName() const;
     operator bool() const;
     MediaFormat &operator+=(const MediaFormat &other);
