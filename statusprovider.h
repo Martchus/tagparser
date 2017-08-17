@@ -110,7 +110,7 @@ inline const NotificationList &StatusProvider::notifications() const
  */
 inline bool StatusProvider::hasNotifications() const
 {
-    return m_notifications.size();
+    return !m_notifications.empty();
 }
 
 /*!
@@ -246,7 +246,7 @@ inline void StatusProvider::invalidateStatus()
 inline void StatusProvider::invalidateNotifications()
 {
     m_notifications.clear();
-    m_worstNotificationType = NotificationType::Information;
+    m_worstNotificationType = NotificationType::None;
 }
 
 /*!
