@@ -315,5 +315,156 @@ const char *matroskaIdName(uint32 matroskaId)
     }
 }
 
+/*!
+ * \brief Returns the level at which elements with the specified \a matroskaId are supposed
+ *        to occur in a Matroska file.
+ */
+MatroskaElementLevel matroskaIdLevel(uint32 matroskaId)
+{
+    using namespace EbmlIds;
+    using namespace MatroskaIds;
+    switch(matroskaId) {
+    case Header:
+    case Segment:
+        return MatroskaElementLevel::TopLevel;
+    case SeekHead:
+    case SegmentInfo:
+    case Cluster:
+    case Tracks:
+    case Cues:
+    case Attachments:
+    case Chapters:
+    case Tags:
+        return MatroskaElementLevel::Level1;
+    case Seek:
+    case SegmentUID:
+    case SegmentFileName:
+    case PrevUID:
+    case PrevFileName:
+    case NexUID:
+    case NextFileName:
+    case SegmentFamily:
+    case ChapterTranslate:
+    case TimeCodeScale:
+    case Duration:
+    case DateUTC:
+    case Title:
+    case MuxingApp:
+    case WrittingApp:
+    case Timecode:
+    case SilentTracks:
+    case Position:
+    case PrevSize:
+    case SimpleBlock:
+    case BlockGroup:
+    case EncryptedBlock:
+    case TrackEntry:
+    case CuePoint:
+    case AttachedFile:
+    case EditionEntry:
+    case Tag:
+        return MatroskaElementLevel::Level2;
+    case SeekID:
+    case SeekPosition:
+    case ChapterTranslateEditionUID:
+    case ChapterTranslateCodec:
+    case ChapterTranslateID:
+    case SilentTrackNumber:
+    case BlockVirtual:
+    case BlockAdditions:
+    case BlockDuration:
+    case ReferencePriority:
+    case ReferenceBlock:
+    case ReferenceVirtual:
+    case CodecState:
+    case DiscardPadding:
+    case Slices:
+    case TrackNumber:
+    case TrackUID:
+    case TrackType:
+    case TrackFlagEnabled:
+    case TrackFlagDefault:
+    case TrackFlagForced:
+    case TrackFlagLacing:
+    case MinCache:
+    case MaxCache:
+    case DefaultDuration:
+    case DefaultDecodedFieldDuration:
+    case TrackTimeCodeScale:
+    case TrackOffset:
+    case MaxBlockAdditionId:
+    case TrackName:
+    case TrackLanguage:
+    case CodecID:
+    case CodecPrivate:
+    case CodecName:
+    case AttachmentLink:
+    case CodecSettings:
+    case CodecInfoUrl:
+    case CodecDownloadUrl:
+    case CodecDecodeAll:
+    case TrackOverlay:
+    case CodecDelay:
+    case SeekPreRoll:
+    case TrackTranslate:
+    case TrackVideo:
+    case TrackAudio:
+    case ContentEncodings:
+    case CueTime:
+    case CueTrackPositions:
+    case FileDescription:
+    case FileName:
+    case FileMimeType:
+    case FileData:
+    case FileUID:
+    case FileReferral:
+    case FileUsedStartTime:
+    case FileUsedEndTime:
+    case EditionUID:
+    case EditionFlagHidden:
+    case EditionFlagDefault:
+    case EditionFlagOrdered:
+    case Targets:
+        return MatroskaElementLevel::Level3;
+    case BlockMore:
+    case TimeSlice:
+    case ContentEncoding:
+    case CueTrack:
+    case CueClusterPosition:
+    case CueRelativePosition:
+    case CueDuration:
+    case CueBlockNumber:
+    case CueCodecState:
+    case CueReference:
+    case TargetTypeValue:
+    case TargetType:
+    case TagTrackUID:
+    case TagEditionUID:
+    case TagChapterUID:
+    case TagAttachmentUID:
+        return MatroskaElementLevel::Level4;
+    case BlockAddID:
+    case BlockAdditional:
+    case LaceNumber:
+    case FrameNumber:
+    case BlockAdditionID:
+    case Delay:
+    case SliceDuration:
+    case ReferenceFrame:
+    case ReferenceOffset:
+    case ReferenceTimeCode:
+    case CueRefTime:
+    case CueRefCluster:
+    case CueRefNumber:
+    case CueRefCodecState:
+        return MatroskaElementLevel::Level5;
+    case Void:
+    case Crc32:
+        return MatroskaElementLevel::Global;
+    default:
+        return MatroskaElementLevel::Unknown;
+    }
+}
+
 
 }
