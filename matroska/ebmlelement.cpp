@@ -78,7 +78,7 @@ void EbmlElement::internalParse()
         stream().seekg(startOffset());
         // read ID
         char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
-        byte beg = stream().peek(), mask = 0x80;
+        byte beg = static_cast<byte>(stream().peek()), mask = 0x80;
         m_idLength = 1;
         while(m_idLength <= GenericFileElement<implementationType>::maximumIdLengthSupported() && (beg & mask) == 0) {
             ++m_idLength;
@@ -100,7 +100,7 @@ void EbmlElement::internalParse()
         m_id = BE::toUInt32(buf);
 
         // read size
-        beg = stream().peek(), mask = 0x80;
+        beg = static_cast<byte>(stream().peek()), mask = 0x80;
         m_sizeLength = 1;
         if(beg == 0xFF) {
             // this indicates that the element size is unknown
@@ -164,7 +164,7 @@ void EbmlElement::internalParse()
         // no critical errors occured
         // -> add a warning if bytes have been skipped
         if(skipped) {
-            addNotification(NotificationType::Warning, numberToString<unsigned int>(skipped) + " bytes have been skipped", parsingContext());
+            addNotification(NotificationType::Warning, argsToString(skipped, " bytes have been skipped"), parsingContext());
         }
         // -> don't need another try, return here
         return;
