@@ -767,17 +767,26 @@ template <class ImplementationType>
 void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(NotificationList &gatheredNotifications, uint64 *paddingSize)
 {
     try {
+        // validate element itself by just parsing it
         parse();
         gatheredNotifications.insert(gatheredNotifications.end(), notifications().begin(), notifications().end());
-        if(firstChild()) { // element is parent
-            firstChild()->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
+        // validate children
+        if(firstChild()) {
+            try {
+                firstChild()->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
+            } catch(const Failure &) {
+                // - ignore critical errors in child structure to continue validating siblings
+                // - critical notifications about the errors should have already been added to
+                //   gatheredNotifications
+            }
         } else if(paddingSize && isPadding()) { // element is padding
             *paddingSize += totalSize();
         }
+        // validate siblings
         if(nextSibling()) {
             nextSibling()->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
         }
-    } catch(Failure &) {
+    } catch(const Failure &) {
         gatheredNotifications.insert(gatheredNotifications.end(), notifications().begin(), notifications().end());
         throw;
     }

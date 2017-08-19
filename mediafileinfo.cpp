@@ -643,7 +643,7 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
  */
 void MediaFileInfo::applyChanges()
 {   
-    const string context("making file");
+    static const string context("making file");
     addNotification(NotificationType::Information, "Changes are about to be applied.", context);
     bool previousParsingSuccessful = true;
     switch(tagsParsingStatus()) {
@@ -678,9 +678,8 @@ void MediaFileInfo::applyChanges()
         m_tagsParsingStatus = ParsingStatus::NotParsedYet;
         try {
             m_container->makeFile();
-            addNotifications(*m_container);
         } catch(...) {
-            addNotifications(*m_container);
+            // since the file might be messed up, invalidate the parsing results
             clearParsingResults();
             throw;
         }
@@ -689,6 +688,7 @@ void MediaFileInfo::applyChanges()
         try {
             makeMp3File();
         } catch(...) {
+            // since the file might be messed up, invalidate the parsing results
             clearParsingResults();
             throw;
         }
@@ -1182,7 +1182,7 @@ vector<AbstractChapter *> MediaFileInfo::chapters() const
 {
     vector<AbstractChapter *> res;
     if(m_container) {
-        size_t count = m_container->chapterCount();
+        const size_t count = m_container->chapterCount();
         res.reserve(count);
         for(size_t i = 0; i != count; ++i) {
             res.push_back(m_container->chapter(i));
@@ -1200,9 +1200,9 @@ vector<AbstractAttachment *> MediaFileInfo::attachments() const
 {
     vector<AbstractAttachment *> res;
     if(m_container) {
-        size_t count = m_container->attachmentCount();
+        const size_t count = m_container->attachmentCount();
         res.reserve(count);
-        for(size_t i = 0; i < count; ++i) {
+        for(size_t i = 0; i != count; ++i) {
             res.push_back(m_container->attachment(i));
         }
     }
@@ -1284,7 +1284,27 @@ void MediaFileInfo::gatherRelatedNotifications(NotificationList &notifications) 
 {
     notifications.insert(notifications.end(), this->notifications().cbegin(), this->notifications().cend());
     if(m_container) {
-        notifications.insert(notifications.end(), m_container->notifications().cbegin(), m_container->notifications().cend());
+        // prevent duplicates which might be present when validating element structure
+        switch(m_containerFormat) {
+        case ContainerFormat::Ebml:
+        case ContainerFormat::Matroska:
+            // those files are only validated when a full parse is forced
+            if(!m_forceFullParse) {
+                break;
+            }
+            FALLTHROUGH;
+        case ContainerFormat::Mp4:
+        case ContainerFormat::QuickTime:
+            // those files are always validated
+            for(const Notification &notification : m_container->notifications()) {
+                if(find(notifications.cbegin(), notifications.cend(), notification) == notifications.cend()) {
+                    notifications.emplace_back(notification);
+                }
+            }
+            break;
+        default:
+            notifications.insert(notifications.end(), m_container->notifications().cbegin(), m_container->notifications().cend());;
+        }
     }
     for(const auto *track : tracks()) {
         notifications.insert(notifications.end(), track->notifications().cbegin(), track->notifications().cend());
