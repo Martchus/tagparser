@@ -27,6 +27,9 @@ using namespace TestUtilities::Literals;
 
 using namespace CPPUNIT_NS;
 
+/*!
+ * \brief The TestStatusProvider class helps testing the StatusProvider class.
+ */
 class TestStatusProvider : public StatusProvider
 {
 public:
@@ -37,6 +40,9 @@ TestStatusProvider::TestStatusProvider()
 {
 }
 
+/*!
+ * \brief The UtilitiesTests class tests various utility classes and functions of the tagparser library.
+ */
 class UtilitiesTests : public TestFixture {
     CPPUNIT_TEST_SUITE(UtilitiesTests);
     CPPUNIT_TEST(testSize);
