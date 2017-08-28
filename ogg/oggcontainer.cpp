@@ -186,24 +186,27 @@ void OggContainer::removeAllTags()
 void OggContainer::internalParseHeader()
 {
     static const string context("parsing OGG bitstream header");
+    bool pagesSkipped = false;
+
     // iterate through pages using OggIterator helper class
     try {
         // ensure iterator is setup properly
         for(m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const OggPage &page = m_iterator.currentPage();
-            if(m_validateChecksums) {
-                if(page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {
-                    addNotification(NotificationType::Warning, "The denoted checksum of the OGG page at " % ConversionUtilities::numberToString(m_iterator.currentSegmentOffset()) + " does not match the computed checksum.", context);
-                }
+            if(m_validateChecksums && page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {
+                addNotification(NotificationType::Warning, argsToString("The denoted checksum of the OGG page at ", m_iterator.currentSegmentOffset(), " does not match the computed checksum."), context);
             }
             OggStream *stream;
+            uint64 lastNewStreamOffset = 0;
             try {
                 stream = m_tracks[m_streamsBySerialNo.at(page.streamSerialNumber())].get();
+                stream->m_size += page.dataSize();
             } catch(const out_of_range &) {
                 // new stream serial number recognized -> add new stream
                 m_streamsBySerialNo[page.streamSerialNumber()] = m_tracks.size();
                 m_tracks.emplace_back(make_unique<OggStream>(*this, m_iterator.currentPageIndex()));
                 stream = m_tracks.back().get();
+                lastNewStreamOffset = page.startOffset();
             }
             if(stream->m_currentSequenceNumber != page.sequenceNumber()) {
                 if(stream->m_currentSequenceNumber) {
@@ -213,13 +216,39 @@ void OggContainer::internalParseHeader()
             } else {
                 ++stream->m_currentSequenceNumber;
             }
+
+            // skip pages in the middle of a big file (still more than 100 MiB to parse) if no new track has been seen since the last 20 MiB
+            if(!fileInfo().isForcingFullParse()
+                    && (fileInfo().size() - page.startOffset()) > (100 * 0x100000)
+                    && (page.startOffset() - lastNewStreamOffset) > (20 * 0x100000)) {
+                if(m_iterator.resyncAt(fileInfo().size() - (20 * 0x100000))) {
+                    const OggPage &resyncedPage = m_iterator.currentPage();
+                    // prevent warning about missing pages
+                    stream->m_currentSequenceNumber = resyncedPage.sequenceNumber() + 1;
+                    pagesSkipped = true;
+                    addNotification(NotificationType::Information,
+                                    argsToString("Pages in the middle of the file (", dataSizeToString(resyncedPage.startOffset() - page.startOffset()) ,") have been skipped to improve parsing speed. Hence track sizes can not be computed. Maybe not even all tracks could be detected. Force a full parse to prevent this."),
+                                    context);
+                } else {
+                    // abort if skipping pages didn't work
+                    addNotification(NotificationType::Critical, "Unable to re-sync after skipping OGG pages in the middle of the file. Try forcing a full parse.", context);
+                    return;
+                }
+            }
         }
     } catch(const TruncatedDataException &) {
         // thrown when page exceeds max size
         addNotification(NotificationType::Critical, "The OGG file is truncated.", context);
     } catch(const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
-        addNotification(NotificationType::Critical, "Capture pattern \"OggS\" at " % numberToString(m_iterator.currentSegmentOffset()) + " expected.", context);
+        addNotification(NotificationType::Critical, argsToString("Capture pattern \"OggS\" at ", m_iterator.currentSegmentOffset(), " expected."), context);
+    }
+
+    // invalidate stream sizes in case pages have been skipped
+    if(pagesSkipped) {
+        for(auto &stream : m_tracks) {
+            stream->m_size = 0;
+        }
     }
 }
 
@@ -279,7 +308,7 @@ void OggContainer::internalParseTracks()
                 m_duration = stream->duration();
             }
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse stream at " % numberToString(stream->startOffset()) + ".", context);
+            addNotification(NotificationType::Critical, argsToString("Unable to parse stream at ", stream->startOffset(), '.'), context);
         }
     }
 }

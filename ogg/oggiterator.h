@@ -25,6 +25,7 @@ public:
     void previousSegment();
     const std::vector<OggPage> &pages() const;
     const OggPage &currentPage() const;
+    uint64 currentPageOffset() const;
     std::vector<OggPage>::size_type currentPageIndex() const;
     void setPageIndex(std::vector<OggPage>::size_type index);
     void setSegmentIndex(std::vector<uint32>::size_type index);
@@ -40,6 +41,7 @@ public:
     size_t readAll(char *buffer, std::size_t max);
     void ignore(std::size_t count = 1);
     bool bytesRemaining(std::size_t atLeast) const;
+    bool resyncAt(uint64 offset);
 
     operator bool() const;
     OggIterator &operator++();
@@ -132,6 +134,15 @@ inline const OggPage &OggIterator::currentPage() const
 }
 
 /*!
+ * \brief Returns the start offset of the current OGG page.
+ * \remarks Calling this method when the iterator is invalid causes undefined behaviour.
+ */
+inline uint64 OggIterator::currentPageOffset() const
+{
+    return m_pages[m_page].startOffset();
+}
+
+/*!
  * \brief Returns an indication whether the iterator is valid.
  *
  * The iterator is invalid when it has just been constructed. Incrementing and decrementing
@@ -139,7 +150,7 @@ inline const OggPage &OggIterator::currentPage() const
  *
  * If the iterator is invalid, it can be reseted using the reset() method.
  *
- * Some methods might cause undefined behaviour if called on an invalid iterator.
+ * Some methods cause undefined behaviour if called on an invalid iterator.
  */
 inline OggIterator::operator bool() const
 {
@@ -156,8 +167,7 @@ inline std::vector<OggPage>::size_type OggIterator::currentPageIndex() const
 
 /*!
  * \brief Sets the current page index.
- *
- * This method should never be called with an \a index out of range (which is the defined by the number of fetched pages), since this causes undefined behaviour.
+ * \remarks This method should never be called with an \a index out of range (which is defined by the number of fetched pages), since this would cause undefined behaviour.
  */
 inline void OggIterator::setPageIndex(std::vector<OggPage>::size_type index)
 {
@@ -250,6 +260,10 @@ inline void OggIterator::removeFilter()
  * This means that for each page in the stream in the specified range (stream and range have been specified when
  * constructing the iterator) an OggPage instance has been created and pushed to pages(). This is independend from
  * the current iterator position. Fetched pages remain after resetting the iterator.
+ *
+ * \remarks This is also true if pages in the middle of the file have been omitted because it is actually just checked
+ *          whether the last page has been fetched.
+ * \todo Rename to isLastPageFetched() in next major release.
  */
 inline bool OggIterator::areAllPagesFetched() const
 {

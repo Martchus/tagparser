@@ -2,9 +2,13 @@
 
 #include "../exceptions.h"
 
+#include <c++utilities/io/binaryreader.h>
+
 #include <iostream>
+#include <limits>
 
 using namespace std;
+using namespace IoUtilities;
 
 namespace Media {
 
@@ -155,7 +159,9 @@ void OggIterator::read(char *buffer, size_t count)
  * \remarks
  *          - Might increase the current page index and/or the current segment index.
  *          - Page headers are skipped (this is the whole purpose of this method).
- *          - Does not read more than \a max bytes from the buffer.
+ *          - Does not write more than \a max bytes to the buffer.
+ * \returns Returns the number of bytes read from the OGG stream. This might be less than \a max in
+ *          case not that many bytes were available.
  * \sa read()
  * \sa currentCharacterOffset()
  * \sa seekForward()
@@ -207,6 +213,68 @@ void OggIterator::ignore(size_t count)
 }
 
 /*!
+ * \brief Fetches the next page at the specified \a offset.
+ *
+ * This allows to omit parts of a file which is useful to
+ * - find the last page faster by skipping pages in the middle (last page is required for calculating
+ *   the files duration).
+ * - recover parsing after after an error occured.
+ *
+ * Regardless of the current iterator position, this method will assume the page at \a offset comes after
+ * the last known page. Hence \a offset must be greather than OggPage::startOffset() + OggPage::totalSize() of the
+ * last known page. This is checked by the method.
+ *
+ * If the OGG capture pattern is not present at \a offset, up to 65307 bytes (max. size of an OGG page) are
+ * skipped. So in a valid stream, this method will always succeed if \a offset is less than the stream size minus
+ * 65307.
+ *
+ * If a page could be found, it is appended to pages() and the iterator position is set to the first segment of
+ * that page. If no page could be found, this method does not alter the iterator.
+ *
+ * \returns Returns an indication whether a page could be found.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws Failure when a parsing error occurs.
+ */
+bool OggIterator::resyncAt(uint64 offset)
+{
+    // check whether offset is valid
+    if(offset >= streamSize() || offset < (m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize())) {
+        return false;
+    }
+
+    // find capture pattern 'OggS'
+    stream().seekg(offset);
+    byte lettersFound = 0;
+    for(uint64 bytesAvailable = max<uint64>(streamSize() - offset, 65307ul); bytesAvailable >= 27; --bytesAvailable) {
+        switch(static_cast<char>(stream().get())) {
+        case 'O':
+            lettersFound = 1;
+            break;
+        case 'g':
+            lettersFound = lettersFound == 1 || lettersFound == 2 ? lettersFound + 1 : 0;
+            break;
+        case 'S':
+            if(lettersFound == 3) {
+                // capture pattern found
+                const auto currentOffset = stream().tellg();
+                // -> try to parse an OGG page at this position
+                try {
+                    m_pages.emplace_back(stream(), static_cast<uint64>(stream().tellg()) - 4, bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
+                    setPageIndex(m_pages.size() - 1);
+                    return true;
+                } catch (const Failure &) {
+                    stream().seekg(currentOffset);
+                }
+            }
+            FALLTHROUGH;
+        default:
+            lettersFound = 0;
+        }
+    }
+    return false;
+}
+
+/*!
  * \brief Fetches the next page.
  *
  * A new page can only be fetched if the current page is the last page in the buffer and if the
@@ -221,7 +289,8 @@ bool OggIterator::fetchNextPage()
     if(m_page == m_pages.size()) { // can only fetch the next page if the current page is the last page
         m_offset = m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize();
         if(m_offset < m_streamSize) {
-            m_pages.emplace_back(*m_stream, m_offset, static_cast<int32>(m_streamSize - m_offset));
+            const uint64 bytesAvailable = m_streamSize - m_offset;
+            m_pages.emplace_back(*m_stream, m_offset, bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
             return true;
         }
     }

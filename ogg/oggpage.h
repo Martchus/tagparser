@@ -35,6 +35,7 @@ public:
     byte segmentTableSize() const;
     const std::vector<uint32> &segmentSizes() const;
     uint32 headerSize() const;
+    uint32 dataSize() const;
     uint32 totalSize() const;
     uint64 dataOffset(byte segmentIndex = 0) const;
     static uint32 makeSegmentSizeDenotation(std::ostream &stream, uint32 size);
@@ -222,11 +223,19 @@ inline uint32 OggPage::headerSize() const
 }
 
 /*!
+ * \brief Returns the data size in byte.
+ */
+inline uint32 OggPage::dataSize() const
+{
+    return std::accumulate(m_segmentSizes.cbegin(), m_segmentSizes.cend(), 0u);
+}
+
+/*!
  * \brief Returns the total size of the page in byte.
  */
 inline uint32 OggPage::totalSize() const
 {
-    return headerSize() + std::accumulate(m_segmentSizes.cbegin(), m_segmentSizes.cend(), 0);
+    return headerSize() + dataSize();
 }
 
 /*!

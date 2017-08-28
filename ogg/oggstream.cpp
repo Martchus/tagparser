@@ -62,11 +62,8 @@ void OggStream::internalParseHeader()
     const auto pred = bind(&OggPage::matchesStreamSerialNumber, _1, firstPage.streamSerialNumber());
 
     // iterate through segments using OggIterator
-    // -> iterate through ALL segments to calculate the precise stream size (hence the out-commented part in the loop-condition)
-    for(bool hasIdentificationHeader = false, hasCommentHeader = false; iterator /* && (!hasIdentificationHeader && !hasCommentHeader) */; ++iterator) {
+    for(bool hasIdentificationHeader = false, hasCommentHeader = false; iterator && (!hasIdentificationHeader || !hasCommentHeader); ++iterator) {
         const uint32 currentSize = iterator.currentSegmentSize();
-        m_size += currentSize;
-
         if(currentSize >= 8) {
             // determine stream format
             inputStream().seekg(iterator.currentSegmentOffset());
