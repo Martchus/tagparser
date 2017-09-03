@@ -59,6 +59,7 @@ const char *MediaFormat::name() const
         default: return "Advanced Video Coding";
         }
     case GeneralMediaFormat::Bitmap: return "Windows Bitmap";
+    case GeneralMediaFormat::Daala: return "Daala";
     case GeneralMediaFormat::Dirac: return "Dirac";
     case GeneralMediaFormat::Dts:
         switch(sub) {
@@ -280,6 +281,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::Amr: return "AMR";
     case GeneralMediaFormat::Avc: return "H.264";
     case GeneralMediaFormat::Bitmap: return "BMP";
+    case GeneralMediaFormat::Daala: return "Daala";
     case GeneralMediaFormat::Dirac: return "Dirac";
     case GeneralMediaFormat::Dts:
         switch(sub) {
@@ -460,6 +462,7 @@ const char *MediaFormat::shortAbbreviation() const
     case GeneralMediaFormat::Amr: return "AMR";
     case GeneralMediaFormat::Avc: return "H.264";
     case GeneralMediaFormat::Bitmap: return "BMP";
+    case GeneralMediaFormat::Daala: return "Daala";
     case GeneralMediaFormat::Dirac: return "Dirac";
     case GeneralMediaFormat::Dts:
         switch(sub) {

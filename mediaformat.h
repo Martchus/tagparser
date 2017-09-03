@@ -96,6 +96,7 @@ enum class GeneralMediaFormat
     WindowsMediaVideo, /**< Windows Media Video */
     DvbSub, /**< DVBSUB */
     Speex, /**< Speex */
+    Daala, /**< Daala ("next-generation video codec" by Xiph) */
 };
 
 /*!
