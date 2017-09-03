@@ -71,7 +71,6 @@ void OggStream::internalParseHeader()
 
             if((sig & 0x00ffffffffffff00u) == 0x00766F7262697300u) {
                 // Vorbis header detected
-                // set Vorbis as format
                 switch(m_format.general) {
                 case GeneralMediaFormat::Unknown:
                     m_format = GeneralMediaFormat::Vorbis;
@@ -134,7 +133,6 @@ void OggStream::internalParseHeader()
 
             } else if(sig == 0x4F70757348656164u) {
                 // Opus header detected
-                // set Opus as format
                 switch(m_format.general) {
                 case GeneralMediaFormat::Unknown:
                     m_format = GeneralMediaFormat::Opus;
@@ -176,7 +174,6 @@ void OggStream::internalParseHeader()
 
             } else if(sig == 0x4F70757354616773u) {
                 // Opus comment detected
-                // set Opus as format
                 switch(m_format.general) {
                 case GeneralMediaFormat::Unknown:
                     m_format = GeneralMediaFormat::Opus;
@@ -199,7 +196,6 @@ void OggStream::internalParseHeader()
 
             } else if((sig & 0xFFFFFFFFFF000000u) == 0x7F464C4143000000u) {
                 // FLAC header detected
-                // set FLAC as format
                 switch(m_format.general) {
                 case GeneralMediaFormat::Unknown:
                     m_format = GeneralMediaFormat::Flac;
@@ -255,7 +251,6 @@ void OggStream::internalParseHeader()
 
             } else if((sig & 0x00ffffffffffff00u) == 0x007468656F726100u) {
                 // Theora header detected
-                // set Theora as format
                 switch(m_format.general) {
                 case GeneralMediaFormat::Unknown:
                     m_format = GeneralMediaFormat::Theora;
@@ -269,7 +264,22 @@ void OggStream::internalParseHeader()
                 }
                 // TODO: read more information about Theora stream
 
-            } // currently only Vorbis, Opus and Theora can be detected, TODO: detect more formats
+            } else if(sig == 0x595556344D504547u) {
+                // YUV4MPEG header detected
+                switch(m_format.general) {
+                case GeneralMediaFormat::Unknown:
+                    m_format = GeneralMediaFormat::UncompressedVideoFrames;
+                    m_mediaType = MediaType::Video;
+                    m_chromaFormat = "YUV";
+                    break;
+                case GeneralMediaFormat::UncompressedVideoFrames:
+                    break;
+                default:
+                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    continue;
+                }
+                // TODO: read more information about YUV4MPEG stream
+            }
 
         } else {
             // just ignore segments of only 8 byte or even less
@@ -279,7 +289,7 @@ void OggStream::internalParseHeader()
         // TODO: reduce code duplication
     }
 
-    if(m_duration.isNull() && m_size && m_bitrate) {
+    if(m_duration.isNull() && m_size && m_bitrate != 0.0) {
         // calculate duration from stream size and bitrate, assuming 1 % overhead
         m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 125.0) * 1.1);
     }

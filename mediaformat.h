@@ -84,7 +84,7 @@ enum class GeneralMediaFormat
     Tiff, /**< TIFF */
     TimedText, /**< Timed Text */
     Tta, /**< The True Audio lessles audio compressor */
-    UncompressedVideoFrames, /**< uncompressed RGB */
+    UncompressedVideoFrames, /**< uncompressed RGB or YCbCr */
     Vc1, /**< VC-1 */
     VobBtn, /**< VobBtn */
     VobSub, /**< VobSub */

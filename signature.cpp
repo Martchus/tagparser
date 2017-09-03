@@ -17,6 +17,7 @@ enum Sig64 : uint64
     Asf2 = 0xA6D900AA0062CE6Cul,
     Png = 0x89504E470D0A1A0Aul,
     RiffAvi = 0x415649204C495354ul,
+    YUV4Mpeg2 = 0x595556344D504547ul,
 };
 
 /*!
@@ -125,6 +126,11 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::Asf;
     case Png:
         return ContainerFormat::Png;
+    case YUV4Mpeg2:
+        if(bufferSize >= 10 && buffer[8] == 0x32 && buffer[9] == 0x20) {
+            return ContainerFormat::YUV4Mpeg2;
+        }
+        break;
     default:
         ;
     }
@@ -310,6 +316,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Zip: return "zip";
     case ContainerFormat::SevenZ: return "7z";
     case ContainerFormat::Xz: return "xz";
+    case ContainerFormat::YUV4Mpeg2: return "y4m";
     default: return "";
     }
 }
@@ -402,6 +409,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "Quick Time";
     case ContainerFormat::Xz:
         return "xz compressed file";
+    case ContainerFormat::YUV4Mpeg2:
+        return "YUV4MPEG2";
     case ContainerFormat::Zip:
         return "ZIP archive";
     default:
