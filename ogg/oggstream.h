@@ -25,6 +25,8 @@ protected:
     void internalParseHeader();
 
 private:
+    void calculateDurationViaSampleCount(uint16 preSkip = 0);
+
     std::size_t m_startPage;
     OggContainer &m_container;
     uint32 m_currentSequenceNumber;

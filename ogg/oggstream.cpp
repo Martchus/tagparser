@@ -58,9 +58,6 @@ void OggStream::internalParseHeader()
     iterator.setFilter(firstPage.streamSerialNumber());
     iterator.setPageIndex(m_startPage);
 
-    // predicate for finding pages of this stream by its stream serial number
-    const auto pred = bind(&OggPage::matchesStreamSerialNumber, _1, firstPage.streamSerialNumber());
-
     // iterate through segments using OggIterator
     for(bool hasIdentificationHeader = false, hasCommentHeader = false; iterator && (!hasIdentificationHeader || !hasCommentHeader); ++iterator) {
         const uint32 currentSize = iterator.currentSegmentSize();
@@ -98,19 +95,10 @@ void OggStream::internalParseHeader()
                         } else if(ind.maxBitrate() == ind.minBitrate()) {
                             m_bitrate = ind.maxBitrate();
                         }
-                        if(m_bitrate) {
-                            m_bitrate = static_cast<double>(m_bitrate) / 1000.0;
+                        if(m_bitrate != 0.0) {
+                            m_bitrate /= 1000.0;
                         }
-                        // determine sample count and duration if all pages have been fetched
-                        if(iterator.areAllPagesFetched()) {
-                            const auto &pages = iterator.pages();
-                            const auto firstPage = find_if(pages.cbegin(), pages.cend(), pred);
-                            const auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);
-                            if(firstPage != pages.cend() && lastPage != pages.crend()) {
-                                m_sampleCount = lastPage->absoluteGranulePosition() - firstPage->absoluteGranulePosition();
-                                m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
-                            }
-                        }
+                        calculateDurationViaSampleCount();
                         hasIdentificationHeader = true;
                     } else {
                         addNotification(NotificationType::Critical, "Vorbis identification header appears more than once. Oversupplied occurrence will be ignored.", context);
@@ -151,22 +139,7 @@ void OggStream::internalParseHeader()
                     m_version = ind.version();
                     m_channelCount = ind.channels();
                     m_samplingFrequency = ind.sampleRate();
-                    // determine sample count and duration if all pages have been fetched
-                    if(iterator.areAllPagesFetched()) {
-                        const auto &pages = iterator.pages();
-                        const auto firstPage = find_if(pages.cbegin(), pages.cend(), pred);
-                        const auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);
-                        if(firstPage != pages.cend() && lastPage != pages.crend()) {
-                            m_sampleCount = lastPage->absoluteGranulePosition() - firstPage->absoluteGranulePosition();
-                            // must apply "pre-skip" here do calculate effective sample count and duration?
-                            if(m_sampleCount > ind.preSkip()) {
-                                m_sampleCount -= ind.preSkip();
-                            } else {
-                                m_sampleCount = 0;
-                            }
-                            m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
-                        }
-                    }
+                    calculateDurationViaSampleCount(ind.preSkip());
                     hasIdentificationHeader = true;
                 } else {
                     addNotification(NotificationType::Critical, "Opus identification header appears more than once. Oversupplied occurrence will be ignored.", context);
@@ -217,15 +190,7 @@ void OggStream::internalParseHeader()
                     m_channelCount = streamInfo.channelCount();
                     m_samplingFrequency = streamInfo.samplingFrequency();
                     m_sampleCount = streamInfo.totalSampleCount();
-                    if(!m_sampleCount && iterator.areAllPagesFetched()) {
-                        const auto &pages = iterator.pages();
-                        const auto firstPage = find_if(pages.cbegin(), pages.cend(), pred);
-                        const auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);
-                        if(firstPage != pages.cend() && lastPage != pages.crend()) {
-                            m_sampleCount = lastPage->absoluteGranulePosition() - firstPage->absoluteGranulePosition();
-                        }
-                    }
-                    m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
+                    calculateDurationViaSampleCount();
                     hasIdentificationHeader = true;
                 } else {
                     addNotification(NotificationType::Critical, "FLAC-to-Ogg mapping header appears more than once. Oversupplied occurrence will be ignored.", context);
@@ -304,11 +269,40 @@ void OggStream::internalParseHeader()
         // TODO: reduce code duplication
     }
 
+    // estimate duration from size and bitrate if sample count and sample rate could not be determined
     if(m_duration.isNull() && m_size && m_bitrate != 0.0) {
         // calculate duration from stream size and bitrate, assuming 1 % overhead
         m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 125.0) * 1.1);
     }
     m_headerValid = true;
+}
+
+void OggStream::calculateDurationViaSampleCount(uint16 preSkip)
+{
+    // define predicate for finding pages of this stream by its stream serial number
+    const auto pred = bind(&OggPage::matchesStreamSerialNumber, _1, m_id);
+
+    // determine sample count
+    const auto &iterator = m_container.m_iterator;
+    if(!m_sampleCount && iterator.areAllPagesFetched()) {
+        const auto &pages = iterator.pages();
+        const auto firstPage = find_if(pages.cbegin(), pages.cend(), pred);
+        const auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);
+        if(firstPage != pages.cend() && lastPage != pages.crend()) {
+            m_sampleCount = lastPage->absoluteGranulePosition() - firstPage->absoluteGranulePosition();
+            // must apply "pre-skip" here to calculate effective sample count and duration?
+            if(m_sampleCount > preSkip) {
+                m_sampleCount -= preSkip;
+            } else {
+                m_sampleCount = 0;
+            }
+        }
+    }
+
+    // actually calculate the duration
+    if(m_sampleCount && m_samplingFrequency != 0.0) {
+        m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
+    }
 }
 
 }
