@@ -95,6 +95,7 @@ enum class GeneralMediaFormat
     WindowsMediaAudio, /**< Windows Media Audio */
     WindowsMediaVideo, /**< Windows Media Video */
     DvbSub, /**< DVBSUB */
+    Speex, /**< Speex */
 };
 
 /*!

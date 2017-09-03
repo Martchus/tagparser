@@ -277,6 +277,8 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
             switch(version) {
             case static_cast<unsigned int>(GeneralMediaFormat::Opus):
                 return "opus";
+            case static_cast<unsigned int>(GeneralMediaFormat::Speex):
+                return "spx";
             default:
                 return "ogg";
             }

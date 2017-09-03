@@ -264,6 +264,20 @@ void OggStream::internalParseHeader()
                 }
                 // TODO: read more information about Theora stream
 
+            } else if((sig & 0xFFFFFFFFFFFF0000u) == 0x5370656578200000u) {
+                // Speex header detected
+                switch(m_format.general) {
+                case GeneralMediaFormat::Unknown:
+                    m_format = GeneralMediaFormat::Speex;
+                    m_mediaType = MediaType::Audio;
+                    break;
+                case GeneralMediaFormat::Speex:
+                    break;
+                default:
+                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    continue;
+                }
+                // TODO: read more information about Speex stream
             } else if(sig == 0x595556344D504547u) {
                 // YUV4MPEG header detected
                 switch(m_format.general) {
@@ -280,6 +294,7 @@ void OggStream::internalParseHeader()
                 }
                 // TODO: read more information about YUV4MPEG stream
             }
+            // currently only Vorbis, Opus, Theora, Speex and YUV4MPEG can be detected, TODO: detect more formats
 
         } else {
             // just ignore segments of only 8 byte or even less

@@ -247,7 +247,7 @@ startParsingSignature:
             addNotifications(notifications);
             break;
         } case ContainerFormat::Ogg:
-            // Ogg is handled using OggContainer instance
+            // Ogg is handled by OggContainer instance
             m_container = make_unique<OggContainer>(*this, m_containerOffset);
             static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
             break;
@@ -713,16 +713,31 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
     MediaType mediaType = MediaType::Unknown;
     unsigned int version = 0;
     switch(m_containerFormat) {
-    case ContainerFormat::Ogg:
-        // check whether only Opus tracks are present
-        version = static_cast<unsigned int>(GeneralMediaFormat::Opus);
+    case ContainerFormat::Ogg: {
+        // check for video track or whether only Opus or Speex tracks are present
+        const auto &tracks = static_cast<OggContainer *>(m_container.get())->tracks();
+        if(tracks.empty()) {
+            break;
+        }
+        bool onlyOpus = true, onlySpeex = true;
         for(const auto &track : static_cast<OggContainer *>(m_container.get())->tracks()) {
+            if(track->mediaType() == MediaType::Video) {
+                mediaType = MediaType::Video;
+            }
             if(track->format().general != GeneralMediaFormat::Opus) {
-                version = 0;
-                break;
+                onlyOpus = false;
+            }
+            if(track->format().general != GeneralMediaFormat::Speex) {
+                onlySpeex = false;
             }
         }
-    case ContainerFormat::Matroska:
+        if(onlyOpus) {
+            version = static_cast<unsigned int>(GeneralMediaFormat::Opus);
+        } else if(onlySpeex) {
+            version = static_cast<unsigned int>(GeneralMediaFormat::Speex);
+        }
+        break;
+    } case ContainerFormat::Matroska:
     case ContainerFormat::Mp4:
         mediaType = hasTracksOfType(MediaType::Video) ? MediaType::Video : MediaType::Audio;
         break;

@@ -242,6 +242,7 @@ const char *MediaFormat::name() const
         default: return "Windows Media Video";
         }
     case GeneralMediaFormat::DvbSub: return "DVB subtitles";
+    case GeneralMediaFormat::Speex: return "Speex";
     default: return "unknown";
     }
 }
@@ -412,6 +413,7 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
     case GeneralMediaFormat::WindowsMediaVideo: return "WMV";
     case GeneralMediaFormat::DvbSub: return "DVBSUB";
+    case GeneralMediaFormat::Speex: return "Speex";
     default: return "";
     }
 }
@@ -564,6 +566,7 @@ const char *MediaFormat::shortAbbreviation() const
     case GeneralMediaFormat::WindowsMediaAudio: return "WMA";
     case GeneralMediaFormat::WindowsMediaVideo: return "WMV";
     case GeneralMediaFormat::DvbSub: return "DVBSUB";
+    case GeneralMediaFormat::Speex: return "Speex";
     default: return "";
     }
 }
