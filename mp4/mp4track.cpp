@@ -28,6 +28,44 @@ using namespace ChronoUtilities;
 
 namespace Media {
 
+/*!
+ * \brief The TrackHeaderInfo struct holds information about the present track header (tkhd atom) and
+ *        information for making a new track header based on it.
+ * \sa TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() for obtaining an instance.
+ * \remarks The struct is only used internally by the Mp4Track class.
+ */
+struct TrackHeaderInfo
+{
+    friend class Mp4Track;
+
+private:
+    TrackHeaderInfo();
+
+    /// \brief Specifies the size which is required for <i>making a new</i> track header based one the existing one.
+    uint64 requiredSize;
+    /// \brief Specifies whether there actually a track header exists and whether it can be used as basis for a new one.
+    bool canUseExisting;
+    /// \brief Specifies whether the existing track header is truncated.
+    bool truncated;
+    /// \brief Specifies the version of the existing track header.
+    byte version;
+    /// \brief Specifies whether the version of the existing track header is unknown (and assumed to be 1).
+    bool versionUnknown;
+    /// \brief Specifies the additional data offset of the existing header. Unspecified if canUseExisting is false.
+    byte additionalDataOffset;
+    /// \brief Specifies whether the buffered header data should be discarded when making a new track header.
+    bool discardBuffer;
+};
+
+inline TrackHeaderInfo::TrackHeaderInfo() :
+    requiredSize(100),
+    canUseExisting(false),
+    truncated(false),
+    version(0),
+    versionUnknown(false),
+    discardBuffer(false)
+{}
+
 /// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
 const DateTime startDate = DateTime::fromDate(1904, 1, 1);
 
@@ -356,6 +394,62 @@ void Mp4Track::addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t c
     for(size_t i = 0; i < count; ++i) {
         chunkSizeTable.push_back(accumulateSampleSizes(sampleIndex, sampleCount));
     }
+}
+
+/*!
+ * \brief Verifies the present track header (tkhd atom) and returns relevant information for making a new track header
+ *        based on it.
+ */
+TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
+{
+    TrackHeaderInfo info;
+
+    // return the default TrackHeaderInfo in case there is no track header prsent
+    if(!m_tkhdAtom) {
+        return info;
+    }
+
+    // ensure the tkhd atom is buffered but mark the buffer to be discarded again if it has not been present
+    info.discardBuffer = m_tkhdAtom->buffer() == nullptr;
+    if(info.discardBuffer) {
+        m_tkhdAtom->makeBuffer();
+    }
+
+    // check the version of the existing tkhd atom to determine where additional data starts
+    switch(info.version = static_cast<byte>(m_tkhdAtom->buffer()[m_tkhdAtom->headerSize()])) {
+    case 0:
+        info.additionalDataOffset = 32;
+        break;
+    case 1:
+        info.additionalDataOffset = 44;
+        break;
+    default:
+        info.additionalDataOffset = 44;
+        info.versionUnknown = true;
+    }
+
+    // check whether the existing tkhd atom is not truncated
+    if(info.additionalDataOffset + 48 <= m_tkhdAtom->dataSize()) {
+        info.canUseExisting = true;
+    } else {
+        info.truncated = true;
+        info.canUseExisting = info.additionalDataOffset < m_tkhdAtom->dataSize();
+        if(!info.canUseExisting && info.discardBuffer) {
+            m_tkhdAtom->discardBuffer();
+        }
+    }
+
+    // determine required size
+    info.requiredSize = m_tkhdAtom->dataSize() + 8;
+    if(info.version == 0) {
+        // add 12 byte to size if the existing version is 0 because we always write version 1 which takes 12 byte more space
+        info.requiredSize += 12;
+    }
+    if(info.requiredSize > numeric_limits<uint32>::max()) {
+        // add 8 byte to the size because it must be denoted using a 64-bit integer
+        info.requiredSize += 8;
+    }
+    return info;
 }
 
 /*!
@@ -973,8 +1067,10 @@ void Mp4Track::bufferTrackAtoms()
 uint64 Mp4Track::requiredSize() const
 {
     // add size of
-    // ... trak header and tkhd total size
-    uint64 size = 8 + 100;
+    // ... trak header
+    uint64 size = 8;
+    // ... tkhd atom (TODO: buffer TrackHeaderInfo in v7)
+    size += verifyPresentTrackHeader().requiredSize;
     // ... tref atom (if one exists)
     if(Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference)) {
         size += trefAtom->totalSize();
@@ -1050,9 +1146,31 @@ void Mp4Track::makeTrack()
  */
 void Mp4Track::makeTrackHeader()
 {
-    writer().writeUInt32BE(100); // size
-    writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
-    writer().writeByte(1); // version
+    // verify the existing track header to make the new one based on it (if possible)
+    const TrackHeaderInfo info(verifyPresentTrackHeader());
+
+    // add notifications in case the present track header could not be parsed
+    if(info.versionUnknown) {
+        addNotification(NotificationType::Critical, argsToString("The version of the present \"tkhd\"-atom (", info.version, ") is unknown. Assuming version 1."),
+                        argsToString("making \"tkhd\"-atom of track ", m_id));
+    }
+    if(info.truncated) {
+        addNotification(NotificationType::Critical, argsToString("The present \"tkhd\"-atom is truncated."),
+                        argsToString("making \"tkhd\"-atom of track ", m_id));
+    }
+
+    // make size and element ID
+    if(info.requiredSize > numeric_limits<uint32>::max()) {
+        writer().writeUInt32BE(1);
+        writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
+        writer().writeUInt64BE(info.requiredSize);
+    } else {
+        writer().writeUInt32BE(static_cast<uint32>(info.requiredSize));
+        writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
+    }
+
+    // make version and flags
+    writer().writeByte(1);
     uint32 flags = 0;
     if(m_enabled) {
         flags |= 0x000001;
@@ -1064,28 +1182,31 @@ void Mp4Track::makeTrackHeader()
         flags |= 0x000004;
     }
     writer().writeUInt24BE(flags);
+
+    // make creation and modification time
     writer().writeUInt64BE(static_cast<uint64>((m_creationTime - startDate).totalSeconds()));
     writer().writeUInt64BE(static_cast<uint64>((m_modificationTime - startDate).totalSeconds()));
-    writer().writeUInt32BE(m_id);
+
+    // make track ID and duration
+    writer().writeUInt32BE(static_cast<uint32>(m_id));
     writer().writeUInt32BE(0); // reserved
     writer().writeUInt64BE(static_cast<uint64>(m_duration.totalSeconds() * m_timeScale));
     writer().writeUInt32BE(0); // reserved
     writer().writeUInt32BE(0); // reserved
-    if(m_tkhdAtom) {
-        // use existing values
-        if(m_tkhdAtom->buffer()) {
-            m_ostream->write(m_tkhdAtom->buffer().get() + 52, 48);
-        } else {
-            char buffer[48];
-            m_istream->seekg(m_tkhdAtom->startOffset() + 52);
-            m_istream->read(buffer, sizeof(buffer));
-            m_ostream->write(buffer, sizeof(buffer));
+
+    // make further values, either from existing tkhd atom or just some defaults
+    if(info.canUseExisting) {
+        // write all bytes after the previously determined additionalDataOffset
+        m_ostream->write(m_tkhdAtom->buffer().get() + m_tkhdAtom->headerSize() + info.additionalDataOffset, m_tkhdAtom->dataSize() - info.additionalDataOffset);
+        // discard the buffer again if it wasn't present before
+        if(info.discardBuffer) {
+            m_tkhdAtom->discardBuffer();
         }
     } else {
         // write default values
         writer().writeInt16BE(0); // layer
         writer().writeInt16BE(0); // alternate group
-        writer().writeFixed8BE(1.0); // volume
+        writer().writeFixed8BE(1.0); // volume (fixed 8.8 - 2 byte)
         writer().writeUInt16BE(0); // reserved
         for(const int32 value : {0x00010000,0,0,0,0x00010000,0,0,0,0x40000000}) { // unity matrix
             writer().writeInt32BE(value);
