@@ -1305,6 +1305,7 @@ void MediaFileInfo::gatherRelatedNotifications(NotificationList &notifications) 
         case ContainerFormat::Matroska:
             // those files are only validated when a full parse is forced
             if(!m_forceFullParse) {
+                notifications.insert(notifications.end(), m_container->notifications().cbegin(), m_container->notifications().cend());
                 break;
             }
             FALLTHROUGH;
