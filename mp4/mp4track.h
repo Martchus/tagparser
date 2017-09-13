@@ -12,6 +12,7 @@ namespace Media
 class Mp4Atom;
 class Mpeg4Descriptor;
 struct AvcConfiguration;
+struct TrackHeaderInfo;
 
 class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig
 {
@@ -166,6 +167,7 @@ private:
     // private helper methods
     uint64 accumulateSampleSizes(size_t &sampleIndex, size_t count);
     void addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t count, size_t &sampleIndex, uint32 sampleCount);
+    TrackHeaderInfo verifyPresentTrackHeader() const;
 
     Mp4Atom *m_trakAtom;
     Mp4Atom *m_tkhdAtom;
