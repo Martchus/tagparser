@@ -6,6 +6,7 @@
 #include "../matroska/matroskacontainer.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/misc.h>
 
 #include <fstream>
@@ -31,7 +32,7 @@ enum TestFlag
  */
 void OverallTests::checkMkvTestfile1()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -64,6 +65,7 @@ void OverallTests::checkMkvTestfile1()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -71,9 +73,9 @@ void OverallTests::checkMkvTestfile1()
  */
 void OverallTests::checkMkvTestfile2()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1863976627:
@@ -104,6 +106,7 @@ void OverallTests::checkMkvTestfile2()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -111,9 +114,9 @@ void OverallTests::checkMkvTestfile2()
  */
 void OverallTests::checkMkvTestfile3()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 3927961528:
@@ -144,6 +147,7 @@ void OverallTests::checkMkvTestfile3()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -153,10 +157,10 @@ void OverallTests::checkMkvTestfile3()
  */
 void OverallTests::checkMkvTestfile4()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     // this file is messed up, it should contain tags but it doesn't
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1368622492:
@@ -201,6 +205,9 @@ void OverallTests::checkMkvTestfile4()
         checkMkvTestMetaData();
         break;
     }
+
+    // tolerate critical notifications here because live stream feature used by the file is not supported in v6 yet
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Critical);
 }
 
 /*!
@@ -208,9 +215,9 @@ void OverallTests::checkMkvTestfile4()
  */
 void OverallTests::checkMkvTestfile5()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 11);
+    CPPUNIT_ASSERT_EQUAL(11_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1258329745:
@@ -247,6 +254,7 @@ void OverallTests::checkMkvTestfile5()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -254,9 +262,9 @@ void OverallTests::checkMkvTestfile5()
  */
 void OverallTests::checkMkvTestfile6()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 2422994868:
@@ -288,6 +296,7 @@ void OverallTests::checkMkvTestfile6()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -295,9 +304,9 @@ void OverallTests::checkMkvTestfile6()
  */
 void OverallTests::checkMkvTestfile7()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 568001708:
@@ -319,10 +328,10 @@ void OverallTests::checkMkvTestfile7()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Big Buck Bunny - test 7");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 7"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418");
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -330,6 +339,15 @@ void OverallTests::checkMkvTestfile7()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+
+    for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
+        if(notification.type() != NotificationType::Warning) {
+            continue;
+        }
+        CPPUNIT_ASSERT(startsWith(notification.context(), "parsing header of EBML element 0xEA \"cue codec state\" at"));
+        CPPUNIT_ASSERT_EQUAL("Data of EBML element seems to be truncated; unable to parse siblings of that element."s, notification.message());
+    }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Warning);
 }
 
 /*!
@@ -337,9 +355,9 @@ void OverallTests::checkMkvTestfile7()
  */
 void OverallTests::checkMkvTestfile8()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 568001708:
@@ -361,10 +379,10 @@ void OverallTests::checkMkvTestfile8()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Big Buck Bunny - test 8");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 8"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s");
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -372,6 +390,7 @@ void OverallTests::checkMkvTestfile8()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -379,7 +398,7 @@ void OverallTests::checkMkvTestfile8()
  */
 void OverallTests::checkMkvTestfileHandbrakeChapters()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -436,6 +455,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -443,7 +463,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
  */
 void OverallTests::checkMkvTestfileNestedTags()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Matroska);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tags = m_fileInfo.tags();
     bool generalTagFound = false;
     switch(m_tagStatus) {
@@ -472,6 +492,16 @@ void OverallTests::checkMkvTestfileNestedTags()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+
+    // the file contains in fact the unknown element [44][B4]
+    // TODO: find out what this element is about (its data is only the single byte 0x01)
+    for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
+        if(notification.type() != NotificationType::Warning) {
+            continue;
+        }
+        CPPUNIT_ASSERT(startsWith(notification.message(), "\"SimpleTag\"-element contains unknown element 0x44B4 at"));
+    }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Warning);
 }
 
 /*!
@@ -738,4 +768,3 @@ void OverallTests::testMkvMakingNestedTags()
     }
 }
 #endif
-

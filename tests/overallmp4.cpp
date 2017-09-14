@@ -55,6 +55,7 @@ void OverallTests::checkMp4Testfile1()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -118,6 +119,7 @@ void OverallTests::checkMp4Testfile2()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -155,6 +157,7 @@ void OverallTests::checkMp4Testfile3()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -201,6 +204,7 @@ void OverallTests::checkMp4Testfile4()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -243,6 +247,7 @@ void OverallTests::checkMp4Testfile5()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -320,6 +325,8 @@ void OverallTests::checkMp4Testfile6()
     }
 
     CPPUNIT_ASSERT_EQUAL(0_st, m_fileInfo.tags().size());
+
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!

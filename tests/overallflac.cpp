@@ -43,6 +43,8 @@ void OverallTests::checkFlacTestfile1()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -72,6 +74,22 @@ void OverallTests::checkFlacTestfile2()
         break;
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
+    }
+
+    // check for unexpected critical notifications or warnings
+    if(m_tagStatus == TagStatus::Removed) {
+        bool gotMessageAboutMissingVorbisComment = false;
+        for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
+            if(notification.type() == NotificationType::Critical) {
+                CPPUNIT_ASSERT_EQUAL("OGG page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment."s, notification.message());
+                gotMessageAboutMissingVorbisComment = true;
+                continue;
+            }
+            CPPUNIT_ASSERT(notification.type() <= NotificationType::Information);
+        }
+        CPPUNIT_ASSERT(gotMessageAboutMissingVorbisComment);
+    } else {
+        CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
     }
 }
 

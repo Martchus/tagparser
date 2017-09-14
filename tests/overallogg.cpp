@@ -45,6 +45,8 @@ void OverallTests::checkOggTestfile1()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
@@ -81,6 +83,8 @@ void OverallTests::checkOggTestfile2()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
+
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
 }
 
 /*!
