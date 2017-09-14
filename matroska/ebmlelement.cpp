@@ -87,13 +87,13 @@ void EbmlElement::internalParse()
         }
         if(m_idLength > GenericFileElement<implementationType>::maximumIdLengthSupported()) {
             if(!skipped) {
-                addNotification(NotificationType::Critical, "EBML ID length is not supported, trying to skip.", context);
+                addNotification(NotificationType::Critical, argsToString("EBML ID length at ", startOffset(), " is not supported, trying to skip."), context);
             }
             continue; // try again
         }
         if(m_idLength > container().maxIdLength()) {
             if(!skipped) {
-                addNotification(NotificationType::Critical, "EBML ID length is invalid.", context);
+                addNotification(NotificationType::Critical, argsToString("EBML ID length at ", startOffset(), " is invalid, trying to skip."), context);
             }
             continue; // try again
         }

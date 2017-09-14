@@ -113,7 +113,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
         case EbmlIds::Void:
             break;
         default:
-            addNotification(NotificationType::Warning, "\"SimpleTag\"-element contains unknown element. It will be ignored.", context);
+            addNotification(NotificationType::Warning, argsToString("\"SimpleTag\"-element contains unknown element ", child->idToString(), " at ", child->startOffset(), ". It will be ignored."), context);
         }
         child = child->nextSibling();
     }
