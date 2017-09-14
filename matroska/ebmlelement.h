@@ -91,9 +91,9 @@ private:
 inline std::string EbmlElement::idToString() const
 {
     using namespace ConversionUtilities;
-    const char *name = matroskaIdName(id());
+    const char *const name = matroskaIdName(id());
     if(*name) {
-        return '0' % 'x' % numberToString(id(), 16) % ' ' % '\"' % name + '\"';
+        return argsToString('0', 'x', numberToString(id(), 16), ' ', '\"', name, '\"');
     } else {
         return "0x" + numberToString(id(), 16);
     }
