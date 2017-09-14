@@ -100,7 +100,7 @@ inline std::string Mp4Atom::idToString() const
  */
 inline void Mp4Atom::addHeaderSize(uint64 &dataSize)
 {
-    dataSize += dataSize  < 0xFFFFFFF7 ? 8 : 16;
+    dataSize += (dataSize < 0xFFFFFFF7 ? 8 : 16);
 }
 
 }

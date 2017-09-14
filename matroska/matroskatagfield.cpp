@@ -47,13 +47,12 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
     string context("parsing Matroska tag field");
     clear();
     simpleTagElement.parse();
-    EbmlElement *child = simpleTagElement.firstChild();
     bool tagDefaultFound = false;
-    while(child) {
+    for(EbmlElement *child = simpleTagElement.firstChild(); child; child = child = child->nextSibling()) {
         try {
             child->parse();
-        } catch (Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse childs of \"SimpleTag\"-element.", context);
+        } catch (const Failure &) {
+            addNotification(NotificationType::Critical, "Unable to parse children of \"SimpleTag\"-element.", context);
             break;
         }
         switch(child->id()) {
@@ -115,7 +114,6 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
         default:
             addNotification(NotificationType::Warning, argsToString("\"SimpleTag\"-element contains unknown element ", child->idToString(), " at ", child->startOffset(), ". It will be ignored."), context);
         }
-        child = child->nextSibling();
     }
 }
 

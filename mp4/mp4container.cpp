@@ -680,6 +680,7 @@ calculatePadding:
                                 origMediaDataOffsets.push_back(level0Atom->startOffset());
                                 newMediaDataOffsets.push_back(outputStream.tellp());
                             }
+                            FALLTHROUGH;
                         default:
                             // update status
                             updateStatus("Writing atom: " + level0Atom->idToString());

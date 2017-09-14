@@ -157,7 +157,7 @@ void Mp4Atom::seekBackAndWriteAtomSize64(std::ostream &stream, const ostream::po
  */
 void Mp4Atom::makeHeader(uint64 size, uint32 id, BinaryWriter &writer)
 {
-    if(size < 0xFFFFFFFF) {
+    if(size < numeric_limits<uint32>::max()) {
         writer.writeUInt32BE(static_cast<uint32>(size));
         writer.writeUInt32BE(id);
     } else {
