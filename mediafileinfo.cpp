@@ -631,8 +631,7 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
  * will be created to replace the old file.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
- *                error occurs.
+ * \throws Throws Media::Failure or a derived exception when a making error occurs.
  *
  * \remarks Tags and tracks need to be parsed without errors before this method can be called.
  *          All previous parsing results are cleared (using clearParsingResults()). Hence
@@ -1352,7 +1351,8 @@ NotificationList MediaFileInfo::gatherRelatedNotifications() const
  *        container format, tracks, tags, ...
  *
  * This allows a rescan of the file using parsing methods like parseContainerFormat().
- * (These methods do nothing if the information to be parsed has already been gathered.)
+ * Otherwise, these methods do nothing if the information to be parsed has already been
+ * gathered.
  *
  * \remarks Any pointers previously returned by tags(), tracks(), ... object are invalidated.
  */
