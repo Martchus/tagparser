@@ -713,7 +713,7 @@ calculatePadding:
 
                             // increase total chunk count and size
                             totalChunkCount += track->chunkCount();
-                            totalMediaDataSize += accumulate(chunkSizesTable.cbegin(), chunkSizesTable.cend(), totalMediaDataSize);
+                            totalMediaDataSize += accumulate(chunkSizesTable.cbegin(), chunkSizesTable.cend(), 0ul);
                         }
 
                         // write media data chunk-by-chunk
