@@ -435,7 +435,7 @@ void MatroskaTrack::internalParseHeader()
         switch(m_mediaType) {
         case MediaType::Video:
             if(!m_fps && defaultDuration) {
-                m_fps = 1000000000.0 / static_cast<double>(defaultDuration);
+                m_fps = 1000000000.0 / defaultDuration;
             }
             break;
         default:
