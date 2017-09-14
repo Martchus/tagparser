@@ -586,7 +586,7 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track) :
         }
     }
     m_sizeDenotationLength = EbmlElement::calculateSizeDenotationLength(m_dataSize);
-    m_requiredSize = 2 + m_sizeDenotationLength + m_dataSize;
+    m_requiredSize = 1 + m_sizeDenotationLength + m_dataSize;
 }
 
 /*!
@@ -599,10 +599,10 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track) :
 void MatroskaTrackHeaderMaker::make(ostream &stream) const
 {
     // make ID and size
-    char buffer[10];
-    BE::getBytes(static_cast<uint16>(MatroskaIds::TrackEntry), buffer);
-    EbmlElement::makeSizeDenotation(m_dataSize, buffer + 2);
-    stream.write(buffer, 2 + m_sizeDenotationLength);
+    char buffer[9];
+    *buffer = static_cast<char>(MatroskaIds::TrackEntry);
+    EbmlElement::makeSizeDenotation(m_dataSize, buffer + 1);
+    stream.write(buffer, 1 + m_sizeDenotationLength);
 
     // make recognized elements
     EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackUID, m_track.id());
