@@ -48,7 +48,7 @@ size_t StatusProvider::registerCallback(CallbackFunction callback)
 }
 
 /*!
- * \brief This protected method is meant to be called by the derived class to add a \a notification.
+ * \brief This method is meant to be called by the derived class to add a \a notification.
  */
 void StatusProvider::addNotification(const Notification &notification)
 {
@@ -58,7 +58,7 @@ void StatusProvider::addNotification(const Notification &notification)
 }
 
 /*!
- * \brief This protected method is meant to be called by the derived class to add a notification of the specified
+ * \brief This method is meant to be called by the derived class to add a notification of the specified
  *        \a type, \a message and \a context.
  */
 void StatusProvider::addNotification(NotificationType type, const string &message, const string &context)
@@ -69,7 +69,7 @@ void StatusProvider::addNotification(NotificationType type, const string &messag
 }
 
 /*!
- * \brief This protected method is meant to be called by the derived class to add all notifications \a from another
+ * \brief This method is meant to be called by the derived class to add all notifications \a from another
  *        StatusProvider instance.
  */
 void StatusProvider::addNotifications(const StatusProvider &from)
@@ -83,10 +83,10 @@ void StatusProvider::addNotifications(const StatusProvider &from)
 }
 
 /*!
- * \brief This protected method is meant to be called by the derived class to add all notifications \a from another
+ * \brief This method is meant to be called by the derived class to add all notifications \a from another
  *        StatusProvider instance.
  *
- * The specified \a higherContext is concated with the original context string.
+ * The specified \a higherContext is concatenated with the original context string.
  */
 void StatusProvider::addNotifications(const string &higherContext, const StatusProvider &from)
 {
@@ -99,7 +99,7 @@ void StatusProvider::addNotifications(const string &higherContext, const StatusP
 }
 
 /*!
- * \brief This protected method is meant to be called by the derived class to add the specified \a notifications.
+ * \brief This method is meant to be called by the derived class to add the specified \a notifications.
  */
 void StatusProvider::addNotifications(const NotificationList &notifications)
 {
