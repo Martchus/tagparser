@@ -157,7 +157,18 @@ void OverallTests::checkMp4Testfile3()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+
+    for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
+        if(notification.type() != NotificationType::Warning) {
+            continue;
+        }
+        if(m_mode & Mp4TestFlags::TagsBeforeData) {
+            CPPUNIT_FAIL("No warnings expected when putting tags before data.");
+        } else {
+            CPPUNIT_ASSERT_EQUAL("Sorry, but putting index/tags at the end is not possible when dealing with DASH files."s, notification.message());
+        }
+    }
+    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Warning);
 }
 
 /*!
