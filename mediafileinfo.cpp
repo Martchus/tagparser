@@ -1348,13 +1348,15 @@ NotificationList MediaFileInfo::gatherRelatedNotifications() const
 
 /*!
  * \brief Clears all parsing results and assigned/created/changed information such as
- *        container format, tracks, tags, ...
+ *        detected container format, tracks, tags, ...
  *
  * This allows a rescan of the file using parsing methods like parseContainerFormat().
  * Otherwise, these methods do nothing if the information to be parsed has already been
  * gathered.
  *
- * \remarks Any pointers previously returned by tags(), tracks(), ... object are invalidated.
+ * \remarks Any pointers previously returned by tags(), tracks(), ... object should be
+ *          considered invalidated. Notifications of those objects are transfered to
+ *          the media file info.
  */
 void MediaFileInfo::clearParsingResults()
 {
@@ -1366,12 +1368,36 @@ void MediaFileInfo::clearParsingResults()
     m_tagsParsingStatus = ParsingStatus::NotParsedYet;
     m_chaptersParsingStatus = ParsingStatus::NotParsedYet;
     m_attachmentsParsingStatus = ParsingStatus::NotParsedYet;
-    m_id3v1Tag.reset();
+    if(m_id3v1Tag) {
+        transferNotifications(*m_id3v1Tag);
+        m_id3v1Tag.reset();
+    }
+    for(auto &id3v2Tag : m_id3v2Tags) {
+        transferNotifications(*id3v2Tag);
+    }
     m_id3v2Tags.clear();
     m_actualId3v2TagOffsets.clear();
     m_actualExistingId3v1Tag = false;
-    m_container.reset();
-    m_singleTrack.reset();
+    if(m_container) {
+        transferNotifications(*m_container);
+        for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
+            transferNotifications(*m_container->track(i));
+        }
+        for(size_t i = 0, count = m_container->tagCount(); i != count; ++i) {
+            transferNotifications(*m_container->tag(i));
+        }
+        for(size_t i = 0, count = m_container->chapterCount(); i != count; ++i) {
+            transferNotifications(*m_container->chapter(i));
+        }
+        for(size_t i = 0, count = m_container->attachmentCount(); i != count; ++i) {
+            transferNotifications(*m_container->attachment(i));
+        }
+        m_container.reset();
+    }
+    if(m_singleTrack) {
+        transferNotifications(*m_singleTrack);
+        m_singleTrack.reset();
+    }
 }
 
 /*!

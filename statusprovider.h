@@ -8,8 +8,13 @@
 
 namespace Media {
 
+class MediaFileInfo;
+
 class TAG_PARSER_EXPORT StatusProvider
 {
+    // FIXME: make transferNotifications() public in next minor release and get rid of the friend class again
+    friend class MediaFileInfo;
+
 public:
     typedef std::function<void (StatusProvider &sender)> CallbackFunction;
     typedef std::vector<CallbackFunction> CallbackVector;
@@ -45,6 +50,7 @@ protected:
 private:
     inline void invokeCallbacks();
     inline void updateWorstNotificationType(NotificationType notificationType);
+    inline void transferNotifications(StatusProvider &from);
 
     NotificationList m_notifications;
     NotificationType m_worstNotificationType;
@@ -269,6 +275,18 @@ inline void StatusProvider::updateWorstNotificationType(NotificationType notific
     if(static_cast<int>(m_worstNotificationType) < static_cast<int>(notificationType)) {
         m_worstNotificationType = notificationType;
     }
+}
+
+/*!
+ * \brief Transfers all notifications from the specified status provider to the current instance.
+ * \remarks In constrast to the similar addNotifications() overload, this method does not copy the notifications. Instead
+ *          the notifications are transfered. It also doesn't check whether \a from is the current instance and doesn't
+ *          invoke callbacks.
+ */
+void StatusProvider::transferNotifications(StatusProvider &from)
+{
+    m_notifications.splice(m_notifications.end(), from.m_notifications);
+    m_worstNotificationType |= from.worstNotificationType();
 }
 
 }
