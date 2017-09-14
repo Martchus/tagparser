@@ -311,14 +311,13 @@ std::vector<uint32> Mp4TagField::expectedRawDataTypes() const
         res.push_back(RawDataType::Bmp);
         break;
     case Extended:
-        if(mean() == Mp4TagExtendedMeanIds::iTunes) {
-            // correct?
-            res.push_back(RawDataType::Utf8);
-            res.push_back(RawDataType::Utf16);
-            break;
-        } else {
+        if(mean() != Mp4TagExtendedMeanIds::iTunes) {
             throw Failure();
         }
+        // assumption that extended "iTunes" tags always use Unicode correct?
+        res.push_back(RawDataType::Utf8);
+        res.push_back(RawDataType::Utf16);
+        break;
     default:
         throw Failure();
     }
@@ -338,51 +337,52 @@ uint32 Mp4TagField::appropriateRawDataType() const
     if(isTypeInfoAssigned()) {
         // obtain raw data type from tag field if present
         return typeInfo();
-    } else {
-        // there is no raw data type assigned (tag field was not
-        // present in original file but rather was added manually)
-        // try to derive appropriate raw data type from atom id
-        switch(id()) {
-        case Album: case Artist: case Comment:
-        case Year: case Title: case Genre:
-        case Composer: case Encoder: case Grouping:
-        case Description: case Lyrics: case RecordLabel:
-        case Performers: case Lyricist:
-            switch(value().dataEncoding()) {
-            case TagTextEncoding::Utf8: return RawDataType::Utf8;
-            case TagTextEncoding::Utf16BigEndian: return RawDataType::Utf16;
-            default: throw Failure();
-            }
-        case TrackPosition: case DiskPosition:
-            return RawDataType::Reserved;
-        case PreDefinedGenre: case Bpm: case Rating:
-            return RawDataType::BeSignedInt;
-        case Cover: {
-            const string &mimeType = value().mimeType();
-            if(mimeType == "image/jpg" || mimeType == "image/jpeg") { // "well-known" type
-                return RawDataType::Jpeg;
-            } else if(mimeType == "image/png") {
-                return RawDataType::Png;
-            } else if(mimeType == "image/bmp") {
-                return RawDataType::Bmp;
-            } else {
-                throw Failure();
-            }
+    }
+
+    // there is no raw data type assigned (tag field was not
+    // present in original file but rather was added manually)
+    // try to derive appropriate raw data type from atom id
+    switch(id()) {
+    case Album: case Artist: case Comment:
+    case Year: case Title: case Genre:
+    case Composer: case Encoder: case Grouping:
+    case Description: case Lyrics: case RecordLabel:
+    case Performers: case Lyricist:
+        switch(value().dataEncoding()) {
+        case TagTextEncoding::Utf8: return RawDataType::Utf8;
+        case TagTextEncoding::Utf16BigEndian: return RawDataType::Utf16;
+        default: ;
         }
-        case Extended:
-            if(mean() == Mp4TagExtendedMeanIds::iTunes) {
-                switch(value().dataEncoding()) {
-                case TagTextEncoding::Utf8: return RawDataType::Utf8;
-                case TagTextEncoding::Utf16BigEndian: return RawDataType::Utf16;
-                default: throw Failure();
-                }
-            } else {
-                throw Failure();
-            }
-        default:
-            throw Failure();
+        break;
+    case TrackPosition: case DiskPosition:
+        return RawDataType::Reserved;
+    case PreDefinedGenre: case Bpm: case Rating:
+        return RawDataType::BeSignedInt;
+    case Cover: {
+        const string &mimeType = value().mimeType();
+        if(mimeType == "image/jpg" || mimeType == "image/jpeg") { // "well-known" type
+            return RawDataType::Jpeg;
+        } else if(mimeType == "image/png") {
+            return RawDataType::Png;
+        } else if(mimeType == "image/bmp") {
+            return RawDataType::Bmp;
         }
     }
+        break;
+    case Extended:
+        if(mean() != Mp4TagExtendedMeanIds::iTunes) {
+            throw Failure();
+        }
+        switch(value().dataEncoding()) {
+        case TagTextEncoding::Utf8: return RawDataType::Utf8;
+        case TagTextEncoding::Utf16BigEndian: return RawDataType::Utf16;
+        default: ;
+        }
+        break;
+    default:
+        ;
+    }
+    throw Failure();
 }
 
 /*!
