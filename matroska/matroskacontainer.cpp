@@ -989,6 +989,7 @@ void MatroskaContainer::internalMakeFile()
             throw;
         }
 
+        updateStatus("Calculating segment data ...", 0.0);
 calculateSegmentData:
         // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
         // -> current "pretent" write offset
@@ -1010,7 +1011,6 @@ calculateSegmentData:
         }
 
         // calculate sizes and other information required to make segments
-        updateStatus("Calculating segment data ...", 0.0);
         for(level0Element = firstElement(), currentPosition = newPadding = segmentIndex = 0; level0Element; level0Element = level0Element->nextSibling()) {
             switch(level0Element->id()) {
             case EbmlIds::Header:
@@ -1199,13 +1199,17 @@ nonRewriteCalculations:
                                     goto calculateSegmentSize;
                                 }
                                 // -> update offset of "Cluster"-element in "Cues"-element and get end offset of last "Cluster"-element
+                                bool cuesInvalidated = false;
                                 for(; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster)) {
                                     clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
                                     segment.clusterEndOffset = level1Element->endOffset();
                                     if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
-                                        segment.totalDataSize = offset;
-                                        goto addCuesElementSize;
+                                        cuesInvalidated = true;
                                     }
+                                }
+                                if(cuesInvalidated) {
+                                    segment.totalDataSize = offset;
+                                    goto addCuesElementSize;
                                 }
                                 segment.totalDataSize = segment.clusterEndOffset - currentOffset - 4 - segment.sizeDenotationLength;
 
@@ -1305,12 +1309,12 @@ nonRewriteCalculations:
 
                     // pretend writing "Cluster"-element
                     segment.clusterSizes.clear();
+                    bool cuesInvalidated = false;
                     for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index) {
                         // update offset of "Cluster"-element in "Cues"-element
                         clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
                         if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, currentPosition + segment.totalDataSize) && newCuesPos == ElementPosition::BeforeData) {
-                            segment.totalDataSize = offset; // reset element size to previously saved offset of "Cues"-element
-                            goto addCuesElementSize;
+                            cuesInvalidated = true;
                         } else {
                             if(index == 0 && segment.seekInfo.push(index, MatroskaIds::Cluster, currentPosition + segment.totalDataSize)) {
                                 goto calculateSegmentSize;
@@ -1320,8 +1324,7 @@ nonRewriteCalculations:
                                 for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                                     level2Element->parse();
                                     if(segment.cuesElement && segment.cuesUpdater.updateRelativeOffsets(clusterReadOffset, clusterReadSize, clusterSize) && newCuesPos == ElementPosition::BeforeData) {
-                                        segment.totalDataSize = offset;
-                                        goto addCuesElementSize;
+                                        cuesInvalidated = true;
                                     }
                                     switch(level2Element->id()) {
                                     case EbmlIds::Void:
@@ -1339,6 +1342,12 @@ nonRewriteCalculations:
                                 segment.totalDataSize += 4 + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
                             }
                         }
+                    }
+                    // check whether the total size of the "Cues"-element has been invalidated and recompute cluster if required
+                    if(cuesInvalidated) {
+                        // reset element size to previously saved offset of "Cues"-element
+                        segment.totalDataSize = offset;
+                        goto addCuesElementSize;
                     }
 
                     // pretend writing "Cues"-element
