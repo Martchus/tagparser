@@ -655,7 +655,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(StatusPr
     auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
     try {
         // read audio object type
-        auto getAudioObjectType = [&audioCfg, &bitReader] {
+        auto getAudioObjectType = [&bitReader] {
             byte objType = bitReader.readBits<byte>(5);
             if(objType == 31) {
                 objType = 32 + bitReader.readBits<byte>(6);
