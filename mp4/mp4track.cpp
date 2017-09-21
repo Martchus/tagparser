@@ -429,7 +429,7 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
     }
 
     // check whether the existing tkhd atom is not truncated
-    if(info.additionalDataOffset + 48 <= m_tkhdAtom->dataSize()) {
+    if(info.additionalDataOffset + 48u <= m_tkhdAtom->dataSize()) {
         info.canUseExisting = true;
     } else {
         info.truncated = true;
