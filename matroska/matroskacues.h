@@ -3,7 +3,7 @@
 
 #include "./ebmlelement.h"
 
-#include <map>
+#include <unordered_map>
 #include <ostream>
 
 namespace Media {
@@ -77,9 +77,9 @@ private:
     bool updateSize(EbmlElement *element, int shift);
 
     EbmlElement *m_cuesElement;
-    std::map<EbmlElement *, MatroskaOffsetStates> m_offsets;
-    std::map<EbmlElement *, MatroskaReferenceOffsetPair> m_relativeOffsets;
-    std::map<EbmlElement *, uint64> m_sizes;
+    std::unordered_map<EbmlElement *, MatroskaOffsetStates> m_offsets;
+    std::unordered_map<EbmlElement *, MatroskaReferenceOffsetPair> m_relativeOffsets;
+    std::unordered_map<EbmlElement *, uint64> m_sizes;
 };
 
 /*!
