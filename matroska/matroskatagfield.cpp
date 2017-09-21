@@ -48,7 +48,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
     clear();
     simpleTagElement.parse();
     bool tagDefaultFound = false;
-    for(EbmlElement *child = simpleTagElement.firstChild(); child; child = child = child->nextSibling()) {
+    for(EbmlElement *child = simpleTagElement.firstChild(); child; child = child->nextSibling()) {
         try {
             child->parse();
         } catch (const Failure &) {
