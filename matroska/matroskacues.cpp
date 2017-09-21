@@ -206,9 +206,9 @@ bool MatroskaCuePositionUpdater::updateSize(EbmlElement *element, int shift)
         // get size info
         uint64 &size = m_sizes.at(element);
         // calculate new size
-        uint64 newSize = shift > 0 ? size + static_cast<uint64>(shift) : size - static_cast<uint64>(-shift);
+        const uint64 newSize = shift > 0 ? size + static_cast<uint64>(shift) : size - static_cast<uint64>(-shift);
         // shift parent
-        bool updated = updateSize(element->parent(), shift + static_cast<int>(EbmlElement::calculateSizeDenotationLength(newSize)) - static_cast<int>(EbmlElement::calculateSizeDenotationLength(size)));
+        const bool updated = updateSize(element->parent(), shift + static_cast<int>(EbmlElement::calculateSizeDenotationLength(newSize)) - static_cast<int>(EbmlElement::calculateSizeDenotationLength(size)));
         // apply new size
         size = newSize;
         return updated;
