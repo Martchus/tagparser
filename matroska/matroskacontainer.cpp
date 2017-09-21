@@ -892,7 +892,7 @@ void MatroskaContainer::internalMakeFile()
     // -> content and size denotation length of string sub elements
     ebmlHeaderDataSize += m_doctype.size();
     ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
-    uint64 ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
+    const uint64 ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
 
     try {
         // calculate size of "Tags"-element
@@ -989,7 +989,7 @@ void MatroskaContainer::internalMakeFile()
             throw;
         }
 
-        updateStatus("Calculating segment data ...", 0.0);
+        updateStatus("Calculating offsets of elements before cluster ...", 0.0);
 calculateSegmentData:
         // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
         // -> current "pretent" write offset
@@ -1163,9 +1163,12 @@ calculateSegmentSize:
                         goto calculateSegmentSize;
                     } else {
                         // add size of "Cues"-element
+                        updateStatus("Calculating cluster offsets and index size ...", 0.0);
 addCuesElementSize:
                         segment.totalDataSize += segment.cuesUpdater.totalSize();
                     }
+                } else {
+                    updateStatus("Calculating cluster offsets ...", 0.0);
                 }
 
                 // decided whether it is necessary to rewrite the entire file (if not already rewriting)
@@ -1200,11 +1203,15 @@ nonRewriteCalculations:
                                 }
                                 // -> update offset of "Cluster"-element in "Cues"-element and get end offset of last "Cluster"-element
                                 bool cuesInvalidated = false;
-                                for(; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster)) {
+                                for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index) {
                                     clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
                                     segment.clusterEndOffset = level1Element->endOffset();
                                     if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
                                         cuesInvalidated = true;
+                                    }
+                                    // update the progress percentage (using offset / file size should be accurate enough)
+                                    if((index % 50 == 0) && fileInfo().size()) {
+                                        updatePercentage(static_cast<double>(level1Element->dataOffset()) / fileInfo().size());
                                     }
                                 }
                                 if(cuesInvalidated) {
@@ -1212,6 +1219,8 @@ nonRewriteCalculations:
                                     goto addCuesElementSize;
                                 }
                                 segment.totalDataSize = segment.clusterEndOffset - currentOffset - 4 - segment.sizeDenotationLength;
+
+                                updateStatus("Calculating offsets of elements after cluster ...", 0.0);
 
                                 // pretend writing "Cues"-element
                                 if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
@@ -1299,7 +1308,7 @@ nonRewriteCalculations:
                         goto calculateSegmentData;
                     }
                 } else {
-                    // if rewrite is required pretend writing the remaining elements to compute total segment size
+                    // if rewrite is required, pretend writing the remaining elements to compute total segment size
 
                     // pretend writing "Void"-element (only if there is at least one "Cluster"-element in the segment)
                     if(!segmentIndex && rewriteRequired && (level1Element = level0Element->childById(MatroskaIds::Cluster))) {
@@ -1340,7 +1349,12 @@ nonRewriteCalculations:
                                 }
                                 segment.clusterSizes.push_back(clusterSize);
                                 segment.totalDataSize += 4 + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
+
                             }
+                        }
+                        // update the progress percentage (using offset / file size should be accurate enough)
+                        if((index % 50 == 0) && fileInfo().size()) {
+                            updatePercentage(static_cast<double>(level1Element->dataOffset()) / fileInfo().size());
                         }
                     }
                     // check whether the total size of the "Cues"-element has been invalidated and recompute cluster if required
@@ -1349,6 +1363,8 @@ nonRewriteCalculations:
                         segment.totalDataSize = offset;
                         goto addCuesElementSize;
                     }
+
+                    updateStatus("Calculating offsets of elements after cluster ...", 0.0);
 
                     // pretend writing "Cues"-element
                     if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
@@ -1654,10 +1670,11 @@ nonRewriteCalculations:
                     if(isAborted()) {
                         throw OperationAbortedException();
                     }
-                    updateStatus("Writing clusters ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
+                    updateStatus("Writing cluster ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
                     // write "Cluster"-element
-                    for(auto clusterSizesIterator = segment.clusterSizes.cbegin();
-                        level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++clusterSizesIterator) {
+                    auto clusterSizesIterator = segment.clusterSizes.cbegin();
+                    unsigned int index = 0;
+                    for(;level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++clusterSizesIterator, ++index) {
                         // calculate position of cluster in segment
                         clusterSize = currentPosition + (static_cast<uint64>(outputStream.tellp()) - offset);
                         // write header; checking whether clusterSizesIterator is valid shouldn't be necessary
@@ -1680,12 +1697,13 @@ nonRewriteCalculations:
                         // update percentage, check whether the operation has been aborted
                         if(isAborted()) {
                             throw OperationAbortedException();
-                        } else {
+                        } else if(index % 50 == 0) {
                             updatePercentage(static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
                         }
                     }
                 } else {
                     // can't just skip existing "Cluster"-elements: "Position"-elements must be updated
+                    updateStatus("Updateing cluster ...", static_cast<double>(static_cast<uint64>(outputStream.tellp()) - offset) / segment.totalDataSize);
                     for(; level1Element; level1Element = level1Element->nextSibling()) {
                         for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                             switch(level2Element->id()) {
@@ -1711,6 +1729,8 @@ nonRewriteCalculations:
                     // skip existing "Cluster"-elements
                     outputStream.seekp(segment.clusterEndOffset);
                 }
+
+                updateStatus("Writing segment tail ...");
 
                 // write "Cues"-element
                 if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
