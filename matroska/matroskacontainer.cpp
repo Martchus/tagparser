@@ -1174,129 +1174,121 @@ addCuesElementSize:
 
                 // decided whether it is necessary to rewrite the entire file (if not already rewriting)
                 if(!rewriteRequired) {
-                    // -> find first "Cluster"-element
+                    // find first "Cluster"-element
                     if((level1Element = segment.firstClusterElement)) {
-                        // there is at least one "Cluster"-element to be written
-                        //if(level1Element->startOffset() == currentFirstClusterOffset) {
-                            // just before the first "Cluster"-element
-                            // -> calculate total offset (excluding size denotation and incomplete index)
-                            totalOffset = currentOffset + 4 + segment.totalDataSize;
+                        // just before the first "Cluster"-element
+                        // -> calculate total offset (excluding size denotation and incomplete index)
+                        totalOffset = currentOffset + 4 + segment.totalDataSize;
 
-                            if(totalOffset <= segment.firstClusterElement->startOffset()) {
-                                // the padding might be big enough, but
-                                // - the segment might become bigger (subsequent tags and attachments)
-                                // - the header size hasn't been taken into account yet
-                                // - seek information for first cluster and subsequent tags and attachments hasn't been taken into account
+                        if(totalOffset <= segment.firstClusterElement->startOffset()) {
+                            // the padding might be big enough, but
+                            // - the segment might become bigger (subsequent tags and attachments)
+                            // - the header size hasn't been taken into account yet
+                            // - seek information for first cluster and subsequent tags and attachments hasn't been taken into account
 
-                                // assume the size denotation length doesn't change -> use length from original file
-                                if(level0Element->headerSize() <= 4 || level0Element->headerSize() > 12) {
-                                    // validate original header size
-                                    addNotification(NotificationType::Critical, "Header size of \"Segment\"-element from original file is invalid.", context);
-                                    throw InvalidDataException();
-                                }
-                                segment.sizeDenotationLength = static_cast<byte>(level0Element->headerSize() - 4u);
+                            // assume the size denotation length doesn't change -> use length from original file
+                            if(level0Element->headerSize() <= 4 || level0Element->headerSize() > 12) {
+                                // validate original header size
+                                addNotification(NotificationType::Critical, "Header size of \"Segment\"-element from original file is invalid.", context);
+                                throw InvalidDataException();
+                            }
+                            segment.sizeDenotationLength = static_cast<byte>(level0Element->headerSize() - 4u);
 
 nonRewriteCalculations:
-                                // pretend writing "Cluster"-elements assuming there is no rewrite required
-                                // -> update offset in "SeakHead"-element
-                                if(segment.seekInfo.push(0, MatroskaIds::Cluster, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)) {
+                            // pretend writing "Cluster"-elements assuming there is no rewrite required
+                            // -> update offset in "SeakHead"-element
+                            if(segment.seekInfo.push(0, MatroskaIds::Cluster, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)) {
+                                goto calculateSegmentSize;
+                            }
+                            // -> update offset of "Cluster"-element in "Cues"-element and get end offset of last "Cluster"-element
+                            bool cuesInvalidated = false;
+                            for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index) {
+                                clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
+                                segment.clusterEndOffset = level1Element->endOffset();
+                                if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
+                                    cuesInvalidated = true;
+                                }
+                                // check whether aborted (because this loop might take some seconds to process)
+                                if(isAborted()) {
+                                    throw OperationAbortedException();
+                                }
+                                // update the progress percentage (using offset / file size should be accurate enough)
+                                if(index % 50 == 0) {
+                                    updatePercentage(static_cast<double>(level1Element->dataOffset()) / fileInfo().size());
+                                }
+                            }
+                            if(cuesInvalidated) {
+                                segment.totalDataSize = offset;
+                                goto addCuesElementSize;
+                            }
+                            segment.totalDataSize = segment.clusterEndOffset - currentOffset - 4 - segment.sizeDenotationLength;
+
+                            updateStatus("Calculating offsets of elements after cluster ...", 0.0);
+
+                            // pretend writing "Cues"-element
+                            if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                                // update offset of "Cues"-element in "SeekHead"-element
+                                if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
                                     goto calculateSegmentSize;
+                                } else {
+                                    // add size of "Cues"-element
+                                    segment.totalDataSize += segment.cuesUpdater.totalSize();
                                 }
-                                // -> update offset of "Cluster"-element in "Cues"-element and get end offset of last "Cluster"-element
-                                bool cuesInvalidated = false;
-                                for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster), ++index) {
-                                    clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
-                                    segment.clusterEndOffset = level1Element->endOffset();
-                                    if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
-                                        cuesInvalidated = true;
-                                    }
-                                    // check whether aborted (because this loop might take some seconds to process)
-                                    if(isAborted()) {
-                                        throw OperationAbortedException();
-                                    }
-                                    // update the progress percentage (using offset / file size should be accurate enough)
-                                    if(index % 50 == 0) {
-                                        updatePercentage(static_cast<double>(level1Element->dataOffset()) / fileInfo().size());
-                                    }
-                                }
-                                if(cuesInvalidated) {
-                                    segment.totalDataSize = offset;
-                                    goto addCuesElementSize;
-                                }
-                                segment.totalDataSize = segment.clusterEndOffset - currentOffset - 4 - segment.sizeDenotationLength;
+                            }
 
-                                updateStatus("Calculating offsets of elements after cluster ...", 0.0);
-
-                                // pretend writing "Cues"-element
-                                if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
-                                    // update offset of "Cues"-element in "SeekHead"-element
-                                    if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                            if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                                // pretend writing "Tags"-element
+                                if(tagsSize) {
+                                    // update offsets in "SeekHead"-element
+                                    if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
                                         goto calculateSegmentSize;
                                     } else {
-                                        // add size of "Cues"-element
-                                        segment.totalDataSize += segment.cuesUpdater.totalSize();
+                                        // add size of "Tags"-element
+                                        segment.totalDataSize += tagsSize;
                                     }
                                 }
-
-                                if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
-                                    // pretend writing "Tags"-element
-                                    if(tagsSize) {
-                                        // update offsets in "SeekHead"-element
-                                        if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
-                                            goto calculateSegmentSize;
-                                        } else {
-                                            // add size of "Tags"-element
-                                            segment.totalDataSize += tagsSize;
-                                        }
-                                    }
-                                    // pretend writing "Attachments"-element
-                                    if(attachmentsSize) {
-                                        // update offsets in "SeekHead"-element
-                                        if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
-                                            goto calculateSegmentSize;
-                                        } else {
-                                            // add size of "Attachments"-element
-                                            segment.totalDataSize += attachmentsSize;
-                                        }
-                                    }
-                                }
-
-                                // calculate total offset again (taking everything into account)
-                                // -> check whether assumed size denotation was correct
-                                if(segment.sizeDenotationLength != (sizeLength = EbmlElement::calculateSizeDenotationLength(segment.totalDataSize))) {
-                                    // assumption was wrong -> recalculate with new length
-                                    segment.sizeDenotationLength = sizeLength;
-                                    level1Element = segment.firstClusterElement;
-                                    goto nonRewriteCalculations;
-                                }
-
-                                totalOffset = currentOffset + 4 + sizeLength + offset;
-                                // offset does not include size of "Cues"-element
-                                if(newCuesPos == ElementPosition::BeforeData) {
-                                    totalOffset += segment.cuesUpdater.totalSize();
-                                }
-                                if(totalOffset <= segment.firstClusterElement->startOffset()) {
-                                    // calculate new padding
-                                    if(segment.newPadding != 1) {
-                                        // "Void"-element is at least 2 byte long -> can't add 1 byte padding
-                                        newPadding += (segment.newPadding = segment.firstClusterElement->startOffset() - totalOffset);
+                                // pretend writing "Attachments"-element
+                                if(attachmentsSize) {
+                                    // update offsets in "SeekHead"-element
+                                    if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                                        goto calculateSegmentSize;
                                     } else {
-                                        rewriteRequired = true;
+                                        // add size of "Attachments"-element
+                                        segment.totalDataSize += attachmentsSize;
                                     }
+                                }
+                            }
+
+                            // calculate total offset again (taking everything into account)
+                            // -> check whether assumed size denotation was correct
+                            if(segment.sizeDenotationLength != (sizeLength = EbmlElement::calculateSizeDenotationLength(segment.totalDataSize))) {
+                                // assumption was wrong -> recalculate with new length
+                                segment.sizeDenotationLength = sizeLength;
+                                level1Element = segment.firstClusterElement;
+                                goto nonRewriteCalculations;
+                            }
+
+                            totalOffset = currentOffset + 4 + sizeLength + offset;
+                            // offset does not include size of "Cues"-element
+                            if(newCuesPos == ElementPosition::BeforeData) {
+                                totalOffset += segment.cuesUpdater.totalSize();
+                            }
+                            if(totalOffset <= segment.firstClusterElement->startOffset()) {
+                                // calculate new padding
+                                if(segment.newPadding != 1) {
+                                    // "Void"-element is at least 2 byte long -> can't add 1 byte padding
+                                    newPadding += (segment.newPadding = segment.firstClusterElement->startOffset() - totalOffset);
                                 } else {
                                     rewriteRequired = true;
                                 }
                             } else {
                                 rewriteRequired = true;
                             }
-                        //} else {
-                            // first "Cluster"-element in the "Segment"-element but not the first "Cluster"-element in the file
-                            // TODO / nothing to do?
-                        //}
-
+                        } else {
+                            rewriteRequired = true;
+                        }
                     } else {
-                        // there are no "Cluster"-elements in the current "Segment"-element
-                        // TODO / nothing to do?
+                        addNotification(NotificationType::Warning, argsToString("There are no clusters in segment ", segmentIndex, "."), context);
                     }
 
                     if(rewriteRequired) {
