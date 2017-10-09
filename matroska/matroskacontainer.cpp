@@ -1210,8 +1210,12 @@ nonRewriteCalculations:
                                     if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
                                         cuesInvalidated = true;
                                     }
+                                    // check whether aborted (because this loop might take some seconds to process)
+                                    if(isAborted()) {
+                                        throw OperationAbortedException();
+                                    }
                                     // update the progress percentage (using offset / file size should be accurate enough)
-                                    if((index % 50 == 0) && fileInfo().size()) {
+                                    if(index % 50 == 0) {
                                         updatePercentage(static_cast<double>(level1Element->dataOffset()) / fileInfo().size());
                                     }
                                 }
@@ -1353,10 +1357,15 @@ nonRewriteCalculations:
 
                             }
                         }
+                        // check whether aborted (because this loop might take some seconds to process)
+                        if(isAborted()) {
+                            throw OperationAbortedException();
+                        }
                         // update the progress percentage (using offset / file size should be accurate enough)
                         if((index % 50 == 0) && fileInfo().size()) {
                             updatePercentage(static_cast<double>(level1Element->dataOffset()) / fileInfo().size());
                         }
+                        // TODO: reduce code duplication for aborting and progress updates
                     }
                     // check whether the total size of the "Cues"-element has been invalidated and recompute cluster if required
                     if(cuesInvalidated) {
