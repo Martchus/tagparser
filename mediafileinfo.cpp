@@ -820,14 +820,15 @@ vector<AbstractTrack *> MediaFileInfo::tracks() const
  */
 bool MediaFileInfo::hasTracksOfType(MediaType type) const
 {
-    if(tracksParsingStatus() != ParsingStatus::NotParsedYet) {
-        if(m_singleTrack && m_singleTrack->mediaType() == type) {
-            return true;
-        } else if(m_container) {
-            for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
-                if(m_container->track(i)->mediaType() == type) {
-                    return true;
-                }
+    if(tracksParsingStatus() == ParsingStatus::NotParsedYet) {
+        return false;
+    }
+    if(m_singleTrack && m_singleTrack->mediaType() == type) {
+        return true;
+    } else if(m_container) {
+        for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
+            if(m_container->track(i)->mediaType() == type) {
+                return true;
             }
         }
     }
@@ -920,11 +921,12 @@ string MediaFileInfo::technicalSummary() const
  */
 bool MediaFileInfo::removeId3v1Tag()
 {
-    if(tagsParsingStatus() != ParsingStatus::NotParsedYet) {
-        if(m_id3v1Tag) {
-            m_id3v1Tag.reset();
-            return true;
-        }
+    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+        return false;
+    }
+    if(m_id3v1Tag) {
+        m_id3v1Tag.reset();
+        return true;
     }
     return false;
 }
@@ -970,12 +972,13 @@ Id3v1Tag *MediaFileInfo::createId3v1Tag()
  */
 bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
 {
-    if(tagsParsingStatus() != ParsingStatus::NotParsedYet) {
-        for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
-            if(i->get() == tag) {
-                m_id3v2Tags.erase(i);
-                return true;
-            }
+    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+        return false;
+    }
+    for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
+        if(i->get() == tag) {
+            m_id3v2Tags.erase(i);
+            return true;
         }
     }
     return false;
@@ -1035,18 +1038,19 @@ Id3v2Tag *MediaFileInfo::createId3v2Tag()
  */
 void MediaFileInfo::removeTag(Tag *tag)
 {
-    if(tag) {
-        if(m_container) {
-            m_container->removeTag(tag);
-        }
-        if(m_id3v1Tag.get() == tag) {
-            m_id3v1Tag.reset();
-        }
-        for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
-            if(i->get() == tag) {
-                m_id3v2Tags.erase(i);
-                break;
-            }
+    if(!tag) {
+        return;
+    }
+    if(m_container) {
+        m_container->removeTag(tag);
+    }
+    if(m_id3v1Tag.get() == tag) {
+        m_id3v1Tag.reset();
+    }
+    for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
+        if(i->get() == tag) {
+            m_id3v2Tags.erase(i);
+            break;
         }
     }
 }
@@ -1229,10 +1233,8 @@ vector<AbstractAttachment *> MediaFileInfo::attachments() const
  */
 bool MediaFileInfo::haveRelatedObjectsNotifications() const
 {
-    if(m_container) {
-        if(m_container->hasNotifications()) {
-            return true;
-        }
+    if(m_container && m_container->hasNotifications()) {
+        return true;
     }
     for(const auto *track : tracks()) {
         if(track->hasNotifications()) {
@@ -1419,16 +1421,18 @@ void MediaFileInfo::clearParsingResults()
 void MediaFileInfo::mergeId3v2Tags()
 {
     auto begin = m_id3v2Tags.begin(), end = m_id3v2Tags.end();
-    if(begin != end) {
-        Id3v2Tag &first = **begin;
-        auto isecond = begin + 1;
-        if(isecond != end) {
-            for(auto i = isecond; i != end; ++i) {
-                first.insertFields(**i, false);
-            }
-            m_id3v2Tags.erase(isecond, end - 1);
-        }
+    if(begin == end) {
+        return;
     }
+    Id3v2Tag &first = **begin;
+    auto isecond = begin + 1;
+    if(isecond == end) {
+        return;
+    }
+    for(auto i = isecond; i != end; ++i) {
+        first.insertFields(**i, false);
+    }
+    m_id3v2Tags.erase(isecond, end - 1);
 }
 
 /*!

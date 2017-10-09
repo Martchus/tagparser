@@ -815,7 +815,7 @@ void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize,
  */
 void Id3v2Frame::makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t dataSize)
 {
-    // calculate buffer size
+    // calculate buffer size and allocate buffer
     if(!data) {
         dataSize = 0;
     }
@@ -837,9 +837,13 @@ void Id3v2Frame::makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bu
         ConversionUtilities::LE::getBytes(encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<uint16>(0xFEFF) : static_cast<uint16>(0xFFFE), buffer.get() + 1);
         bufferDataAddress = buffer.get() + 3;
         break;
+    default:
+        return;
     }
+
+    // write string data
     if(dataSize) {
-        copy(data, data + dataSize, bufferDataAddress); // write string data
+        copy(data, data + dataSize, bufferDataAddress);
     }
 }
 
