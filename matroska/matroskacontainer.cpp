@@ -21,6 +21,7 @@
 #include <initializer_list>
 #include <unordered_set>
 #include <memory>
+#include <limits>
 
 using namespace std;
 using namespace std::placeholders;
@@ -875,7 +876,7 @@ void MatroskaContainer::internalMakeFile()
     // --> current cue position (determined later)
     ElementPosition currentCuesPos = ElementPosition::Keep;
     // -> index of the last segment
-    unsigned int lastSegmentIndex = static_cast<unsigned int>(-1);
+    unsigned int lastSegmentIndex = numeric_limits<unsigned int>::max();
     // -> holds new padding
     uint64 newPadding;
     // -> whether rewrite is required (always required when forced to rewrite)
@@ -1193,7 +1194,7 @@ addCuesElementSize:
                                     addNotification(NotificationType::Critical, "Header size of \"Segment\"-element from original file is invalid.", context);
                                     throw InvalidDataException();
                                 }
-                                segment.sizeDenotationLength = level0Element->headerSize() - 4;
+                                segment.sizeDenotationLength = static_cast<byte>(level0Element->headerSize() - 4u);
 
 nonRewriteCalculations:
                                 // pretend writing "Cluster"-elements assuming there is no rewrite required
