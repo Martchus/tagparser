@@ -124,6 +124,8 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 2);
     case MsMpeg4V3Decoder1: case MsMpeg4V3Decoder2:
         return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 3);
+    case WavPack:
+        return MediaFormat(GeneralMediaFormat::WavPack);
     case WindowsMediaVideoV17:
         return MediaFormat(GeneralMediaFormat::WindowsMediaVideo, 1);
     case WindowsMediaVideoV2: case WindowsMediaVideoV8:

@@ -376,6 +376,7 @@ enum KnownValue : uint32 {
     Ulaw21 = 0x756C6177,
     VcmImageCodec = 0x4D6A7067,
     Vdva = 0x76647661,
+    WavPack = 0x5756504B,
     WindowsMediaAudio = 0x6F776D61, /**< ? */
     WindowsMediaAudio7 = 0x574D4131,
     WindowsMediaAudio9Professional = 0x574D4133,
