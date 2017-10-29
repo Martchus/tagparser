@@ -58,6 +58,7 @@ enum Sig32 : uint32
     TiffBigEndian = 0x4D4D002Au,
     TiffLittleEndian = 0x49492A00u,
     Utf32Text = 0xFFFE0000u,
+    WavPack = 0x7776706Bu,
     WindowsIcon = 0x00000100u,
     Lzip = 0x4C5A4950u,
     Zip1 = 0x504B0304u,
@@ -189,6 +190,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::TiffLittleEndian;
     case Utf32Text:
         return ContainerFormat::Utf32Text;
+    case WavPack:
+        return ContainerFormat::WavPack;
     case WindowsIcon:
         return ContainerFormat::WindowsIcon;
     case Lzip:
@@ -319,6 +322,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::SevenZ: return "7z";
     case ContainerFormat::Xz: return "xz";
     case ContainerFormat::YUV4Mpeg2: return "y4m";
+    case ContainerFormat::WavPack: return "wv";
     default: return "";
     }
 }
@@ -395,6 +399,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "UTF-32 text";
     case ContainerFormat::Utf8Text:
         return "UTF-8 text";
+    case ContainerFormat::WavPack:
+        return "WavPack";
     case ContainerFormat::WindowsBitmap:
         return "Microsoft Windows Bitmap";
     case ContainerFormat::WindowsIcon:

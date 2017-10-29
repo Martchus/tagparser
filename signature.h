@@ -61,6 +61,7 @@ enum class ContainerFormat
     Zip, /**< ZIP archive */
     Xz, /**< xz compressed file */
     YUV4Mpeg2, /**< YUV4MPEG2 */
+    WavPack, /**< WavPack */
 };
 
 TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);
