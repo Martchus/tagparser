@@ -49,6 +49,7 @@ enum Sig32 : uint32
     Flac = 0x664C6143u,
     JavaClassFile = 0xCAFEBABEu,
     Ebml = 0x1A45DFA3u,
+    MonkeysAudio = 0x4D414320u,
     Mp4 = 0x66747970u,
     Ogg = 0x4F676753u,
     PhotoshopDocument = 0x38425053u,
@@ -172,6 +173,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::JavaClassFile;
     case Ebml:
         return ContainerFormat::Ebml;
+    case MonkeysAudio:
+        return ContainerFormat::MonkeysAudio;
     case Ogg:
         return ContainerFormat::Ogg;
     case PhotoshopDocument:
@@ -323,6 +326,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Xz: return "xz";
     case ContainerFormat::YUV4Mpeg2: return "y4m";
     case ContainerFormat::WavPack: return "wv";
+    case ContainerFormat::MonkeysAudio: return "ape";
     default: return "";
     }
 }
@@ -421,6 +425,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "YUV4MPEG2";
     case ContainerFormat::Zip:
         return "ZIP archive";
+    case ContainerFormat::MonkeysAudio:
+        return "Monkey's Audio";
     default:
         return "unknown";
     }
