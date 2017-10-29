@@ -551,8 +551,9 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
             // creation of ID3 tag is possible
             if(!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
                 switch(containerFormat()) {
-                case ContainerFormat::MpegAudioFrames:
                 case ContainerFormat::Adts:
+                case ContainerFormat::MpegAudioFrames:
+                case ContainerFormat::WavPack:
                     break;
                 default:
                     return false;
@@ -588,7 +589,7 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
         if(mergeMultipleSuccessiveId3v2Tags) {
             mergeId3v2Tags();
         }
-        // remove ID3 tags according to id3v2usage and id3v2usage
+        // remove ID3 tags according to id3v1usage and id3v2usage
         if(id3v1usage == TagUsage::Never) {
             if(hasId3v1Tag()) {
                 // transfer tags to ID3v2 tag before removing
@@ -1139,6 +1140,7 @@ bool MediaFileInfo::areTagsSupported() const
     case ContainerFormat::MpegAudioFrames:
     case ContainerFormat::Mp4:
     case ContainerFormat::Ogg:
+    case ContainerFormat::WavPack:
     case ContainerFormat::Webm:
         // these container formats are supported
         return true;
