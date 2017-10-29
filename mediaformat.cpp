@@ -244,6 +244,7 @@ const char *MediaFormat::name() const
         }
     case GeneralMediaFormat::DvbSub: return "DVB subtitles";
     case GeneralMediaFormat::Speex: return "Speex";
+    case GeneralMediaFormat::MonkeysAudio: return "Monkey's Audio";
     default: return "unknown";
     }
 }
@@ -570,6 +571,7 @@ const char *MediaFormat::shortAbbreviation() const
     case GeneralMediaFormat::WindowsMediaVideo: return "WMV";
     case GeneralMediaFormat::DvbSub: return "DVBSUB";
     case GeneralMediaFormat::Speex: return "Speex";
+    case GeneralMediaFormat::MonkeysAudio: return "APE";
     default: return "";
     }
 }

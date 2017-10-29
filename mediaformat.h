@@ -97,6 +97,7 @@ enum class GeneralMediaFormat
     DvbSub, /**< DVBSUB */
     Speex, /**< Speex */
     Daala, /**< Daala ("next-generation video codec" by Xiph) */
+    MonkeysAudio, /**< Monkey's Audio */
 };
 
 /*!
