@@ -62,7 +62,7 @@ download() {
     fi
 }
 
-download_rsync() {
+download_custom() {
     title="$1" cmd="$2"
 
     inform "Downloading \"$title\" ..."
@@ -92,9 +92,15 @@ download \
     'matroska_test_w1_1.zip' \
     'matroska_wave1'
 
-download_rsync \
+destdir='mtx-test-data'
+download_custom \
     'MTX Test Data' \
     'rsync -rv --links --delete belgarath.bunkus.org::mtx-test-data mtx-test-data'
+
+destdir='samples.mplayerhq.hu'
+download_custom \
+    'MPlayer samples' \
+    'wget -r -np -R index.html* http://samples.mplayerhq.hu/A-codecs/lossless'
 
 # convert FLAC files for FLAC tests with ffmpeg
 mkdir -p flac
