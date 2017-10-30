@@ -1836,7 +1836,7 @@ nonRewriteCalculations:
             }
         }
 
-        updatePercentage(100.0);
+        updatePercentage(1.0);
 
         // flush output stream
         outputStream.flush();

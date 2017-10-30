@@ -1823,7 +1823,7 @@ void MediaFileInfo::makeMp3File()
                 backupStream.seekg(streamOffset);
                 CopyHelper<0x4000> copyHelper;
                 copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&StatusProvider::isAborted, this), bind(&StatusProvider::updatePercentage, this, _1));
-                updatePercentage(100.0);
+                updatePercentage(1.0);
             } else {
                 // just skip actual stream data
                 outputStream.seekp(mediaDataSize, ios_base::cur);
