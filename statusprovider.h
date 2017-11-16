@@ -272,7 +272,7 @@ inline void StatusProvider::invokeCallbacks()
  */
 inline void StatusProvider::updateWorstNotificationType(NotificationType notificationType)
 {
-    if(static_cast<int>(m_worstNotificationType) < static_cast<int>(notificationType)) {
+    if(m_worstNotificationType < notificationType) {
         m_worstNotificationType = notificationType;
     }
 }
