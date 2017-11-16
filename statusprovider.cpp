@@ -52,6 +52,10 @@ size_t StatusProvider::registerCallback(CallbackFunction callback)
  */
 void StatusProvider::addNotification(const Notification &notification)
 {
+    if(m_forward) {
+        m_forward->addNotification(notification);
+        return;
+    }
     m_notifications.push_back(notification);
     m_worstNotificationType |= notification.type();
     invokeCallbacks();
@@ -63,6 +67,10 @@ void StatusProvider::addNotification(const Notification &notification)
  */
 void StatusProvider::addNotification(NotificationType type, const string &message, const string &context)
 {
+    if(m_forward) {
+        m_forward->addNotification(type, message, context);
+        return;
+    }
     m_notifications.emplace_back(type, message, context);
     m_worstNotificationType |= type;
     invokeCallbacks();
@@ -72,15 +80,19 @@ void StatusProvider::addNotification(NotificationType type, const string &messag
  * \brief This method is meant to be called by the derived class to add all notifications \a from another
  *        StatusProvider instance.
  */
-void StatusProvider::addNotifications(const StatusProvider &from)
+/*void StatusProvider::addNotifications(const StatusProvider &from)
 {
+    if(m_forward) {
+        m_forward->addNotifications(from);
+        return;
+    }
     if(&from == this) {
         return;
     }
     m_notifications.insert(m_notifications.end(), from.m_notifications.cbegin(), from.m_notifications.cend());
     m_worstNotificationType |= from.worstNotificationType();
     invokeCallbacks();
-}
+}*/
 
 /*!
  * \brief This method is meant to be called by the derived class to add all notifications \a from another
@@ -88,21 +100,29 @@ void StatusProvider::addNotifications(const StatusProvider &from)
  *
  * The specified \a higherContext is concatenated with the original context string.
  */
-void StatusProvider::addNotifications(const string &higherContext, const StatusProvider &from)
+/*void StatusProvider::addNotifications(const string &higherContext, const StatusProvider &from)
 {
+    if(m_forward) {
+        m_forward->addNotifications(higherContext, from);
+        return;
+    }
     if(&from == this) {
         return;
     }
     for(const auto &notification : from.m_notifications) {
         addNotification(notification.type(), notification.message(), higherContext % ',' % ' ' + notification.context());
     }
-}
+}*/
 
 /*!
  * \brief This method is meant to be called by the derived class to add the specified \a notifications.
  */
-void StatusProvider::addNotifications(const NotificationList &notifications)
+/*void StatusProvider::addNotifications(const NotificationList &notifications)
 {
+    if(m_forward) {
+        m_forward->addNotifications(notifications);
+        return;
+    }
     m_notifications.insert(m_notifications.end(), notifications.cbegin(), notifications.cend());
     if(m_worstNotificationType != Notification::worstNotificationType()) {
         for(const Notification &notification : notifications) {
@@ -112,6 +132,7 @@ void StatusProvider::addNotifications(const NotificationList &notifications)
         }
     }
     invokeCallbacks();
-}
+}*/
+
 
 }

@@ -29,7 +29,7 @@ public:
     size_t registerCallback(CallbackFunction callback);
     void unregisterCallback(size_t id);
     void unregisterAllCallbacks();
-    void forwardStatusUpdateCalls(StatusProvider *other = nullptr);
+    void forwardStatus(StatusProvider *other = nullptr);
     StatusProvider *usedProvider();
     void tryToAbort();
     bool isAborted() const;
@@ -40,9 +40,9 @@ public:
     void updatePercentage(double percentage);
     void addNotification(const Notification &notification);
     void addNotification(NotificationType type, const std::string &message, const std::string &context);
-    void addNotifications(const StatusProvider &from);
-    void addNotifications(const std::string &higherContext, const StatusProvider &from);
-    void addNotifications(const NotificationList &notifications);
+    //void addNotifications(const StatusProvider &from);
+    //void addNotifications(const std::string &higherContext, const StatusProvider &from);
+    //void addNotifications(const NotificationList &notifications);
 
 protected:
     StatusProvider();
@@ -50,15 +50,15 @@ protected:
 private:
     void invokeCallbacks();
     void updateWorstNotificationType(NotificationType notificationType);
-    void transferNotifications(StatusProvider &from);
+    //void transferNotifications(StatusProvider &from);
 
-    NotificationList m_notifications;
-    NotificationType m_worstNotificationType;
+    StatusProvider *m_forward;
     std::string m_status;
     double m_percentage;
     CallbackVector m_callbacks;
+    NotificationList m_notifications;
+    NotificationType m_worstNotificationType;
     bool m_abort;
-    StatusProvider *m_forward;
 };
 
 /*!
@@ -66,6 +66,10 @@ private:
  */
 inline void StatusProvider::updateStatus(const std::string &status)
 {
+    if(m_forward) {
+        m_forward->updateStatus(status);
+        return;
+    }
     m_status = status;
     invokeCallbacks();
 }
@@ -77,6 +81,10 @@ inline void StatusProvider::updateStatus(const std::string &status)
  */
 inline void StatusProvider::updateStatus(const std::string &status, double percentage)
 {
+    if(m_forward) {
+        m_forward->updateStatus(status, percentage);
+        return;
+    }
     m_status = status;
     m_percentage = percentage;
     invokeCallbacks();
@@ -89,6 +97,10 @@ inline void StatusProvider::updateStatus(const std::string &status, double perce
  */
 inline void StatusProvider::updatePercentage(double percentage)
 {
+    if(m_forward) {
+        m_forward->updatePercentage(percentage);
+        return;
+    }
     m_percentage = percentage;
     invokeCallbacks();
 }
@@ -96,7 +108,7 @@ inline void StatusProvider::updatePercentage(double percentage)
 /*!
  * \brief Returns the provider which callback functions will be called when the status or the percentage is updated.
  *
- * The default is the current instance. This can be changed using the forwardStatusUpdateCalls() method.
+ * The default is the current instance. This can be changed using the forwardStatus() method.
  */
 inline StatusProvider *StatusProvider::usedProvider()
 {
@@ -160,7 +172,7 @@ inline double StatusProvider::currentPercentage() const
 /*!
  * \brief Returns an indication whether the current operation should be aborted.
  *
- * This can be tested when implementing an operation that should be able to be
+ * This flag can be tested when implementing an operation that should be able to be
  * aborted.
  */
 inline bool StatusProvider::isAborted() const
@@ -192,26 +204,30 @@ inline void StatusProvider::unregisterAllCallbacks()
 }
 
 /*!
- * \brief Forwards all status updates calls to the specified \a statusProvider.
+ * \brief Forwards all status updates calls and notifications to the specified \a statusProvider.
  *
- * Not the callback methods associated to the current instance will be called
- * to inform about status updates. Instead the callback methods associated to
- * the specified instance will be called.
+ * This basically forwards status information updates and notifications to the specified instance.
  *
- * The current instance is still the sender.
- *
- * The current instance is considered as abortet if the specified provider is
- * abortet even if tryToAbort() has not been called.
- *
- * The current instance will return the status and percentage of the specified
- * provider if it provides no own status or percentage.
- *
- * Provide nullptr to revert to the default behaviour.
- *
- * \remarks Leads to endless recursion if \a statusProvider forwards (indirectly
- *          or directly) to the current instance.
+ * \remarks
+ * - Any notifications will *not* be added to the current instance anymore. Instead the
+ *   notifications will be added to the specified instance.
+ * - The callback methods assigned to the current instance will *not* be called
+ *   to inform about status updates anymore. Instead the callback methods associated to
+ *   the specified instance will be called.
+ * - The current instance is still passed as the sender when invoking callback methods.
+ * - The current instance is also considered as aborted if the specified provider is
+ *   aborted - even if tryToAbort() has not been called on the current instance.
+ * - The current instance will return the status and percentage of the specified
+ *   provider if it provides no own status or percentage.
+ * - Provide nullptr to revert to the default behaviour.
+ * - The methods invalidateStatus() and invalidateNotifications() are *not* forwarded.
+ * - The methods updateStatus() and updatePercentage() are *not* forwarded.
+ * - The method transferNotifications() is *not* forwarded.
+ * - Leads to endless recursion if \a statusProvider forwards (indirectly
+ *   or directly) to the current instance. (So better prevent it.)
+ * - Set \a other to nullptr to restore the usual behaviour.
  */
-inline void StatusProvider::forwardStatusUpdateCalls(StatusProvider *other)
+inline void StatusProvider::forwardStatus(StatusProvider *other)
 {
     m_forward = other;
 }
@@ -272,6 +288,10 @@ inline void StatusProvider::invokeCallbacks()
  */
 inline void StatusProvider::updateWorstNotificationType(NotificationType notificationType)
 {
+    if(m_forward) {
+        m_forward->updateWorstNotificationType(notificationType);
+        return;
+    }
     if(m_worstNotificationType < notificationType) {
         m_worstNotificationType = notificationType;
     }
@@ -282,12 +302,14 @@ inline void StatusProvider::updateWorstNotificationType(NotificationType notific
  * \remarks In constrast to the similar addNotifications() overload, this method does not copy the notifications. Instead
  *          the notifications are transfered. It also doesn't check whether \a from is the current instance and doesn't
  *          invoke callbacks.
+ * \deprecated This method should likely be removed after the status provider rework.
  */
-inline void StatusProvider::transferNotifications(StatusProvider &from)
+/*inline void StatusProvider::transferNotifications(StatusProvider &from)
 {
     m_notifications.splice(m_notifications.end(), from.m_notifications);
     m_worstNotificationType |= from.worstNotificationType();
-}
+}*/
+
 
 }
 

@@ -685,7 +685,7 @@ calculatePadding:
                             // update status
                             updateStatus("Writing atom: " + level0Atom->idToString());
                             // copy atom entirely and forward status update calls
-                            level0Atom->forwardStatusUpdateCalls(this);
+                            level0Atom->forwardStatus(this);
                             level0Atom->copyEntirely(outputStream);
                         }
                     }

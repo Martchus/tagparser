@@ -156,7 +156,7 @@ void UtilitiesTests::testStatusProvider()
 
     // forwarding
     TestStatusProvider forwardReceiver;
-    status.forwardStatusUpdateCalls(&forwardReceiver);
+    status.forwardStatus(&forwardReceiver);
     statusUpdateReceived = false;
     forwardReceiver.registerCallback([&status, &statusUpdateReceived] (StatusProvider &sender) {
         CPPUNIT_ASSERT(&status == &sender);

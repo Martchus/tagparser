@@ -673,7 +673,7 @@ void MediaFileInfo::applyChanges()
         if(hasId3v2Tag()) {
             addNotification(NotificationType::Warning, "Assigned ID3v2 tag can't be attached and will be ignored.", context);
         }
-        m_container->forwardStatusUpdateCalls(this);
+        m_container->forwardStatus(this);
         m_tracksParsingStatus = ParsingStatus::NotParsedYet;
         m_tagsParsingStatus = ParsingStatus::NotParsedYet;
         try {
