@@ -30,7 +30,7 @@ public:
     void unregisterCallback(size_t id);
     void unregisterAllCallbacks();
     void forwardStatusUpdateCalls(StatusProvider *other = nullptr);
-    inline StatusProvider *usedProvider();
+    StatusProvider *usedProvider();
     void tryToAbort();
     bool isAborted() const;
     void invalidateStatus();
@@ -48,9 +48,9 @@ protected:
     StatusProvider();
 
 private:
-    inline void invokeCallbacks();
-    inline void updateWorstNotificationType(NotificationType notificationType);
-    inline void transferNotifications(StatusProvider &from);
+    void invokeCallbacks();
+    void updateWorstNotificationType(NotificationType notificationType);
+    void transferNotifications(StatusProvider &from);
 
     NotificationList m_notifications;
     NotificationType m_worstNotificationType;
@@ -283,7 +283,7 @@ inline void StatusProvider::updateWorstNotificationType(NotificationType notific
  *          the notifications are transfered. It also doesn't check whether \a from is the current instance and doesn't
  *          invoke callbacks.
  */
-void StatusProvider::transferNotifications(StatusProvider &from)
+inline void StatusProvider::transferNotifications(StatusProvider &from)
 {
     m_notifications.splice(m_notifications.end(), from.m_notifications);
     m_worstNotificationType |= from.worstNotificationType();
