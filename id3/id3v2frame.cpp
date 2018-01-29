@@ -608,7 +608,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
                 ++get<1>(res);
             } else {
                 if(addWarnings) {
-                    addNotification(NotificationType::Warning, "String in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
+                    addNotification(NotificationType::Warning, "String in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
                 }
                 break;
             }
@@ -638,7 +638,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
                 get<1>(res) += 2;
             } else {
                 if(addWarnings) {
-                    addNotification(NotificationType::Warning, "Wide string in frame is not terminated proberly.", "parsing termination of frame " + frameIdString());
+                    addNotification(NotificationType::Warning, "Wide string in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
                 }
                 break;
             }
