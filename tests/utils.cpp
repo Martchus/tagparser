@@ -11,6 +11,7 @@
 #include "../exceptions.h"
 #include "../backuphelper.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/tests/testutils.h>
 using namespace TestUtilities;
@@ -22,6 +23,7 @@ using namespace TestUtilities;
 
 using namespace std;
 using namespace Media;
+using namespace ConversionUtilities;
 using namespace IoUtilities;
 using namespace TestUtilities::Literals;
 
@@ -261,7 +263,7 @@ void UtilitiesTests::testBackupFile()
 
     // setup testfile
     MediaFileInfo file(workingCopyPath("unsupported.bin"));
-    const string workingDir(file.containingDirectory());
+    const auto workingDir(file.containingDirectory());
     file.open();
 
     // create backup file
@@ -270,7 +272,7 @@ void UtilitiesTests::testBackupFile()
     createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
     CPPUNIT_ASSERT_EQUAL(workingDir + "/unsupported.bin.bak", backupPath1);
 
-    // recreate original file
+    // recreate original file (like the 'make' methods would do to apply changes)
     file.stream().open(file.path(), ios_base::out);
     file.stream() << "test1" << endl;
 
@@ -285,7 +287,7 @@ void UtilitiesTests::testBackupFile()
     file.stream() << "test2" << endl;
 
     // create backup under another location
-    backupDirectory() = workingDir + "/bak";
+    backupDirectory() = "bak";
     try {
         createBackupFile(file.path(), backupPath2, file.stream(), backupStream2);
         CPPUNIT_FAIL("renaming failed because backup dir does not exist");
@@ -300,8 +302,8 @@ void UtilitiesTests::testBackupFile()
 
     // get rid of 2nd backup (again)
     backupStream2.close();
-    remove(backupPath2.data());
-    remove(backupDirectory().data());
+    CPPUNIT_ASSERT_EQUAL(0, remove(backupPath2.data()));
+    CPPUNIT_ASSERT_EQUAL(0, remove(argsToString(workingDir % '/' + backupDirectory()).data()));
 
     // should be able to use backup stream, eg. seek to the end
     backupStream1.seekg(0, ios_base::end);
@@ -313,7 +315,7 @@ void UtilitiesTests::testBackupFile()
     // check restored backup
     file.open(true);
     file.stream().seekg(0x1D);
-    CPPUNIT_ASSERT_EQUAL(static_cast<ios::int_type>(0x34), file.stream().get());
+    CPPUNIT_ASSERT_EQUAL(0x34_st, static_cast<size_t>(file.stream().get()));
     file.close();
 
     CPPUNIT_ASSERT_MESSAGE("file has no critical notifications yet", !file.hasCriticalNotifications());
@@ -363,6 +365,6 @@ void UtilitiesTests::testBackupFile()
     CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, file.notifications().back().message());
     file.invalidateNotifications();
 
-    remove(file.path().data());
+    CPPUNIT_ASSERT_EQUAL(0, remove(file.path().data()));
 }
 #endif
