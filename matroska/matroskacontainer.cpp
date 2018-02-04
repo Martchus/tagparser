@@ -343,22 +343,25 @@ generateRandomId:
  */
 ElementPosition MatroskaContainer::determineElementPosition(uint64 elementId) const
 {
-    if(m_firstElement && m_segmentCount == 1) {
-        if(const EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, true)) {
-            for(const EbmlElement *childElement = segmentElement->firstChild(); childElement; childElement = childElement->nextSibling()) {
-                if(childElement->id() == elementId) {
-                    return ElementPosition::BeforeData;
-                } else if(childElement->id() == MatroskaIds::Cluster) {
-                    for(const auto &seekInfo : m_seekInfos) {
-                        for(const auto &info : seekInfo->info()) {
-                            if(info.first == elementId) {
-                                return ElementPosition::AfterData;
-                            }
-                        }
+    if(!m_firstElement || m_segmentCount != 1) {
+        return ElementPosition::Keep;
+    }
+    const auto *const segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, true);
+    if(!segmentElement) {
+        return ElementPosition::Keep;
+    }
+    for(const EbmlElement *childElement = segmentElement->firstChild(); childElement; childElement = childElement->nextSibling()) {
+        if(childElement->id() == elementId) {
+            return ElementPosition::BeforeData;
+        } else if(childElement->id() == MatroskaIds::Cluster) {
+            for(const auto &seekInfo : m_seekInfos) {
+                for(const auto &info : seekInfo->info()) {
+                    if(info.first == elementId) {
+                        return ElementPosition::AfterData;
                     }
-                    return ElementPosition::Keep;
                 }
             }
+            return ElementPosition::Keep;
         }
     }
     return ElementPosition::Keep;
