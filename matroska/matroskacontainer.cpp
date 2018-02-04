@@ -386,7 +386,8 @@ void MatroskaContainer::internalParseHeader()
     m_seekInfos.clear();
     m_segmentCount = 0;
     uint64 currentOffset = 0;
-    vector<MatroskaSeekInfo>::size_type seekInfosIndex = 0;
+    vector<MatroskaSeekInfo>::difference_type seekInfosIndex = 0;
+
     // loop through all top level elements
     for(EbmlElement *topLevelElement = m_firstElement.get(); topLevelElement; topLevelElement = topLevelElement->nextSibling()) {
         try {
@@ -557,6 +558,7 @@ void MatroskaContainer::internalParseHeader()
             break;
         }
     }
+
     // finally parse the "Info"-element and fetch "EditionEntry"-elements
 finish:
     try {
