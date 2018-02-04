@@ -22,6 +22,8 @@
 #include <unordered_set>
 #include <memory>
 #include <limits>
+#include <chrono>
+#include <random>
 
 using namespace std;
 using namespace std::placeholders;
@@ -314,11 +316,12 @@ size_t MatroskaContainer::chapterCount() const
 MatroskaAttachment *MatroskaContainer::createAttachment()
 {
     // generate unique ID
-    srand(time(nullptr));
-    byte tries = 0;
+    static const auto randomEngine(default_random_engine(static_cast<default_random_engine::result_type>(chrono::system_clock::now().time_since_epoch().count())));
     uint64 attachmentId;
+    auto dice(bind(uniform_int_distribution<decltype(attachmentId)>(), randomEngine));
+    byte tries = 0;
 generateRandomId:
-    attachmentId = rand();
+    attachmentId = dice();
     if(tries < 0xFF) {
         for(const auto &attachment : m_attachments) {
             if(attachmentId == attachment->id()) {
