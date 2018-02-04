@@ -582,7 +582,7 @@ void MatroskaContainer::parseSegmentInfo()
         element->parse();
         EbmlElement *subElement = element->firstChild();
         float64 rawDuration = 0.0;
-        uint64 timeScale = 0;
+        uint64 timeScale = 1000000;
         bool hasTitle = false;
         while(subElement) {
             subElement->parse();
@@ -600,12 +600,12 @@ void MatroskaContainer::parseSegmentInfo()
             }
             subElement = subElement->nextSibling();
         }
+        // add empty string as title for segment if no
+        // "Title"-element has been specified
         if(!hasTitle) {
-            // add empty string as title for segment if no
-            // "Title"-element has been specified
             m_titles.emplace_back();
         }
-        if(rawDuration > 0.0 && timeScale > 0) {
+        if(rawDuration > 0.0) {
             m_duration += TimeSpan::fromSeconds(rawDuration * timeScale / 1000000000);
         }
     }

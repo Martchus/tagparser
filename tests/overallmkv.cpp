@@ -1,3 +1,5 @@
+#include <c++utilities/chrono/format.h>
+
 #include "./overall.h"
 
 #include "../abstracttrack.h"
@@ -5,12 +7,15 @@
 #include "../mp4/mp4ids.h"
 #include "../matroska/matroskacontainer.h"
 
+#include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/misc.h>
 
 #include <fstream>
 #include <cstring>
+
+using namespace ChronoUtilities;
 
 namespace MkvTestFlags {
 enum TestFlag
@@ -33,6 +38,7 @@ enum TestFlag
 void OverallTests::checkMkvTestfile1()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromMinutes(1) + TimeSpan::fromSeconds(27) + TimeSpan::fromMilliseconds(336), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -74,6 +80,7 @@ void OverallTests::checkMkvTestfile1()
 void OverallTests::checkMkvTestfile2()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(47) + TimeSpan::fromMilliseconds(509), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -115,6 +122,7 @@ void OverallTests::checkMkvTestfile2()
 void OverallTests::checkMkvTestfile3()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(49) + TimeSpan::fromMilliseconds(64), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -158,6 +166,7 @@ void OverallTests::checkMkvTestfile3()
 void OverallTests::checkMkvTestfile4()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan(), m_fileInfo.duration());
     // this file is messed up, it should contain tags but it doesn't
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
@@ -216,6 +225,7 @@ void OverallTests::checkMkvTestfile4()
 void OverallTests::checkMkvTestfile5()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(46) + TimeSpan::fromMilliseconds(665), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(11_st, tracks.size());
     for(const auto &track : tracks) {
@@ -263,6 +273,7 @@ void OverallTests::checkMkvTestfile5()
 void OverallTests::checkMkvTestfile6()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromMinutes(1) + TimeSpan::fromSeconds(27) + TimeSpan::fromMilliseconds(336), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -305,6 +316,7 @@ void OverallTests::checkMkvTestfile6()
 void OverallTests::checkMkvTestfile7()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(37) + TimeSpan::fromMilliseconds(43), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -356,6 +368,7 @@ void OverallTests::checkMkvTestfile7()
 void OverallTests::checkMkvTestfile8()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(47) + TimeSpan::fromMilliseconds(341), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
@@ -399,6 +412,7 @@ void OverallTests::checkMkvTestfile8()
 void OverallTests::checkMkvTestfileHandbrakeChapters()
 {
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(27) + TimeSpan::fromMilliseconds(569), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for(const auto &track : tracks) {
