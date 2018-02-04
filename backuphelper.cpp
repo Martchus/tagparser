@@ -27,7 +27,7 @@ namespace Media {
  * \brief Helps to create and restore backup files when rewriting
  *        files to apply changed tag information.
  *
- * Methods in this namespace are internally used eg. in implementations of AbstractContainer::internalMake().
+ * Methods in this namespace are internally used eg. in implementations of AbstractContainer::internalMakeFile().
  */
 
 namespace BackupHelper {
@@ -37,6 +37,8 @@ namespace BackupHelper {
  *
  * Setting this value allows creation of backup files in a custom location
  * instead of the directory of the file being modified.
+ *
+ * \todo Add this as member variable to MediaFileInfo to avoid global.
  */
 string &backupDirectory()
 {
@@ -80,9 +82,9 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
     }
     // remove original file and restore backup
     std::remove(originalPath.c_str());
-    if(std::rename(backupPath.c_str(), originalPath.c_str()) != 0) { // restore backup
-        // unable to move the file
-        try { // to copy
+    if(std::rename(backupPath.c_str(), originalPath.c_str())) {
+        // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
+        try {
             // need to open all streams again
             backupStream.exceptions(ios_base::failbit | ios_base::badbit);
             originalStream.exceptions(ios_base::failbit | ios_base::badbit);
@@ -95,6 +97,14 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
             throwIoFailure(("Unable to restore original file from backup file \"" % backupPath + "\" after failure.").data());
         }
     }
+}
+
+/*!
+ * \brief Returns whether the specified \a path is relative.
+ */
+static bool isRelative(const std::string &path)
+{
+    return path.empty() || (path.front() != '/' && (path.size() < 2 || path[1] != ':'));
 }
 
 /*!
@@ -122,11 +132,12 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
  */
 void createBackupFile(const std::string &originalPath, std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {
+    // determine dirs
+    const auto &backupDir(backupDirectory());
+    const auto backupDirRelative(isRelative(backupDir));
+    const auto originalDir(backupDirRelative ? BasicFileInfo::containingDirectory(originalPath) : string());
+
     // determine the backup path
-    const string &backupDir = backupDirectory();
-#ifndef PLATFORM_WINDOWS
-    struct stat backupStat;
-#endif
     for(unsigned int i = 0; ; ++i) {
         if(backupDir.empty()) {
             if(i) {
@@ -135,63 +146,44 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
                 backupPath = originalPath + ".bak";
             }
         } else {
-            const string fileName = BasicFileInfo::fileName(originalPath, i);
+            const auto fileName(BasicFileInfo::fileName(originalPath, i));
             if(i) {
-                const string ext = BasicFileInfo::extension(originalPath);
-                if(backupDir.at(0) != '/' && (backupDir.size() < 2 || backupDir.at(1) != ':')) {
-                    // backupDir is a relative path
-                    backupPath = BasicFileInfo::containingDirectory(originalPath);
-                    backupPath += '/';
-                    backupPath += backupDir;
-                    backupPath += '/';
-                    backupPath += fileName;
-                    backupPath += '.';
-                    backupPath += numberToString(i);
-                    backupPath += ext;
+                const auto ext(BasicFileInfo::extension(originalPath));
+                if(backupDirRelative) {
+                    backupPath = originalDir % '/' % backupDir % '/' % fileName % '.' % i + ext;
                 } else {
-                    // backupDir is an absolute path
-                    backupPath = backupDir;
-                    backupPath += '/';
-                    backupPath += fileName;
-                    backupPath += '.';
-                    backupPath += numberToString(i);
-                    backupPath += ext;
+                    backupPath = backupDir % '/' % fileName % '.' % i + ext;
                 }
             } else {
-                if(backupDir.at(0) != '/' && (backupDir.size() < 2 || backupDir.at(1) != ':')) {
-                    // backupDir is a relative path
-                    backupPath = BasicFileInfo::containingDirectory(originalPath);
-                    backupPath += '/';
-                    backupPath += backupDir;
-                    backupPath += '/';
-                    backupPath += fileName;
+                if(backupDirRelative) {
+                    backupPath = originalDir % '/' % backupDir % '/' + fileName;
                 } else {
-                    // backupDir is an absolute path
-                    backupPath = backupDir;
-                    backupPath += '/';
-                    backupPath += fileName;
+                    backupPath = backupDir % '/' + fileName;
                 }
             }
 
         }
-        // test whether the backup file already exists
+
+        // test whether the backup path is still unused; otherwise continue loop
 #ifdef PLATFORM_WINDOWS
         if(GetFileAttributes(backupPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
 #else
+        struct stat backupStat;
         if(stat(backupPath.c_str(), &backupStat)) {
 #endif
             break;
-        } // else: the backup file already exists -> find another file name
+        }
     }
 
     // ensure original file is closed
     if(originalStream.is_open()) {
         originalStream.close();
     }
+
     // rename original file
-    if(std::rename(originalPath.c_str(), backupPath.c_str()) != 0) {
-        // can't rename/move the file
-        try { // to copy
+    if(std::rename(originalPath.c_str(), backupPath.c_str())) {
+        // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
+        try {
             backupStream.exceptions(ios_base::failbit | ios_base::badbit);
             originalStream.exceptions(ios_base::failbit | ios_base::badbit);
             // ensure backupStream is opened as write-only
@@ -210,8 +202,10 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
             throwIoFailure("Unable to rename original file before rewriting it.");
         }
     }
+
+    // manage streams
     try {
-        // ensure there is not file associated with the originalStream object
+        // ensure there is no file associated with the originalStream object
         if(originalStream.is_open()) {
             originalStream.close();
         }
@@ -226,7 +220,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
         catchIoFailure();
         // can't open the new file
         // -> try to re-rename backup file in the error case to restore previous state
-        if(std::rename(backupPath.c_str(), originalPath.c_str()) != 0) {
+        if(std::rename(backupPath.c_str(), originalPath.c_str())) {
             throwIoFailure(("Unable to restore original file from backup file \"" % backupPath + "\" after failure.").data());
         } else {
             throwIoFailure("Unable to open backup file.");
