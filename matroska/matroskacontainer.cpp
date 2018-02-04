@@ -93,7 +93,7 @@ void MatroskaContainer::validateIndex()
     static const string context("validating Matroska file index (cues)");
     bool cuesElementsFound = false;
     if(m_firstElement) {
-        unordered_set<int> ids;
+        unordered_set<EbmlElement::identifierType> ids;
         bool cueTimeFound = false, cueTrackPositionsFound = false;
         unique_ptr<EbmlElement> clusterElement;
         uint64 pos, prevClusterSize = 0, currentOffset = 0;
@@ -785,10 +785,10 @@ struct SegmentData
         clusterEndOffset(0),
         startOffset(0),
         newPadding(0),
-        sizeDenotationLength(0),
         totalDataSize(0),
         totalSize(0),
-        newDataOffset(0)
+        newDataOffset(0),
+        sizeDenotationLength(0)
     {}
 
     /// \brief whether CRC-32 checksum is present
@@ -811,14 +811,14 @@ struct SegmentData
     uint64 startOffset;
     /// \brief padding (in the new file)
     uint64 newPadding;
-    /// \brief header size (in the new file)
-    byte sizeDenotationLength;
     /// \brief total size of the segment data (in the new file, excluding header)
     uint64 totalDataSize;
     /// \brief total size of the segment data (in the new file, including header)
     uint64 totalSize;
     /// \brief data offset of the segment in the new file
     uint64 newDataOffset;
+    /// \brief header size (in the new file)
+    byte sizeDenotationLength;
 };
 
 void MatroskaContainer::internalMakeFile()
@@ -1036,16 +1036,14 @@ calculateSegmentData:
                 SegmentData &segment = segmentData[segmentIndex];
 
                 // parse original "Cues"-element (if present)
-                if(!segment.cuesElement) {
-                    if((segment.cuesElement = level0Element->childById(MatroskaIds::Cues))) {
-                        try {
-                            segment.cuesUpdater.parse(segment.cuesElement);
-                        } catch(const Failure &) {
-                            addNotifications(segment.cuesUpdater);
-                            throw;
-                        }
+                if(!segment.cuesElement && (segment.cuesElement = level0Element->childById(MatroskaIds::Cues))) {
+                    try {
+                        segment.cuesUpdater.parse(segment.cuesElement);
+                    } catch(const Failure &) {
                         addNotifications(segment.cuesUpdater);
+                        throw;
                     }
+                    addNotifications(segment.cuesUpdater);
                 }
 
                 // get first "Cluster"-element
@@ -1724,7 +1722,7 @@ nonRewriteCalculations:
                                 if(level2Element->dataSize() < sizeLength) {
                                     // can't update position -> void position elements ("Position"-elements seem a bit useless anyways)
                                     outputStream.seekp(level2Element->startOffset());
-                                    outputStream.put(EbmlIds::Void);
+                                    outputStream.put(static_cast<char>(EbmlIds::Void));
                                 } else {
                                     // update position
                                     outputStream.seekp(level2Element->dataOffset());
@@ -1795,7 +1793,7 @@ nonRewriteCalculations:
         updateStatus("Reparsing output file ...");
         if(rewriteRequired) {
             // report new size
-            fileInfo().reportSizeChanged(outputStream.tellp());
+            fileInfo().reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
 
             // "save as path" is now the regular path
             if(!fileInfo().saveFilePath().empty()) {
@@ -1814,7 +1812,7 @@ nonRewriteCalculations:
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if(truncate(fileInfo().path().c_str(), newSize) == 0) {
+                if(truncate(fileInfo().path().c_str(), static_cast<iostream::off_type>(newSize)) == 0) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
                     addNotification(NotificationType::Critical, "Unable to truncate the file.", context);

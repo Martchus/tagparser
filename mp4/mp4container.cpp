@@ -77,7 +77,7 @@ void Mp4Container::internalParseHeader()
     m_firstElement->parse();
     Mp4Atom *ftypAtom = m_firstElement->siblingById(Mp4AtomIds::FileType, true);
     if(ftypAtom) {
-        stream().seekg(ftypAtom->dataOffset());
+        stream().seekg(static_cast<iostream::off_type>(ftypAtom->dataOffset()));
         m_doctype = reader().readString(4);
         m_version = reader().readUInt32BE();
     } else {
@@ -124,7 +124,7 @@ void Mp4Container::internalParseTracks()
             // get mvhd atom which holds overall track information
             if(Mp4Atom *mvhdAtom = moovAtom->childById(Mp4AtomIds::MovieHeader)) {
                 if(mvhdAtom->dataSize() > 0) {
-                    stream().seekg(mvhdAtom->dataOffset());
+                    stream().seekg(static_cast<iostream::off_type>(mvhdAtom->dataOffset()));
                     byte version = reader().readByte();
                     if((version == 1 && mvhdAtom->dataSize() >= 32) || (mvhdAtom->dataSize() >= 20)) {
                         stream().seekg(3, ios_base::cur); // skip flags
@@ -157,7 +157,7 @@ void Mp4Container::internalParseTracks()
             if(Mp4Atom *mehdAtom = moovAtom->subelementByPath({Mp4AtomIds::MovieExtends, Mp4AtomIds::MovieExtendsHeader})) {
                 m_fragmented = true;
                 if(mehdAtom->dataSize() > 0) {
-                    stream().seekg(mehdAtom->dataOffset());
+                    stream().seekg(static_cast<iostream::off_type>(mehdAtom->dataOffset()));
                     unsigned int durationSize = reader().readByte() == 1u ? 8u : 4u; // duration size depends on atom version
                     if(mehdAtom->dataSize() >= 4 + durationSize) {
                         stream().seekg(3, ios_base::cur); // skip flags
@@ -772,7 +772,7 @@ calculatePadding:
                             outputWriter.writeUInt32BE(Mp4AtomIds::Free);
                             break;
                         default:
-                            outputStream.seekp(level0Atom->totalSize(), ios_base::cur);
+                            outputStream.seekp(static_cast<iostream::off_type>(level0Atom->totalSize()), ios_base::cur);
                         }
                         if(level0Atom == lastAtomToBeWritten) {
                             break;
@@ -786,7 +786,7 @@ calculatePadding:
         updateStatus("Reparsing output file ...");
         if(rewriteRequired) {
             // report new size
-            fileInfo().reportSizeChanged(outputStream.tellp());
+            fileInfo().reportSizeChanged(static_cast<iostream::off_type>(outputStream.tellp()));
             // "save as path" is now the regular path
             if(!fileInfo().saveFilePath().empty()) {
                 fileInfo().reportPathChanged(fileInfo().saveFilePath());
@@ -803,7 +803,7 @@ calculatePadding:
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if(truncate(fileInfo().path().c_str(), newSize) == 0) {
+                if(truncate(fileInfo().path().c_str(), static_cast<iostream::off_type>(newSize)) == 0) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
                     addNotification(NotificationType::Critical, "Unable to truncate the file.", context);
@@ -901,7 +901,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                         tfhdAtom->parse();
                         ++tfhdAtomCount;
                         if(tfhdAtom->dataSize() >= 8) {
-                            stream().seekg(tfhdAtom->dataOffset() + 1);
+                            stream().seekg(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 1);
                             uint32 flags = reader().readUInt24BE();
                             if(flags & 1) {
                                 if(tfhdAtom->dataSize() >= 16) {
@@ -911,7 +911,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                                         iOld != end; ++iOld, ++iNew) {
                                         if(off >= static_cast<uint64>(*iOld)) {
                                             off += (*iNew - *iOld);
-                                            stream().seekp(tfhdAtom->dataOffset() + 8);
+                                            stream().seekp(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 8);
                                             writer().writeUInt64BE(off);
                                             break;
                                         }
