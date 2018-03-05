@@ -1,7 +1,7 @@
 #ifndef MEDIA_ABSTRACTATTACHMENT_H
 #define MEDIA_ABSTRACTATTACHMENT_H
 
-#include "./statusprovider.h"
+#include "./diagnostics.h"
 
 #include <string>
 #include <iostream>
@@ -90,7 +90,7 @@ inline void StreamDataBlock::discardBuffer()
 class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock
 {
 public:
-    FileDataBlock(const std::string &path);
+    FileDataBlock(const std::string &path, Diagnostics &diag);
     const MediaFileInfo *fileInfo() const;
 
 private:
@@ -102,7 +102,7 @@ inline const MediaFileInfo *FileDataBlock::fileInfo() const
     return m_fileInfo.get();
 }
 
-class TAG_PARSER_EXPORT AbstractAttachment : public StatusProvider
+class TAG_PARSER_EXPORT AbstractAttachment
 {
 public:
     const std::string &description() const;
@@ -115,7 +115,7 @@ public:
     void setId(const uint64 &id);
     const StreamDataBlock *data() const;
     void setData(std::unique_ptr<StreamDataBlock> &&data);
-    void setFile(const std::string &path);
+    void setFile(const std::string &path, Diagnostics &diag);
     bool isDataFromFile() const;
     std::string label() const;
     void clear();

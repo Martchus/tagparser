@@ -44,7 +44,7 @@ OggStream::OggStream(OggContainer &container, vector<OggPage>::size_type startPa
 OggStream::~OggStream()
 {}
 
-void OggStream::internalParseHeader()
+void OggStream::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing OGG page header");
 
@@ -76,7 +76,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::Vorbis:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
 
@@ -101,7 +101,7 @@ void OggStream::internalParseHeader()
                         calculateDurationViaSampleCount();
                         hasIdentificationHeader = true;
                     } else {
-                        addNotification(NotificationType::Critical, "Vorbis identification header appears more than once. Oversupplied occurrence will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Vorbis identification header appears more than once. Oversupplied occurrence will be ignored.", context);
                     }
                     break;
                 case VorbisPackageTypes::Comments:
@@ -110,7 +110,7 @@ void OggStream::internalParseHeader()
                         m_container.announceComment(iterator.currentPageIndex(), iterator.currentSegmentIndex(), false, GeneralMediaFormat::Vorbis);
                         hasCommentHeader = true;
                     } else {
-                        addNotification(NotificationType::Critical, "Vorbis comment header appears more than once. Oversupplied occurrence will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Vorbis comment header appears more than once. Oversupplied occurrence will be ignored.", context);
                     }
                     break;
                 case VorbisPackageTypes::Setup:
@@ -129,7 +129,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::Opus:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
                 if(!hasIdentificationHeader) {
@@ -142,7 +142,7 @@ void OggStream::internalParseHeader()
                     calculateDurationViaSampleCount(ind.preSkip());
                     hasIdentificationHeader = true;
                 } else {
-                    addNotification(NotificationType::Critical, "Opus identification header appears more than once. Oversupplied occurrence will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Opus identification header appears more than once. Oversupplied occurrence will be ignored.", context);
                 }
 
             } else if(sig == 0x4F70757354616773u) {
@@ -155,7 +155,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::Opus:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
 
@@ -164,7 +164,7 @@ void OggStream::internalParseHeader()
                     m_container.announceComment(iterator.currentPageIndex(), iterator.currentSegmentIndex(), false, GeneralMediaFormat::Opus);
                     hasCommentHeader = true;
                 } else {
-                    addNotification(NotificationType::Critical, "Opus tags/comment header appears more than once. Oversupplied occurrence will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Opus tags/comment header appears more than once. Oversupplied occurrence will be ignored.", context);
                 }
 
             } else if((sig & 0xFFFFFFFFFF000000u) == 0x7F464C4143000000u) {
@@ -177,7 +177,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::Flac:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
 
@@ -193,7 +193,7 @@ void OggStream::internalParseHeader()
                     calculateDurationViaSampleCount();
                     hasIdentificationHeader = true;
                 } else {
-                    addNotification(NotificationType::Critical, "FLAC-to-Ogg mapping header appears more than once. Oversupplied occurrence will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Critical, "FLAC-to-Ogg mapping header appears more than once. Oversupplied occurrence will be ignored.", context);
                 }
 
                 if(!hasCommentHeader) {
@@ -207,10 +207,10 @@ void OggStream::internalParseHeader()
                             m_container.announceComment(iterator.currentPageIndex(), iterator.currentSegmentIndex(), header.isLast(), GeneralMediaFormat::Flac);
                             hasCommentHeader = true;
                         } else {
-                            addNotification(NotificationType::Critical, "OGG page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment.", context);
+                            diag.emplace_back(DiagLevel::Critical, "OGG page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment.", context);
                         }
                     } else {
-                        addNotification(NotificationType::Critical, "No more OGG pages after FLAC-to-Ogg mapping header (Vorbis comment expected).", context);
+                        diag.emplace_back(DiagLevel::Critical, "No more OGG pages after FLAC-to-Ogg mapping header (Vorbis comment expected).", context);
                     }
                 }
 
@@ -224,7 +224,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::Theora:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
                 // TODO: read more information about Theora stream
@@ -239,7 +239,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::Speex:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
                 // TODO: read more information about Speex stream
@@ -254,7 +254,7 @@ void OggStream::internalParseHeader()
                 case GeneralMediaFormat::UncompressedVideoFrames:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "Stream format is inconsistent.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Stream format is inconsistent.", context);
                     continue;
                 }
                 // TODO: read more information about YUV4MPEG stream

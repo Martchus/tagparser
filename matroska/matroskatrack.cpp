@@ -205,7 +205,7 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
 /// \cond
 
 template<typename PropertyType, typename ConversionFunction>
-void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &property, const ConversionFunction &conversionFunction)
+void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &property, const ConversionFunction &conversionFunction, Diagnostics &diag)
 {
     const TagValue &value = tag->value(fieldId);
     if(!value.isEmpty()) {
@@ -218,7 +218,7 @@ void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag
             } catch(const ConversionException &) {
                 message = argsToString("Ignoring invalid value of \"", fieldId, '\"', '.');
             }
-            addNotification(NotificationType::Warning, message, argsToString("reading track statatistic from \"", tag->toString(), '\"'));
+            diag.emplace_back(DiagLevel::Warning, message, argsToString("reading track statatistic from \"", tag->toString(), '\"'));
         }
     }
 }
@@ -257,7 +257,7 @@ NumberType tagValueToBitrate(const TagValue &tagValue)
  * \sa https://github.com/mbunkus/mkvtoolnix/wiki/Automatic-tag-generation for list of track-specific
  *     tag fields written by mkvmerge
  */
-void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags)
+void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags, Diagnostics &diag)
 {
     using namespace std::placeholders;
     using namespace MatroskaTagIds::TrackSpecific;
@@ -266,32 +266,32 @@ void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<Mat
         if(find(target.tracks().cbegin(), target.tracks().cend(), id()) == target.tracks().cend()) {
             continue;
         }
-        assignPropertyFromTagValue(tag, numberOfBytes(), m_size, &tagValueToNumber<uint64>);
-        assignPropertyFromTagValue(tag, numberOfFrames(), m_sampleCount, &tagValueToNumber<uint64>);
-        assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::duration(), m_duration, bind(&TagValue::toTimeSpan, _1));
-        assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::bitrate(), m_bitrate, &tagValueToBitrate<double>);
-        assignPropertyFromTagValue(tag, writingDate(), m_modificationTime, bind(&TagValue::toDateTime, _1));
+        assignPropertyFromTagValue(tag, numberOfBytes(), m_size, &tagValueToNumber<uint64>, diag);
+        assignPropertyFromTagValue(tag, numberOfFrames(), m_sampleCount, &tagValueToNumber<uint64>, diag);
+        assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::duration(), m_duration, bind(&TagValue::toTimeSpan, _1), diag);
+        assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::bitrate(), m_bitrate, &tagValueToBitrate<double>, diag);
+        assignPropertyFromTagValue(tag, writingDate(), m_modificationTime, bind(&TagValue::toDateTime, _1), diag);
         if(m_creationTime.isNull()) {
             m_creationTime = m_modificationTime;
         }
     }
 }
 
-void MatroskaTrack::internalParseHeader()
+void MatroskaTrack::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing header of Matroska track");
     try {
-        m_trackElement->parse();
+        m_trackElement->parse(diag);
     } catch(const Failure &) {
-        addNotification(NotificationType::Critical, "Unable to parse track element.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse track element.", context);
         throw;
     }
     // read information about the track from the childs of the track entry element
     for(EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
         try {
-            trackInfoElement->parse();
+            trackInfoElement->parse(diag);
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse track information element.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse track information element.", context);
             break;
         }
         uint32 defaultDuration = 0;
@@ -320,9 +320,9 @@ void MatroskaTrack::internalParseHeader()
         case MatroskaIds::TrackVideo:
             for(subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
-                    subElement->parse();
+                    subElement->parse(diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse video track element.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to parse video track element.", context);
                     break;
                 }
                 switch(subElement->id()) {
@@ -367,9 +367,9 @@ void MatroskaTrack::internalParseHeader()
         case MatroskaIds::TrackAudio:
             for(subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
-                    subElement->parse();
+                    subElement->parse(diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse audio track element.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to parse audio track element.", context);
                     break;
                 }
                 switch(subElement->id()) {
@@ -447,7 +447,7 @@ void MatroskaTrack::internalParseHeader()
     switch(m_format.general) {
     EbmlElement *codecPrivateElement;
     case GeneralMediaFormat::MicrosoftVideoCodecManager:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse bitmap info header to determine actual format
             if(codecPrivateElement->dataSize() >= 0x28) {
                 m_istream->seekg(codecPrivateElement->dataOffset());
@@ -459,12 +459,12 @@ void MatroskaTrack::internalParseHeader()
                 m_formatId += "\"";
                 m_format += FourccIds::fourccToMediaFormat(bitmapInfoHeader.compression);
             } else {
-                addNotification(NotificationType::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
+                diag.emplace_back(DiagLevel::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
             }
         }
         break;
     case GeneralMediaFormat::MicrosoftAudioCodecManager:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse WAVE header to determine actual format
             if(codecPrivateElement->dataSize() >= 16) {
                 m_istream->seekg(codecPrivateElement->dataOffset());
@@ -472,43 +472,43 @@ void MatroskaTrack::internalParseHeader()
                 waveFormatHeader.parse(reader());
                 WaveAudioStream::addInfo(waveFormatHeader, *this);
             } else {
-                addNotification(NotificationType::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
+                diag.emplace_back(DiagLevel::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
             }
         }
         break;
     case GeneralMediaFormat::Aac:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
-            auto audioSpecificConfig = Mp4Track::parseAudioSpecificConfig(*this, *m_istream, codecPrivateElement->dataOffset(), codecPrivateElement->dataSize());
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
+            auto audioSpecificConfig = Mp4Track::parseAudioSpecificConfig(*m_istream, codecPrivateElement->dataOffset(), codecPrivateElement->dataSize(), diag);
             m_format += Mpeg4AudioObjectIds::idToMediaFormat(audioSpecificConfig->audioObjectType, audioSpecificConfig->sbrPresent, audioSpecificConfig->psPresent);
             if(audioSpecificConfig->sampleFrequencyIndex == 0xF) {
                 //m_samplingFrequency = audioSpecificConfig->sampleFrequency;
             } else if(audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
                 //m_samplingFrequency = mpeg4SamplingFrequencyTable[audioSpecificConfig->sampleFrequencyIndex];
             } else {
-                addNotification(NotificationType::Warning, "Audio specific config has invalid sample frequency index.", context);
+                diag.emplace_back(DiagLevel::Warning, "Audio specific config has invalid sample frequency index.", context);
             }
             if(audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
                 //m_extensionSamplingFrequency = audioSpecificConfig->extensionSampleFrequency;
             } else if(audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
                 //m_extensionSamplingFrequency = mpeg4SamplingFrequencyTable[audioSpecificConfig->extensionSampleFrequencyIndex];
             } else {
-                addNotification(NotificationType::Warning, "Audio specific config has invalid extension sample frequency index.", context);
+                diag.emplace_back(DiagLevel::Warning, "Audio specific config has invalid extension sample frequency index.", context);
             }
             m_channelConfig = audioSpecificConfig->channelConfiguration;
             m_extensionChannelConfig = audioSpecificConfig->extensionChannelConfiguration;
         }
         break;
     case GeneralMediaFormat::Avc:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate))) {
+        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             auto avcConfig = make_unique<Media::AvcConfiguration>();
             try {
                 m_istream->seekg(codecPrivateElement->dataOffset());
                 avcConfig->parse(m_reader, codecPrivateElement->dataSize());
                 Mp4Track::addInfo(*avcConfig, *this);
             } catch(const TruncatedDataException &) {
-                addNotification(NotificationType::Critical, "AVC configuration is truncated.", context);
+                diag.emplace_back(DiagLevel::Critical, "AVC configuration is truncated.", context);
             } catch(const Failure &) {
-                addNotification(NotificationType::Critical, "AVC configuration is invalid.", context);
+                diag.emplace_back(DiagLevel::Critical, "AVC configuration is invalid.", context);
             }
         }
         break;
@@ -551,10 +551,12 @@ void MatroskaTrack::internalParseHeader()
  * \brief Prepares making the header for the specified \a track.
  * \sa See MatroskaTrack::prepareMakingHeader() for more information.
  */
-MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track) :
+MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag) :
     m_track(track),
     m_dataSize(0)
 {
+    VAR_UNUSED(diag);
+
     // calculate size for recognized elements
     m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.id());
     m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.trackNumber());

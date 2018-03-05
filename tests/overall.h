@@ -3,6 +3,8 @@
 
 #include "../mediafileinfo.h"
 #include "../tagvalue.h"
+#include "../diagnostics.h"
+#include "../progressfeedback.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/tests/testutils.h>
@@ -60,6 +62,8 @@ class OverallTests : public TestFixture
     CPPUNIT_TEST_SUITE_END();
 
 public:
+    OverallTests();
+
     void setUp();
     void tearDown();
 
@@ -128,6 +132,8 @@ public:
 private:
     MediaFileInfo m_fileInfo;
     MediaFileInfo m_additionalFileInfo;
+    Diagnostics m_diag;
+    AbortableProgressFeedback m_progress;
     TagValue m_testTitle;
     TagValue m_testComment;
     TagValue m_testAlbum;

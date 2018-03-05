@@ -13,13 +13,13 @@ class TAG_PARSER_EXPORT MatroskaAttachmentMaker
     friend class MatroskaAttachment;
 
 public:
-    void make(std::ostream &stream) const;
+    void make(std::ostream &stream, Diagnostics &diag) const;
     const MatroskaAttachment &attachment() const;
     uint64 requiredSize() const;
-    void bufferCurrentAttachments();
+    void bufferCurrentAttachments(Diagnostics &diag);
 
 private:
-    MatroskaAttachmentMaker(MatroskaAttachment &attachment);
+    MatroskaAttachmentMaker(MatroskaAttachment &attachment, Diagnostics &diag);
 
     MatroskaAttachment &m_attachment;
     uint64 m_attachedFileElementSize;
@@ -47,9 +47,9 @@ class TAG_PARSER_EXPORT MatroskaAttachment : public AbstractAttachment
 public:
     MatroskaAttachment();
 
-    void parse(EbmlElement *attachedFileElement);
-    MatroskaAttachmentMaker prepareMaking();
-    void make(std::ostream &stream);
+    void parse(EbmlElement *attachedFileElement, Diagnostics &diag);
+    MatroskaAttachmentMaker prepareMaking(Diagnostics &diag);
+    void make(std::ostream &stream, Diagnostics &diag);
 
     EbmlElement *attachedFileElement() const;
 
@@ -83,9 +83,9 @@ inline EbmlElement *MatroskaAttachment::attachedFileElement() const
  * This method might be useful when it is necessary to know the size of the attachment before making it.
  * \sa make()
  */
-inline MatroskaAttachmentMaker MatroskaAttachment::prepareMaking()
+inline MatroskaAttachmentMaker MatroskaAttachment::prepareMaking(Diagnostics &diag)
 {
-    return MatroskaAttachmentMaker(*this);
+    return MatroskaAttachmentMaker(*this, diag);
 }
 
 } // namespace Media

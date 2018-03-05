@@ -21,7 +21,7 @@ public:
     static void addInfo(const MpegAudioFrame &frame, AbstractTrack &track);
 
 protected:
-    void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag);
 
 private:
     std::list<MpegAudioFrame> m_frames;

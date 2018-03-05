@@ -2,7 +2,6 @@
 #define MEDIAINFO_H
 
 #include "./signature.h"
-#include "./statusprovider.h"
 #include "./basicfileinfo.h"
 #include "./abstractcontainer.h"
 
@@ -24,6 +23,8 @@ class EbmlElement;
 class MatroskaTag;
 class AbstractTrack;
 class VorbisComment;
+class Diagnostics;
+class AbortableProgressFeedback;
 
 enum class MediaType;
 DECLARE_ENUM_CLASS(TagType, unsigned int);
@@ -50,7 +51,7 @@ enum class ParsingStatus : byte
     CriticalFailure /**< tried to parse the part, but critical errors occured */
 };
 
-class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo, public StatusProvider
+class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo
 {
 public:
     // constructor, destructor
@@ -58,18 +59,18 @@ public:
     MediaFileInfo(const std::string &path);
     MediaFileInfo(const MediaFileInfo &) = delete;
     MediaFileInfo &operator=(const MediaFileInfo &) = delete;
-    ~MediaFileInfo();
+    ~MediaFileInfo() override;
 
     // methods to parse file
-    void parseContainerFormat();
-    void parseTracks();
-    void parseTags();
-    void parseChapters();
-    void parseAttachments();
-    void parseEverything();
+    void parseContainerFormat(Diagnostics &diag);
+    void parseTracks(Diagnostics &diag);
+    void parseTags(Diagnostics &diag);
+    void parseChapters(Diagnostics &diag);
+    void parseAttachments(Diagnostics &diag);
+    void parseEverything(Diagnostics &diag);
 
     // methods to apply changes
-    void applyChanges();
+    void applyChanges(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     // methods to get parsed information regarding ...
     // ... the container
@@ -129,12 +130,6 @@ public:
     bool id3v2ToId3v1();
     VorbisComment *createVorbisComment();
     bool removeVorbisComment();
-
-    // methods to get/wipe notifications
-    bool haveRelatedObjectsNotifications() const;
-    NotificationType worstNotificationTypeIncludingRelatedObjects() const;
-    void gatherRelatedNotifications(NotificationList &notifications) const;
-    NotificationList gatherRelatedNotifications() const;
     void clearParsingResults();
 
     // methods to get, set object behaviour
@@ -160,13 +155,13 @@ public:
     void setForceIndexPosition(bool forceTagPosition);
 
 protected:
-    virtual void invalidated();
+    void invalidated() override;
 
 private:
     // private methods internally used when rewriting the file to apply new tag information
     // currently only the makeMp3File() methods is present; corresponding methods for
     // other formats are outsourced to container classes
-    void makeMp3File();
+    void makeMp3File(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     // fields related to the container
     ParsingStatus m_containerParsingStatus;
@@ -174,7 +169,7 @@ private:
     std::streamoff m_containerOffset;
     uint64 m_paddingSize;
     bool m_actualExistingId3v1Tag;
-    std::list<std::streamoff> m_actualId3v2TagOffsets;
+    std::vector<std::streamoff> m_actualId3v2TagOffsets;
     std::unique_ptr<AbstractContainer> m_container;
 
     // fields related to the tracks

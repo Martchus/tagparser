@@ -1,7 +1,6 @@
 #ifndef MEDIA_ABSTRACTCHAPTER_H
 #define MEDIA_ABSTRACTCHAPTER_H
 
-#include "./statusprovider.h"
 #include "./localeawarestring.h"
 
 #include <c++utilities/chrono/timespan.h>
@@ -11,7 +10,9 @@
 
 namespace Media {
 
-class TAG_PARSER_EXPORT AbstractChapter : public StatusProvider
+class Diagnostics;
+
+class TAG_PARSER_EXPORT AbstractChapter
 {
 public:
     virtual ~AbstractChapter();
@@ -28,12 +29,12 @@ public:
     virtual const AbstractChapter *nestedChapter(std::size_t index) const;
     virtual std::size_t nestedChapterCount() const;
     virtual void clear();
-    void parse();
-    void parseNested();
+    void parse(Diagnostics &diag);
+    void parseNested(Diagnostics &diag);
 
 protected:
     AbstractChapter();
-    virtual void internalParse() = 0;
+    virtual void internalParse(Diagnostics &diag) = 0;
 
     uint64 m_id;
     std::vector<LocaleAwareString> m_names;

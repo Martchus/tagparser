@@ -26,9 +26,9 @@ class TAG_PARSER_EXPORT MatroskaContainer : public GenericContainer<MediaFileInf
 {
 public:
     MatroskaContainer(MediaFileInfo &stream, uint64 startOffset);
-    ~MatroskaContainer();
+    ~MatroskaContainer() override;
 
-    void validateIndex();
+    void validateIndex(Diagnostics &diag);
     uint64 maxIdLength() const;
     uint64 maxSizeLength() const;
     const std::vector<std::unique_ptr<MatroskaSeekInfo> > &seekInfos() const;
@@ -36,31 +36,31 @@ public:
     static uint64 maxFullParseSize();
     void setMaxFullParseSize(uint64 maxFullParseSize);
     const std::vector<std::unique_ptr<MatroskaEditionEntry> > &editionEntires() const;
-    MatroskaChapter *chapter(std::size_t index);
-    std::size_t chapterCount() const;
-    MatroskaAttachment *createAttachment();
-    MatroskaAttachment *attachment(std::size_t index);
-    std::size_t attachmentCount() const;
-    ElementPosition determineElementPosition(uint64 elementId) const;
-    ElementPosition determineTagPosition() const;
-    ElementPosition determineIndexPosition() const;
+    MatroskaChapter *chapter(std::size_t index) override;
+    std::size_t chapterCount() const override;
+    MatroskaAttachment *createAttachment() override;
+    MatroskaAttachment *attachment(std::size_t index) override;
+    std::size_t attachmentCount() const override;
+    ElementPosition determineElementPosition(uint64 elementId, Diagnostics &diag) const;
+    ElementPosition determineTagPosition(Diagnostics &diag) const override;
+    ElementPosition determineIndexPosition(Diagnostics &diag) const override;
 
-    virtual bool supportsTitle() const;
-    virtual std::size_t segmentCount() const;
+    virtual bool supportsTitle() const override;
+    virtual std::size_t segmentCount() const override;
 
-    void reset();
+    void reset() override;
 
 protected:
-    void internalParseHeader();
-    void internalParseTags();
-    void internalParseTracks();
-    void internalParseChapters();
-    void internalParseAttachments();
-    void internalMakeFile();
+    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseTags(Diagnostics &diag) override;
+    void internalParseTracks(Diagnostics &diag) override;
+    void internalParseChapters(Diagnostics &diag) override;
+    void internalParseAttachments(Diagnostics &diag) override;
+    void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
-    void parseSegmentInfo();
-    void readTrackStatisticsFromTags();
+    void parseSegmentInfo(Diagnostics &diag);
+    void readTrackStatisticsFromTags(Diagnostics &diag);
 
     uint64 m_maxIdLength;
     uint64 m_maxSizeLength;

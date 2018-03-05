@@ -22,12 +22,12 @@ class TAG_PARSER_EXPORT Id3v2TagMaker
     friend class Id3v2Tag;
 
 public:
-    void make(std::ostream &stream, uint32 padding);
+    void make(std::ostream &stream, uint32 padding, Diagnostics &diag);
     const Id3v2Tag &tag() const;
     uint64 requiredSize() const;
 
 private:
-    Id3v2TagMaker(Id3v2Tag &tag);
+    Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag);
 
     Id3v2Tag &m_tag;
     uint32 m_framesSize;
@@ -78,9 +78,9 @@ public:
     bool supportsDescription(KnownField field) const;
     bool supportsMimeType(KnownField field) const;
 
-    void parse(std::istream &sourceStream, const uint64 maximalSize = 0);
-    Id3v2TagMaker prepareMaking();
-    void make(std::ostream &targetStream, uint32 padding);
+    void parse(std::istream &sourceStream, const uint64 maximalSize, Diagnostics &diag);
+    Id3v2TagMaker prepareMaking(Diagnostics &diag);
+    void make(std::ostream &targetStream, uint32 padding, Diagnostics &diag);
 
     byte majorVersion() const;
     byte revisionVersion() const;

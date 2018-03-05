@@ -2,6 +2,8 @@
 #include "./ebmlelement.h"
 #include "./matroskaid.h"
 
+#include "../diagnostics.h"
+
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 
@@ -50,16 +52,15 @@ string MatroskaEditionEntry::label() const
  *
  * Clears all previous parsing results.
  */
-void MatroskaEditionEntry::parse()
+void MatroskaEditionEntry::parse(Diagnostics &diag)
 {
     // clear previous values and status
     static const string context("parsing \"EditionEntry\"-element");
-    invalidateStatus();
     clear();
     // iterate through children of "EditionEntry"-element
     EbmlElement *entryChild = m_editionEntryElement->firstChild();
     while(entryChild) {
-        entryChild->parse();
+        entryChild->parse(diag);
         switch(entryChild->id()) {
         case MatroskaIds::EditionUID:
             m_id = entryChild->readUInteger();
@@ -77,7 +78,7 @@ void MatroskaEditionEntry::parse()
             m_chapters.emplace_back(make_unique<MatroskaChapter>(entryChild));
             break;
         default:
-            addNotification(NotificationType::Warning, "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ingored.", context);
+            diag.emplace_back(DiagLevel::Warning, "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ingored.", context);
         }
         entryChild = entryChild->nextSibling();
     }
@@ -89,11 +90,11 @@ void MatroskaEditionEntry::parse()
  * - Parses also fetched chapters and nested chapters.
  * - Clears all previous parsing results.
  */
-void MatroskaEditionEntry::parseNested()
+void MatroskaEditionEntry::parseNested(Diagnostics &diag)
 {
-    parse();
+    parse(diag);
     for(auto &chapter : chapters()) {
-        chapter->parseNested();
+        chapter->parseNested(diag);
     }
 }
 

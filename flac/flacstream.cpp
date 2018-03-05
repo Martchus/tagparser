@@ -65,7 +65,7 @@ bool FlacStream::removeVorbisComment()
     }
 }
 
-void FlacStream::internalParseHeader()
+void FlacStream::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing raw FLAC header");
     if(!m_istream) {
@@ -101,7 +101,7 @@ void FlacStream::internalParseHeader()
                     m_bitsPerSample = streamInfo.bitsPerSample();
                     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
                 } else {
-                    addNotification(NotificationType::Critical, "\"METADATA_BLOCK_STREAMINFO\" is truncated and will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_STREAMINFO\" is truncated and will be ignored.", context);
                 }
                 break;
 
@@ -112,7 +112,7 @@ void FlacStream::internalParseHeader()
                     m_vorbisComment = make_unique<VorbisComment>();
                 }
                 try {
-                    m_vorbisComment->parse(*m_istream, header.dataSize(), VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+                    m_vorbisComment->parse(*m_istream, header.dataSize(), VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
                 } catch(const Failure &) {
                     // error is logged via notifications, just continue with the next metadata block
                 }
@@ -128,7 +128,7 @@ void FlacStream::internalParseHeader()
                     coverField.setTypeInfo(picture.pictureType());
 
                     if(coverField.value().isEmpty()) {
-                        addNotification(NotificationType::Warning, "\"METADATA_BLOCK_PICTURE\" contains no picture.", context);
+                        diag.emplace_back(DiagLevel::Warning, "\"METADATA_BLOCK_PICTURE\" contains no picture.", context);
                     } else {
                         // add the cover to the Vorbis comment
                         if(!m_vorbisComment) {
@@ -140,7 +140,7 @@ void FlacStream::internalParseHeader()
                     }
 
                 } catch(const TruncatedDataException &) {
-                    addNotification(NotificationType::Critical, "\"METADATA_BLOCK_PICTURE\" is truncated and will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_PICTURE\" is truncated and will be ignored.", context);
                 }
                 break;
 
@@ -161,7 +161,7 @@ void FlacStream::internalParseHeader()
         m_streamOffset = m_istream->tellg();
 
     } else {
-        addNotification(NotificationType::Critical, "Signature (fLaC) not found.", context);
+        diag.emplace_back(DiagLevel::Critical, "Signature (fLaC) not found.", context);
         throw InvalidDataException();
     }
 }
@@ -177,7 +177,7 @@ void FlacStream::internalParseHeader()
  *
  * \returns Returns the start offset of the last "METADATA_BLOCK_HEADER" withing \a outputStream.
  */
-uint32 FlacStream::makeHeader(ostream &outputStream)
+uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 {
     istream &originalStream = m_mediaFileInfo.stream();
     originalStream.seekg(m_startOffset + 4);
@@ -219,7 +219,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream)
         const auto coverId = m_vorbisComment->fieldId(KnownField::Cover);
 
         // write Vorbis comment
-        m_vorbisComment->make(outputStream, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte | VorbisCommentFlags::NoCovers);
+        m_vorbisComment->make(outputStream, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte | VorbisCommentFlags::NoCovers, diag);
 
         // write "METADATA_BLOCK_HEADER"
         const uint32 endOffset = outputStream.tellp();
@@ -254,7 +254,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream)
  * \brief Writes padding of the specified \a size to the specified \a stream.
  * \remarks Size must be at least 4 bytes.
  */
-void FlacStream::makePadding(ostream &stream, uint32 size, bool isLast)
+void FlacStream::makePadding(ostream &stream, uint32 size, bool isLast, Diagnostics &diag)
 {
     // make header
     FlacMetaDataBlockHeader header;

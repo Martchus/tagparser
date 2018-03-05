@@ -35,14 +35,14 @@ class TAG_PARSER_EXPORT WaveAudioStream : public AbstractTrack
 {
 public:
     WaveAudioStream(std::iostream &stream, uint64 startOffset);
-    virtual ~WaveAudioStream();
+    ~WaveAudioStream() override;
 
-    virtual TrackType type() const;
+    TrackType type() const override;
 
     static void addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track);
 
 protected:
-    virtual void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     uint64 m_dataOffset;

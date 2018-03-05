@@ -59,7 +59,7 @@ inline uint64 MatroskaReferenceOffsetPair::referenceOffset() const
     return m_referenceOffset;
 }
 
-class TAG_PARSER_EXPORT MatroskaCuePositionUpdater : public StatusProvider
+class TAG_PARSER_EXPORT MatroskaCuePositionUpdater
 {
 public:
     MatroskaCuePositionUpdater();
@@ -67,10 +67,10 @@ public:
     EbmlElement *cuesElement() const;
     uint64 totalSize() const;
 
-    void parse(EbmlElement *cuesElement);
+    void parse(EbmlElement *cuesElement, Diagnostics &diag);
     bool updateOffsets(uint64 originalOffset, uint64 newOffset);
     bool updateRelativeOffsets(uint64 referenceOffset, uint64 originalRelativeOffset, uint64 newRelativeOffset);
-    void make(std::ostream &stream);
+    void make(std::ostream &stream, Diagnostics &diag);
     void clear();
 
 private:

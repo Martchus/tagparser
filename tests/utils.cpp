@@ -1,7 +1,6 @@
 #include "./helper.h"
 
 #include "../size.h"
-#include "../statusprovider.h"
 #include "../tagtarget.h"
 #include "../signature.h"
 #include "../margin.h"
@@ -29,18 +28,6 @@ using namespace TestUtilities::Literals;
 
 using namespace CPPUNIT_NS;
 
-/*!
- * \brief The TestStatusProvider class helps testing the StatusProvider class.
- */
-class TestStatusProvider : public StatusProvider
-{
-public:
-    TestStatusProvider();
-};
-
-TestStatusProvider::TestStatusProvider()
-{
-}
 
 /*!
  * \brief The UtilitiesTests class tests various utility classes and functions of the tagparser library.
@@ -48,7 +35,6 @@ TestStatusProvider::TestStatusProvider()
 class UtilitiesTests : public TestFixture {
     CPPUNIT_TEST_SUITE(UtilitiesTests);
     CPPUNIT_TEST(testSize);
-    CPPUNIT_TEST(testStatusProvider);
     CPPUNIT_TEST(testTagTarget);
     CPPUNIT_TEST(testSignature);
     CPPUNIT_TEST(testMargin);
@@ -97,77 +83,6 @@ void UtilitiesTests::testSize()
     size.setWidth(1280);
     size.setHeight(720);
     CPPUNIT_ASSERT_EQUAL("720p"s, string(size.abbreviation()));
-}
-
-void UtilitiesTests::testStatusProvider()
-{
-    const string context("unit tests");
-    TestStatusProvider status, status2;
-
-    // notifications
-    CPPUNIT_ASSERT(!status.hasNotifications());
-    CPPUNIT_ASSERT_EQUAL(NotificationType::None, status.worstNotificationType());
-    status.addNotification(NotificationType::Debug, "debug notification", context);
-    CPPUNIT_ASSERT_EQUAL(NotificationType::Debug, status.worstNotificationType());
-    CPPUNIT_ASSERT(!status.hasCriticalNotifications());
-    status.addNotification(NotificationType::Warning, "warning", context);
-    CPPUNIT_ASSERT_EQUAL(NotificationType::Warning, status.worstNotificationType());
-    CPPUNIT_ASSERT_EQUAL("warning"s, status.notifications().back().message());
-    CPPUNIT_ASSERT(!status.hasCriticalNotifications());
-    status.addNotification(NotificationType::Critical, "error", context);
-    CPPUNIT_ASSERT_EQUAL(NotificationType::Critical, status.worstNotificationType());
-    CPPUNIT_ASSERT(status.hasCriticalNotifications());
-    CPPUNIT_ASSERT_EQUAL(3_st, status.notifications().size());
-    CPPUNIT_ASSERT(status.hasNotifications());
-    status2.addNotifications(status);
-    status.invalidateNotifications();
-    CPPUNIT_ASSERT(!status.hasNotifications());
-    CPPUNIT_ASSERT(!status.hasCriticalNotifications());
-    CPPUNIT_ASSERT_EQUAL(3_st, status2.notifications().size());
-    status.addNotification(status2.notifications().back());
-    CPPUNIT_ASSERT(status.hasCriticalNotifications());
-
-    // status and percentage
-    CPPUNIT_ASSERT_EQUAL(string(), status.currentStatus());
-    CPPUNIT_ASSERT_EQUAL(0.0, status.currentPercentage());
-    CPPUNIT_ASSERT(!status.isAborted());
-    bool statusUpdateReceived = false, firstStatusUpdate = true;
-    const auto callbackId = status.registerCallback([&status, &statusUpdateReceived, &firstStatusUpdate] (StatusProvider &sender) {
-        CPPUNIT_ASSERT(&status == &sender);
-        if(firstStatusUpdate) {
-            CPPUNIT_ASSERT_EQUAL("test"s, sender.currentStatus());
-            CPPUNIT_ASSERT_EQUAL(0.5, sender.currentPercentage());
-            firstStatusUpdate = false;
-        }
-        sender.tryToAbort();
-        statusUpdateReceived = true;
-    });
-    status.updateStatus("test", 0.5);
-    CPPUNIT_ASSERT_MESSAGE("status update for updated status received", statusUpdateReceived);
-    CPPUNIT_ASSERT(status.isAborted());
-    statusUpdateReceived = false;
-    status.updatePercentage(0.625);
-    CPPUNIT_ASSERT_MESSAGE("status update for updated percentage received", statusUpdateReceived);
-    statusUpdateReceived = false;
-    status.addNotification(status2.notifications().front());
-    CPPUNIT_ASSERT_MESSAGE("status update for new notification received", statusUpdateReceived);
-    statusUpdateReceived = false;
-    status.unregisterCallback(callbackId);
-    status.updatePercentage(0.65);
-    CPPUNIT_ASSERT_MESSAGE("no status update received after callback unregistered", !statusUpdateReceived);
-
-    // forwarding
-    TestStatusProvider forwardReceiver;
-    status.forwardStatusUpdateCalls(&forwardReceiver);
-    statusUpdateReceived = false;
-    forwardReceiver.registerCallback([&status, &statusUpdateReceived] (StatusProvider &sender) {
-        CPPUNIT_ASSERT(&status == &sender);
-        CPPUNIT_ASSERT_EQUAL("test2"s, sender.currentStatus());
-        CPPUNIT_ASSERT_EQUAL(0.75, sender.currentPercentage());
-        statusUpdateReceived = true;
-    });
-    status.updateStatus("test2", 0.75);
-    CPPUNIT_ASSERT(statusUpdateReceived);
 }
 
 void UtilitiesTests::testTagTarget()
@@ -318,8 +233,6 @@ void UtilitiesTests::testBackupFile()
     CPPUNIT_ASSERT_EQUAL(0x34_st, static_cast<size_t>(file.stream().get()));
     file.close();
 
-    CPPUNIT_ASSERT_MESSAGE("file has no critical notifications yet", !file.hasCriticalNotifications());
-
     // reset backup dir again
     backupDirectory().clear();
 
@@ -328,42 +241,42 @@ void UtilitiesTests::testBackupFile()
     try {
         throw OperationAbortedException();
     } catch(...) {
-        CPPUNIT_ASSERT_THROW(handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, "test"), OperationAbortedException);
+        Diagnostics diag;
+        CPPUNIT_ASSERT_THROW(handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test"), OperationAbortedException);
+        CPPUNIT_ASSERT(diag.level() < DiagLevel::Critical);
+        CPPUNIT_ASSERT(!diag.empty());
+        CPPUNIT_ASSERT_EQUAL("Rewriting the file to apply changed tag information has been aborted."s, diag.front().message());
+        CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, diag.back().message());
     }
-    CPPUNIT_ASSERT(!file.hasCriticalNotifications());
-    CPPUNIT_ASSERT(file.hasNotifications());
-    CPPUNIT_ASSERT_EQUAL("Rewriting the file to apply changed tag information has been aborted."s, file.notifications().front().message());
-    CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, file.notifications().back().message());
-    file.invalidateNotifications();
 
     // restore after error
     createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throw Failure();
     } catch(...) {
-        CPPUNIT_ASSERT_THROW(handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, "test"), Failure);
+        Diagnostics diag;
+        CPPUNIT_ASSERT_THROW(handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test"), Failure);
+        CPPUNIT_ASSERT(diag.level() >= DiagLevel::Critical);
+        CPPUNIT_ASSERT_EQUAL("Rewriting the file to apply changed tag information failed."s, diag.front().message());
+        CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, diag.back().message());
     }
-    CPPUNIT_ASSERT(file.hasCriticalNotifications());
-    CPPUNIT_ASSERT_EQUAL("Rewriting the file to apply changed tag information failed."s, file.notifications().front().message());
-    CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, file.notifications().back().message());
-    file.invalidateNotifications();
 
     // restore after io failure
     createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throwIoFailure("simulated IO failure");
     } catch(...) {
+        Diagnostics diag;
         try {
-            handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, "test");
-            CPPUNIT_FAIL("IO failure rethrown");
+            handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test");
+            CPPUNIT_FAIL("IO failure not rethrown");
         } catch(...) {
             catchIoFailure();
         }
+        CPPUNIT_ASSERT(diag.level() >= DiagLevel::Critical);
+        CPPUNIT_ASSERT_EQUAL("An IO error occured when rewriting the file to apply changed tag information."s, diag.front().message());
+        CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, diag.back().message());
     }
-    CPPUNIT_ASSERT(file.hasCriticalNotifications());
-    CPPUNIT_ASSERT_EQUAL("An IO error occured when rewriting the file to apply changed tag information."s, file.notifications().front().message());
-    CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, file.notifications().back().message());
-    file.invalidateNotifications();
 
     CPPUNIT_ASSERT_EQUAL(0, remove(file.path().data()));
 }

@@ -1,7 +1,6 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include "./statusprovider.h"
 #include "./tagvalue.h"
 #include "./tagtarget.h"
 
@@ -95,7 +94,7 @@ constexpr KnownField nextKnownField(KnownField field)
     return field == lastKnownField ? KnownField::Invalid : static_cast<KnownField>(static_cast<int>(field) + 1);
 }
 
-class TAG_PARSER_EXPORT Tag : public StatusProvider
+class TAG_PARSER_EXPORT Tag
 {
 public:
     virtual ~Tag();

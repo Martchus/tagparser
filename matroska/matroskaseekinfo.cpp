@@ -2,6 +2,7 @@
 #include "./matroskaid.h"
 
 #include "../exceptions.h"
+#include "../diagnostics.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/binaryconversion.h>
@@ -36,7 +37,7 @@ void MatroskaSeekInfo::shift(uint64 start, int64 amount)
  * \throws Throws Failure or a derived exception when a parsing error occurs.
  * \remarks The object does not take ownership over the specified \a seekHeadElement.
  */
-void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
+void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
 {
     static const string context("parsing \"SeekHead\"-element");
     m_seekHeadElement = seekHeadElement;
@@ -44,23 +45,23 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
     EbmlElement *seekElement = seekHeadElement->firstChild();
     EbmlElement *seekElementChild, *seekIdElement, *seekPositionElement;
     while(seekElement) {
-        seekElement->parse();
+        seekElement->parse(diag);
         switch(seekElement->id()) {
         case MatroskaIds::Seek:
             seekElementChild = seekElement->firstChild();
             seekIdElement = seekPositionElement = nullptr;
             while(seekElementChild) {
-                seekElementChild->parse();
+                seekElementChild->parse(diag);
                 switch(seekElementChild->id()) {
                 case MatroskaIds::SeekID:
                     if(seekIdElement) {
-                        addNotification(NotificationType::Warning, "The \"Seek\"-element contains multiple \"SeekID\"-elements. Surplus elements will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element contains multiple \"SeekID\"-elements. Surplus elements will be ignored.", context);
                     }
                     seekIdElement = seekElementChild;
                     break;
                 case MatroskaIds::SeekPosition:
                     if(seekPositionElement) {
-                        addNotification(NotificationType::Warning, "The \"Seek\"-element contains multiple \"SeekPosition\"-elements. Surplus elements will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element contains multiple \"SeekPosition\"-elements. Surplus elements will be ignored.", context);
                     }
                     seekPositionElement = seekElementChild;
                     break;
@@ -68,7 +69,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
                 case EbmlIds::Void:
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "The element \""
+                    diag.emplace_back(DiagLevel::Warning, "The element \""
                                     % seekElementChild->idToString()
                                     + "\" within the \"Seek\" element is not a \"SeekID\"-element nor a \"SeekPosition\"-element and will be ignored.", context);
                 }
@@ -77,19 +78,19 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
             if(seekIdElement && seekPositionElement) {
                 m_info.emplace_back(seekIdElement->readUInteger(), seekPositionElement->readUInteger());
             } else {
-                addNotification(NotificationType::Warning, "The \"Seek\"-element does not contain a \"SeekID\"- and a \"SeekPosition\"-element.", context);
+                diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element does not contain a \"SeekID\"- and a \"SeekPosition\"-element.", context);
             }
             break;
         case EbmlIds::Crc32:
         case EbmlIds::Void:
             break;
         default:
-            addNotification(NotificationType::Warning, "The element " % seekElement->idToString() + " is not a seek element and will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "The element " % seekElement->idToString() + " is not a seek element and will be ignored.", context);
         }
         seekElement = seekElement->nextSibling();
     }
     if(m_info.empty()) {
-        addNotification(NotificationType::Warning, "No seek information found.", context);
+        diag.emplace_back(DiagLevel::Warning, "No seek information found.", context);
     }
 }
 
@@ -99,7 +100,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement)
  * \throws Throws ios_base::failure when an IO error occurs.
  * \throws Throws Failure or a derived exception when a making error occurs.
  */
-void MatroskaSeekInfo::make(ostream &stream)
+void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
 {
     uint64 totalSize = 0;
     char buff0[8];

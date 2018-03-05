@@ -46,11 +46,11 @@ void Mp4Container::reset()
     m_fragmented = false;
 }
 
-ElementPosition Mp4Container::determineTagPosition() const
+ElementPosition Mp4Container::determineTagPosition(Diagnostics &diag) const
 {
     if(m_firstElement) {
-        const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData);
-        const Mp4Atom *userDataAtom = m_firstElement->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData});
+        const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData, diag);
+        const Mp4Atom *userDataAtom = m_firstElement->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData}, diag);
         if(mediaDataAtom && userDataAtom) {
             return userDataAtom->startOffset() < mediaDataAtom->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
         }
@@ -58,11 +58,11 @@ ElementPosition Mp4Container::determineTagPosition() const
     return ElementPosition::Keep;
 }
 
-ElementPosition Mp4Container::determineIndexPosition() const
+ElementPosition Mp4Container::determineIndexPosition(Diagnostics &diag) const
 {
     if(m_firstElement) {
-        const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData);
-        const Mp4Atom *movieAtom = m_firstElement->siblingById(Mp4AtomIds::Movie);
+        const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData, diag);
+        const Mp4Atom *movieAtom = m_firstElement->siblingById(Mp4AtomIds::Movie, diag);
         if(mediaDataAtom && movieAtom) {
             return movieAtom->startOffset() < mediaDataAtom->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
         }
@@ -70,12 +70,12 @@ ElementPosition Mp4Container::determineIndexPosition() const
     return ElementPosition::Keep;
 }
 
-void Mp4Container::internalParseHeader()
+void Mp4Container::internalParseHeader(Diagnostics &diag)
 {
     //const string context("parsing header of MP4 container"); will be used when generating notifications
     m_firstElement = make_unique<Mp4Atom>(*this, startOffset());
-    m_firstElement->parse();
-    Mp4Atom *ftypAtom = m_firstElement->siblingById(Mp4AtomIds::FileType, true);
+    m_firstElement->parse(diag);
+    Mp4Atom *ftypAtom = m_firstElement->siblingById(Mp4AtomIds::FileType, diag, true);
     if(ftypAtom) {
         stream().seekg(static_cast<iostream::off_type>(ftypAtom->dataOffset()));
         m_doctype = reader().readString(4);
@@ -86,21 +86,21 @@ void Mp4Container::internalParseHeader()
     }
 }
 
-void Mp4Container::internalParseTags()
+void Mp4Container::internalParseTags(Diagnostics &diag)
 {
     const string context("parsing tags of MP4 container");
-    if(Mp4Atom *udtaAtom = firstElement()->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData})) {
-        Mp4Atom *metaAtom = udtaAtom->childById(Mp4AtomIds::Meta);
+    if(Mp4Atom *udtaAtom = firstElement()->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData}, diag)) {
+        Mp4Atom *metaAtom = udtaAtom->childById(Mp4AtomIds::Meta, diag);
         bool surplusMetaAtoms = false;
         while(metaAtom) {
-            metaAtom->parse();
+            metaAtom->parse(diag);
             m_tags.emplace_back(make_unique<Mp4Tag>());
             try {
-                m_tags.back()->parse(*metaAtom);
+                m_tags.back()->parse(*metaAtom, diag);
             } catch(const NoDataFoundException &) {
                 m_tags.pop_back();
             }
-            metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, false);
+            metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, diag, false);
             if(metaAtom) {
                 surplusMetaAtoms = true;
             }
@@ -109,20 +109,19 @@ void Mp4Container::internalParseTags()
             }
         }
         if(surplusMetaAtoms) {
-            addNotification(NotificationType::Warning, "udta atom contains multiple meta atoms. Surplus meta atoms will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "udta atom contains multiple meta atoms. Surplus meta atoms will be ignored.", context);
         }
     }
 }
 
-void Mp4Container::internalParseTracks()
+void Mp4Container::internalParseTracks(Diagnostics &diag)
 {
-    invalidateStatus();
     static const string context("parsing tracks of MP4 container");
     try {
         // get moov atom which holds track information
-        if(Mp4Atom *moovAtom = firstElement()->siblingById(Mp4AtomIds::Movie, true)) {
+        if(Mp4Atom *moovAtom = firstElement()->siblingById(Mp4AtomIds::Movie, diag, true)) {
             // get mvhd atom which holds overall track information
-            if(Mp4Atom *mvhdAtom = moovAtom->childById(Mp4AtomIds::MovieHeader)) {
+            if(Mp4Atom *mvhdAtom = moovAtom->childById(Mp4AtomIds::MovieHeader, diag)) {
                 if(mvhdAtom->dataSize() > 0) {
                     stream().seekg(static_cast<iostream::off_type>(mvhdAtom->dataOffset()));
                     byte version = reader().readByte();
@@ -145,16 +144,16 @@ void Mp4Container::internalParseTracks()
                             ;
                         }
                     } else {
-                        addNotification(NotificationType::Critical, "mvhd atom is truncated.", context);
+                        diag.emplace_back(DiagLevel::Critical, "mvhd atom is truncated.", context);
                     }
                 } else {
-                    addNotification(NotificationType::Critical, "mvhd atom is empty.", context);
+                    diag.emplace_back(DiagLevel::Critical, "mvhd atom is empty.", context);
                 }
             } else {
-                addNotification(NotificationType::Critical, "mvhd atom is does not exist.", context);
+                diag.emplace_back(DiagLevel::Critical, "mvhd atom is does not exist.", context);
             }
             // get mvex atom which holds default values for fragmented files
-            if(Mp4Atom *mehdAtom = moovAtom->subelementByPath({Mp4AtomIds::MovieExtends, Mp4AtomIds::MovieExtendsHeader})) {
+            if(Mp4Atom *mehdAtom = moovAtom->subelementByPath({Mp4AtomIds::MovieExtends, Mp4AtomIds::MovieExtendsHeader}, diag)) {
                 m_fragmented = true;
                 if(mehdAtom->dataSize() > 0) {
                     stream().seekg(static_cast<iostream::off_type>(mehdAtom->dataOffset()));
@@ -172,27 +171,27 @@ void Mp4Container::internalParseTracks()
                             ;
                         }
                     } else {
-                        addNotification(NotificationType::Warning, "mehd atom is truncated.", context);
+                        diag.emplace_back(DiagLevel::Warning, "mehd atom is truncated.", context);
                     }
                 }
             }
             // get first trak atoms which hold information for each track
-            Mp4Atom *trakAtom = moovAtom->childById(Mp4AtomIds::Track);
+            Mp4Atom *trakAtom = moovAtom->childById(Mp4AtomIds::Track, diag);
             int trackNum = 1;
             while(trakAtom) {
                 try {
-                    trakAtom->parse();
+                    trakAtom->parse(diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Warning, "Unable to parse child atom of moov.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Unable to parse child atom of moov.", context);
                 }
                 // parse the trak atom using the Mp4Track class
                 m_tracks.emplace_back(make_unique<Mp4Track>(*trakAtom));
                 try { // try to parse header
-                    m_tracks.back()->parseHeader();
+                    m_tracks.back()->parseHeader(diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Critical, "Unable to parse track " + ConversionUtilities::numberToString(trackNum) + ".", context);
+                    diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse track ", trackNum, '.'), context);
                 }
-                trakAtom = trakAtom->siblingById(Mp4AtomIds::Track, false); // get next trak atom
+                trakAtom = trakAtom->siblingById(Mp4AtomIds::Track, diag, false); // get next trak atom
                 ++trackNum;
             }
             // get overall duration, creation time and modification time if not determined yet
@@ -211,26 +210,24 @@ void Mp4Container::internalParseTracks()
             }
         }
     } catch(const Failure &) {
-        addNotification(NotificationType::Warning, "Unable to parse moov atom.", context);
+        diag.emplace_back(DiagLevel::Warning, "Unable to parse moov atom.", context);
     }
 }
 
-void Mp4Container::internalMakeFile()
+void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    // set initial status
-    invalidateStatus();
     static const string context("making MP4 container");
-    updateStatus("Calculating atom sizes and padding ...");
+    progress.updateStep("Calculating atom sizes and padding ...", 0);
 
     // basic validation of original file
     if(!isHeaderParsed()) {
-        addNotification(NotificationType::Critical, "The header has not been parsed yet.", context);
+        diag.emplace_back(DiagLevel::Critical, "The header has not been parsed yet.", context);
         throw InvalidDataException();
     }
 
     // define variables needed to parse atoms of original file
     if(!firstElement()) {
-        addNotification(NotificationType::Critical, "No MP4 atoms could be found.", context);
+        diag.emplace_back(DiagLevel::Critical, "No MP4 atoms could be found.", context);
         throw InvalidDataException();
     }
 
@@ -266,34 +263,34 @@ void Mp4Container::internalMakeFile()
     Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten;
     try {
         // file type atom (mandatory)
-        if((fileTypeAtom = firstElement()->siblingById(Mp4AtomIds::FileType, true))) {
+        if((fileTypeAtom = firstElement()->siblingById(Mp4AtomIds::FileType, diag, true))) {
             // buffer atom
             fileTypeAtom->makeBuffer();
         } else {
             // throw error if missing
-            addNotification(NotificationType::Critical, "Mandatory \"ftyp\"-atom not found.", context);
+            diag.emplace_back(DiagLevel::Critical, "Mandatory \"ftyp\"-atom not found.", context);
             throw InvalidDataException();
         }
 
         // progressive download information atom (not mandatory)
-        if((progressiveDownloadInfoAtom = firstElement()->siblingById(Mp4AtomIds::ProgressiveDownloadInformation, true))) {
+        if((progressiveDownloadInfoAtom = firstElement()->siblingById(Mp4AtomIds::ProgressiveDownloadInformation, diag, true))) {
             // buffer atom
             progressiveDownloadInfoAtom->makeBuffer();
         }
 
         // movie atom (mandatory)
-        if(!(movieAtom = firstElement()->siblingById(Mp4AtomIds::Movie, true))) {
+        if(!(movieAtom = firstElement()->siblingById(Mp4AtomIds::Movie, diag, true))) {
             // throw error if missing
-            addNotification(NotificationType::Critical, "Mandatory \"moov\"-atom not in the source file found.", context);
+            diag.emplace_back(DiagLevel::Critical, "Mandatory \"moov\"-atom not in the source file found.", context);
             throw InvalidDataException();
         }
 
         // movie fragment atom (indicates dash file)
-        if((firstMovieFragmentAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment))) {
+        if((firstMovieFragmentAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, diag))) {
             // there is at least one movie fragment atom -> consider file being dash
             // -> can not write chunk-by-chunk (currently)
             if(writeChunkByChunk) {
-                addNotification(NotificationType::Critical, "Writing chunk-by-chunk is not implemented for DASH files.", context);
+                diag.emplace_back(DiagLevel::Critical, "Writing chunk-by-chunk is not implemented for DASH files.", context);
                 throw NotImplementedException();
             }
             // -> tags must be placed at the beginning
@@ -303,7 +300,7 @@ void Mp4Container::internalMakeFile()
         // media data atom (mandatory?)
         // -> consider not only mdat as media data atom; consider everything not handled otherwise as media data
         for(firstMediaDataAtom = nullptr, level0Atom = firstElement(); level0Atom; level0Atom = level0Atom->nextSibling()) {
-            level0Atom->parse();
+            level0Atom->parse(diag);
             switch(level0Atom->id()) {
             case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation:
             case Mp4AtomIds::Movie: case Mp4AtomIds::Free: case Mp4AtomIds::Skip:
@@ -329,7 +326,7 @@ void Mp4Container::internalMakeFile()
         // ensure index and tags are always placed at the beginning when dealing with DASH files
         if(firstMovieFragmentAtom) {
             if(initialNewTagPos == ElementPosition::AfterData) {
-                addNotification(NotificationType::Warning, "Sorry, but putting index/tags at the end is not possible when dealing with DASH files.", context);
+                diag.emplace_back(DiagLevel::Warning, "Sorry, but putting index/tags at the end is not possible when dealing with DASH files.", context);
             }
             initialNewTagPos = newTagPos = ElementPosition::BeforeData;
         }
@@ -342,13 +339,11 @@ void Mp4Container::internalMakeFile()
 
     } catch (const Failure &) {
         // can't ignore parsing errors here
-        addNotification(NotificationType::Critical, "Unable to parse the overall atom structure of the source file.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse the overall atom structure of the source file.", context);
         throw InvalidDataException();
     }
 
-    if(isAborted()) {
-        throw OperationAbortedException();
-    }
+    progress.stopIfAborted();
 
     // calculate sizes
     // -> size of tags
@@ -357,26 +352,24 @@ void Mp4Container::internalMakeFile()
     tagMaker.reserve(m_tags.size());
     for(auto &tag : m_tags) {
         try {
-            tagMaker.emplace_back(tag->prepareMaking());
+            tagMaker.emplace_back(tag->prepareMaking(diag));
             tagsSize += tagMaker.back().requiredSize();
         } catch(const Failure &) {
-            // nothing to do because notifications will be added anyways
         }
-        addNotifications(*tag);
     }
 
     // -> size of movie atom (contains track and tag information)
     movieAtomSize = userDataAtomSize = 0;
     try {
         // add size of children
-        for(level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie)) {
+        for(level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
             for(level1Atom = level0Atom->firstChild(); level1Atom; level1Atom = level1Atom->nextSibling()) {
-                level1Atom->parse();
+                level1Atom->parse(diag);
                 switch(level1Atom->id()) {
                 case Mp4AtomIds::UserData:
                     try {
                         for(level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
-                            level2Atom->parse();
+                            level2Atom->parse(diag);
                             switch(level2Atom->id()) {
                             case Mp4AtomIds::Meta:
                                 // ignore meta data here; it is added separately
@@ -389,7 +382,7 @@ void Mp4Container::internalMakeFile()
                         }
                     } catch(const Failure &) {
                         // invalid children might be ignored as not mandatory
-                        addNotification(NotificationType::Critical, "Unable to parse the children of \"udta\"-atom of the source file; ignoring them.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Unable to parse the children of \"udta\"-atom of the source file; ignoring them.", context);
                     }
                     break;
                 case Mp4AtomIds::Track:
@@ -411,27 +404,25 @@ void Mp4Container::internalMakeFile()
 
         // add size of track atoms
         for(const auto &track : tracks()) {
-            movieAtomSize += track->requiredSize();
+            movieAtomSize += track->requiredSize(diag);
         }
 
         // add header size
         Mp4Atom::addHeaderSize(movieAtomSize);
     } catch(const Failure &) {
         // can't ignore parsing errors here
-        addNotification(NotificationType::Critical, "Unable to parse the children of \"moov\"-atom of the source file.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse the children of \"moov\"-atom of the source file.", context);
         throw InvalidDataException();
     }
 
-    if(isAborted()) {
-        throw OperationAbortedException();
-    }
+    progress.stopIfAborted();
 
     // check whether there are atoms to be voided after movie next sibling (only relevant when not rewriting)
     if(!rewriteRequired) {
         newPaddingEnd = 0;
         uint64 currentSum = 0;
         for(Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
-            level0Atom->parse();
+            level0Atom->parse(diag);
             switch(level0Atom->id()) {
             case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation:
             case Mp4AtomIds::Movie: case Mp4AtomIds::Free: case Mp4AtomIds::Skip:
@@ -502,13 +493,9 @@ calculatePadding:
         }
     }
 
-    if(isAborted()) {
-        throw OperationAbortedException();
-    }
-
     // setup stream(s) for writing
     // -> update status
-    updateStatus("Preparing streams ...");
+    progress.nextStepOrStop("Preparing streams ...");
 
     // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
     string backupPath;
@@ -525,7 +512,7 @@ calculatePadding:
                 outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch(...) {
                 const char *what = catchIoFailure();
-                addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+                diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
                 throwIoFailure(what);
             }
         } else {
@@ -537,7 +524,7 @@ calculatePadding:
                 outputStream.open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch(...) {
                 const char *what = catchIoFailure();
-                addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
+                diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
                 throwIoFailure(what);
             }
         }
@@ -550,7 +537,7 @@ calculatePadding:
     } else { // !rewriteRequired
         // ensure everything to make track atoms is buffered before altering the source file
         for(const auto &track : tracks()) {
-            track->bufferTrackAtoms();
+            track->bufferTrackAtoms(diag);
         }
 
         // reopen original file to ensure it is opened for writing
@@ -559,7 +546,7 @@ calculatePadding:
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
         } catch(...) {
             const char *what = catchIoFailure();
-            addNotification(NotificationType::Critical, "Opening the file with write permissions failed.", context);
+            diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
             throwIoFailure(what);
         }
     }
@@ -567,7 +554,7 @@ calculatePadding:
     // start actual writing
     try {
         // write header
-        updateStatus("Writing header and tags ...");
+        progress.nextStepOrStop("Writing header and tags ...");
         // -> make file type atom
         fileTypeAtom->copyBuffer(outputStream);
         fileTypeAtom->discardBuffer();
@@ -596,11 +583,11 @@ calculatePadding:
 
                 // -> write track atoms
                 for(auto &track : tracks()) {
-                    track->makeTrack();
+                    track->makeTrack(diag);
                 }
 
                 // -> write other movie atom children
-                for(level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie)) {
+                for(level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
                     for(level1Atom = level0Atom->firstChild(); level1Atom; level1Atom = level1Atom->nextSibling()) {
                         switch(level1Atom->id()) {
                         case Mp4AtomIds::UserData:
@@ -621,8 +608,8 @@ calculatePadding:
                     Mp4Atom::makeHeader(userDataAtomSize, Mp4AtomIds::UserData, outputWriter);
 
                     // write other children of user data atom
-                    for(level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie)) {
-                        for(level1Atom = level0Atom->childById(Mp4AtomIds::UserData); level1Atom; level1Atom = level1Atom->siblingById(Mp4AtomIds::UserData)) {
+                    for(level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
+                        for(level1Atom = level0Atom->childById(Mp4AtomIds::UserData, diag); level1Atom; level1Atom = level1Atom->siblingById(Mp4AtomIds::UserData, diag)) {
                             for(level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
                                 switch(level2Atom->id()) {
                                 case Mp4AtomIds::Meta:
@@ -638,7 +625,7 @@ calculatePadding:
 
                     // write meta atom
                     for(auto &maker : tagMaker) {
-                        maker.make(outputStream);
+                        maker.make(outputStream, diag);
                     }
                 }
 
@@ -666,7 +653,7 @@ calculatePadding:
                 // write media data
                 if(rewriteRequired) {
                     for(level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
-                        level0Atom->parse();
+                        level0Atom->parse(diag);
                         switch(level0Atom->id()) {
                         case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation:
                         case Mp4AtomIds::Movie: case Mp4AtomIds::Free: case Mp4AtomIds::Skip:
@@ -683,33 +670,30 @@ calculatePadding:
                             FALLTHROUGH;
                         default:
                             // update status
-                            updateStatus("Writing atom: " + level0Atom->idToString());
+                            progress.updateStep("Writing atom: " + level0Atom->idToString());
                             // copy atom entirely and forward status update calls
-                            level0Atom->forwardStatusUpdateCalls(this);
-                            level0Atom->copyEntirely(outputStream);
+                            level0Atom->copyEntirely(outputStream, diag, &progress);
                         }
                     }
 
                     // when writing chunk-by-chunk write media data now
                     if(writeChunkByChunk) {
                         // read chunk offset and chunk size table from the old file which are required to get chunks
-                        updateStatus("Reading chunk offsets and sizes from the original file ...");
+                        progress.updateStep("Reading chunk offsets and sizes from the original file ...");
                         trackInfos.reserve(trackCount);
                         uint64 totalChunkCount = 0;
                         uint64 totalMediaDataSize = 0;
                         for(auto &track : tracks()) {
-                            if(isAborted()) {
-                                throw OperationAbortedException();
-                            }
+                            progress.stopIfAborted();
 
                             // emplace information
-                            trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsetsSupportingFragments(fileInfo().isForcingFullParse()), track->readChunkSizes());
+                            trackInfos.emplace_back(&track->inputStream(), track->readChunkOffsets(fileInfo().isForcingFullParse(), diag), track->readChunkSizes(diag));
 
                             // check whether the chunks could be parsed correctly
                             const vector<uint64> &chunkOffsetTable = get<1>(trackInfos.back());
                             const vector<uint64> &chunkSizesTable = get<2>(trackInfos.back());
                             if(track->chunkCount() != chunkOffsetTable.size() || track->chunkCount() != chunkSizesTable.size()) {
-                                addNotification(NotificationType::Critical, "Chunks of track " % numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
+                                diag.emplace_back(DiagLevel::Critical, "Chunks of track " % numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
                             }
 
                             // increase total chunk count and size
@@ -727,9 +711,7 @@ calculatePadding:
                         uint64 chunkIndexWithinTrack = 0, totalChunksCopied = 0;
                         bool anyChunksCopied;
                         do {
-                            if(isAborted()) {
-                                throw OperationAbortedException();
-                            }
+                            progress.stopIfAborted();
 
                             // copy a chunk from each track
                             anyChunksCopied = false;
@@ -755,7 +737,7 @@ calculatePadding:
 
                             // incrase chunk index within track, update progress percentage
                             if(!(++chunkIndexWithinTrack % 10)) {
-                                updatePercentage(static_cast<double>(totalChunksCopied) / totalChunkCount);
+                                progress.updateStepPercentage(static_cast<byte>(totalChunksCopied * 100 / totalChunkCount));
                             }
 
                         } while(anyChunksCopied);
@@ -764,7 +746,7 @@ calculatePadding:
                 } else {
                     // can't just skip next movie sibling
                     for(Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
-                        level0Atom->parse();
+                        level0Atom->parse(diag);
                         switch(level0Atom->id()) {
                         case Mp4AtomIds::FileType: case Mp4AtomIds::ProgressiveDownloadInformation: case Mp4AtomIds::Movie:
                             // must void these if they occur "between" the media data
@@ -783,10 +765,10 @@ calculatePadding:
         }
 
         // reparse what is written so far
-        updateStatus("Reparsing output file ...");
+        progress.updateStep("Reparsing output file ...");
         if(rewriteRequired) {
             // report new size
-            fileInfo().reportSizeChanged(static_cast<iostream::off_type>(outputStream.tellp()));
+            fileInfo().reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
             // "save as path" is now the regular path
             if(!fileInfo().saveFilePath().empty()) {
                 fileInfo().reportPathChanged(fileInfo().saveFilePath());
@@ -806,7 +788,7 @@ calculatePadding:
                 if(truncate(fileInfo().path().c_str(), static_cast<iostream::off_type>(newSize)) == 0) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
-                    addNotification(NotificationType::Critical, "Unable to truncate the file.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
                 }
                 // -> reopen the stream again
                 outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
@@ -818,16 +800,16 @@ calculatePadding:
 
         reset();
         try {
-            parseTracks();
+            parseTracks(diag);
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to reparse the header of the new file.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to reparse the new file.", context);
             throw;
         }
 
         if(rewriteRequired) {
             // check whether track count of new file equals track count of old file
             if(trackCount != tracks().size()) {
-                addNotification(NotificationType::Critical,
+                diag.emplace_back(DiagLevel::Critical,
                                 argsToString("Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file (",
                                 tracks().size(),
                                 ") differs from the number of tracks in the original file (",
@@ -838,30 +820,29 @@ calculatePadding:
 
             // update chunk offset table
             if(writeChunkByChunk) {
-                updateStatus("Updating chunk offset table for each track ...");
+                progress.updateStep("Updating chunk offset table for each track ...");
                 for(size_t trackIndex = 0; trackIndex != trackCount; ++trackIndex) {
                     const auto &track = tracks()[trackIndex];
                     const auto &chunkOffsetTable = get<1>(trackInfos[trackIndex]);
                     if(track->chunkCount() == chunkOffsetTable.size()) {
                         track->updateChunkOffsets(chunkOffsetTable);
                     } else {
-                        addNotification(NotificationType::Critical, argsToString("Unable to update chunk offsets of track ", (trackIndex + 1), ": Number of chunks in the output file differs from the number of chunks in the orignal file."), context);
+                        diag.emplace_back(DiagLevel::Critical, argsToString("Unable to update chunk offsets of track ", (trackIndex + 1), ": Number of chunks in the output file differs from the number of chunks in the orignal file."), context);
                         throw Failure();
                     }
                 }
             } else {
-                updateOffsets(origMediaDataOffsets, newMediaDataOffsets);
+                progress.updateStep("Updating chunk offset table for each track ...");
+                updateOffsets(origMediaDataOffsets, newMediaDataOffsets, diag);
             }
         }
-
-        updatePercentage(1.0);
 
         // flush output stream
         outputStream.flush();
 
         // handle errors (which might have been occured after renaming/creating backup file)
     } catch(...) {
-        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, context);
+        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, diag, context);
     }
 }
 
@@ -877,28 +858,27 @@ calculatePadding:
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets)
+void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets, Diagnostics &diag)
 {
     // do NOT invalidate the status here since this method is internally called by internalMakeFile(), just update the status
-    updateStatus("Updating chunk offset table for each track ...");
     const string context("updating MP4 container chunk offset table");
     if(!firstElement()) {
-        addNotification(NotificationType::Critical, "No MP4 atoms could be found.", context);
+        diag.emplace_back(DiagLevel::Critical, "No MP4 atoms could be found.", context);
         throw InvalidDataException();
     }
     // update "base-data-offset-present" of "tfhd"-atom (NOT tested properly)
     try {
-        for(Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, false);
-            moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, false)) {
-            moofAtom->parse();
+        for(Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, diag, false);
+            moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag, false)) {
+            moofAtom->parse(diag);
             try {
-                for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment); trafAtom;
-                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, false)) {
-                    trafAtom->parse();
+                for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom;
+                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag, false)) {
+                    trafAtom->parse(diag);
                     int tfhdAtomCount = 0;
-                    for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader); tfhdAtom;
-                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, false)) {
-                        tfhdAtom->parse();
+                    for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom;
+                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag, false)) {
+                        tfhdAtom->parse(diag);
                         ++tfhdAtomCount;
                         if(tfhdAtom->dataSize() >= 8) {
                             stream().seekg(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 1);
@@ -917,40 +897,37 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                                         }
                                     }
                                 } else {
-                                    addNotification(NotificationType::Warning, "tfhd atom (denoting base-data-offset-present) is truncated.", context);
+                                    diag.emplace_back(DiagLevel::Warning, "tfhd atom (denoting base-data-offset-present) is truncated.", context);
                                 }
                             }
                         } else {
-                            addNotification(NotificationType::Warning, "tfhd atom is truncated.", context);
+                            diag.emplace_back(DiagLevel::Warning, "tfhd atom is truncated.", context);
                         }
                     }
                     switch(tfhdAtomCount) {
                     case 0:
-                        addNotification(NotificationType::Warning, "traf atom doesn't contain mandatory tfhd atom.", context);
+                        diag.emplace_back(DiagLevel::Warning, "traf atom doesn't contain mandatory tfhd atom.", context);
                         break;
                     case 1:
                         break;
                     default:
-                        addNotification(NotificationType::Warning, "traf atom stores multiple tfhd atoms but it should only contain exactly one tfhd atom.", context);
+                        diag.emplace_back(DiagLevel::Warning, "traf atom stores multiple tfhd atoms but it should only contain exactly one tfhd atom.", context);
                     }
                 }
             } catch(const Failure &) {
-                addNotification(NotificationType::Critical, "Unable to parse childs of top-level atom moof.", context);
+                diag.emplace_back(DiagLevel::Critical, "Unable to parse childs of top-level atom moof.", context);
             }
         }
     } catch(const Failure &) {
-        addNotification(NotificationType::Critical, "Unable to parse top-level atom moof.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse top-level atom moof.", context);
     }
     // update each track
     for(auto &track : tracks()) {
-        if(isAborted()) {
-            throw OperationAbortedException();
-        }
         if(!track->isHeaderValid()) {
             try {
-                track->parseHeader();
+                track->parseHeader(diag);
             } catch(const Failure &) {
-                addNotification(NotificationType::Warning, "The chunk offsets of track " % track->name() + " couldn't be updated because the track seems to be invalid..", context);
+                diag.emplace_back(DiagLevel::Warning, "The chunk offsets of track " % track->name() + " couldn't be updated because the track seems to be invalid..", context);
                 throw;
             }
         }
@@ -958,7 +935,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
             try {
                 track->updateChunkOffsets(oldMdatOffsets, newMdatOffsets);
             } catch(const Failure &) {
-                addNotification(NotificationType::Warning, "The chunk offsets of track " % track->name() + " couldn't be updated.", context);
+                diag.emplace_back(DiagLevel::Warning, "The chunk offsets of track " % track->name() + " couldn't be updated.", context);
                 throw;
             }
         }

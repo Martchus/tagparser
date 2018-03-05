@@ -55,7 +55,7 @@ void OverallTests::checkMp4Testfile1()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -119,7 +119,7 @@ void OverallTests::checkMp4Testfile2()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -158,17 +158,17 @@ void OverallTests::checkMp4Testfile3()
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
-        if(notification.type() != NotificationType::Warning) {
+    for(const auto &msg : m_diag) {
+        if(msg.level() != DiagLevel::Warning) {
             continue;
         }
         if(m_mode & Mp4TestFlags::TagsBeforeData) {
             CPPUNIT_FAIL("No warnings expected when putting tags before data.");
         } else {
-            CPPUNIT_ASSERT_EQUAL("Sorry, but putting index/tags at the end is not possible when dealing with DASH files."s, notification.message());
+            CPPUNIT_ASSERT_EQUAL("Sorry, but putting index/tags at the end is not possible when dealing with DASH files."s, msg.message());
         }
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Warning);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Warning);
 }
 
 /*!
@@ -215,7 +215,7 @@ void OverallTests::checkMp4Testfile4()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -258,7 +258,7 @@ void OverallTests::checkMp4Testfile5()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -336,8 +336,7 @@ void OverallTests::checkMp4Testfile6()
     }
 
     CPPUNIT_ASSERT_EQUAL(0_st, m_fileInfo.tags().size());
-
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -379,9 +378,9 @@ void OverallTests::checkMp4Constraints()
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
         }
         if(!(m_mode & RemoveTagOrTrack) && (m_fileInfo.container()->documentType() != "dash") && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
-            const ElementPosition currentTagPos = m_fileInfo.container()->determineTagPosition();
+            const ElementPosition currentTagPos = m_fileInfo.container()->determineTagPosition(m_diag);
             if(currentTagPos == ElementPosition::Keep) {
-                CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineIndexPosition());
+                CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineIndexPosition(m_diag));
             }
         }
     }
@@ -416,8 +415,8 @@ void OverallTests::alterMp4Tracks()
 {
     m_additionalFileInfo.setPath(TestUtilities::testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
     m_additionalFileInfo.reopen(true);
-    m_additionalFileInfo.parseContainerFormat();
-    m_additionalFileInfo.parseTracks();
+    m_additionalFileInfo.parseContainerFormat(m_diag);
+    m_additionalFileInfo.parseTracks(m_diag);
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_additionalFileInfo.containerFormat());
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
     const auto &tracks = m_additionalFileInfo.tracks();

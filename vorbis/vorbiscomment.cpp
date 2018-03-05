@@ -4,6 +4,7 @@
 #include "../ogg/oggiterator.h"
 
 #include "../exceptions.h"
+#include "../diagnostics.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
@@ -103,10 +104,9 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
  * \brief Internal implementation for parsing.
  */
 template<class StreamType>
-void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags)
+void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
 {
     // prepare parsing
-    invalidateStatus();
     static const string context("parsing Vorbis comment");
     uint64 startOffset = static_cast<uint64>(stream.tellg());
     try {
@@ -130,7 +130,7 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
                     m_vendor.assignData(move(buff), vendorSize, TagDataType::Text, TagTextEncoding::Utf8);
                     // TODO: Is the vendor string actually UTF-8 (like the field values)?
                 } else {
-                    addNotification(NotificationType::Critical, "Vendor information is truncated.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Vendor information is truncated.", context);
                     throw TruncatedDataException();
                 }
                 maxSize -= vendorSize;
@@ -144,28 +144,25 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
             for(uint32 i = 0; i < fieldCount; ++i) {
                 // read fields
                 try {
-                    field.parse(stream, maxSize);
+                    field.parse(stream, maxSize, diag);
                     fields().emplace(fieldId, field);
                 } catch(const TruncatedDataException &) {
-                    addNotifications(field);
                     throw;
                 } catch(const Failure &) {
                     // nothing to do here since notifications will be added anyways
                 }
-                addNotifications(field);
-                field.invalidateNotifications();
             }
             if(!(flags & VorbisCommentFlags::NoFramingByte)) {
                 stream.ignore(); // skip framing byte
             }
             m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
         } else {
-            addNotification(NotificationType::Critical, "Signature is invalid.", context);
+            diag.emplace_back(DiagLevel::Critical, "Signature is invalid.", context);
             throw InvalidDataException();
         }
     } catch(const TruncatedDataException &) {
         m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
-        addNotification(NotificationType::Critical, "Vorbis comment is truncated.", context);
+        diag.emplace_back(DiagLevel::Critical, "Vorbis comment is truncated.", context);
         throw;
     }
 }
@@ -177,9 +174,9 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags)
+void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagnostics &diag)
 {
-    internalParse(iterator, iterator.streamSize(), flags);
+    internalParse(iterator, iterator.streamSize(), flags, diag);
 }
 
 /*!
@@ -189,9 +186,9 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags flags)
+void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
 {
-    internalParse(stream, maxSize, flags);
+    internalParse(stream, maxSize, flags, diag);
 }
 
 /*!
@@ -201,16 +198,15 @@ void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags fl
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags)
+void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnostics &diag)
 {
     // prepare making
-    invalidateStatus();
     static const string context("making Vorbis comment");
     string vendor;
     try {
         m_vendor.toString(vendor);
     } catch(const ConversionException &) {
-        addNotification(NotificationType::Warning, "Can not convert the assigned vendor to string.", context);
+        diag.emplace_back(DiagLevel::Warning, "Can not convert the assigned vendor to string.", context);
     }
     BinaryWriter writer(&stream);
     if(!(flags & VorbisCommentFlags::NoSignature)) {
@@ -230,15 +226,11 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags)
         VorbisCommentField &field = i.second;
         if(!field.value().isEmpty()) {
             try {
-                if(field.make(writer, flags)) {
+                if(field.make(writer, flags, diag)) {
                     ++fieldsWritten;
                 }
             } catch(const Failure &) {
-                // nothing to do here since notifications will be added anyways
             }
-            // add making notifications
-            addNotifications(context, field);
-            field.invalidateNotifications();
         }
     }
     // write field count

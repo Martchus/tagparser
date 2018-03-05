@@ -2,6 +2,11 @@
 
 CPPUNIT_TEST_SUITE_REGISTRATION(OverallTests);
 
+OverallTests::OverallTests()
+    : m_progress(std::function<void(AbortableProgressFeedback &)>(), std::function<void(AbortableProgressFeedback &)>())
+{
+}
+
 /*!
  * \brief Creates some test meta data.
  */
@@ -33,9 +38,10 @@ void OverallTests::parseFile(const string &path, void (OverallTests::* checkRout
     // print current file
     cerr << "- testing " << path << endl;
     // ensure file is open and everything is parsed
+    m_diag.clear();
     m_fileInfo.setPath(path);
     m_fileInfo.reopen(true);
-    m_fileInfo.parseEverything();
+    m_fileInfo.parseEverything(m_diag);
     // invoke testroutine to check whether parsing results are correct
     (this->*checkRoutine)();
     m_fileInfo.close();
@@ -50,9 +56,10 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     // print current file
     cerr << "- testing " << path << endl;
     // ensure file is open and everything is parsed
+    m_diag.clear();
     m_fileInfo.setPath(path);
     m_fileInfo.reopen(true);
-    m_fileInfo.parseEverything();
+    m_fileInfo.parseEverything(m_diag);
 
     // determine expected tag and index position
     switch(m_fileInfo.containerFormat()) {
@@ -61,11 +68,11 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
         if(m_fileInfo.tagPosition() != ElementPosition::Keep) {
             m_expectedTagPos = m_fileInfo.tagPosition();
         } else {
-            m_expectedTagPos = m_fileInfo.container()->determineTagPosition();
+            m_expectedTagPos = m_fileInfo.container()->determineTagPosition(m_diag);
             if(m_expectedTagPos == ElementPosition::Keep) {
                 // if there is no tag present, the resulting tag position should equal the
                 // current index position
-                m_expectedTagPos = m_fileInfo.container()->determineIndexPosition();
+                m_expectedTagPos = m_fileInfo.container()->determineIndexPosition(m_diag);
             }
         }
         break;
@@ -75,11 +82,11 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
         if(m_fileInfo.tagPosition() != ElementPosition::Keep) {
             m_expectedTagPos = m_fileInfo.tagPosition();
         } else {
-            m_expectedTagPos = m_fileInfo.container()->determineTagPosition();
+            m_expectedTagPos = m_fileInfo.container()->determineTagPosition(m_diag);
         }
         // an index is only present if the file had one before, hence specifying the index position
         // might not have an effect
-        m_expectedIndexPos = m_fileInfo.container()->determineIndexPosition();
+        m_expectedIndexPos = m_fileInfo.container()->determineIndexPosition(m_diag);
         if(m_fileInfo.indexPosition() != ElementPosition::Keep && m_expectedIndexPos != ElementPosition::Keep) {
             m_expectedIndexPos = m_fileInfo.indexPosition();
         }
@@ -91,10 +98,10 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     // invoke testroutine to do and apply changes
     (this->*modifyRoutine)();
     // apply changes and ensure that the previous parsing results are cleared
-    m_fileInfo.applyChanges();
+    m_fileInfo.applyChanges(m_diag, m_progress);
     m_fileInfo.clearParsingResults();
     // reparse the file and invoke testroutine to check whether changings have been applied correctly
-    m_fileInfo.parseEverything();
+    m_fileInfo.parseEverything(m_diag);
     (this->*checkRoutine)();
     // invoke suitable testroutine to check padding constraints
     switch(m_fileInfo.containerFormat()) {

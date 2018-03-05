@@ -1,4 +1,5 @@
 #include "./abstractcontainer.h"
+#include "./diagnostics.h"
 
 using namespace std;
 using namespace ChronoUtilities;
@@ -51,13 +52,12 @@ AbstractContainer::~AbstractContainer()
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Failure or a derived class when an parsing error occurs.
  */
-void AbstractContainer::parseHeader()
+void AbstractContainer::parseHeader(Diagnostics &diag)
 {
     if(!isHeaderParsed()) {
-        invalidateStatus();
         removeAllTags();
         removeAllTracks();
-        internalParseHeader();
+        internalParseHeader(diag);
         m_headerParsed = true;
     }
 }
@@ -79,11 +79,11 @@ void AbstractContainer::parseHeader()
  * \sa parseChapters()
  * \sa tags()
  */
-void AbstractContainer::parseTags()
+void AbstractContainer::parseTags(Diagnostics &diag)
 {
     if(!areTagsParsed()) {
-        parseHeader();
-        internalParseTags();
+        parseHeader(diag);
+        internalParseTags(diag);
         m_tagsParsed = true;
     }
 }
@@ -103,11 +103,11 @@ void AbstractContainer::parseTags()
  * \sa parseTags()
  * \sa tracks()
  */
-void AbstractContainer::parseTracks()
+void AbstractContainer::parseTracks(Diagnostics &diag)
 {
     if(!areTracksParsed()) {
-        parseHeader();
-        internalParseTracks();
+        parseHeader(diag);
+        internalParseTracks(diag);
         m_tracksParsed = true;
         m_tracksAltered = false;
     }
@@ -123,11 +123,11 @@ void AbstractContainer::parseTracks()
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void AbstractContainer::parseChapters()
+void AbstractContainer::parseChapters(Diagnostics &diag)
 {
     if(!areChaptersParsed()) {
-        parseHeader();
-        internalParseChapters();
+        parseHeader(diag);
+        internalParseChapters(diag);
         m_chaptersParsed = true;
     }
 }
@@ -142,11 +142,11 @@ void AbstractContainer::parseChapters()
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void AbstractContainer::parseAttachments()
+void AbstractContainer::parseAttachments(Diagnostics &diag)
 {
     if(!areAttachmentsParsed()) {
-        parseHeader();
-        internalParseAttachments();
+        parseHeader(diag);
+        internalParseAttachments(diag);
         m_attachmentsParsed = true;
     }
 }
@@ -158,9 +158,9 @@ void AbstractContainer::parseAttachments()
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void AbstractContainer::makeFile()
+void AbstractContainer::makeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    internalMakeFile();
+    internalMakeFile(diag, progress);
 }
 
 /*!
@@ -180,8 +180,9 @@ bool AbstractContainer::supportsTrackModifications() const
  * - Not be applicable for files composed of multiple segments.
  * \sa MediaFileInfo::indexPosition()
  */
-ElementPosition AbstractContainer::determineIndexPosition() const
+ElementPosition AbstractContainer::determineIndexPosition(Diagnostics &diag) const
 {
+    VAR_UNUSED(diag);
     return ElementPosition::Keep;
 }
 
@@ -193,8 +194,9 @@ ElementPosition AbstractContainer::determineIndexPosition() const
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseHeader()
+void AbstractContainer::internalParseHeader(Diagnostics &diag)
 {
+    VAR_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -206,8 +208,9 @@ void AbstractContainer::internalParseHeader()
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseTags()
+void AbstractContainer::internalParseTags(Diagnostics &diag)
 {
+    VAR_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -219,8 +222,9 @@ void AbstractContainer::internalParseTags()
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseTracks()
+void AbstractContainer::internalParseTracks(Diagnostics &diag)
 {
+    VAR_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -232,8 +236,9 @@ void AbstractContainer::internalParseTracks()
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseChapters()
+void AbstractContainer::internalParseChapters(Diagnostics &diag)
 {
+    VAR_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -245,8 +250,9 @@ void AbstractContainer::internalParseChapters()
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseAttachments()
+void AbstractContainer::internalParseAttachments(Diagnostics &diag)
 {
+    VAR_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -258,8 +264,10 @@ void AbstractContainer::internalParseAttachments()
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalMakeFile()
+void AbstractContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    VAR_UNUSED(diag);
+    VAR_UNUSED(progress);
     throw NotImplementedException();
 }
 
@@ -283,8 +291,9 @@ Tag *AbstractContainer::createTag(const TagTarget &)
  *
  * \a index must be less than tagCount().
  */
-Tag *AbstractContainer::tag(size_t )
+Tag *AbstractContainer::tag(size_t index)
 {
+    VAR_UNUSED(index);
     return nullptr;
 }
 
@@ -311,8 +320,9 @@ size_t AbstractContainer::tagCount() const
  *
  * \returns Returns whether the \a tag could be removed.
  */
-bool AbstractContainer::removeTag(Tag *)
+bool AbstractContainer::removeTag(Tag *tag)
 {
+    VAR_UNUSED(tag);
     return false;
 }
 
@@ -338,8 +348,9 @@ void AbstractContainer::removeAllTags()
  * - Not be applicable for files composed of multiple segments.
  * \sa MediaFileInfo::tagPosition()
  */
-ElementPosition AbstractContainer::determineTagPosition() const
+ElementPosition AbstractContainer::determineTagPosition(Diagnostics &diag) const
 {
+    VAR_UNUSED(diag);
     return ElementPosition::Keep;
 }
 
@@ -348,8 +359,9 @@ ElementPosition AbstractContainer::determineTagPosition() const
  *
  * \a index must be less than trackCount().
  */
-AbstractTrack *AbstractContainer::track(size_t )
+AbstractTrack *AbstractContainer::track(size_t index)
 {
+    VAR_UNUSED(index);
     return nullptr;
 }
 
@@ -375,8 +387,9 @@ size_t AbstractContainer::trackCount() const
  *
  * \returns Returns whether the \a track could be removed.
  */
-bool AbstractContainer::removeTrack(AbstractTrack *)
+bool AbstractContainer::removeTrack(AbstractTrack *track)
 {
+    VAR_UNUSED(track);
     return false;
 }
 
@@ -401,8 +414,9 @@ void AbstractContainer::removeAllTracks()
  *
  * \a index must be less than chapterCount().
  */
-AbstractChapter *AbstractContainer::chapter(size_t )
+AbstractChapter *AbstractContainer::chapter(size_t index)
 {
+    VAR_UNUSED(index);
     return nullptr;
 }
 
@@ -429,8 +443,9 @@ AbstractAttachment *AbstractContainer::createAttachment()
  *
  * \a index must be less than attachmentCount().
  */
-AbstractAttachment *AbstractContainer::attachment(size_t )
+AbstractAttachment *AbstractContainer::attachment(size_t index)
 {
+    VAR_UNUSED(index);
     return nullptr;
 }
 

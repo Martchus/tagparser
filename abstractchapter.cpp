@@ -65,11 +65,10 @@ void AbstractChapter::clear()
  *
  * Clears all previous parsing results.
  */
-void AbstractChapter::parse()
+void AbstractChapter::parse(Diagnostics &diag)
 {
     clear();
-    invalidateStatus();
-    internalParse();
+    internalParse(diag);
 }
 
 /*!
@@ -77,13 +76,12 @@ void AbstractChapter::parse()
  *
  * Clears all previous parsing results.
  */
-void AbstractChapter::parseNested()
+void AbstractChapter::parseNested(Diagnostics &diag)
 {
     clear();
-    invalidateStatus();
-    internalParse();
+    internalParse(diag);
     for(size_t i = 0, count = nestedChapterCount(); i < count; ++i) {
-        nestedChapter(i)->parseNested();
+        nestedChapter(i)->parseNested(diag);
     }
 }
 

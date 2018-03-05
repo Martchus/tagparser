@@ -4,7 +4,6 @@
 #include "./ebmlid.h"
 #include "./matroskaid.h"
 
-#include "../statusprovider.h"
 #include "../genericfileelement.h"
 
 #include <c++utilities/conversion/types.h>
@@ -63,7 +62,7 @@ protected:
     EbmlElement(EbmlElement &parent, uint64 startOffset);
     EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize);
 
-    void internalParse();
+    void internalParse(Diagnostics &diag);
 
 private:
     std::string parsingContext() const;

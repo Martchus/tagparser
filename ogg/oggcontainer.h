@@ -130,27 +130,27 @@ class TAG_PARSER_EXPORT OggContainer : public GenericContainer<MediaFileInfo, Og
 
 public:
     OggContainer(MediaFileInfo &fileInfo, uint64 startOffset);
-    ~OggContainer();
+    ~OggContainer() override;
 
     bool isChecksumValidationEnabled() const;
     void setChecksumValidationEnabled(bool enabled);
-    void reset();
+    void reset() override;
 
-    OggVorbisComment *createTag(const TagTarget &target);
-    OggVorbisComment *tag(std::size_t index);
-    std::size_t tagCount() const;
-    bool removeTag(Tag *tag);
-    void removeAllTags();
+    OggVorbisComment *createTag(const TagTarget &target) override;
+    OggVorbisComment *tag(std::size_t index) override;
+    std::size_t tagCount() const override;
+    bool removeTag(Tag *tag) override;
+    void removeAllTags() override;
 
 protected:
-    void internalParseHeader();
-    void internalParseTags();
-    void internalParseTracks();
-    void internalMakeFile();
+    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseTags(Diagnostics &diag) override;
+    void internalParseTracks(Diagnostics &diag) override;
+    void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     void announceComment(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
-    void makeVorbisCommentSegment(std::stringstream &buffer, IoUtilities::CopyHelper<65307> &copyHelper, std::vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params);
+    void makeVorbisCommentSegment(std::stringstream &buffer, IoUtilities::CopyHelper<65307> &copyHelper, std::vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params, Diagnostics &diag);
 
     std::unordered_map<uint32, std::vector<std::unique_ptr<OggStream> >::size_type> m_streamsBySerialNo;
 

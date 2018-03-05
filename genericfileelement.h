@@ -1,9 +1,8 @@
 #ifndef GENERICFILEELEMENT_H
 #define GENERICFILEELEMENT_H
 
-#include "./notification.h"
+#include "./progressfeedback.h"
 #include "./exceptions.h"
-#include "./statusprovider.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/copy.h>
@@ -23,73 +22,7 @@ class BinaryWriter;
 
 namespace Media {
 
-template <class ImplementationType>
-class GenericFileElement;
-
-/*!
- * \class Media::FileElementIterator
- * \brief The FileElementIterator class helps iterating through the children of a FileElement.
- */
-template<typename ImplementationType>
-class FileElementIterator
-{
-public:
-    FileElementIterator(ImplementationType *element = nullptr);
-
-    ImplementationType *operator *();
-    const ImplementationType *operator *() const;
-    operator bool() const;
-    FileElementIterator<ImplementationType> &operator ++();
-
-private:
-    ImplementationType *m_current;
-};
-
-/*!
- * \brief Constructs a new iterator for the specified \a element.
- */
-template<typename ImplementationType>
-inline FileElementIterator<ImplementationType>::FileElementIterator(ImplementationType *element) :
-    m_current(element)
-{}
-
-/*!
- * \brief Returns a reference to the current element.
- */
-template<typename ImplementationType>
-inline ImplementationType *FileElementIterator<ImplementationType>::operator *()
-{
-    return m_current;
-}
-
-/*!
- * \brief Returns a reference the current element (constant).
- */
-template<typename ImplementationType>
-inline const ImplementationType *FileElementIterator<ImplementationType>::operator *() const
-{
-    return m_current;
-}
-
-/*!
- * \brief Moves to the next sibling.
- */
-template<typename ImplementationType>
-inline FileElementIterator<ImplementationType> &FileElementIterator<ImplementationType>::operator ++()
-{
-    m_current->parse(); // ensure the current element has been parsed
-    m_current = m_current->nextSibling();
-    return *this;
-}
-
-/*!
- * \brief Returns whether the iterator points to an element.
- */
-template<typename ImplementationType>
-inline FileElementIterator<ImplementationType>::operator bool() const
-{
-    return m_current != nullptr;
-}
+class Diagnostics;
 
 /*!
  * \class Media::FileElementTraits
@@ -113,7 +46,7 @@ class FileElementTraits
  *          with the "Curiously recurring template pattern".
  */
 template <class ImplementationType>
-class TAG_PARSER_EXPORT GenericFileElement : public StatusProvider
+class TAG_PARSER_EXPORT GenericFileElement
 {
     friend class FileElementTraits<ImplementationType>;
 
@@ -168,32 +101,28 @@ public:
     const ImplementationType* firstChild() const;
     ImplementationType* lastChild();
     const ImplementationType* lastChild() const;
-    ImplementationType* subelementByPath(const std::initializer_list<IdentifierType> &path);
-    ImplementationType* subelementByPath(std::list<IdentifierType> &path);
-    ImplementationType* childById(const IdentifierType &id);
-    ImplementationType* siblingById(const IdentifierType &id, bool includeThis = false);
-    FileElementIterator<ImplementationType> begin();
-    FileElementIterator<ImplementationType> end();
-    const FileElementIterator<ImplementationType> begin() const;
-    const FileElementIterator<ImplementationType> end() const;
+    ImplementationType* subelementByPath(const std::initializer_list<IdentifierType> &path, Diagnostics &diag);
+    ImplementationType* subelementByPath(std::list<IdentifierType> &path, Diagnostics &diag);
+    ImplementationType* childById(const IdentifierType &id, Diagnostics &diag);
+    ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag, bool includeThis = false);
     bool isParent() const;
     bool isPadding() const;
     uint64 firstChildOffset() const;
     bool isParsed() const;
     void clear();
-    void parse();
-    void reparse();
-    void validateSubsequentElementStructure(NotificationList &gatheredNotifications, uint64 *paddingSize = nullptr);
+    void parse(Diagnostics &diag);
+    void reparse(Diagnostics &diag);
+    void validateSubsequentElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
     static constexpr uint32 maximumIdLengthSupported();
     static constexpr uint32 maximumSizeLengthSupported();    
     static constexpr byte minimumElementSize();
-    void copyHeader(std::ostream &targetStream);
-    void copyWithoutChilds(std::ostream &targetStream);
-    void copyEntirely(std::ostream &targetStream);
+    void copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
+    void copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
+    void copyEntirely(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     void makeBuffer();
     void discardBuffer();
     void copyBuffer(std::ostream &targetStream);
-    void copyPreferablyFromBuffer(std::ostream &targetStream);
+    void copyPreferablyFromBuffer(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     const std::unique_ptr<char[]> &buffer();
     ImplementationType *denoteFirstChild(uint32 offset);
 
@@ -210,7 +139,7 @@ protected:
     std::unique_ptr<char[]> m_buffer;
 
 private:
-    void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy);
+    void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress);
 
     ContainerType* m_container;
     bool m_parsed;
@@ -602,10 +531,10 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::lastChi
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-inline ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(const std::initializer_list<IdentifierType> &path)
+inline ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(const std::initializer_list<IdentifierType> &path, Diagnostics &diag)
 {
     std::list<GenericFileElement<ImplementationType>::IdentifierType> list(path);
-    return subelementByPath(list);
+    return subelementByPath(list, diag);
 }
 
 /*!
@@ -619,9 +548,9 @@ inline ImplementationType *GenericFileElement<ImplementationType>::subelementByP
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(std::list<IdentifierType> &path)
+ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(std::list<IdentifierType> &path, Diagnostics &diag)
 {
-    parse(); // ensure element is parsed
+    parse(diag); // ensure element is parsed
     if(path.size()) {
         if(path.front() == id()) {
             if(path.size() == 1) {
@@ -629,12 +558,12 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(std
             } else {
                 if(firstChild()) {
                     path.pop_front();
-                    return firstChild()->subelementByPath(path);
+                    return firstChild()->subelementByPath(path, diag);
                 }
             }
         } else {
             if(nextSibling()) {
-                return nextSibling()->subelementByPath(path);
+                return nextSibling()->subelementByPath(path, diag);
             }
         }
     }
@@ -651,11 +580,11 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(std
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::childById(const IdentifierType &id)
+ImplementationType *GenericFileElement<ImplementationType>::childById(const IdentifierType &id, Diagnostics &diag)
 {
-    parse(); // ensure element is parsed
+    parse(diag); // ensure element is parsed
     for(ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
-        child->parse();
+        child->parse(diag);
         if(child->id() == id) {
             return child;
         }
@@ -678,52 +607,16 @@ ImplementationType *GenericFileElement<ImplementationType>::childById(const Iden
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, bool includeThis)
+ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, Diagnostics &diag, bool includeThis)
 {
-    parse(); // ensure element is parsed
+    parse(diag); // ensure element is parsed
     for(ImplementationType *sibling = includeThis ? static_cast<ImplementationType *>(this) : nextSibling(); sibling; sibling = sibling->nextSibling()) {
-        sibling->parse();
+        sibling->parse(diag);
         if(sibling->id() == id) {
             return sibling;
         }
     }
     return nullptr;
-}
-
-/*!
- * \brief Returns an iterator for iterating over the element's childs.
- */
-template <class ImplementationType>
-FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::begin()
-{
-    return FileElementIterator<ImplementationType>(firstChild());
-}
-
-/*!
- * \brief Returns an iterator for iterating over the element's childs (constant).
- */
-template <class ImplementationType>
-const FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::begin() const
-{
-    return FileElementIterator<ImplementationType>(firstChild());
-}
-
-/*!
- * \brief Returns an invalid iterator.
- */
-template <class ImplementationType>
-FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::end()
-{
-    return FileElementIterator<ImplementationType>();
-}
-
-/*!
- * \brief Returns an invalid iterator.
- */
-template <class ImplementationType>
-const FileElementIterator<ImplementationType> GenericFileElement<ImplementationType>::end() const
-{
-    return FileElementIterator<ImplementationType>();
 }
 
 /*!
@@ -796,10 +689,10 @@ void GenericFileElement<ImplementationType>::clear()
  *         error occurs.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::parse()
+void GenericFileElement<ImplementationType>::parse(Diagnostics &diag)
 {
     if(!m_parsed) {
-        static_cast<ImplementationType *>(this)->internalParse();
+        static_cast<ImplementationType *>(this)->internalParse(diag);
         m_parsed = true;
     }
 }
@@ -821,17 +714,17 @@ void GenericFileElement<ImplementationType>::parse()
  * \sa parse()
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::reparse()
+void GenericFileElement<ImplementationType>::reparse(Diagnostics &diag)
 {
     clear();
-    static_cast<ImplementationType *>(this)->parse();
+    static_cast<ImplementationType *>(this)->parse(diag);
     m_parsed = true;
 }
 
 /*!
  * \brief Parses (see parse()) this and all subsequent elements.
  *
- * All parsing notifications will be stored in \a gatheredNotifications.
+ * All diagnostic message will be stored in \a diag.
  * If padding is found its size will be set to \a paddingSize if not nullptr.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
@@ -841,31 +734,24 @@ void GenericFileElement<ImplementationType>::reparse()
  * \sa parse()
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(NotificationList &gatheredNotifications, uint64 *paddingSize)
+void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(Diagnostics &diag, uint64 *paddingSize)
 {
-    try {
-        // validate element itself by just parsing it
-        parse();
-        gatheredNotifications.insert(gatheredNotifications.end(), notifications().begin(), notifications().end());
-        // validate children
-        if(firstChild()) {
-            try {
-                firstChild()->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
-            } catch(const Failure &) {
-                // - ignore critical errors in child structure to continue validating siblings
-                // - critical notifications about the errors should have already been added to
-                //   gatheredNotifications
-            }
-        } else if(paddingSize && isPadding()) { // element is padding
-            *paddingSize += totalSize();
+    // validate element itself by just parsing it
+    parse(diag);
+    // validate children
+    if(firstChild()) {
+        try {
+            firstChild()->validateSubsequentElementStructure(diag, paddingSize);
+        } catch(const Failure &) {
+            // ignore critical errors in child structure to continue validating siblings
+            // (critical notifications about the errors should have already been added to diag, so nothing to do)
         }
-        // validate siblings
-        if(nextSibling()) {
-            nextSibling()->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
-        }
-    } catch(const Failure &) {
-        gatheredNotifications.insert(gatheredNotifications.end(), notifications().begin(), notifications().end());
-        throw;
+    } else if(paddingSize && isPadding()) { // element is padding
+        *paddingSize += totalSize();
+    }
+    // validate siblings
+    if(nextSibling()) {
+        nextSibling()->validateSubsequentElementStructure(diag, paddingSize);
     }
 }
 
@@ -873,21 +759,21 @@ void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
  * \brief Writes the header informaton of the element to the specified \a targetStream.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStream)
+void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
-    copyInternal(targetStream, startOffset(), headerSize());
+    copyInternal(targetStream, startOffset(), headerSize(), diag, progress);
 }
 
 /*!
  * \brief Writes the element without its childs to the specified \a targetStream.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &targetStream)
+void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     if(uint32 firstChildOffset = this->firstChildOffset()) {
-        copyInternal(targetStream, startOffset(), firstChildOffset);
+        copyInternal(targetStream, startOffset(), firstChildOffset, diag, progress);
     } else {
-        copyInternal(targetStream, startOffset(), totalSize());
+        copyInternal(targetStream, startOffset(), totalSize(), diag, progress);
     }
 }
 
@@ -895,9 +781,9 @@ void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &tar
  * \brief Writes the entire element including all childs to the specified \a targetStream.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetStream)
+void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
-    copyInternal(targetStream, startOffset(), totalSize());
+    copyInternal(targetStream, startOffset(), totalSize(), diag, progress);
 }
 
 /*!
@@ -936,9 +822,9 @@ inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &tar
  * \remarks So this is copyBuffer() with a fallback to copyEntirely().
  */
 template <class ImplementationType>
-inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(std::ostream &targetStream)
+inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
-    m_buffer ? copyBuffer(targetStream) : copyEntirely(targetStream);
+    m_buffer ? copyBuffer(targetStream) : copyEntirely(targetStream, diag, progress);
 }
 
 /*!
@@ -959,21 +845,21 @@ inline const std::unique_ptr<char[]> &GenericFileElement<ImplementationType>::bu
  * \sa copyEntireAtomToStream()
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy)
+void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
-    invalidateStatus();
     // ensure the header has been parsed correctly
     try {
-        parse();
-    } catch(Failure &) {
+        parse(diag);
+    } catch(const Failure &) {
         throw InvalidDataException();
     }
     auto &stream = container().stream();
-    stream.seekg(startOffset); // seek to start offset
+    stream.seekg(startOffset);
     IoUtilities::CopyHelper<0x2000> copyHelper;
-    copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&GenericFileElement<ImplementationType>::isAborted, this), std::bind(&GenericFileElement<ImplementationType>::updatePercentage, this, std::placeholders::_1));
-    if(isAborted()) {
-        throw OperationAbortedException();
+    if (progress) {
+        copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)), std::bind(&AbortableProgressFeedback::updateStepPercentageFromFraction, std::ref(progress), std::placeholders::_1));
+    } else {
+        copyHelper.copy(stream, targetStream, bytesToCopy);
     }
 }
 

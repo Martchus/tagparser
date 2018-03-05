@@ -87,9 +87,10 @@ void MediaFileInfoTests::testFileSystemMethods()
 
 void MediaFileInfoTests::testParsingUnsupportedFile()
 {
+    Diagnostics diag;
     MediaFileInfo file(testFilePath("unsupported.bin"));
-    file.parseContainerFormat();
-    file.parseTags();
+    file.parseContainerFormat(diag);
+    file.parseTags(diag);
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.containerParsingStatus());
     // NOTE: parsing tags of unsupported container is actually supported: there is nothing to do
     // but maybe not what one would expect?
@@ -103,14 +104,15 @@ void MediaFileInfoTests::testParsingUnsupportedFile()
 
 void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
 {
+    Diagnostics diag;
     MediaFileInfo file(testFilePath("mtx-test-data/aac/he-aacv2-ps.m4a"));
     file.open(true);
-    file.parseContainerFormat();
-    file.parseTags();
-    file.parseAttachments();
+    file.parseContainerFormat(diag);
+    file.parseTags(diag);
+    file.parseAttachments(diag);
     file.close();
     try {
-        file.parseTracks();
+        file.parseTracks(diag);
         CPPUNIT_FAIL("expected std::ios_base::failure because file has been closed");
     } catch(...) {
         catchIoFailure();
@@ -126,12 +128,12 @@ void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.attachmentsParsingStatus());
     CPPUNIT_ASSERT_EQUAL(0_st, file.trackCount());
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, file.containerFormat());
-    CPPUNIT_ASSERT_EQUAL(NotificationList({
-                                              Notification(NotificationType::Information,
+    CPPUNIT_ASSERT_EQUAL(Diagnostics({
+                                              DiagMessage(DiagLevel::Information,
                                               "Parsing attachments is not implemented for the container format of the file.",
                                               "parsing attachments")
-                                          }), file.gatherRelatedNotifications());
-    CPPUNIT_ASSERT_EQUAL(NotificationType::Information, file.worstNotificationTypeIncludingRelatedObjects());
+                                          }), diag);
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::Information, diag.level());
 
     // create/remove tag
     CPPUNIT_ASSERT_EQUAL(0_st, file.matroskaTags().size());
@@ -153,12 +155,13 @@ void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
 
 void MediaFileInfoTests::testFullParseAndFurtherProperties()
 {
+    Diagnostics diag;
     MediaFileInfo file(testFilePath("matroska_wave1/test1.mkv"));
     file.open(true);
-    file.parseEverything();
+    file.parseEverything(diag);
     // calling parse methods twice should not do anything (and hence can not fail anymore because the file has already been closed)
     file.close();
-    file.parseEverything();
+    file.parseEverything(diag);
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.containerParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.tagsParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.tracksParsingStatus());
@@ -182,17 +185,12 @@ void MediaFileInfoTests::testFullParseAndFurtherProperties()
     CPPUNIT_ASSERT_EQUAL(0_st, file.attachments().size());
 
     // notifications
-    CPPUNIT_ASSERT(!file.hasNotifications());
-    CPPUNIT_ASSERT(!file.haveRelatedObjectsNotifications());
-    CPPUNIT_ASSERT_EQUAL(NotificationList(), file.gatherRelatedNotifications());
-    CPPUNIT_ASSERT_EQUAL(NotificationType::None, file.worstNotificationTypeIncludingRelatedObjects());
-    file.container()->addNotification(NotificationType::Warning, "warning", "test");
-    CPPUNIT_ASSERT(file.haveRelatedObjectsNotifications());
-    CPPUNIT_ASSERT_EQUAL(NotificationType::Warning, file.worstNotificationTypeIncludingRelatedObjects());
-    file.tags().back()->addNotification(NotificationType::Critical, "error", "test");
-    CPPUNIT_ASSERT_EQUAL(NotificationType::Critical, file.worstNotificationTypeIncludingRelatedObjects());
-    CPPUNIT_ASSERT(file.haveRelatedObjectsNotifications());
-    CPPUNIT_ASSERT_EQUAL(2_st, file.gatherRelatedNotifications().size());
+    CPPUNIT_ASSERT_EQUAL(Diagnostics(), diag);
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::None, diag.level());
+    diag.emplace_back(DiagLevel::Warning, "warning", "test");
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::Warning, diag.level());
+    diag.emplace_back(DiagLevel::Critical, "error", "test");
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::Critical, diag.level());
 
     // track info / available languages
     file.tracks().back()->setLanguage("eng");

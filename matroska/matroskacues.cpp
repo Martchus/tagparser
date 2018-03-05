@@ -49,7 +49,7 @@ uint64 MatroskaCuePositionUpdater::totalSize() const
  * \brief Parses the specified \a cuesElement.
  * \remarks Previous parsing results and updates will be cleared.
  */
-void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
+void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &diag)
 {
     static const string context("parsing \"Cues\"-element");
     clear();
@@ -57,7 +57,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
     EbmlElement *cueRelativePositionElement, *cueClusterPositionElement;
     for(EbmlElement *cuePointElement = cuesElement->firstChild(); cuePointElement; cuePointElement = cuePointElement->nextSibling()) {
         // parse childs of "Cues"-element which must be "CuePoint"-elements
-        cuePointElement->parse();
+        cuePointElement->parse(diag);
         switch(cuePointElement->id()) {
         case EbmlIds::Void:
         case EbmlIds::Crc32:
@@ -66,7 +66,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
             cuePointElementSize = 0;
             for(EbmlElement *cuePointChild = cuePointElement->firstChild(); cuePointChild; cuePointChild = cuePointChild->nextSibling()) {
                 // parse childs of "CuePoint"-element
-                cuePointChild->parse();
+                cuePointChild->parse(diag);
                 switch(cuePointChild->id()) {
                 case EbmlIds::Void:
                 case EbmlIds::Crc32:
@@ -80,7 +80,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
                     cueRelativePositionElement = cueClusterPositionElement = nullptr;
                     for(EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild; cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
                         // parse childs of "CueTrackPositions"-element
-                        cueTrackPositionsChild->parse();                        
+                        cueTrackPositionsChild->parse(diag);
                         switch(cueTrackPositionsChild->id()) {
                         case MatroskaIds::CueTrack:
                         case MatroskaIds::CueDuration:
@@ -105,7 +105,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
                             cueReferenceElementSize = 0;
                             for(EbmlElement *cueReferenceChild = cueTrackPositionsChild->firstChild(); cueReferenceChild; cueReferenceChild = cueReferenceChild->nextSibling()) {
                                 // parse childs of "CueReference"-element
-                                cueReferenceChild->parse();
+                                cueReferenceChild->parse(diag);
                                 switch(cueReferenceChild->id()) {
                                 case EbmlIds::Void:
                                 case EbmlIds::Crc32:
@@ -122,18 +122,18 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
                                     m_offsets.emplace(cueReferenceChild, statePos);
                                     break;
                                 default:
-                                    addNotification(NotificationType::Warning, "\"CueReference\"-element contains a element which is not known to the parser. It will be ignored.", context);
+                                    diag.emplace_back(DiagLevel::Warning, "\"CueReference\"-element contains a element which is not known to the parser. It will be ignored.", context);
                                 }
                             }
                             cueTrackPositionsElementSize += 1 + EbmlElement::calculateSizeDenotationLength(cueReferenceElementSize) + cueReferenceElementSize;
                             m_sizes.emplace(cueTrackPositionsChild, cueReferenceElementSize);
                             break;
                         default:
-                            addNotification(NotificationType::Warning, "\"CueTrackPositions\"-element contains a element which is not known to the parser. It will be ignored.", context);
+                            diag.emplace_back(DiagLevel::Warning, "\"CueTrackPositions\"-element contains a element which is not known to the parser. It will be ignored.", context);
                         }
                     }
                     if(!cueClusterPositionElement) {
-                        addNotification(NotificationType::Critical, "\"CueTrackPositions\"-element does not contain mandatory \"CueClusterPosition\"-element.", context);
+                        diag.emplace_back(DiagLevel::Critical, "\"CueTrackPositions\"-element does not contain mandatory \"CueClusterPosition\"-element.", context);
                     } else if(cueRelativePositionElement) {
                         cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(relPos);
                         m_relativeOffsets.emplace(piecewise_construct, forward_as_tuple(cueRelativePositionElement), forward_as_tuple(pos, relPos));
@@ -142,14 +142,14 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement)
                     m_sizes.emplace(cuePointChild, cueTrackPositionsElementSize);
                     break;
                 default:
-                    addNotification(NotificationType::Warning, "\"CuePoint\"-element contains a element which is not a \"CueTime\"- or a \"CueTrackPositions\"-element. It will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Warning, "\"CuePoint\"-element contains a element which is not a \"CueTime\"- or a \"CueTrackPositions\"-element. It will be ignored.", context);
                 }
             }
             cuesElementSize += 1 + EbmlElement::calculateSizeDenotationLength(cuePointElementSize) + cuePointElementSize;
             m_sizes.emplace(cuePointElement, cuePointElementSize);
             break;
         default:
-            addNotification(NotificationType::Warning, "\"Cues\"-element contains a element which is not a \"CuePoint\"-element. It will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "\"Cues\"-element contains a element which is not a \"CuePoint\"-element. It will be ignored.", context);
         }
     }
     m_sizes.emplace(m_cuesElement = cuesElement, cuesElementSize);
@@ -221,11 +221,11 @@ bool MatroskaCuePositionUpdater::updateSize(EbmlElement *element, int shift)
 /*!
  * \brief Writes the previously parsed "Cues"-element with updates positions to the specified \a stream.
  */
-void MatroskaCuePositionUpdater::make(ostream &stream)
+void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
 {
     static const string context("making \"Cues\"-element");
     if(!m_cuesElement) {
-        addNotification(NotificationType::Warning, "No cues written; the cues of the source file could not be parsed correctly.", context);
+        diag.emplace_back(DiagLevel::Warning, "No cues written; the cues of the source file could not be parsed correctly.", context);
         return;
     }
     // temporary variables
@@ -239,7 +239,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
         stream.write(buff, len);
         // loop through original elements and write (a updated version) of them
         for(EbmlElement *cuePointElement = m_cuesElement->firstChild(); cuePointElement; cuePointElement = cuePointElement->nextSibling()) {
-            cuePointElement->parse();
+            cuePointElement->parse(diag);
             switch(cuePointElement->id()) {
             case EbmlIds::Void:
             case EbmlIds::Crc32:
@@ -250,7 +250,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                 len = EbmlElement::makeSizeDenotation(m_sizes[cuePointElement], buff);
                 stream.write(buff, len);
                 for(EbmlElement *cuePointChild = cuePointElement->firstChild(); cuePointChild; cuePointChild = cuePointChild->nextSibling()) {
-                    cuePointChild->parse();
+                    cuePointChild->parse(diag);
                     switch(cuePointChild->id()) {
                     case EbmlIds::Void:
                     case EbmlIds::Crc32:
@@ -267,7 +267,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                         len = EbmlElement::makeSizeDenotation(m_sizes[cuePointChild], buff);
                         stream.write(buff, len);
                         for(EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild; cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
-                            cueTrackPositionsChild->parse();
+                            cueTrackPositionsChild->parse(diag);
                             switch(cueTrackPositionsChild->id()) {
                             case MatroskaIds::CueTrack:
                             case MatroskaIds::CueDuration:
@@ -296,7 +296,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                                 len = EbmlElement::makeSizeDenotation(m_sizes[cueTrackPositionsChild], buff);
                                 stream.write(buff, len);
                                 for(EbmlElement *cueReferenceChild = cueTrackPositionsChild->firstChild(); cueReferenceChild; cueReferenceChild = cueReferenceChild->nextSibling()) {
-                                    cueReferenceChild->parse();
+                                    cueReferenceChild->parse(diag);
                                     switch(cueReferenceChild->id()) {
                                     case EbmlIds::Void:
                                     case EbmlIds::Crc32:
@@ -306,7 +306,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                                         // write unchanged childs of "CueReference"-element
                                         cueReferenceChild->copyBuffer(stream);
                                         cueReferenceChild->discardBuffer();
-                                        cueReferenceChild->copyEntirely(stream);
+                                        cueReferenceChild->copyEntirely(stream, diag, nullptr);
                                         break;
                                     case MatroskaIds::CueRefCluster:
                                     case MatroskaIds::CueRefCodecState:
@@ -314,26 +314,26 @@ void MatroskaCuePositionUpdater::make(ostream &stream)
                                         EbmlElement::makeSimpleElement(stream, cueReferenceChild->id(), m_offsets.at(cueReferenceChild).currentValue());
                                         break;
                                     default:
-                                        addNotification(NotificationType::Warning, "\"CueReference\"-element contains a element which is not known to the parser. It will be ignored.", context);
+                                        diag.emplace_back(DiagLevel::Warning, "\"CueReference\"-element contains a element which is not known to the parser. It will be ignored.", context);
                                     }
                                 }
                                 break;
                             default:
-                                addNotification(NotificationType::Warning, "\"CueTrackPositions\"-element contains a element which is not known to the parser. It will be ignored.", context);
+                                diag.emplace_back(DiagLevel::Warning, "\"CueTrackPositions\"-element contains a element which is not known to the parser. It will be ignored.", context);
                             }
                         }
                         break;
                     default:
-                        addNotification(NotificationType::Warning, "\"CuePoint\"-element contains a element which is not a \"CueTime\"- or a \"CueTrackPositions\"-element. It will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning, "\"CuePoint\"-element contains a element which is not a \"CueTime\"- or a \"CueTrackPositions\"-element. It will be ignored.", context);
                     }
                 }
                 break;
             default:
-                addNotification(NotificationType::Warning, "\"Cues\"-element contains a element which is not a \"CuePoint\"-element. It will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "\"Cues\"-element contains a element which is not a \"CuePoint\"-element. It will be ignored.", context);
             }
         }
     } catch(const out_of_range &) {
-        addNotification(NotificationType::Critical, "Unable to write the file index because the index of the original file could not be parsed correctly.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to write the file index because the index of the original file could not be parsed correctly.", context);
         throw InvalidDataException();
     }
 }

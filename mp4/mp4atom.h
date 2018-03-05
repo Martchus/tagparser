@@ -59,7 +59,7 @@ protected:
     Mp4Atom(ContainerType &container, uint64 startOffset, uint64 maxSize);
     Mp4Atom(Mp4Atom &parent, uint64 startOffset);
 
-    void internalParse();
+    void internalParse(Diagnostics &diag);
 
 private:
     std::string parsingContext() const;

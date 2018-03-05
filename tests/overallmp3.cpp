@@ -80,7 +80,7 @@ void OverallTests::checkMp3Testfile1()
         CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!

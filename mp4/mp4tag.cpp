@@ -274,60 +274,55 @@ bool Mp4Tag::hasField(KnownField field) const
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Mp4Tag::parse(Mp4Atom &metaAtom)
+void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
 {
-    invalidateStatus();
     static const string context("parsing MP4 tag");
     istream &stream = metaAtom.container().stream();
     BinaryReader &reader = metaAtom.container().reader();
     m_size = metaAtom.totalSize();
     Mp4Atom *subAtom = nullptr;
     try {
-        metaAtom.childById(Mp4AtomIds::HandlerReference);
+        metaAtom.childById(Mp4AtomIds::HandlerReference, diag);
     } catch(const Failure &) {
-        addNotification(NotificationType::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if(subAtom) {
         stream.seekg(subAtom->startOffset() + subAtom->headerSize());
         int versionByte = reader.readByte();
         if(versionByte != 0) {
-            addNotification(NotificationType::Warning, "Version is unknown.", context);
+            diag.emplace_back(DiagLevel::Warning, "Version is unknown.", context);
         }
         if(reader.readUInt24BE()) {
-            addNotification(NotificationType::Warning, "Flags (hdlr atom) aren't set to 0.", context);
+            diag.emplace_back(DiagLevel::Warning, "Flags (hdlr atom) aren't set to 0.", context);
         }
         if(reader.readInt32BE()) {
-            addNotification(NotificationType::Warning, "Predefined 32-bit integer (hdlr atom) ins't set to 0.", context);
+            diag.emplace_back(DiagLevel::Warning, "Predefined 32-bit integer (hdlr atom) ins't set to 0.", context);
         }
         uint64 handlerType = reader.readUInt64BE();
         if(/*(((handlerType & 0xFFFFFFFF00000000) >> 32) != 0x6D647461) && */(handlerType != 0x6d6469726170706c)) {
-            addNotification(NotificationType::Warning, "Handler type (value in hdlr atom) is unknown. Trying to parse meta information anyhow.", context);
+            diag.emplace_back(DiagLevel::Warning, "Handler type (value in hdlr atom) is unknown. Trying to parse meta information anyhow.", context);
         }
         m_version = ConversionUtilities::numberToString(versionByte);
     } else {
-        //addParsingNotification(NotificationType::Warning, "No hdlr atom found (handler of meta information). Trying to parse meta information anyhow.");
         m_version.clear();
     }
     try {
-        subAtom = metaAtom.childById(Mp4AtomIds::ItunesList);
+        subAtom = metaAtom.childById(Mp4AtomIds::ItunesList, diag);
     } catch(const Failure &) {
-        addNotification(NotificationType::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if(subAtom) {
         Mp4TagField tagField;
-        for(Mp4Atom *child : *subAtom) {
+        for (auto *child = subAtom->firstChild(); child; child = child->nextSibling()) {
             try {
-                child->parse();
-                tagField.invalidateNotifications();
-                tagField.reparse(*child);
+                child->parse(diag);
+                tagField.reparse(*child, diag);
                 fields().emplace(child->id(), tagField);
             } catch(const Failure &) {
             }
-            addNotifications(context, *child);
-            addNotifications(context, tagField);
         }
     } else {
-        addNotification(NotificationType::Warning, "No ilst atom found (stores attached meta information).", context);
+        diag.emplace_back(DiagLevel::Warning, "No ilst atom found (stores attached meta information).", context);
         throw NoDataFoundException();
     }
 }
@@ -342,21 +337,20 @@ void Mp4Tag::parse(Mp4Atom &metaAtom)
  * This method might be useful when it is necessary to know the size of the tag before making it.
  * \sa make()
  */
-Mp4TagMaker Mp4Tag::prepareMaking()
+Mp4TagMaker Mp4Tag::prepareMaking(Diagnostics &diag)
 {
-    return Mp4TagMaker(*this);
+    return Mp4TagMaker(*this, diag);
 }
 
 /*!
  * \brief Writes tag information to the specified \a stream.
- *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Mp4Tag::make(ostream &stream)
+void Mp4Tag::make(ostream &stream, Diagnostics &diag)
 {
-    prepareMaking().make(stream);
+    prepareMaking(diag).make(stream, diag);
 }
 
 /*!
@@ -370,7 +364,7 @@ void Mp4Tag::make(ostream &stream)
  * \brief Prepares making the specified \a tag.
  * \sa See Mp4Tag::prepareMaking() for more information.
  */
-Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag) :
+Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag) :
     m_tag(tag),
     // meta head, hdlr atom
     m_metaSize(8 + 37),
@@ -379,18 +373,15 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag) :
     // ensure there only one genre atom is written (prefer genre as string)
     m_omitPreDefinedGenre(m_tag.fields().count(m_tag.hasField(Mp4TagAtomIds::Genre)))
 {
-    m_tag.invalidateStatus();
     m_maker.reserve(m_tag.fields().size());
     for(auto &field : m_tag.fields()) {
         if(!field.second.value().isEmpty() &&
                 (!m_omitPreDefinedGenre || field.first != Mp4TagAtomIds::PreDefinedGenre)) {
             try {
-                m_maker.emplace_back(field.second.prepareMaking());
+                m_maker.emplace_back(field.second.prepareMaking(diag));
                 m_ilstSize += m_maker.back().requiredSize();
             } catch(const Failure &) {
-                // nothing to do here; notifications will be added anyways
             }
-            m_tag.addNotifications(field.second);
         }
     }
     if(m_ilstSize != 8) {
@@ -405,7 +396,7 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag) :
  * \throws Throws Assumes the data is already validated and thus does NOT
  *                throw Media::Failure or a derived exception.
  */
-void Mp4TagMaker::make(ostream &stream)
+void Mp4TagMaker::make(ostream &stream, Diagnostics &diag)
 {
     // write meta head
     BinaryWriter writer(&stream);
@@ -428,7 +419,7 @@ void Mp4TagMaker::make(ostream &stream)
         }
     } else {
         // no fields to be written -> no ilst to be written
-        m_tag.addNotification(NotificationType::Warning, "Tag is empty.", "making MP4 tag");
+        diag.emplace_back(DiagLevel::Warning, "Tag is empty.", "making MP4 tag");
     }
 }
 

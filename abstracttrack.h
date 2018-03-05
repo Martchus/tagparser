@@ -1,7 +1,7 @@
 #ifndef ABSTRACTTRACK_H
 #define ABSTRACTTRACK_H
 
-#include "./statusprovider.h"
+#include "./diagnostics.h"
 #include "./size.h"
 #include "./margin.h"
 #include "./aspectratio.h"
@@ -37,7 +37,7 @@ enum class TrackType
     FlacStream, /**< The track is a Media::FlacStream. */
 };
 
-class TAG_PARSER_EXPORT AbstractTrack : public StatusProvider
+class TAG_PARSER_EXPORT AbstractTrack
 {
     friend class MpegAudioFrameStream;
     friend class WaveAudioStream;
@@ -109,13 +109,13 @@ public:
     std::string label() const;
     std::string description() const;
 
-    void parseHeader();
+    void parseHeader(Diagnostics &diag);
     bool isHeaderValid() const;
 
 protected:
     AbstractTrack(std::istream &inputStream, std::ostream &outputStream, uint64 startOffset);
     AbstractTrack(std::iostream &stream, uint64 startOffset);
-    virtual void internalParseHeader() = 0;
+    virtual void internalParseHeader(Diagnostics &diag) = 0;
 
     std::istream *m_istream;
     std::ostream *m_ostream;

@@ -69,15 +69,14 @@ Mp4TagField::Mp4TagField(const string &mean, const string &name, const TagValue 
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Mp4TagField::reparse(Mp4Atom &ilstChild)
+void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
 {
     // prepare reparsing
     using namespace Mp4AtomIds;
     using namespace Mp4TagAtomIds;
-    invalidateStatus();
     string context("parsing MP4 tag field");
     clear(); // clear old values
-    ilstChild.parse(); // ensure child has been parsed
+    ilstChild.parse(diag); // ensure child has been parsed
     setId(ilstChild.id());
     context = "parsing MP4 tag field " + ilstChild.idToString();
     iostream &stream = ilstChild.stream();
@@ -85,27 +84,27 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
     int dataAtomFound = 0, meanAtomFound = 0, nameAtomFound = 0;
     for(Mp4Atom *dataAtom = ilstChild.firstChild(); dataAtom; dataAtom = dataAtom->nextSibling()) {
         try {
-            dataAtom->parse();
+            dataAtom->parse(diag);
             if(dataAtom->id() == Mp4AtomIds::Data) {
                 if(dataAtom->dataSize() < 8) {
-                    addNotification(NotificationType::Warning, "Truncated child atom \"data\" in tag atom (ilst child) found. (will be ignored)", context);
+                    diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"data\" in tag atom (ilst child) found. (will be ignored)", context);
                     continue;
                 }
                 if(++dataAtomFound > 1) {
                     if(dataAtomFound == 2) {
-                        addNotification(NotificationType::Warning, "Multiple \"data\" child atom in tag atom (ilst child) found. (will be ignored)", context);
+                        diag.emplace_back(DiagLevel::Warning, "Multiple \"data\" child atom in tag atom (ilst child) found. (will be ignored)", context);
                     }
                     continue;
                 }
                 stream.seekg(dataAtom->dataOffset());
                 if(reader.readByte() != 0) {
-                    addNotification(NotificationType::Warning, "The version indicator byte is not zero, the tag atom might be unsupported and hence not be parsed correctly.", context);
+                    diag.emplace_back(DiagLevel::Warning, "The version indicator byte is not zero, the tag atom might be unsupported and hence not be parsed correctly.", context);
                 }
                 setTypeInfo(m_parsedRawDataType = reader.readUInt24BE());
                 try { // try to show warning if parsed raw data type differs from expected raw data type for this atom id
                     const vector<uint32> expectedRawDataTypes = this->expectedRawDataTypes();
                     if(find(expectedRawDataTypes.cbegin(), expectedRawDataTypes.cend(), m_parsedRawDataType) == expectedRawDataTypes.cend()) {
-                        addNotification(NotificationType::Warning, "Unexpected data type indicator found.", context);
+                        diag.emplace_back(DiagLevel::Warning, "Unexpected data type indicator found.", context);
                     }
                 } catch(const Failure &) {
                     // tag id is unknown, it is not possible to validate parsed data type
@@ -142,7 +141,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 } case RawDataType::BeSignedInt: {
                     int number = 0;
                     if(dataAtom->dataSize() > (8 + 4)) {
-                        addNotification(NotificationType::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
+                        diag.emplace_back(DiagLevel::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
                     }
                     if(dataAtom->dataSize() >= (8 + 4)) {
                         number = reader.readInt32BE();
@@ -162,7 +161,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 } case RawDataType::BeUnsignedInt: {
                     int number = 0;
                     if(dataAtom->dataSize() > (8 + 4)) {
-                        addNotification(NotificationType::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
+                        diag.emplace_back(DiagLevel::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
                     }
                     if(dataAtom->dataSize() >= (8 + 4)) {
                         number = static_cast<int>(reader.readUInt32BE());
@@ -185,7 +184,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     case TrackPosition:
                     case DiskPosition: {
                         if(dataAtom->dataSize() < (8 + 6)) {
-                            addNotification(NotificationType::Warning, "Track/disk position is truncated. Trying to read data anyways.", context);
+                            diag.emplace_back(DiagLevel::Warning, "Track/disk position is truncated. Trying to read data anyways.", context);
                         }
                         uint16 pos = 0, total = 0;
                         if(dataAtom->dataSize() >= (8 + 4)) {
@@ -200,7 +199,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                     }
                     case PreDefinedGenre:
                         if(dataAtom->dataSize() < (8 + 2)) {
-                            addNotification(NotificationType::Warning, "Genre index is truncated.", context);
+                            diag.emplace_back(DiagLevel::Warning, "Genre index is truncated.", context);
                         } else {
                             value().assignStandardGenreIndex(reader.readUInt16BE() - 1);
                         }
@@ -218,12 +217,12 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 }
             } else if(dataAtom->id() == Mp4AtomIds::Mean) {
                 if(dataAtom->dataSize() < 8) {
-                    addNotification(NotificationType::Warning, "Truncated child atom \"mean\" in tag atom (ilst child) found. (will be ignored)", context);
+                    diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"mean\" in tag atom (ilst child) found. (will be ignored)", context);
                     continue;
                 }
                 if(++meanAtomFound > 1) {
                     if(meanAtomFound == 2) {
-                        addNotification(NotificationType::Warning, "Tag atom contains more than one mean atom. The addiational mean atoms will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning, "Tag atom contains more than one mean atom. The addiational mean atoms will be ignored.", context);
                     }
                     continue;
                 }
@@ -231,26 +230,26 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
                 m_mean = reader.readString(dataAtom->dataSize() - 4);
             } else if(dataAtom->id() == Mp4AtomIds::Name) {
                 if(dataAtom->dataSize() < 4) {
-                    addNotification(NotificationType::Warning, "Truncated child atom \"name\" in tag atom (ilst child) found. (will be ignored)", context);
+                    diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"name\" in tag atom (ilst child) found. (will be ignored)", context);
                     continue;
                 }
                 if(++nameAtomFound > 1) {
                     if(nameAtomFound == 2) {
-                        addNotification(NotificationType::Warning, "Tag atom contains more than one name atom. The addiational name atoms will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning, "Tag atom contains more than one name atom. The addiational name atoms will be ignored.", context);
                     }
                     continue;
                 }
                 stream.seekg(dataAtom->dataOffset() + 4);
                 m_name = reader.readString(dataAtom->dataSize() - 4);
             } else {
-                addNotification(NotificationType::Warning, "Unkown child atom \"" % dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
+                diag.emplace_back(DiagLevel::Warning, "Unkown child atom \"" % dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
             }
         } catch(const Failure &) {
-            addNotification(NotificationType::Warning, "Unable to parse all childs atom in tag atom (ilst child) found. (will be ignored)", context);
+            diag.emplace_back(DiagLevel::Warning, "Unable to parse all childs atom in tag atom (ilst child) found. (will be ignored)", context);
         }
     }
     if(value().isEmpty()) {
-        addNotification(NotificationType::Warning, "The field value is empty.", context);
+        diag.emplace_back(DiagLevel::Warning, "The field value is empty.", context);
     }
 }
 
@@ -264,9 +263,9 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild)
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
  */
-Mp4TagFieldMaker Mp4TagField::prepareMaking()
+Mp4TagFieldMaker Mp4TagField::prepareMaking(Diagnostics &diag)
 {
-    return Mp4TagFieldMaker(*this);
+    return Mp4TagFieldMaker(*this, diag);
 }
 
 /*!
@@ -276,9 +275,9 @@ Mp4TagFieldMaker Mp4TagField::prepareMaking()
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Mp4TagField::make(ostream &stream)
+void Mp4TagField::make(ostream &stream, Diagnostics &diag)
 {
-    prepareMaking().make(stream);
+    prepareMaking(diag).make(stream);
 }
 
 /*!
@@ -408,20 +407,19 @@ void Mp4TagField::cleared()
  * \brief Prepares making the specified \a field.
  * \sa See Mp4TagField::prepareMaking() for more information.
  */
-Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
+Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag) :
     m_field(field),
     m_convertedData(stringstream::in | stringstream::out | stringstream::binary),
     m_writer(&m_convertedData),
     m_rawDataType(0)
 {
-    m_field.invalidateStatus();
     if(!m_field.id()) {
-        m_field.addNotification(NotificationType::Warning, "Invalid tag atom id.", "making MP4 tag field");
+        diag.emplace_back(DiagLevel::Warning, "Invalid tag atom id.", "making MP4 tag field");
         throw InvalidDataException();
     }
     const string context("making MP4 tag field " + Mp4TagField::fieldIdToString(m_field.id()));
     if(m_field.value().isEmpty() && (!m_field.mean().empty() || !m_field.name().empty())) {
-        m_field.addNotification(NotificationType::Critical, "No tag value assigned.", context);
+        diag.emplace_back(DiagLevel::Critical, "No tag value assigned.", context);
         throw InvalidDataException();
     }
 
@@ -433,11 +431,11 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
         if(m_field.id() == Mp4TagAtomIds::Cover) {
             // assume JPEG image
             m_rawDataType = RawDataType::Utf8;
-            m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. JPEG image will be assumed.", context);
+            diag.emplace_back(DiagLevel::Warning, "It was not possible to find an appropriate raw data type id. JPEG image will be assumed.", context);
         } else {
             // assume UTF-8 text
             m_rawDataType = RawDataType::Utf8;
-            m_field.addNotification(NotificationType::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
+            diag.emplace_back(DiagLevel::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
         }
     }
 
@@ -497,9 +495,9 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field) :
     } catch (ConversionException &ex) {
         // it was not possible to perform required conversions
         if(char_traits<char>::length(ex.what())) {
-            m_field.addNotification(NotificationType::Critical, ex.what(), context);
+            diag.emplace_back(DiagLevel::Critical, ex.what(), context);
         } else {
-            m_field.addNotification(NotificationType::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
+            diag.emplace_back(DiagLevel::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
         }
         throw InvalidDataException();
     }

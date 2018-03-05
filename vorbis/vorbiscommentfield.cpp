@@ -8,6 +8,7 @@
 #include "../id3/id3v2frame.h"
 
 #include "../exceptions.h"
+#include "../diagnostics.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
@@ -46,12 +47,12 @@ VorbisCommentField::VorbisCommentField(const IdentifierType &id, const TagValue 
  * \brief Internal implementation for parsing.
  */
 template<class StreamType>
-void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
+void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag)
 {
     static const string context("parsing Vorbis comment  field");
     char buff[4];
     if(maxSize < 4) {
-        addNotification(NotificationType::Critical, "Field expected.", context);
+        diag.emplace_back(DiagLevel::Critical, "Field expected.", context);
         throw TruncatedDataException();
     } else {
         maxSize -= 4;
@@ -69,7 +70,7 @@ void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
             setId(string(data.get(), idSize));
             if(!idSize) {
                 // empty field ID
-                addNotification(NotificationType::Critical, "The field ID is empty.", context);
+                diag.emplace_back(DiagLevel::Critical, "The field ID is empty.", context);
                 throw InvalidDataException();
             } else if(id() == VorbisCommentIds::cover()) {
                 // extract cover value
@@ -82,14 +83,14 @@ void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
                     pictureBlock.parse(bufferStream, decoded.second);
                     setTypeInfo(pictureBlock.pictureType());
                 } catch(const TruncatedDataException &) {
-                    addNotification(NotificationType::Critical, "METADATA_BLOCK_PICTURE is truncated.", context);
+                    diag.emplace_back(DiagLevel::Critical, "METADATA_BLOCK_PICTURE is truncated.", context);
                     throw;
                 } catch(const ConversionException &) {
-                    addNotification(NotificationType::Critical, "Base64 coding of METADATA_BLOCK_PICTURE is invalid.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Base64 coding of METADATA_BLOCK_PICTURE is invalid.", context);
                     throw InvalidDataException();
                 } catch(...) {
                     catchIoFailure();
-                    addNotification(NotificationType::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
+                    diag.emplace_back(DiagLevel::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
                     throw Failure();
                 }
             } else if(id().size() + 1 < size) {
@@ -97,7 +98,7 @@ void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
                 setValue(TagValue(string(data.get() + idSize + 1, size - idSize - 1), TagTextEncoding::Utf8));
             }
         } else {
-            addNotification(NotificationType::Critical, "Field is truncated.", context);
+            diag.emplace_back(DiagLevel::Critical, "Field is truncated.", context);
             throw TruncatedDataException();
         }
     }
@@ -113,10 +114,10 @@ void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisCommentField::parse(OggIterator &iterator)
+void VorbisCommentField::parse(OggIterator &iterator, Diagnostics &diag)
 {
     uint64 maxSize = iterator.streamSize() - iterator.currentCharacterOffset();
-    internalParse(iterator, maxSize);
+    internalParse(iterator, maxSize, diag);
 }
 
 /*!
@@ -129,9 +130,9 @@ void VorbisCommentField::parse(OggIterator &iterator)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize)
+void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize, Diagnostics &diag)
 {
-    internalParse(iterator, maxSize);
+    internalParse(iterator, maxSize, diag);
 }
 
 /*!
@@ -144,9 +145,9 @@ void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisCommentField::parse(istream &stream, uint64 &maxSize)
+void VorbisCommentField::parse(istream &stream, uint64 &maxSize, Diagnostics &diag)
 {
-    internalParse(stream, maxSize);
+    internalParse(stream, maxSize, diag);
 }
 
 /*!
@@ -158,11 +159,11 @@ void VorbisCommentField::parse(istream &stream, uint64 &maxSize)
  * \returns Returns whether the field has been written. (Some fields might be skipped
  *          when specific \a flags are set.)
  */
-bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags)
+bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag)
 {
     static const string context("making Vorbis comment  field");
     if(id().empty()) {
-        addNotification(NotificationType::Critical, "The field ID is empty.", context);
+        diag.emplace_back(DiagLevel::Critical, "The field ID is empty.", context);
     }
     try {
         // try to convert value to string
@@ -173,7 +174,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags)
             }
             // make cover
             if(value().type() != TagDataType::Picture) {
-                addNotification(NotificationType::Critical, "Assigned value of cover field is not picture data.", context);
+                diag.emplace_back(DiagLevel::Critical, "Assigned value of cover field is not picture data.", context);
                 throw InvalidDataException();
             }
             try {
@@ -190,7 +191,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags)
                 valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), requiredSize);
             } catch(...) {
                 catchIoFailure();
-                addNotification(NotificationType::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
+                diag.emplace_back(DiagLevel::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
                 throw Failure();
             }
         } else {
@@ -202,7 +203,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags)
         writer.writeChar('=');
         writer.writeString(valueString);
     } catch(const ConversionException &) {
-        addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
+        diag.emplace_back(DiagLevel::Critical, "Assigned value can not be converted appropriately.", context);
         throw InvalidDataException();
     }
     return true;

@@ -51,11 +51,10 @@ std::string Mpeg4Descriptor::idToString() const
  * \brief Parses the MPEG-4 descriptor.
  * \remarks Does not detect the first child.
  */
-void Mpeg4Descriptor::internalParse()
+void Mpeg4Descriptor::internalParse(Diagnostics &diag)
 {
-    invalidateStatus();
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Descriptor is smaller than 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize()) + '.', "parsing MPEG-4 descriptor");
+        diag.emplace_back(DiagLevel::Critical, "Descriptor is smaller than 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize()) + '.', "parsing MPEG-4 descriptor");
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());
@@ -71,7 +70,7 @@ void Mpeg4Descriptor::internalParse()
     }
     // check whether the denoted data size exceeds the available data size
     if(maxTotalSize() < totalSize()) {
-        addNotification(NotificationType::Warning, "The descriptor seems to be truncated; unable to parse siblings of that ", parsingContext());
+        diag.emplace_back(DiagLevel::Warning, "The descriptor seems to be truncated; unable to parse siblings of that ", parsingContext());
         m_dataSize = maxTotalSize(); // using max size instead
     }
     m_firstChild.reset();

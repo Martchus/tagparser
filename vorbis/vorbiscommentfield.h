@@ -2,7 +2,6 @@
 #define MEDIA_VORBISCOMMENTFIELD_H
 
 #include "../generictagfield.h"
-#include "../statusprovider.h"
 
 namespace IoUtilities {
 class BinaryReader;
@@ -33,6 +32,7 @@ inline VorbisCommentFlags operator |(VorbisCommentFlags lhs, VorbisCommentFlags 
 }
 
 class VorbisCommentField;
+class Diagnostics;
 
 /*!
  * \brief Defines traits for the TagField implementation of the VorbisCommentField class.
@@ -47,7 +47,7 @@ public:
 
 class OggIterator;
 
-class TAG_PARSER_EXPORT VorbisCommentField : public TagField<VorbisCommentField>, public StatusProvider
+class TAG_PARSER_EXPORT VorbisCommentField : public TagField<VorbisCommentField>
 {
     friend class TagField<VorbisCommentField>;
 
@@ -55,10 +55,10 @@ public:
     VorbisCommentField();
     VorbisCommentField(const IdentifierType &id, const TagValue &value);
 
-    void parse(OggIterator &iterator);
-    void parse(OggIterator &iterator, uint64 &maxSize);
-    void parse(std::istream &stream, uint64 &maxSize);
-    bool make(IoUtilities::BinaryWriter &writer, VorbisCommentFlags flags = VorbisCommentFlags::None);
+    void parse(OggIterator &iterator, Diagnostics &diag);
+    void parse(OggIterator &iterator, uint64 &maxSize, Diagnostics &diag);
+    void parse(std::istream &stream, uint64 &maxSize, Diagnostics &diag);
+    bool make(IoUtilities::BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag);
     bool isAdditionalTypeInfoUsed() const;
     bool supportsNestedFields() const;
 
@@ -70,7 +70,7 @@ protected:
 
 private:
     template<class StreamType>
-    void internalParse(StreamType &stream, uint64 &maxSize);
+    void internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag);
 };
 
 /*!

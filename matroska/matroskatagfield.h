@@ -2,12 +2,12 @@
 #define MEDIA_MATROSKATAGFIELD_H
 
 #include "../generictagfield.h"
-#include "../statusprovider.h"
 
 namespace Media {
 
 class EbmlElement;
 class MatroskaTagField;
+class Diagnostics;
 
 /*!
  * \brief Defines traits for the TagField implementation of the MatroskaTagField class.
@@ -39,7 +39,7 @@ public:
     uint64 requiredSize() const;
 
 private:
-    MatroskaTagFieldMaker(MatroskaTagField &field);
+    MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostics &diag);
 
     MatroskaTagField &m_field;
     bool m_isBinary;
@@ -67,7 +67,7 @@ inline uint64 MatroskaTagFieldMaker::requiredSize() const
 
 
 
-class TAG_PARSER_EXPORT MatroskaTagField : public TagField<MatroskaTagField>, public StatusProvider
+class TAG_PARSER_EXPORT MatroskaTagField : public TagField<MatroskaTagField>
 {
     friend class TagField<MatroskaTagField>;
 
@@ -75,9 +75,9 @@ public:
     MatroskaTagField();
     MatroskaTagField(const std::string &id, const TagValue &value);
 
-    void reparse(EbmlElement &simpleTagElement, bool parseNestedFields = true);
-    MatroskaTagFieldMaker prepareMaking();
-    void make(std::ostream &stream);
+    void reparse(EbmlElement &simpleTagElement, Diagnostics &diag, bool parseNestedFields = true);
+    MatroskaTagFieldMaker prepareMaking(Diagnostics &diag);
+    void make(std::ostream &stream, Diagnostics &diag);
     bool isAdditionalTypeInfoUsed() const;
     bool supportsNestedFields() const;
 

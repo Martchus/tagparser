@@ -42,17 +42,17 @@ MatroskaTagField::MatroskaTagField(const string &id, const TagValue &value) :
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFields)
+void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag, bool parseNestedFields)
 {
     string context("parsing Matroska tag field");
     clear();
-    simpleTagElement.parse();
+    simpleTagElement.parse(diag);
     bool tagDefaultFound = false;
     for(EbmlElement *child = simpleTagElement.firstChild(); child; child = child->nextSibling()) {
         try {
-            child->parse();
+            child->parse(diag);
         } catch (const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse children of \"SimpleTag\"-element.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse children of \"SimpleTag\"-element.", context);
             break;
         }
         switch(child->id()) {
@@ -61,7 +61,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
                 setId(child->readString());
                 context = "parsing Matroska tag field " + id();
             } else {
-                addNotification(NotificationType::Warning, "\"SimpleTag\"-element contains multiple \"TagName\"-elements. Surplus TagName elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "\"SimpleTag\"-element contains multiple \"TagName\"-elements. Surplus TagName elements will be ignored.", context);
             }
             break;
         case MatroskaIds::TagString:
@@ -79,7 +79,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
                     break;
                 }
             } else {
-                addNotification(NotificationType::Warning, "\"SimpleTag\"-element contains multiple \"TagString\"/\"TagBinary\"-elements. Surplus \"TagName\"/\"TagBinary\"-elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "\"SimpleTag\"-element contains multiple \"TagString\"/\"TagBinary\"-elements. Surplus \"TagName\"/\"TagBinary\"-elements will be ignored.", context);
             }
             break;
         case MatroskaIds::TagLanguage:
@@ -89,7 +89,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
                     value().setLanguage(lng);
                 }
             } else {
-                addNotification(NotificationType::Warning, "\"SimpleTag\"-element contains multiple \"TagLanguage\"-elements. Surplus \"TagLanguage\"-elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "\"SimpleTag\"-element contains multiple \"TagLanguage\"-elements. Surplus \"TagLanguage\"-elements will be ignored.", context);
             }
             break;
         case MatroskaIds::TagDefault:
@@ -97,22 +97,22 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
                 setDefault(child->readUInteger() > 0);
                 tagDefaultFound = true;
             } else {
-                addNotification(NotificationType::Warning, "\"SimpleTag\"-element contains multiple \"TagDefault\" elements. Surplus \"TagDefault\"-elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "\"SimpleTag\"-element contains multiple \"TagDefault\" elements. Surplus \"TagDefault\"-elements will be ignored.", context);
             }
             break;
         case MatroskaIds::SimpleTag:
             if(parseNestedFields) {
                 nestedFields().emplace_back();
-                nestedFields().back().reparse(*child, true);
+                nestedFields().back().reparse(*child, diag, true);
             } else {
-                addNotification(NotificationType::Warning, "Nested fields are currently not supported. Nested tags can not be displayed and will be discarded when rewriting the file.", context);
+                diag.emplace_back(DiagLevel::Warning, "Nested fields are currently not supported. Nested tags can not be displayed and will be discarded when rewriting the file.", context);
             }
             break;
         case EbmlIds::Crc32:
         case EbmlIds::Void:
             break;
         default:
-            addNotification(NotificationType::Warning, argsToString("\"SimpleTag\"-element contains unknown element ", child->idToString(), " at ", child->startOffset(), ". It will be ignored."), context);
+            diag.emplace_back(DiagLevel::Warning, argsToString("\"SimpleTag\"-element contains unknown element ", child->idToString(), " at ", child->startOffset(), ". It will be ignored."), context);
         }
     }
 }
@@ -127,18 +127,18 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, bool parseNestedFi
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
  */
-MatroskaTagFieldMaker MatroskaTagField::prepareMaking()
+MatroskaTagFieldMaker MatroskaTagField::prepareMaking(Diagnostics &diag)
 {
     static const string context("making Matroska \"SimpleTag\" element.");
     // check whether ID is empty
     if(id().empty()) {
-        addNotification(NotificationType::Critical, "Can not make \"SimpleTag\" element with empty \"TagName\".", context);
+        diag.emplace_back(DiagLevel::Critical, "Can not make \"SimpleTag\" element with empty \"TagName\".", context);
         throw InvalidDataException();
     }
     try {
-        return MatroskaTagFieldMaker(*this);
+        return MatroskaTagFieldMaker(*this, diag);
     } catch(const ConversionException &) {
-        addNotification(NotificationType::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
+        diag.emplace_back(DiagLevel::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
         throw InvalidDataException();
     }
 }
@@ -149,9 +149,9 @@ MatroskaTagFieldMaker MatroskaTagField::prepareMaking()
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void MatroskaTagField::make(ostream &stream)
+void MatroskaTagField::make(ostream &stream, Diagnostics &diag)
 {
-    prepareMaking().make(stream);
+    prepareMaking(diag).make(stream);
 }
 
 /*!
@@ -165,14 +165,14 @@ void MatroskaTagField::make(ostream &stream)
  * \brief Prepares making the specified \a field.
  * \sa See MatroskaTagField::prepareMaking() for more information.
  */
-MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field) :
+MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostics &diag) :
     m_field(field),
     m_isBinary(false)
 {
     try {
         m_stringValue = m_field.value().toString();
     } catch(const ConversionException &) {
-        m_field.addNotification(NotificationType::Warning, "The assigned tag value can not be converted to a string and is treated as binary value (which is likely not what you want since official Matroska specifiecation doesn't list any binary fields).", "making Matroska \"SimpleTag\" element.");
+        diag.emplace_back(DiagLevel::Warning, "The assigned tag value can not be converted to a string and is treated as binary value (which is likely not what you want since official Matroska specifiecation doesn't list any binary fields).", "making Matroska \"SimpleTag\" element.");
         m_isBinary = true;
     }
     size_t languageSize = m_field.value().language().size();
@@ -190,7 +190,7 @@ MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field) :
             + 2 + EbmlElement::calculateSizeDenotationLength(m_stringValue.size()) + m_stringValue.size();
     // nested tags
     for(auto &nestedField : field.nestedFields()) {
-        m_nestedMaker.emplace_back(nestedField.prepareMaking());
+        m_nestedMaker.emplace_back(nestedField.prepareMaking(diag));
         m_simpleTagSize += m_nestedMaker.back().m_totalSize;
     }
     m_totalSize = 2 + EbmlElement::calculateSizeDenotationLength(m_simpleTagSize) + m_simpleTagSize;

@@ -15,7 +15,7 @@ namespace Media {
  * \brief Implementation of Media::AbstractTrack for ADTS streams.
  */
 
-void AdtsStream::internalParseHeader()
+void AdtsStream::internalParseHeader(Diagnostics &diag)
 {
     //static const string context("parsing ADTS frame header");
     if(!m_istream) {

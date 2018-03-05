@@ -5,7 +5,6 @@
 
 #include "../generictagfield.h"
 #include "../tagvalue.h"
-#include "../statusprovider.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
@@ -19,6 +18,7 @@ namespace Media
 {
 
 class Id3v2Frame;
+class Diagnostics;
 
 class TAG_PARSER_EXPORT Id3v2FrameMaker
 {
@@ -32,7 +32,7 @@ public:
     uint32 requiredSize() const;
 
 private:
-    Id3v2FrameMaker(Id3v2Frame &frame, const byte version);
+    Id3v2FrameMaker(Id3v2Frame &frame, const byte version, Diagnostics &diag);
     Id3v2Frame &m_frame;
     uint32 m_frameId;
     const byte m_version;
@@ -85,18 +85,18 @@ public:
     typedef byte TypeInfoType;
 };
 
-class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>, public StatusProvider
+class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>
 {
     friend class TagField<Id3v2Frame>;
 
 public:
     Id3v2Frame();
-    Id3v2Frame(const IdentifierType &id, const TagValue &value, const byte group = 0, const int16 flag = 0);
+    Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group = 0, int16 flag = 0);
 
     // parsing/making
-    void parse(IoUtilities::BinaryReader &reader, const uint32 version, const uint32 maximalSize = 0);
-    Id3v2FrameMaker prepareMaking(const uint32 version);
-    void make(IoUtilities::BinaryWriter &writer, const uint32 version);
+    void parse(IoUtilities::BinaryReader &reader, uint32 version, uint32 maximalSize, Diagnostics &diag);
+    Id3v2FrameMaker prepareMaking(const uint32 version, Diagnostics &diag);
+    void make(IoUtilities::BinaryWriter &writer, const uint32 version, Diagnostics &diag);
 
     // member access
     bool isAdditionalTypeInfoUsed() const;
@@ -121,14 +121,14 @@ public:
     bool supportsNestedFields() const;
 
     // parsing helper
-    TagTextEncoding parseTextEncodingByte(byte textEncodingByte);
-    std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
-    std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings = false);
-    std::u16string parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings = false);
-    void parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo);
-    void parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo);
-    void parseComment(const char *buffer, std::size_t maxSize, TagValue &tagValue);
-    void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding);
+    TagTextEncoding parseTextEncodingByte(byte textEncodingByte, Diagnostics &diag);
+    std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
+    std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
+    std::u16string parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
+    void parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag);
+    void parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag);
+    void parseComment(const char *buffer, std::size_t maxSize, TagValue &tagValue, Diagnostics &diag);
+    void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, Diagnostics &diag);
 
     // making helper
     byte makeTextEncodingByte(TagTextEncoding textEncoding);
@@ -136,10 +136,8 @@ public:
     void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
     void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t m_dataSize);
     void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
-    void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
-    void makePictureConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version);
-    void makeCommentConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version);
-    void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment);
+    void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version);
+    void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version, Diagnostics &diag);
 
     static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(IdentifierType id);

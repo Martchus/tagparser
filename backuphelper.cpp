@@ -1,5 +1,6 @@
 #include "./backuphelper.h"
 #include "./mediafileinfo.h"
+#include "./diagnostics.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
@@ -246,7 +247,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
  *                     no backup file has been created.
  * \param context      Specifies the context used to add notifications.
  */
-void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, NativeFileStream &outputStream, NativeFileStream &backupStream, const std::string &context)
+void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, NativeFileStream &outputStream, NativeFileStream &backupStream, Diagnostics &diag, const std::string &context)
 {
     // reset the associated container in any case
     if(fileInfo.container()) {
@@ -259,30 +260,30 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
     } catch(const OperationAbortedException &) {
         if(!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
-            fileInfo.addNotification(NotificationType::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
+            diag.emplace_back(DiagLevel::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
-                fileInfo.addNotification(NotificationType::Information, "The original file has been restored.", context);
+                diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
             } catch(...) {
-                fileInfo.addNotification(NotificationType::Critical, catchIoFailure(), context);
+                diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
-            fileInfo.addNotification(NotificationType::Information, "Applying new tag information has been aborted.", context);
+            diag.emplace_back(DiagLevel::Information, "Applying new tag information has been aborted.", context);
         }
         throw;
 
     } catch(const Failure &) {
         if(!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
-            fileInfo.addNotification(NotificationType::Critical, "Rewriting the file to apply changed tag information failed.", context);
+            diag.emplace_back(DiagLevel::Critical, "Rewriting the file to apply changed tag information failed.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
-                fileInfo.addNotification(NotificationType::Information, "The original file has been restored.", context);
+                diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
             } catch(...) {
-                fileInfo.addNotification(NotificationType::Critical, catchIoFailure(), context);
+                diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
-            fileInfo.addNotification(NotificationType::Critical, "Applying new tag information failed.", context);
+            diag.emplace_back(DiagLevel::Critical, "Applying new tag information failed.", context);
         }
         throw;
 
@@ -290,15 +291,15 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
         const char *what = catchIoFailure();
         if(!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
-            fileInfo.addNotification(NotificationType::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
+            diag.emplace_back(DiagLevel::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
-                fileInfo.addNotification(NotificationType::Information, "The original file has been restored.", context);
+                diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
             } catch(...) {
-                fileInfo.addNotification(NotificationType::Critical, catchIoFailure(), context);
+                diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
-            fileInfo.addNotification(NotificationType::Critical, "An IO error occured when applying tag information.", context);
+            diag.emplace_back(DiagLevel::Critical, "An IO error occured when applying tag information.", context);
         }
         throwIoFailure(what);
     }

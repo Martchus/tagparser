@@ -6,6 +6,8 @@
 namespace Media
 {
 
+class Diagnostics;
+
 class TAG_PARSER_EXPORT Id3v1Tag : public Tag
 {
 public:
@@ -25,13 +27,12 @@ public:
     bool supportsField(KnownField field) const;
     void ensureTextValuesAreProperlyEncoded();
 
-    void parse(std::istream &sourceStream, bool autoSeek);
-    void parse(std::iostream &sourceStream);
-    void make(std::ostream &targetStream);
+    void parse(std::istream &sourceStream, Diagnostics &diag);
+    void make(std::ostream &targetStream, Diagnostics &diag);
 
 private:
     void readValue(TagValue &value, size_t maxLength, const char *buffer);
-    void writeValue(const TagValue &value, size_t length, char *buffer, std::ostream &targetStream);
+    void writeValue(const TagValue &value, size_t length, char *buffer, std::ostream &targetStream, Diagnostics &diag);
 
     TagValue m_title;
     TagValue m_artist;

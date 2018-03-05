@@ -1,7 +1,6 @@
 #ifndef MEDIA_ABSTRACTCONTAINER_H
 #define MEDIA_ABSTRACTCONTAINER_H
 
-#include "./statusprovider.h"
 #include "./exceptions.h"
 #include "./tagtarget.h"
 
@@ -23,6 +22,8 @@ class Tag;
 class AbstractTrack;
 class AbstractChapter;
 class AbstractAttachment;
+class Diagnostics;
+class AbortableProgressFeedback;
 
 enum class ElementPosition
 {
@@ -31,7 +32,7 @@ enum class ElementPosition
     Keep /**< the element is placed where it was before */
 };
 
-class TAG_PARSER_EXPORT AbstractContainer : public StatusProvider
+class TAG_PARSER_EXPORT AbstractContainer
 {
 public:
     virtual ~AbstractContainer();
@@ -42,12 +43,12 @@ public:
     IoUtilities::BinaryReader &reader();
     IoUtilities::BinaryWriter &writer();
 
-    void parseHeader();
-    void parseTags();
-    void parseTracks();
-    void parseChapters();
-    void parseAttachments();
-    void makeFile();
+    void parseHeader(Diagnostics &diag);
+    void parseTags(Diagnostics &diag);
+    void parseTracks(Diagnostics &diag);
+    void parseChapters(Diagnostics &diag);
+    void parseAttachments(Diagnostics &diag);
+    void makeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     bool isHeaderParsed() const;
     bool areTagsParsed() const;
@@ -60,14 +61,14 @@ public:
     virtual std::size_t tagCount() const;
     virtual bool removeTag(Tag *tag);
     virtual void removeAllTags();
-    virtual ElementPosition determineTagPosition() const;
+    virtual ElementPosition determineTagPosition(Diagnostics &diag) const;
 
     virtual AbstractTrack *track(std::size_t index);
     virtual std::size_t trackCount() const;
     virtual bool removeTrack(AbstractTrack *track);
     virtual void removeAllTracks();
     virtual bool supportsTrackModifications() const;
-    virtual ElementPosition determineIndexPosition() const;
+    virtual ElementPosition determineIndexPosition(Diagnostics &diag) const;
 
     virtual AbstractChapter *chapter(std::size_t index);
     virtual std::size_t chapterCount() const;
@@ -95,12 +96,12 @@ public:
 protected:    
     AbstractContainer(std::iostream &stream, uint64 startOffset);
 
-    virtual void internalParseHeader();
-    virtual void internalParseTags();
-    virtual void internalParseTracks();
-    virtual void internalParseChapters();
-    virtual void internalParseAttachments();
-    virtual void internalMakeFile();
+    virtual void internalParseHeader(Diagnostics &diag);
+    virtual void internalParseTags(Diagnostics &diag);
+    virtual void internalParseTracks(Diagnostics &diag);
+    virtual void internalParseChapters(Diagnostics &diag);
+    virtual void internalParseAttachments(Diagnostics &diag);
+    virtual void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     uint64 m_version;
     uint64 m_readVersion;

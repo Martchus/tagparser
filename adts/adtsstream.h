@@ -16,7 +16,7 @@ public:
     TrackType type() const;
 
 protected:
-    void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag);
 
 private:
     AdtsFrame m_firstFrame;

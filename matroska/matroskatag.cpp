@@ -1,6 +1,8 @@
 #include "./matroskatag.h"
 #include "./ebmlelement.h"
 
+#include "../diagnostics.h"
+
 #include <map>
 #include <initializer_list>
 #include <stdexcept>
@@ -85,27 +87,24 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void MatroskaTag::parse(EbmlElement &tagElement)
+void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
 {
-    invalidateStatus();
     static const string context("parsing Matroska tag");
-    tagElement.parse();
+    tagElement.parse(diag);
     m_size = tagElement.totalSize();
     MatroskaTagField field;
     for(EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
-        child->parse();
+        child->parse(diag);
         switch(child->id()) {
         case MatroskaIds::SimpleTag: {
             try {
-                field.invalidateNotifications();
-                field.reparse(*child, true);
+                field.reparse(*child, diag, true);
                 fields().insert(make_pair(field.id(), field));
             } catch(const Failure &) {
             }
-            addNotifications(context, field);
             break;
         } case MatroskaIds::Targets:
-            parseTargets(*child);
+            parseTargets(*child, diag);
             break;
         }
     }
@@ -122,9 +121,9 @@ void MatroskaTag::parse(EbmlElement &tagElement)
  * \sa make()
  * \todo Make inline in next major release.
  */
-MatroskaTagMaker MatroskaTag::prepareMaking()
+MatroskaTagMaker MatroskaTag::prepareMaking(Diagnostics &diag)
 {
-    return MatroskaTagMaker(*this);
+    return MatroskaTagMaker(*this, diag);
 }
 
 /*!
@@ -135,9 +134,9 @@ MatroskaTagMaker MatroskaTag::prepareMaking()
  * \sa prepareMaking()
  * \todo Make inline in next major release.
  */
-void MatroskaTag::make(ostream &stream)
+void MatroskaTag::make(ostream &stream, Diagnostics &diag)
 {
-    prepareMaking().make(stream);
+    prepareMaking(diag).make(stream);
 }
 
 /*!
@@ -147,18 +146,18 @@ void MatroskaTag::make(ostream &stream)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void MatroskaTag::parseTargets(EbmlElement &targetsElement)
+void MatroskaTag::parseTargets(EbmlElement &targetsElement, Diagnostics &diag)
 {
     static const string context("parsing targets of Matroska tag");
     m_target.clear();
     bool targetTypeValueFound = false;
     bool targetTypeFound = false;
-    targetsElement.parse();
+    targetsElement.parse(diag);
     for(EbmlElement *child = targetsElement.firstChild(); child; child = child->nextSibling()) {
         try {
-            child->parse();
+            child->parse(diag);
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, "Unable to parse childs of Targets element.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse childs of Targets element.", context);
             break;
         }
         switch(child->id()) {
@@ -167,7 +166,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
                 m_target.setLevel(child->readUInteger());
                 targetTypeValueFound = true;
             } else {
-                addNotification(NotificationType::Warning, "Targets element contains multiple TargetTypeValue elements. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Targets element contains multiple TargetTypeValue elements. Surplus elements will be ignored.", context);
             }
             break;
         case MatroskaIds::TargetType:
@@ -175,7 +174,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
                 m_target.setLevelName(child->readString());
                 targetTypeFound = true;
             } else {
-                addNotification(NotificationType::Warning, "Targets element contains multiple TargetType elements. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Targets element contains multiple TargetType elements. Surplus elements will be ignored.", context);
             }
             break;
         case MatroskaIds::TagTrackUID:
@@ -191,7 +190,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
             m_target.attachments().emplace_back(child->readUInteger());
             break;
         default:
-            addNotification(NotificationType::Warning, "Targets element contains unknown element. It will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "Targets element contains unknown element. It will be ignored.", context);
         }
     }
     if(!m_target.level()) {
@@ -210,7 +209,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement)
  * \brief Prepares making the specified \a tag.
  * \sa See MatroskaTag::prepareMaking() for more information.
  */
-MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag) :
+MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag) :
     m_tag(tag)
 {
     // calculate size of "Targets" element
@@ -235,12 +234,10 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag) :
     m_simpleTagsSize = 0; // including ID and size
     for(auto &pair : m_tag.fields()) {
         try {
-            m_maker.emplace_back(pair.second.prepareMaking());
+            m_maker.emplace_back(pair.second.prepareMaking(diag));
             m_simpleTagsSize += m_maker.back().requiredSize();
         } catch(const Failure &) {
-            // nothing to do here; notifications will be added anyways
         }
-        m_tag.addNotifications(pair.second);
     }
     m_tagSize += m_simpleTagsSize;
     m_totalSize = 2 + EbmlElement::calculateSizeDenotationLength(m_tagSize) + m_tagSize;

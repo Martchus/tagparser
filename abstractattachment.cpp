@@ -92,12 +92,12 @@ void StreamDataBlock::copyTo(ostream &stream) const
  *
  * \throws Throws ios_base::failure when an IO error occurs.
  */
-FileDataBlock::FileDataBlock(const string &path) :
+FileDataBlock::FileDataBlock(const string &path, Diagnostics &diag) :
     m_fileInfo(new MediaFileInfo)
 {
     m_fileInfo->setPath(path);
     m_fileInfo->open(true);
-    m_fileInfo->parseContainerFormat();
+    m_fileInfo->parseContainerFormat(diag);
     m_startOffset = 0;
     m_endOffset = m_fileInfo->size();
     m_stream = [this] () -> std::istream & {
@@ -151,10 +151,10 @@ void AbstractAttachment::clear()
  *
  * When such an exception is thrown, the attachment remains unchanged.
  */
-void AbstractAttachment::setFile(const std::string &path)
+void AbstractAttachment::setFile(const std::string &path, Diagnostics &diag)
 {
     m_data.reset();
-    auto file = make_unique<FileDataBlock>(path);
+    auto file = make_unique<FileDataBlock>(path, diag);
     const auto fileName = file->fileInfo()->fileName();
     if(!fileName.empty()) {
         m_name = fileName;

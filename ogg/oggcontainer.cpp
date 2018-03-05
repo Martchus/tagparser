@@ -1,10 +1,10 @@
-
 #include "./oggcontainer.h"
 
 #include "../flac/flacmetadata.h"
 
 #include "../mediafileinfo.h"
 #include "../backuphelper.h"
+#include "../progressfeedback.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/copy.h>
@@ -183,7 +183,7 @@ void OggContainer::removeAllTags()
     }
 }
 
-void OggContainer::internalParseHeader()
+void OggContainer::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing OGG bitstream header");
     bool pagesSkipped = false;
@@ -194,7 +194,7 @@ void OggContainer::internalParseHeader()
         for(m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const OggPage &page = m_iterator.currentPage();
             if(m_validateChecksums && page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {
-                addNotification(NotificationType::Warning, argsToString("The denoted checksum of the OGG page at ", m_iterator.currentSegmentOffset(), " does not match the computed checksum."), context);
+                diag.emplace_back(DiagLevel::Warning, argsToString("The denoted checksum of the OGG page at ", m_iterator.currentSegmentOffset(), " does not match the computed checksum."), context);
             }
             OggStream *stream;
             uint64 lastNewStreamOffset = 0;
@@ -210,7 +210,7 @@ void OggContainer::internalParseHeader()
             }
             if(stream->m_currentSequenceNumber != page.sequenceNumber()) {
                 if(stream->m_currentSequenceNumber) {
-                    addNotification(NotificationType::Warning, "Page is missing (page sequence number omitted).", context);
+                    diag.emplace_back(DiagLevel::Warning, "Page is missing (page sequence number omitted).", context);
                 }
                 stream->m_currentSequenceNumber = page.sequenceNumber() + 1;
             } else {
@@ -226,22 +226,22 @@ void OggContainer::internalParseHeader()
                     // prevent warning about missing pages
                     stream->m_currentSequenceNumber = resyncedPage.sequenceNumber() + 1;
                     pagesSkipped = true;
-                    addNotification(NotificationType::Information,
+                    diag.emplace_back(DiagLevel::Information,
                                     argsToString("Pages in the middle of the file (", dataSizeToString(resyncedPage.startOffset() - page.startOffset()) ,") have been skipped to improve parsing speed. Hence track sizes can not be computed. Maybe not even all tracks could be detected. Force a full parse to prevent this."),
                                     context);
                 } else {
                     // abort if skipping pages didn't work
-                    addNotification(NotificationType::Critical, "Unable to re-sync after skipping OGG pages in the middle of the file. Try forcing a full parse.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to re-sync after skipping OGG pages in the middle of the file. Try forcing a full parse.", context);
                     return;
                 }
             }
         }
     } catch(const TruncatedDataException &) {
         // thrown when page exceeds max size
-        addNotification(NotificationType::Critical, "The OGG file is truncated.", context);
+        diag.emplace_back(DiagLevel::Critical, "The OGG file is truncated.", context);
     } catch(const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
-        addNotification(NotificationType::Critical, argsToString("Capture pattern \"OggS\" at ", m_iterator.currentSegmentOffset(), " expected."), context);
+        diag.emplace_back(DiagLevel::Critical, argsToString("Capture pattern \"OggS\" at ", m_iterator.currentSegmentOffset(), " expected."), context);
     }
 
     // invalidate stream sizes in case pages have been skipped
@@ -252,29 +252,29 @@ void OggContainer::internalParseHeader()
     }
 }
 
-void OggContainer::internalParseTags()
+void OggContainer::internalParseTags(Diagnostics &diag)
 {
     // tracks needs to be parsed before because tags are stored at stream level
-    parseTracks();
+    parseTracks(diag);
     for(auto &comment : m_tags) {
         OggParameter &params = comment->oggParams();
         m_iterator.setPageIndex(params.firstPageIndex);
         m_iterator.setSegmentIndex(params.firstSegmentIndex);
         switch(params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
-            comment->parse(m_iterator);
+            comment->parse(m_iterator, VorbisCommentFlags::None, diag);
             break;
         case GeneralMediaFormat::Opus:
             // skip header (has already been detected by OggStream)
             m_iterator.ignore(8);
-            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
             break;
         case GeneralMediaFormat::Flac:
             m_iterator.ignore(4);
-            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
             break;
         default:
-            addNotification(NotificationType::Critical, "Stream format not supported.", "parsing tags from OGG streams");
+            diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", "parsing tags from OGG streams");
         }
         params.lastPageIndex = m_iterator.currentPageIndex();
         params.lastSegmentIndex = m_iterator.currentSegmentIndex();
@@ -298,17 +298,17 @@ void OggContainer::announceComment(std::size_t pageIndex, std::size_t segmentInd
     m_tags.back()->oggParams().set(pageIndex, segmentIndex, lastMetaDataBlock, mediaFormat);
 }
 
-void OggContainer::internalParseTracks()
+void OggContainer::internalParseTracks(Diagnostics &diag)
 {
     static const string context("parsing OGG stream");
     for(auto &stream : m_tracks) {
         try { // try to parse header
-            stream->parseHeader();
+            stream->parseHeader(diag);
             if(stream->duration() > m_duration) {
                 m_duration = stream->duration();
             }
         } catch(const Failure &) {
-            addNotification(NotificationType::Critical, argsToString("Unable to parse stream at ", stream->startOffset(), '.'), context);
+            diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse stream at ", stream->startOffset(), '.'), context);
         }
     }
 }
@@ -317,17 +317,17 @@ void OggContainer::internalParseTracks()
  * \brief Writes the specified \a comment with the given \a params to the specified \a buffer and
  *        adds the number of bytes written to \a newSegmentSizes.
  */
-void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params)
+void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params, Diagnostics &diag)
 {
     const auto offset = buffer.tellp();
     switch(params->streamFormat) {
     case GeneralMediaFormat::Vorbis:
-        comment->make(buffer);
+        comment->make(buffer, VorbisCommentFlags::None, diag);
         break;
     case GeneralMediaFormat::Opus:
         ConversionUtilities::BE::getBytes(static_cast<uint64>(0x4F70757354616773u), copyHelper.buffer());
         buffer.write(copyHelper.buffer(), 8);
-        comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+        comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
         break;
     case GeneralMediaFormat::Flac: {
         // Vorbis comment must be wrapped in "METADATA_BLOCK_HEADER"
@@ -338,12 +338,12 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
         // write the header later, when the size is known
         buffer.write(copyHelper.buffer(), 4);
 
-        comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte);
+        comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
 
         // finally make the header
         header.setDataSize(buffer.tellp() - offset - 4);
         if(header.dataSize() > 0xFFFFFF) {
-            addNotification(NotificationType::Critical, "Size of Vorbis comment exceeds size limit for FLAC \"METADATA_BLOCK_HEADER\".", "making Vorbis Comment");
+            diag.emplace_back(DiagLevel::Critical, "Size of Vorbis comment exceeds size limit for FLAC \"METADATA_BLOCK_HEADER\".", "making Vorbis Comment");
         }
         buffer.seekp(offset);
         header.makeHeader(buffer);
@@ -355,11 +355,11 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
     newSegmentSizes.push_back(buffer.tellp() - offset);
 }
 
-void OggContainer::internalMakeFile()
+void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     const string context("making OGG file");
-    updateStatus("Prepare for rewriting OGG file ...");
-    parseTags(); // tags need to be parsed before the file can be rewritten
+    progress.updateStep("Prepare for rewriting OGG file ...");
+    parseTags(diag); // tags need to be parsed before the file can be rewritten
     string backupPath;
     NativeFileStream backupStream;
 
@@ -371,7 +371,7 @@ void OggContainer::internalMakeFile()
             fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
         } catch(...) {
             const char *what = catchIoFailure();
-            addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+            diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
             throwIoFailure(what);
         }
     } else {
@@ -383,7 +383,7 @@ void OggContainer::internalMakeFile()
             fileInfo().stream().open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
         } catch(...) {
             const char *what = catchIoFailure();
-            addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
+            diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
             throwIoFailure(what);
         }
     }
@@ -431,7 +431,7 @@ void OggContainer::internalMakeFile()
                             if(!currentParams->removed
                                     && ((m_iterator.currentPageIndex() == currentParams->firstPageIndex
                                          && m_iterator.currentSegmentIndex() == currentParams->firstSegmentIndex))) {
-                                makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams);
+                                makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams, diag);
                             }
 
                             // proceed with next comment?
@@ -453,7 +453,7 @@ void OggContainer::internalMakeFile()
                             // check whether there is a new comment to be inserted into the current page
                             if(m_iterator.currentPageIndex() == currentParams->lastPageIndex && currentParams->firstSegmentIndex == static_cast<size_t>(-1)) {
                                 if(!currentParams->removed) {
-                                    makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams);
+                                    makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams, diag);
                                 }
                                 // proceed with next comment
                                 if(++tagIterator != tagEnd) {
@@ -577,7 +577,7 @@ void OggContainer::internalMakeFile()
 
     } catch(...) {
         m_iterator.setStream(fileInfo().stream());
-        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, fileInfo().stream(), backupStream, context);
+        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, fileInfo().stream(), backupStream, diag, context);
     }
 }
 

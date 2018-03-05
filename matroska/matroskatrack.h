@@ -20,7 +20,7 @@ public:
     uint64 requiredSize() const;
 
 private:
-    MatroskaTrackHeaderMaker(const MatroskaTrack &track);
+    MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag);
 
     const MatroskaTrack &m_track;
     uint64 m_dataSize;
@@ -51,21 +51,21 @@ class TAG_PARSER_EXPORT MatroskaTrack : public AbstractTrack
 
 public:
     MatroskaTrack(EbmlElement &trackElement);
-    ~MatroskaTrack();
+    ~MatroskaTrack() override;
 
-    TrackType type() const;
+    TrackType type() const override;
 
     static MediaFormat codecIdToMediaFormat(const std::string &codecId);
-    void readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags);
-    MatroskaTrackHeaderMaker prepareMakingHeader() const;
-    void makeHeader(std::ostream &stream) const;
+    void readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags, Diagnostics &diag);
+    MatroskaTrackHeaderMaker prepareMakingHeader(Diagnostics &diag) const;
+    void makeHeader(std::ostream &stream, Diagnostics &diag) const;
 
 protected:
-    void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     template<typename PropertyType, typename ConversionFunction>
-    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &integer, const ConversionFunction &conversionFunction);
+    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &integer, const ConversionFunction &conversionFunction, Diagnostics &diag);
 
     EbmlElement *m_trackElement;
 };
@@ -83,9 +83,9 @@ private:
  * \sa make()
  * \todo Make inline in next major release.
  */
-inline MatroskaTrackHeaderMaker MatroskaTrack::prepareMakingHeader() const
+inline MatroskaTrackHeaderMaker MatroskaTrack::prepareMakingHeader(Diagnostics &diag) const
 {
-    return MatroskaTrackHeaderMaker(*this);
+    return MatroskaTrackHeaderMaker(*this, diag);
 }
 
 /*!
@@ -96,9 +96,9 @@ inline MatroskaTrackHeaderMaker MatroskaTrack::prepareMakingHeader() const
  * \sa prepareMaking()
  * \todo Make inline in next major release.
  */
-inline void MatroskaTrack::makeHeader(std::ostream &stream) const
+inline void MatroskaTrack::makeHeader(std::ostream &stream, Diagnostics &diag) const
 {
-    prepareMakingHeader().make(stream);
+    prepareMakingHeader(diag).make(stream);
 }
 
 }

@@ -2,6 +2,7 @@
 #include "./id3v2frameids.h"
 
 #include "../exceptions.h"
+#include "../diagnostics.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
@@ -154,17 +155,16 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const uint32 &id) const
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
+void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &diag)
 {
     // prepare parsing
-    invalidateStatus();
     static const string context("parsing ID3v2 tag");
     BinaryReader reader(&stream);
     uint64 startOffset = stream.tellg();
 
     // check whether the header is truncated
     if(maximalSize && maximalSize < 10) {
-        addNotification(NotificationType::Critical, "ID3v2 header is truncated (at least 10 bytes expected).", context);
+        diag.emplace_back(DiagLevel::Critical, "ID3v2 header is truncated (at least 10 bytes expected).", context);
         throw TruncatedDataException();
     }
 
@@ -178,23 +178,23 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
         m_sizeExcludingHeader = reader.readSynchsafeUInt32BE();
         m_size = 10 + m_sizeExcludingHeader;
         if(m_sizeExcludingHeader == 0) {
-            addNotification(NotificationType::Warning, "ID3v2 tag seems to be empty.", context);
+            diag.emplace_back(DiagLevel::Warning, "ID3v2 tag seems to be empty.", context);
         } else {
             // check if the version
             if(!isVersionSupported()) {
-                addNotification(NotificationType::Critical, "The ID3v2 tag couldn't be parsed, because its version is not supported.", context);
+                diag.emplace_back(DiagLevel::Critical, "The ID3v2 tag couldn't be parsed, because its version is not supported.", context);
                 throw VersionNotSupportedException();
             }
 
             // read extended header (if present)
             if(hasExtendedHeader()) {
                 if(maximalSize && maximalSize < 14) {
-                    addNotification(NotificationType::Critical, "Extended header denoted but not present.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Extended header denoted but not present.", context);
                     throw TruncatedDataException();
                 }
                 m_extendedHeaderSize = reader.readSynchsafeUInt32BE();
                 if(m_extendedHeaderSize < 6 || m_extendedHeaderSize > m_sizeExcludingHeader || (maximalSize && maximalSize < (10 + m_extendedHeaderSize))) {
-                    addNotification(NotificationType::Critical, "Extended header is invalid/truncated.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Extended header is invalid/truncated.", context);
                     throw TruncatedDataException();
                 }
                 stream.seekg(m_extendedHeaderSize - 4, ios_base::cur);
@@ -204,7 +204,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
             uint32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
             if(maximalSize && bytesRemaining > maximalSize) {
                 bytesRemaining = maximalSize;
-                addNotification(NotificationType::Critical, "Frames are truncated.", context);
+                diag.emplace_back(DiagLevel::Critical, "Frames are truncated.", context);
             }
 
             // read frames
@@ -215,11 +215,11 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
                 stream.seekg(pos);
                 // parse frame
                 try {
-                    frame.parse(reader, majorVersion, bytesRemaining);
+                    frame.parse(reader, majorVersion, bytesRemaining, diag);
                     if(frame.id()) {
                         // add frame if parsing was successfull
                         if(Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
-                            addNotification(NotificationType::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
+                            diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
                         }
                         fields().insert(make_pair(frame.id(), frame));
                     }
@@ -229,12 +229,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
                         break;
                     }
                 } catch(const Failure &) {
-                    // nothing to do here since notifications will be added anyways
                 }
-
-                // add parsing notifications of frame
-                addNotifications(context, frame);
-                frame.invalidateNotifications();
 
                 // calculate next frame offset
                 if(frame.totalSize() <= bytesRemaining) {
@@ -252,18 +247,18 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
                     // the footer does not provide additional information, just check the signature
                     stream.seekg(startOffset + (m_size += 10));
                     if(reader.readUInt24LE() != 0x494433u) {
-                        addNotification(NotificationType::Critical, "Footer signature is invalid.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Footer signature is invalid.", context);
                     }
                     // skip remaining footer
                     stream.seekg(7, ios_base::cur);
                 } else {
-                    addNotification(NotificationType::Critical, "Footer denoted but not present.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Footer denoted but not present.", context);
                     throw TruncatedDataException();
                 }
             }
         }
     } else {
-        addNotification(NotificationType::Critical, "Signature is invalid.", context);
+        diag.emplace_back(DiagLevel::Critical, "Signature is invalid.", context);
         throw InvalidDataException();
     }
 }
@@ -278,9 +273,9 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize)
  * This method might be useful when it is necessary to know the size of the tag before making it.
  * \sa make()
  */
-Id3v2TagMaker Id3v2Tag::prepareMaking()
+Id3v2TagMaker Id3v2Tag::prepareMaking(Diagnostics &diag)
 {
-    return Id3v2TagMaker(*this);
+    return Id3v2TagMaker(*this, diag);
 }
 
 /*!
@@ -290,9 +285,9 @@ Id3v2TagMaker Id3v2Tag::prepareMaking()
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Tag::make(ostream &stream, uint32 padding)
+void Id3v2Tag::make(ostream &stream, uint32 padding, Diagnostics &diag)
 {
-    prepareMaking().make(stream, padding);
+    prepareMaking(diag).make(stream, padding, diag);
 }
 
 /*!
@@ -368,17 +363,16 @@ bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
  * \brief Prepares making the specified \a tag.
  * \sa See Id3v2Tag::prepareMaking() for more information.
  */
-Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag) :
+Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag) :
     m_tag(tag),
     m_framesSize(0)
 {
-    tag.invalidateStatus();
     static const string context("making ID3v2 tag");
 
     // check if version is supported
     // (the version could have been changed using setVersion())
     if(!tag.isVersionSupported()) {
-        tag.addNotification(NotificationType::Critical, "The ID3v2 tag version isn't supported.", context);
+        diag.emplace_back(DiagLevel::Critical, "The ID3v2 tag version isn't supported.", context);
         throw VersionNotSupportedException();
     }
 
@@ -386,12 +380,10 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag) :
     m_maker.reserve(tag.fields().size());
     for(auto &pair : tag.fields()) {
         try {
-            m_maker.emplace_back(pair.second.prepareMaking(tag.majorVersion()));
+            m_maker.emplace_back(pair.second.prepareMaking(tag.majorVersion(), diag));
             m_framesSize += m_maker.back().requiredSize();
         } catch(const Failure &) {
-            // nothing to do here; notifications will be added anyways
         }
-        m_tag.addNotifications(pair.second);
     }
 
     // calculate required size
@@ -406,7 +398,7 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag) :
  * \throws Throws Assumes the data is already validated and thus does NOT
  *                throw Media::Failure or a derived exception.
  */
-void Id3v2TagMaker::make(std::ostream &stream, uint32 padding)
+void Id3v2TagMaker::make(std::ostream &stream, uint32 padding, Diagnostics &diag)
 {
     BinaryWriter writer(&stream);
 

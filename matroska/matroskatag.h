@@ -21,7 +21,7 @@ public:
     uint64 requiredSize() const;
 
 private:
-    MatroskaTagMaker(MatroskaTag &tag);
+    MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag);
 
     MatroskaTag &m_tag;
     uint64 m_targetsSize;
@@ -72,16 +72,16 @@ public:
     bool supportsTarget() const;
     TagTargetLevel targetLevel() const;
 
-    void parse(EbmlElement &tagElement);
-    MatroskaTagMaker prepareMaking();
-    void make(std::ostream &stream);
+    void parse(EbmlElement &tagElement, Diagnostics &diag);
+    MatroskaTagMaker prepareMaking(Diagnostics &diag);
+    void make(std::ostream &stream, Diagnostics &diag);
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
     KnownField internallyGetKnownField(const IdentifierType &id) const;
 
 private:
-    void parseTargets(EbmlElement &targetsElement);
+    void parseTargets(EbmlElement &targetsElement, Diagnostics &diag);
 };
 
 /*!

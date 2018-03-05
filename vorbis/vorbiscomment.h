@@ -11,6 +11,7 @@ namespace Media {
 
 class OggIterator;
 class VorbisComment;
+class Diagnostics;
 
 /*!
  * \brief Defines traits for the TagField implementation of the VorbisComment class.
@@ -40,9 +41,9 @@ public:
     using FieldMapBasedTag<VorbisComment>::setValue;
     bool setValue(KnownField field, const TagValue &value);
 
-    void parse(OggIterator &iterator, VorbisCommentFlags flags = VorbisCommentFlags::None);
-    void parse(std::istream &stream, uint64 maxSize, VorbisCommentFlags flags = VorbisCommentFlags::None);
-    void make(std::ostream &stream, VorbisCommentFlags flags = VorbisCommentFlags::None);
+    void parse(OggIterator &iterator, VorbisCommentFlags flags, Diagnostics &diag);
+    void parse(std::istream &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);
+    void make(std::ostream &stream, VorbisCommentFlags flags, Diagnostics &diag);
 
     const TagValue &vendor() const;
     void setVendor(const TagValue &vendor);
@@ -53,7 +54,7 @@ protected:
 
 private:
     template<class StreamType>
-    void internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags);
+    void internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);
 
 private:
     TagValue m_vendor;

@@ -99,7 +99,7 @@ void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack 
     track.m_bitrate = waveHeader.bitrate();
 }
 
-void WaveAudioStream::internalParseHeader()
+void WaveAudioStream::internalParseHeader(Diagnostics &diag)
 {
     const string context("parsing RIFF/WAVE header");
     if(!m_istream) {
@@ -119,7 +119,7 @@ void WaveAudioStream::internalParseHeader()
                         addInfo(waveHeader, *this);
                         restHeaderLen -= 16u;
                     } else {
-                        addNotification(NotificationType::Warning, "\"fmt \" segment is truncated.", context);
+                        diag.emplace_back(DiagLevel::Warning, "\"fmt \" segment is truncated.", context);
                     }
                     break;
                 case 0x64617461u:

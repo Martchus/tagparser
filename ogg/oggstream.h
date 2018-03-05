@@ -22,7 +22,7 @@ public:
     std::size_t startPage() const;
 
 protected:
-    void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag);
 
 private:
     void calculateDurationViaSampleCount(uint16 preSkip = 0);

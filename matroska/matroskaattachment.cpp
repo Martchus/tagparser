@@ -26,46 +26,46 @@ namespace Media {
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void MatroskaAttachment::parse(EbmlElement *attachedFileElement)
+void MatroskaAttachment::parse(EbmlElement *attachedFileElement, Diagnostics &diag)
 {
     clear();
     static const string context("parsing \"AttachedFile\"-element");
     m_attachedFileElement = attachedFileElement;
     EbmlElement *subElement = attachedFileElement->firstChild();
     while(subElement) {
-        subElement->parse();
+        subElement->parse(diag);
         switch(subElement->id()) {
         case MatroskaIds::FileDescription:
             if(description().empty()) {
                 setDescription(subElement->readString());
             } else {
-                addNotification(NotificationType::Warning, "Multiple \"FileDescription\"-elements found. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Multiple \"FileDescription\"-elements found. Surplus elements will be ignored.", context);
             }
             break;
         case MatroskaIds::FileName:
             if(name().empty()) {
                 setName(subElement->readString());
             } else {
-                addNotification(NotificationType::Warning, "Multiple \"FileName\"-elements found. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Multiple \"FileName\"-elements found. Surplus elements will be ignored.", context);
             }
             break;
         case MatroskaIds::FileMimeType:
             if(mimeType().empty()) {
                 setMimeType(subElement->readString());
             } else {
-                addNotification(NotificationType::Warning, "Multiple \"FileMimeType\"-elements found. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Multiple \"FileMimeType\"-elements found. Surplus elements will be ignored.", context);
             }
             break;
         case MatroskaIds::FileData:
             if(data()) {
-                addNotification(NotificationType::Warning, "Multiple \"FileData\"-elements found. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Multiple \"FileData\"-elements found. Surplus elements will be ignored.", context);
             } else {
                 setData(make_unique<StreamDataBlock>(std::bind(&EbmlElement::stream, subElement), subElement->dataOffset(), ios_base::beg, subElement->startOffset() + subElement->totalSize(), ios_base::beg));
             }
             break;
         case MatroskaIds::FileUID:
             if(id()) {
-                addNotification(NotificationType::Warning, "Multiple \"FileUID\"-elements found. Surplus elements will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "Multiple \"FileUID\"-elements found. Surplus elements will be ignored.", context);
             } else {
                 setId(subElement->readUInteger());
             }
@@ -77,7 +77,7 @@ void MatroskaAttachment::parse(EbmlElement *attachedFileElement)
         case EbmlIds::Void:
             break;
         default:
-            addNotification(NotificationType::Warning, "Unknown child element \"" % subElement->idToString() + "\" found.", context);
+            diag.emplace_back(DiagLevel::Warning, "Unknown child element \"" % subElement->idToString() + "\" found.", context);
         }
         subElement = subElement->nextSibling();
     }
@@ -90,13 +90,13 @@ void MatroskaAttachment::parse(EbmlElement *attachedFileElement)
  *                error occurs.
  * \sa prepareMaking()
  */
-void MatroskaAttachment::make(std::ostream &stream)
+void MatroskaAttachment::make(std::ostream &stream, Diagnostics &diag)
 {
     if(!data() || !data()->size()) {
-        addNotification(NotificationType::Critical, "There is no data assigned.", "making Matroska attachment");
+        diag.emplace_back(DiagLevel::Critical, "There is no data assigned.", "making Matroska attachment");
         throw InvalidDataException();
     }
-    prepareMaking().make(stream);
+    prepareMaking(diag).make(stream, diag);
 }
 
 /*!
@@ -110,7 +110,7 @@ void MatroskaAttachment::make(std::ostream &stream)
  * \brief Prepares making the specified \a attachment.
  * \sa See MatroskaAttachment::prepareMaking() for more information.
  */
-MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment) :
+MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment, Diagnostics &diag) :
     m_attachment(attachment)
 {
     m_attachedFileElementSize = 2 + EbmlElement::calculateSizeDenotationLength(attachment.name().size()) + attachment.name().size()
@@ -125,7 +125,7 @@ MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment)
     if(attachment.attachedFileElement()) {
         EbmlElement *child;
         for(auto id : initializer_list<EbmlElement::IdentifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
-            if((child = attachment.attachedFileElement()->childById(id))) {
+            if((child = attachment.attachedFileElement()->childById(id, diag))) {
                 m_attachedFileElementSize += child->totalSize();
             }
         }
@@ -140,7 +140,7 @@ MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment)
  * \throws Throws Assumes the data is already validated and thus does NOT
  *                throw Media::Failure or a derived exception.
  */
-void MatroskaAttachmentMaker::make(ostream &stream) const
+void MatroskaAttachmentMaker::make(ostream &stream, Diagnostics &diag) const
 {
     char buff[8];
     BE::getBytes(static_cast<uint16>(MatroskaIds::AttachedFile), buff);
@@ -157,11 +157,11 @@ void MatroskaAttachmentMaker::make(ostream &stream) const
     if(attachment().attachedFileElement()) {
         EbmlElement *child;
         for(auto id : initializer_list<EbmlElement::IdentifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
-            if((child = attachment().attachedFileElement()->childById(id))) {
+            if((child = attachment().attachedFileElement()->childById(id, diag))) {
                 if(child->buffer()) {
                     child->copyBuffer(stream);
                 } else {
-                    child->copyEntirely(stream);
+                    child->copyEntirely(stream, diag, nullptr);
                 }
             }
         }
@@ -175,12 +175,12 @@ void MatroskaAttachmentMaker::make(ostream &stream) const
     }
 }
 
-void MatroskaAttachmentMaker::bufferCurrentAttachments()
+void MatroskaAttachmentMaker::bufferCurrentAttachments(Diagnostics &diag)
 {
     EbmlElement *child;
     if(attachment().attachedFileElement()) {
         for(auto id : initializer_list<EbmlElement::IdentifierType>{MatroskaIds::FileReferral, MatroskaIds::FileUsedStartTime, MatroskaIds::FileUsedEndTime}) {
-            if((child = attachment().attachedFileElement()->childById(id))) {
+            if((child = attachment().attachedFileElement()->childById(id, diag))) {
                 child->makeBuffer();
             }
         }

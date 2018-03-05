@@ -15,20 +15,20 @@ class TAG_PARSER_EXPORT FlacStream : public AbstractTrack
 {
 public:
     FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset);
-    ~FlacStream();
+    ~FlacStream() override;
 
-    TrackType type() const;
+    TrackType type() const override;
     VorbisComment *vorbisComment() const;
     VorbisComment *createVorbisComment();
     bool removeVorbisComment();
     uint32 paddingSize() const;
     uint32 streamOffset() const;
 
-    uint32 makeHeader(std::ostream &stream);
-    static void makePadding(std::ostream &stream, uint32 size, bool isLast);
+    uint32 makeHeader(std::ostream &stream, Diagnostics &diag);
+    static void makePadding(std::ostream &stream, uint32 size, bool isLast, Diagnostics &diag);
 
 protected:
-    void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     MediaFileInfo &m_mediaFileInfo;

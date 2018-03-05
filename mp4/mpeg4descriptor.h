@@ -45,7 +45,7 @@ public:
 protected:
     Mpeg4Descriptor(Mpeg4Descriptor &parent, uint64 startOffset);
 
-    void internalParse();
+    void internalParse(Diagnostics &diag);
 
 private:
     std::string parsingContext() const;

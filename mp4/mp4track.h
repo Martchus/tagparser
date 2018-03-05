@@ -134,24 +134,23 @@ public:
     const AvcConfiguration *avcConfiguration() const;
 
     // methods to parse configuration details from the track header
-    static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom);
-    static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(StatusProvider &statusProvider, std::istream &stream, uint64 startOffset, uint64 size);
-    static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(StatusProvider &statusProvider, IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size);
+    static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag);
+    static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(std::istream &stream, uint64 startOffset, uint64 size, Diagnostics &diag);
+    static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size, Diagnostics &diag);
 
     // methods to read the "index" (chunk offsets and sizes)
-    std::vector<uint64> readChunkOffsets();
-    std::vector<uint64> readChunkOffsetsSupportingFragments(bool parseFragments = false);
-    std::vector<std::tuple<uint32, uint32, uint32> > readSampleToChunkTable();
-    std::vector<uint64> readChunkSizes();
+    std::vector<uint64> readChunkOffsets(bool parseFragments, Diagnostics &diag);
+    std::vector<std::tuple<uint32, uint32, uint32> > readSampleToChunkTable(Diagnostics &diag);
+    std::vector<uint64> readChunkSizes(Media::Diagnostics &diag);
 
     // methods to make the track header
-    void bufferTrackAtoms();
-    uint64 requiredSize() const;
-    void makeTrack();
-    void makeTrackHeader();
-    void makeMedia();
-    void makeMediaInfo();
-    void makeSampleTable();
+    void bufferTrackAtoms(Diagnostics &diag);
+    uint64 requiredSize(Diagnostics &diag) const;
+    void makeTrack(Diagnostics &diag);
+    void makeTrackHeader(Diagnostics &diag);
+    void makeMedia(Diagnostics &diag);
+    void makeMediaInfo(Diagnostics &diag);
+    void makeSampleTable(Diagnostics &diag);
 
     // methods to update chunk offsets
     void updateChunkOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets);
@@ -161,12 +160,12 @@ public:
     static void addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track);
 
 protected:
-    void internalParseHeader();
+    void internalParseHeader(Diagnostics &diag);
 
 private:
     // private helper methods
-    uint64 accumulateSampleSizes(size_t &sampleIndex, size_t count);
-    void addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t count, size_t &sampleIndex, uint32 sampleCount);
+    uint64 accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagnostics &diag);
+    void addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t count, size_t &sampleIndex, uint32 sampleCount, Diagnostics &diag);
     TrackHeaderInfo verifyPresentTrackHeader() const;
 
     Mp4Atom *m_trakAtom;

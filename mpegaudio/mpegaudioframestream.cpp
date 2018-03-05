@@ -29,7 +29,7 @@ void MpegAudioFrameStream::addInfo(const MpegAudioFrame &frame, AbstractTrack &t
     track.m_samplingFrequency = frame.samplingFrequency();
 }
 
-void MpegAudioFrameStream::internalParseHeader()
+void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing MPEG audio frame header");
     if(!m_istream) {
@@ -51,7 +51,7 @@ void MpegAudioFrameStream::internalParseHeader()
     if(frame.isXingBytesfieldPresent()) {
         uint32 xingSize = frame.xingBytesfield();
         if(m_size && xingSize != m_size) {
-            addNotification(NotificationType::Warning, "Real length of MPEG audio frames is not equal with value provided by Xing header. The Xing header value will be used.", context);
+            diag.emplace_back(DiagLevel::Warning, "Real length of MPEG audio frames is not equal with value provided by Xing header. The Xing header value will be used.", context);
             m_size = xingSize;
         }
     }

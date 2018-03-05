@@ -27,7 +27,6 @@ set(HEADER_FILES
     caseinsensitivecomparer.h
     mpegaudio/mpegaudioframe.h
     mpegaudio/mpegaudioframestream.h
-    notification.h
     ogg/oggcontainer.h
     ogg/oggiterator.h
     ogg/oggpage.h
@@ -39,7 +38,6 @@ set(HEADER_FILES
     positioninset.h
     signature.h
     size.h
-    statusprovider.h
     tag.h
     tagtarget.h
     tagvalue.h
@@ -75,6 +73,8 @@ set(HEADER_FILES
     matroska/matroskatrack.h
     mediafileinfo.h
     mediaformat.h
+    diagnostics.h
+    progressfeedback.h
 )
 set(SRC_FILES
     mp4/mp4atom.cpp
@@ -101,7 +101,6 @@ set(SRC_FILES
     exceptions.cpp
     mpegaudio/mpegaudioframe.cpp
     mpegaudio/mpegaudioframestream.cpp
-    notification.cpp
     ogg/oggcontainer.cpp
     ogg/oggiterator.cpp
     ogg/oggpage.cpp
@@ -112,7 +111,6 @@ set(SRC_FILES
     flac/flacstream.cpp
     signature.cpp
     size.cpp
-    statusprovider.cpp
     tag.cpp
     tagtarget.cpp
     tagvalue.cpp
@@ -140,6 +138,8 @@ set(SRC_FILES
     matroska/matroskatrack.cpp
     mediafileinfo.cpp
     mediaformat.cpp
+    diagnostics.cpp
+    progressfeedback.cpp
 )
 set(TEST_HEADER_FILES
     tests/overall.h

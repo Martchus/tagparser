@@ -65,15 +65,14 @@ string EbmlElement::parsingContext() const
 /*!
  * \brief Parses the EBML element.
  */
-void EbmlElement::internalParse()
+void EbmlElement::internalParse(Diagnostics &diag)
 {
-    invalidateStatus();
     static const string context("parsing EBML element header");
 
     for(uint64 skipped = 0; skipped < bytesToBeSkipped; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
         if(maxTotalSize() < 2) {
-            addNotification(NotificationType::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
+            diag.emplace_back(DiagLevel::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
             throw TruncatedDataException();
         }
         stream().seekg(startOffset());
@@ -88,13 +87,13 @@ void EbmlElement::internalParse()
         }
         if(m_idLength > maximumIdLengthSupported()) {
             if(!skipped) {
-                addNotification(NotificationType::Critical, argsToString("EBML ID length at ", startOffset(), " is not supported, trying to skip."), context);
+                diag.emplace_back(DiagLevel::Critical, argsToString("EBML ID length at ", startOffset(), " is not supported, trying to skip."), context);
             }
             continue; // try again
         }
         if(m_idLength > container().maxIdLength()) {
             if(!skipped) {
-                addNotification(NotificationType::Critical, argsToString("EBML ID length at ", startOffset(), " is invalid, trying to skip."), context);
+                diag.emplace_back(DiagLevel::Critical, argsToString("EBML ID length at ", startOffset(), " is invalid, trying to skip."), context);
             }
             continue; // try again
         }
@@ -155,13 +154,13 @@ void EbmlElement::internalParse()
             }
             if(m_sizeLength > maximumSizeLengthSupported()) {
                 if(!skipped) {
-                    addNotification(NotificationType::Critical, "EBML size length is not supported.", parsingContext());
+                    diag.emplace_back(DiagLevel::Critical, "EBML size length is not supported.", parsingContext());
                 }
                 continue; // try again
             }
             if(m_sizeLength > container().maxSizeLength()) {
                 if(!skipped) {
-                    addNotification(NotificationType::Critical, "EBML size length is invalid.", parsingContext());
+                    diag.emplace_back(DiagLevel::Critical, "EBML size length is invalid.", parsingContext());
                 }
                 continue; // try again
             }
@@ -175,11 +174,11 @@ void EbmlElement::internalParse()
             if(totalSize() > maxTotalSize()) {
                 if(m_idLength + m_sizeLength > maxTotalSize()) { // header truncated
                     if(!skipped) {
-                        addNotification(NotificationType::Critical, "EBML header seems to be truncated.", parsingContext());
+                        diag.emplace_back(DiagLevel::Critical, "EBML header seems to be truncated.", parsingContext());
                     }
                     continue; // try again
                 } else { // data truncated
-                    addNotification(NotificationType::Warning, "Data of EBML element seems to be truncated; unable to parse siblings of that element.", parsingContext());
+                    diag.emplace_back(DiagLevel::Warning, "Data of EBML element seems to be truncated; unable to parse siblings of that element.", parsingContext());
                     m_dataSize = maxTotalSize() - m_idLength - m_sizeLength; // using max size instead
                 }
             }
@@ -207,7 +206,7 @@ void EbmlElement::internalParse()
         // no critical errors occured
         // -> add a warning if bytes have been skipped
         if(skipped) {
-            addNotification(NotificationType::Warning, argsToString(skipped, " bytes have been skipped"), parsingContext());
+            diag.emplace_back(DiagLevel::Warning, argsToString(skipped, " bytes have been skipped"), parsingContext());
         }
         // -> don't need another try, return here
         return;

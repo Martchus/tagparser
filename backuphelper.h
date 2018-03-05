@@ -8,13 +8,14 @@
 namespace Media {
 
 class MediaFileInfo;
+class Diagnostics;
 
 namespace BackupHelper {
 
 TAG_PARSER_EXPORT std::string &backupDirectory();
 TAG_PARSER_EXPORT void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, IoUtilities::NativeFileStream &originalStream, IoUtilities::NativeFileStream &backupStream);
 TAG_PARSER_EXPORT void createBackupFile(const std::string &originalPath, std::string &backupPath, IoUtilities::NativeFileStream &originalStream, IoUtilities::NativeFileStream &backupStream);
-TAG_PARSER_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileInfo, const std::string &backupPath, IoUtilities::NativeFileStream &outputStream, IoUtilities::NativeFileStream &backupStream, const std::string &context = "making file");
+TAG_PARSER_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileInfo, const std::string &backupPath, IoUtilities::NativeFileStream &outputStream, IoUtilities::NativeFileStream &backupStream, Diagnostics &diag, const std::string &context = "making file");
 
 }
 

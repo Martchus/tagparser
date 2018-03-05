@@ -20,22 +20,22 @@ class TAG_PARSER_EXPORT Mp4Container : public GenericContainer<MediaFileInfo, Mp
 {
 public:
     Mp4Container(MediaFileInfo &fileInfo, uint64 startOffset);
-    ~Mp4Container();
+    ~Mp4Container() override;
 
-    bool supportsTrackModifications() const;
+    bool supportsTrackModifications() const override;
     bool isFragmented() const;
-    void reset();
-    ElementPosition determineTagPosition() const;
-    ElementPosition determineIndexPosition() const;
+    void reset() override;
+    ElementPosition determineTagPosition(Diagnostics &diag) const override;
+    ElementPosition determineIndexPosition(Diagnostics &diag) const override;
 
 protected:
-    void internalParseHeader();
-    void internalParseTags();
-    void internalParseTracks();
-    void internalMakeFile();
+    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseTags(Diagnostics &diag) override;
+    void internalParseTracks(Diagnostics &diag) override;
+    void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
-    void updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets);
+    void updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets, Diagnostics &diag);
 
     bool m_fragmented;
 };

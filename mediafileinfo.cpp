@@ -4,6 +4,8 @@
 #include "./signature.h"
 #include "./abstracttrack.h"
 #include "./backuphelper.h"
+#include "./diagnostics.h"
+#include "./progressfeedback.h"
 
 #include "./id3/id3v1tag.h"
 #include "./id3/id3v2tag.h"
@@ -143,14 +145,13 @@ MediaFileInfo::~MediaFileInfo()
  *         error occurs.
  * \sa isContainerParsed(), parseTracks(), parseTag(), parseChapters(), parseEverything()
  */
-void MediaFileInfo::parseContainerFormat()
+void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
 {
     if(containerParsingStatus() != ParsingStatus::NotParsedYet) {
         // there's no need to read the container format twice
         return;
     }
 
-    invalidateStatus();
     static const string context("parsing file header");
     open(); // ensure the file is open
     m_containerFormat = ContainerFormat::Unknown;
@@ -184,7 +185,7 @@ startParsingSignature:
             goto startParsingSignature;
         }
         if(m_paddingSize) {
-            addNotification(NotificationType::Warning, numberToString(m_paddingSize) + " zero-bytes skipped at the beginning of the file.", context);
+            diag.emplace_back(DiagLevel::Warning, argsToString(m_paddingSize, " zero-bytes skipped at the beginning of the file."), context);
         }
 
         // parse signature
@@ -193,7 +194,7 @@ startParsingSignature:
             // save position of ID3v2 tag
             m_actualId3v2TagOffsets.push_back(m_containerOffset);
             if(m_actualId3v2TagOffsets.size() == 2) {
-                addNotification(NotificationType::Warning, "There is more than just one ID3v2 header at the beginning of the file.", context);
+                diag.emplace_back(DiagLevel::Warning, "There is more than just one ID3v2 header at the beginning of the file.", context);
             }
 
             // read ID3v2 header
@@ -214,21 +215,18 @@ startParsingSignature:
         case ContainerFormat::QuickTime: {
             // MP4/QuickTime is handled using Mp4Container instance
             m_container = make_unique<Mp4Container>(*this, m_containerOffset);
-            NotificationList notifications;
             try {
-                static_cast<Mp4Container *>(m_container.get())->validateElementStructure(notifications, &m_paddingSize);
+                static_cast<Mp4Container *>(m_container.get())->validateElementStructure(diag, &m_paddingSize);
             } catch(const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
-            addNotifications(notifications);
             break;
 
         } case ContainerFormat::Ebml: {
             // EBML/Matroska is handled using MatroskaContainer instance
             auto container = make_unique<MatroskaContainer>(*this, m_containerOffset);
-            NotificationList notifications;
             try {
-                container->parseHeader();
+                container->parseHeader(diag);
                 if(container->documentType() == "matroska") {
                     m_containerFormat = ContainerFormat::Matroska;
                 } else if(container->documentType() == "webm") {
@@ -237,14 +235,13 @@ startParsingSignature:
                 if(m_forceFullParse) {
                     // validating the element structure of Matroska files takes too long when
                     // parsing big files so do this only when explicitely desired
-                    container->validateElementStructure(notifications, &m_paddingSize);
-                    container->validateIndex();
+                    container->validateElementStructure(diag, &m_paddingSize);
+                    container->validateIndex(diag);
                 }
             } catch(const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             m_container = move(container);
-            addNotifications(notifications);
             break;
         } case ContainerFormat::Ogg:
             // Ogg is handled by OggContainer instance
@@ -290,7 +287,7 @@ startParsingSignature:
  * \remarks parseContainerFormat() must be called before.
  * \sa areTracksParsed(), parseContainerFormat(), parseTags(), parseChapters(), parseEverything()
  */
-void MediaFileInfo::parseTracks()
+void MediaFileInfo::parseTracks(Diagnostics &diag)
 {
     if(tracksParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tracks twice
         return;
@@ -298,7 +295,7 @@ void MediaFileInfo::parseTracks()
     static const string context("parsing tracks");
     try {
         if(m_container) {
-            m_container->parseTracks();
+            m_container->parseTracks(diag);
         } else {
             switch(m_containerFormat) {
             case ContainerFormat::Adts:
@@ -316,7 +313,7 @@ void MediaFileInfo::parseTracks()
             default:
                 throw NotImplementedException();
             }
-            m_singleTrack->parseHeader();
+            m_singleTrack->parseHeader(diag);
 
             switch(m_containerFormat) {
             case ContainerFormat::Flac:
@@ -329,10 +326,10 @@ void MediaFileInfo::parseTracks()
         }
         m_tracksParsingStatus = ParsingStatus::Ok;
     } catch(const NotImplementedException &) {
-        addNotification(NotificationType::Information, "Parsing tracks is not implemented for the container format of the file.", context);
+        diag.emplace_back(DiagLevel::Information, "Parsing tracks is not implemented for the container format of the file.", context);
         m_tracksParsingStatus = ParsingStatus::NotSupported;
     } catch(const Failure &) {
-        addNotification(NotificationType::Critical, "Unable to parse tracks.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse tracks.", context);
         m_tracksParsingStatus = ParsingStatus::CriticalFailure;
     }
 }
@@ -351,7 +348,7 @@ void MediaFileInfo::parseTracks()
  * \remarks parseContainerFormat() must be called before.
  * \sa isTagParsed(), parseContainerFormat(), parseTracks(), parseChapters(), parseEverything()
  */
-void MediaFileInfo::parseTags()
+void MediaFileInfo::parseTags(Diagnostics &diag)
 {
     if(tagsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tags twice
         return;
@@ -361,13 +358,14 @@ void MediaFileInfo::parseTags()
     if(size() >= 128) {
         m_id3v1Tag = make_unique<Id3v1Tag>();
         try {
-            m_id3v1Tag->parse(stream(), true);
+            stream().seekg(-128, ios_base::end);
+            m_id3v1Tag->parse(stream(), diag);
             m_actualExistingId3v1Tag = true;
         } catch(const NoDataFoundException &) {
-            m_id3v1Tag.reset(); // no ID3v1 tag found
+            m_id3v1Tag.reset();
         } catch(const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
-            addNotification(NotificationType::Critical, "Unable to parse ID3v1 tag.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v1 tag.", context);
         }
     }
     // the offsets of the ID3v2 tags have already been parsed when parsing the container format
@@ -376,28 +374,28 @@ void MediaFileInfo::parseTags()
         auto id3v2Tag = make_unique<Id3v2Tag>();
         stream().seekg(offset, ios_base::beg);
         try {
-            id3v2Tag->parse(stream(), size() - offset);
+            id3v2Tag->parse(stream(), size() - offset, diag);
             m_paddingSize += id3v2Tag->paddingSize();
         } catch(const NoDataFoundException &) {
             continue;
         } catch(const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
-            addNotification(NotificationType::Critical, "Unable to parse ID3v2 tag.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v2 tag.", context);
         }
         m_id3v2Tags.emplace_back(id3v2Tag.release());
     }
     if(m_container) {
         try {
-            m_container->parseTags();
+            m_container->parseTags(diag);
         } catch(const NotImplementedException &) {
             if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
                 // do not override parsing status from ID3 tags here
                 m_tagsParsingStatus = ParsingStatus::NotSupported;
             }
-            addNotification(NotificationType::Information, "Parsing tags is not implemented for the container format of the file.", context);
+            diag.emplace_back(DiagLevel::Information, "Parsing tags is not implemented for the container format of the file.", context);
         } catch(const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
-            addNotification(NotificationType::Critical, "Unable to parse tag.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse tag.", context);
         }
     }
     if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
@@ -417,7 +415,7 @@ void MediaFileInfo::parseTags()
  * \remarks parseContainerFormat() must be called before.
  * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
  */
-void MediaFileInfo::parseChapters()
+void MediaFileInfo::parseChapters(Diagnostics &diag)
 {
     if(chaptersParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the chapters twice
         return;
@@ -425,17 +423,17 @@ void MediaFileInfo::parseChapters()
     static const string context("parsing chapters");
     try {
         if(m_container) {
-            m_container->parseChapters();
+            m_container->parseChapters(diag);
             m_chaptersParsingStatus = ParsingStatus::Ok;
         } else {
             throw NotImplementedException();
         }
     } catch (const NotImplementedException &) {
         m_chaptersParsingStatus = ParsingStatus::NotSupported;
-        addNotification(NotificationType::Information, "Parsing chapters is not implemented for the container format of the file.", context);
+        diag.emplace_back(DiagLevel::Information, "Parsing chapters is not implemented for the container format of the file.", context);
     } catch (const Failure &) {
         m_chaptersParsingStatus = ParsingStatus::CriticalFailure;
-        addNotification(NotificationType::Critical, "Unable to parse chapters.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse chapters.", context);
     }
 }
 
@@ -450,7 +448,7 @@ void MediaFileInfo::parseChapters()
  * \remarks parseContainerFormat() must be called before.
  * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
  */
-void MediaFileInfo::parseAttachments()
+void MediaFileInfo::parseAttachments(Diagnostics &diag)
 {
     if(attachmentsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the attachments twice
         return;
@@ -458,17 +456,17 @@ void MediaFileInfo::parseAttachments()
     static const string context("parsing attachments");
     try {
         if(m_container) {
-            m_container->parseAttachments();
+            m_container->parseAttachments(diag);
             m_attachmentsParsingStatus = ParsingStatus::Ok;
         } else {
             throw NotImplementedException();
         }
     } catch (const NotImplementedException &) {
         m_attachmentsParsingStatus = ParsingStatus::NotSupported;
-        addNotification(NotificationType::Information, "Parsing attachments is not implemented for the container format of the file.", context);
+        diag.emplace_back(DiagLevel::Information, "Parsing attachments is not implemented for the container format of the file.", context);
     } catch (const Failure &) {
         m_attachmentsParsingStatus = ParsingStatus::CriticalFailure;
-        addNotification(NotificationType::Critical, "Unable to parse attachments.", context);
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse attachments.", context);
     }
 }
 
@@ -478,13 +476,13 @@ void MediaFileInfo::parseAttachments()
  * See the individual methods to for more details and exceptions which might be thrown.
  * \sa parseContainerFormat(), parseTracks(), parseTags()
  */
-void MediaFileInfo::parseEverything()
+void MediaFileInfo::parseEverything(Diagnostics &diag)
 {
-    parseContainerFormat();
-    parseTracks();
-    parseTags();
-    parseChapters();
-    parseAttachments();
+    parseContainerFormat(diag);
+    parseTracks(diag);
+    parseTags(diag);
+    parseChapters(diag);
+    parseAttachments(diag);
 }
 
 /*!
@@ -614,9 +612,10 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
             }
         }
     }
-    if(targetsRequired && !targetsSupported) {
-        addNotification(NotificationType::Information, "The container/tags do not support targets. The specified targets are ignored.", "creating tags");
-    }
+    // FIXME
+    //if(targetsRequired && !targetsSupported) {
+    //    diag.emplace_back(DiagLevel::Information, "The container/tags do not support targets. The specified targets are ignored.", "creating tags");
+    //}
     return true;
 }
 
@@ -641,10 +640,10 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
  *
  * \sa clearParsingResults()
  */
-void MediaFileInfo::applyChanges()
+void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &progress)
 {   
     static const string context("making file");
-    addNotification(NotificationType::Information, "Changes are about to be applied.", context);
+    diag.emplace_back(DiagLevel::Information, "Changes are about to be applied.", context);
     bool previousParsingSuccessful = true;
     switch(tagsParsingStatus()) {
     case ParsingStatus::Ok:
@@ -652,7 +651,7 @@ void MediaFileInfo::applyChanges()
         break;
     default:
         previousParsingSuccessful = false;
-        addNotification(NotificationType::Critical, "Tags have to be parsed without critical errors before changes can be applied.", context);
+        diag.emplace_back(DiagLevel::Critical, "Tags have to be parsed without critical errors before changes can be applied.", context);
     }
     switch(tracksParsingStatus()) {
     case ParsingStatus::Ok:
@@ -660,7 +659,7 @@ void MediaFileInfo::applyChanges()
         break;
     default:
         previousParsingSuccessful = false;
-        addNotification(NotificationType::Critical, "Tracks have to be parsed without critical errors before changes can be applied.", context);
+        diag.emplace_back(DiagLevel::Critical, "Tracks have to be parsed without critical errors before changes can be applied.", context);
     }
     if(!previousParsingSuccessful) {
         throw InvalidDataException();
@@ -668,16 +667,15 @@ void MediaFileInfo::applyChanges()
     if(m_container) { // container object takes care
         // ID3 tags can not be applied in this case -> add warnings if ID3 tags have been assigned
         if(hasId3v1Tag()) {
-            addNotification(NotificationType::Warning, "Assigned ID3v1 tag can't be attached and will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "Assigned ID3v1 tag can't be attached and will be ignored.", context);
         }
         if(hasId3v2Tag()) {
-            addNotification(NotificationType::Warning, "Assigned ID3v2 tag can't be attached and will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "Assigned ID3v2 tag can't be attached and will be ignored.", context);
         }
-        m_container->forwardStatusUpdateCalls(this);
         m_tracksParsingStatus = ParsingStatus::NotParsedYet;
         m_tagsParsingStatus = ParsingStatus::NotParsedYet;
         try {
-            m_container->makeFile();
+            m_container->makeFile(diag, progress);
         } catch(...) {
             // since the file might be messed up, invalidate the parsing results
             clearParsingResults();
@@ -686,7 +684,7 @@ void MediaFileInfo::applyChanges()
     } else { // implementation if no container object is present
         // assume the file is a MP3 file
         try {
-            makeMp3File();
+            makeMp3File(diag, progress);
         } catch(...) {
             // since the file might be messed up, invalidate the parsing results
             clearParsingResults();
@@ -1230,127 +1228,6 @@ vector<AbstractAttachment *> MediaFileInfo::attachments() const
 }
 
 /*!
- * \brief Returns an indication whether at least one related object (track,
- *        tag, container) has notifications.
- */
-bool MediaFileInfo::haveRelatedObjectsNotifications() const
-{
-    if(m_container && m_container->hasNotifications()) {
-        return true;
-    }
-    for(const auto *track : tracks()) {
-        if(track->hasNotifications()) {
-            return true;
-        }
-    }
-    for(const auto *tag : tags()) {
-        if(tag->hasNotifications()) {
-            return true;
-        }
-    }
-    for(const auto *chapter : chapters()) {
-        if(chapter->hasNotifications()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/*!
- * \brief Returns the worst notification type including related objects such as track,
- *        tag and container.
- */
-NotificationType MediaFileInfo::worstNotificationTypeIncludingRelatedObjects() const
-{    
-    NotificationType type = worstNotificationType();
-    if(type == Notification::worstNotificationType()) {
-        return type;
-    }
-    if(m_container) {
-        type |= m_container->worstNotificationType();
-    }
-    if(type == Notification::worstNotificationType()) {
-        return type;
-    }
-    for(const auto *track : tracks()) {
-        type |= track->worstNotificationType();
-        if(type == Notification::worstNotificationType()) {
-            return type;
-        }
-    }
-    for(const auto *tag : tags()) {
-        type |= tag->worstNotificationType();
-        if(type == Notification::worstNotificationType()) {
-            return type;
-        }
-    }
-    for(const auto *chapter : chapters()) {
-        type |= chapter->worstNotificationType();
-        if(type == Notification::worstNotificationType()) {
-            return type;
-        }
-    }
-    return type;
-}
-
-/*!
- * \brief Returns the notifications of the current instance and all related
- *        objects (tracks, tags, container, ...).
- * \remarks The specified list is not cleared before notifications are added.
- */
-void MediaFileInfo::gatherRelatedNotifications(NotificationList &notifications) const
-{
-    notifications.insert(notifications.end(), this->notifications().cbegin(), this->notifications().cend());
-    if(m_container) {
-        // prevent duplicates which might be present when validating element structure
-        switch(m_containerFormat) {
-        case ContainerFormat::Ebml:
-        case ContainerFormat::Matroska:
-            // those files are only validated when a full parse is forced
-            if(!m_forceFullParse) {
-                notifications.insert(notifications.end(), m_container->notifications().cbegin(), m_container->notifications().cend());
-                break;
-            }
-            FALLTHROUGH;
-        case ContainerFormat::Mp4:
-        case ContainerFormat::QuickTime:
-            // those files are always validated
-            for(const Notification &notification : m_container->notifications()) {
-                if(find(notifications.cbegin(), notifications.cend(), notification) == notifications.cend()) {
-                    notifications.emplace_back(notification);
-                }
-            }
-            break;
-        default:
-            notifications.insert(notifications.end(), m_container->notifications().cbegin(), m_container->notifications().cend());;
-        }
-    }
-    for(const auto *track : tracks()) {
-        notifications.insert(notifications.end(), track->notifications().cbegin(), track->notifications().cend());
-    }
-    for(const auto *tag : tags()) {
-        notifications.insert(notifications.end(), tag->notifications().cbegin(), tag->notifications().cend());
-    }
-    for(const auto *chapter : chapters()) {
-        notifications.insert(notifications.end(), chapter->notifications().cbegin(), chapter->notifications().cend());
-    }
-    for(const auto *attachment : attachments()) {
-        notifications.insert(notifications.end(), attachment->notifications().cbegin(), attachment->notifications().cend());
-    }
-}
-
-/*!
- * \brief Returns the notifications of the current instance and all related
- *        objects (tracks, tags, container, ...).
- */
-NotificationList MediaFileInfo::gatherRelatedNotifications() const
-{
-    NotificationList notifications;
-    gatherRelatedNotifications(notifications);
-    return notifications;
-}
-
-/*!
  * \brief Clears all parsing results and assigned/created/changed information such as
  *        detected container format, tracks, tags, ...
  *
@@ -1359,8 +1236,7 @@ NotificationList MediaFileInfo::gatherRelatedNotifications() const
  * gathered.
  *
  * \remarks Any pointers previously returned by tags(), tracks(), ... object should be
- *          considered invalidated. Notifications of those objects are transfered to
- *          the media file info.
+ *          considered invalidated.
  */
 void MediaFileInfo::clearParsingResults()
 {
@@ -1372,36 +1248,12 @@ void MediaFileInfo::clearParsingResults()
     m_tagsParsingStatus = ParsingStatus::NotParsedYet;
     m_chaptersParsingStatus = ParsingStatus::NotParsedYet;
     m_attachmentsParsingStatus = ParsingStatus::NotParsedYet;
-    if(m_id3v1Tag) {
-        transferNotifications(*m_id3v1Tag);
-        m_id3v1Tag.reset();
-    }
-    for(auto &id3v2Tag : m_id3v2Tags) {
-        transferNotifications(*id3v2Tag);
-    }
+    m_id3v1Tag.reset();
     m_id3v2Tags.clear();
     m_actualId3v2TagOffsets.clear();
     m_actualExistingId3v1Tag = false;
-    if(m_container) {
-        transferNotifications(*m_container);
-        for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
-            transferNotifications(*m_container->track(i));
-        }
-        for(size_t i = 0, count = m_container->tagCount(); i != count; ++i) {
-            transferNotifications(*m_container->tag(i));
-        }
-        for(size_t i = 0, count = m_container->chapterCount(); i != count; ++i) {
-            transferNotifications(*m_container->chapter(i));
-        }
-        for(size_t i = 0, count = m_container->attachmentCount(); i != count; ++i) {
-            transferNotifications(*m_container->attachment(i));
-        }
-        m_container.reset();
-    }
-    if(m_singleTrack) {
-        transferNotifications(*m_singleTrack);
-        m_singleTrack.reset();
-    }
+    m_container.reset();
+    m_singleTrack.reset();
 }
 
 /*!
@@ -1596,15 +1448,13 @@ vector<Tag *> MediaFileInfo::tags() const
 void MediaFileInfo::invalidated()
 {
     BasicFileInfo::invalidated();
-    invalidateStatus();
-    invalidateNotifications();
     clearParsingResults();
 }
 
 /*!
  * \brief Internally used to save chanings of MP3/FLAC files and any other files which might have ID3 tags.
  */
-void MediaFileInfo::makeMp3File()
+void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("making MP3/FLAC file");
     // there's no need to rewrite the complete file if there are no ID3v2 tags present or to be written
@@ -1613,23 +1463,23 @@ void MediaFileInfo::makeMp3File()
             // there is currently an ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
                 // the file shall still have an ID3v1 tag
-                updateStatus("Updating ID3v1 tag ...");
+                progress.updateStep("Updating ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(-128, ios_base::end);
                 try {
-                    m_id3v1Tag->make(stream());
+                    m_id3v1Tag->make(stream(), diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
                 // the currently existing ID3v1 tag shall be removed
-                updateStatus("Removing ID3v1 tag ...");
+                progress.updateStep("Removing ID3v1 tag ...");
                 stream().close();
                 if(truncate(path().c_str(), size() - 128) == 0) {
                     reportSizeChanged(size() - 128);
                 } else {
-                    addNotification(NotificationType::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
                     throwIoFailure("Unable to truncate file to remove ID3v1 tag.");
                 }
             }
@@ -1637,23 +1487,23 @@ void MediaFileInfo::makeMp3File()
         } else {
             // there is currently no ID3v1 tag at the end of the file
             if(m_id3v1Tag) {
-                updateStatus("Adding ID3v1 tag ...");
+                progress.updateStep("Adding ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(0, ios_base::end);
                 try {
-                    m_id3v1Tag->make(stream());
+                    m_id3v1Tag->make(stream(), diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
-                addNotification(NotificationType::Information, "Nothing to be changed.", context);
+                diag.emplace_back(DiagLevel::Information, "Nothing to be changed.", context);
             }
         }
 
     } else {
         // ID3v2 needs to be modified
-        updateStatus("Updating ID3v2 tags ...");
+        progress.updateStep("Updating ID3v2 tags ...");
 
         // prepare ID3v2 tags
         vector<Id3v2TagMaker> makers;
@@ -1661,12 +1511,10 @@ void MediaFileInfo::makeMp3File()
         uint32 tagsSize = 0;
         for(auto &tag : m_id3v2Tags) {
             try {
-                makers.emplace_back(tag->prepareMaking());
+                makers.emplace_back(tag->prepareMaking(diag));
                 tagsSize += makers.back().requiredSize();
             } catch(const Failure &) {
-                // nothing to do: notifications added anyways
             }
-            addNotifications(*tag);
         }
 
         // check whether it is a raw FLAC stream
@@ -1678,7 +1526,7 @@ void MediaFileInfo::makeMp3File()
 
         if(flacStream) {
             // if it is a raw FLAC stream, make FLAC metadata
-            startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData);
+            startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
             tagsSize += flacMetaData.tellp();
             streamOffset = flacStream->streamOffset();
         } else {
@@ -1721,7 +1569,7 @@ void MediaFileInfo::makeMp3File()
             // can not be used for additional meta data
             padding += 4;
         }
-        updateStatus(rewriteRequired ? "Preparing streams for rewriting ..." : "Preparing streams for updating ...");
+        progress.updateStep(rewriteRequired ? "Preparing streams for rewriting ..." : "Preparing streams for updating ...");
 
         // setup stream(s) for writing
         // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
@@ -1738,7 +1586,7 @@ void MediaFileInfo::makeMp3File()
                     outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
                 } catch(...) {
                     const char *what = catchIoFailure();
-                    addNotification(NotificationType::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
                     throwIoFailure(what);
                 }
             } else {
@@ -1750,7 +1598,7 @@ void MediaFileInfo::makeMp3File()
                     outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
                 } catch(...) {
                     const char *what = catchIoFailure();
-                    addNotification(NotificationType::Critical, "Opening streams to write output file failed.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
                     throwIoFailure(what);
                 }
             }
@@ -1762,7 +1610,7 @@ void MediaFileInfo::makeMp3File()
                 outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
             } catch(...) {
                 const char *what = catchIoFailure();
-                addNotification(NotificationType::Critical, "Opening the file with write permissions failed.", context);
+                diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
                 throwIoFailure(what);
             }
         }
@@ -1771,12 +1619,12 @@ void MediaFileInfo::makeMp3File()
         try {
             if(!makers.empty()) {
                 // write ID3v2 tags
-                updateStatus("Writing ID3v2 tag ...");
+                progress.updateStep("Writing ID3v2 tag ...");
                 for(auto i = makers.begin(), end = makers.end() - 1; i != end; ++i) {
-                    i->make(outputStream, 0);
+                    i->make(outputStream, 0, diag);
                 }
                 // include padding into the last ID3v2 tag
-                makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : padding);
+                makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : padding, diag);
             }
 
             if(flacStream) {
@@ -1793,7 +1641,7 @@ void MediaFileInfo::makeMp3File()
 
                 // write padding
                 if(padding) {
-                    flacStream->makePadding(outputStream, padding, true);
+                    flacStream->makePadding(outputStream, padding, true, diag);
                 }
             }
 
@@ -1815,15 +1663,14 @@ void MediaFileInfo::makeMp3File()
                 // copy data from original file
                 switch(m_containerFormat) {
                 case ContainerFormat::MpegAudioFrames:
-                    updateStatus("Writing MPEG audio frames ...");
+                    progress.updateStep("Writing MPEG audio frames ...");
                     break;
                 default:
-                    updateStatus("Writing frames ...");
+                    progress.updateStep("Writing frames ...");
                 }
                 backupStream.seekg(streamOffset);
                 CopyHelper<0x4000> copyHelper;
-                copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&StatusProvider::isAborted, this), bind(&StatusProvider::updatePercentage, this, _1));
-                updatePercentage(1.0);
+                copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)), bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
             } else {
                 // just skip actual stream data
                 outputStream.seekp(mediaDataSize, ios_base::cur);
@@ -1831,11 +1678,11 @@ void MediaFileInfo::makeMp3File()
 
             // write ID3v1 tag
             if(m_id3v1Tag) {
-                updateStatus("Writing ID3v1 tag ...");
+                progress.updateStep("Writing ID3v1 tag ...");
                 try {
-                    m_id3v1Tag->make(stream());
+                    m_id3v1Tag->make(stream(), diag);
                 } catch(const Failure &) {
-                    addNotification(NotificationType::Warning, "Unable to write ID3v1 tag.", context);
+                    diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             }
 
@@ -1860,7 +1707,7 @@ void MediaFileInfo::makeMp3File()
                     if(truncate(path().c_str(), newSize) == 0) {
                         reportSizeChanged(newSize);
                     } else {
-                        addNotification(NotificationType::Critical, "Unable to truncate the file.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
                     }
                 } else {
                     // file is longer after the modification -> just report new size
@@ -1869,7 +1716,7 @@ void MediaFileInfo::makeMp3File()
             }
 
         } catch(...) {
-            BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, context);
+            BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, diag, context);
         }
     }
 }

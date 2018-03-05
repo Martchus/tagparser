@@ -13,15 +13,15 @@ class TAG_PARSER_EXPORT MatroskaChapter : public AbstractChapter
 {
 public:
     MatroskaChapter(EbmlElement *chapterAtomElement);
-    ~MatroskaChapter();
+    ~MatroskaChapter() override;
 
-    MatroskaChapter *nestedChapter(std::size_t index);
-    const MatroskaChapter *nestedChapter(std::size_t index) const;
-    std::size_t nestedChapterCount() const;
-    void clear();
+    MatroskaChapter *nestedChapter(std::size_t index) override;
+    const MatroskaChapter *nestedChapter(std::size_t index) const override;
+    std::size_t nestedChapterCount() const override;
+    void clear() override;
 
 protected:
-    void internalParse();
+    void internalParse(Diagnostics &diag) override;
 
 private:
     EbmlElement *m_chapterAtomElement;

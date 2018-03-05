@@ -2,7 +2,6 @@
 #define MP4TAGATOM_H
 
 #include "../generictagfield.h"
-#include "../statusprovider.h"
 
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/conversion/stringconversion.h>
@@ -49,6 +48,7 @@ enum KnownValue : uint32
 }
 
 class Mp4TagField;
+class Diagnostics;
 
 /*!
  * \brief Defines traits for the TagField implementation of the Mp4TagField class.
@@ -73,7 +73,7 @@ public:
     uint64 requiredSize() const;
 
 private:
-    Mp4TagFieldMaker(Mp4TagField &field);
+    Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag);
 
     Mp4TagField &m_field;
     std::stringstream m_convertedData;
@@ -99,7 +99,7 @@ inline uint64 Mp4TagFieldMaker::requiredSize() const
    return m_totalSize;
 }
 
-class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField>, public StatusProvider
+class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField>
 {
     friend class TagField<Mp4TagField>;
 
@@ -108,9 +108,9 @@ public:
     Mp4TagField(IdentifierType id, const TagValue &value);
     Mp4TagField(const std::string &mean, const std::string &name, const TagValue &value);
 
-    void reparse(Mp4Atom &ilstChild);
-    Mp4TagFieldMaker prepareMaking();
-    void make(std::ostream &stream);
+    void reparse(Mp4Atom &ilstChild, Diagnostics &diag);
+    Mp4TagFieldMaker prepareMaking(Diagnostics &diag);
+    void make(std::ostream &stream, Diagnostics &diag);
 
     bool isAdditionalTypeInfoUsed() const;
     const std::string &name() const;

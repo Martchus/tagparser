@@ -46,7 +46,7 @@ void OverallTests::checkOggTestfile1()
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -84,7 +84,7 @@ void OverallTests::checkOggTestfile2()
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!

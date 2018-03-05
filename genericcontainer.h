@@ -29,7 +29,7 @@ public:
     GenericContainer(FileInfoType &fileInfo, uint64 startOffset);
     ~GenericContainer();
 
-    void validateElementStructure(NotificationList &gatheredNotifications, uint64 *paddingSize = nullptr);
+    void validateElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
     FileInfoType &fileInfo() const;
     ElementType *firstElement() const;
     const std::vector<std::unique_ptr<ElementType> > &additionalElements() const;
@@ -97,11 +97,11 @@ GenericContainer<FileInfoType, TagType, TrackType, ElementType>::~GenericContain
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(NotificationList &gatheredNotifications, uint64 *paddingSize)
+inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(Diagnostics &diag, uint64 *paddingSize)
 {
-    parseHeader();
+    parseHeader(diag);
     if(m_firstElement) {
-        m_firstElement->validateSubsequentElementStructure(gatheredNotifications, paddingSize);
+        m_firstElement->validateSubsequentElementStructure(diag, paddingSize);
     }
 }
 

@@ -71,7 +71,7 @@ void OverallTests::checkMkvTestfile1()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -113,7 +113,7 @@ void OverallTests::checkMkvTestfile2()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -155,7 +155,7 @@ void OverallTests::checkMkvTestfile3()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -215,7 +215,7 @@ void OverallTests::checkMkvTestfile4()
     }
 
     // tolerate critical notifications here because live stream feature used by the file is not supported in v6 yet
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Critical);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Critical);
 }
 
 /*!
@@ -263,7 +263,7 @@ void OverallTests::checkMkvTestfile5()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -306,7 +306,7 @@ void OverallTests::checkMkvTestfile6()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -351,14 +351,14 @@ void OverallTests::checkMkvTestfile7()
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
-        if(notification.type() != NotificationType::Warning) {
+    for(const auto &msg : m_diag) {
+        if(msg.level() != DiagLevel::Warning) {
             continue;
         }
-        CPPUNIT_ASSERT(startsWith(notification.context(), "parsing header of EBML element 0xEA \"cue codec state\" at"));
-        CPPUNIT_ASSERT_EQUAL("Data of EBML element seems to be truncated; unable to parse siblings of that element."s, notification.message());
+        CPPUNIT_ASSERT(startsWith(msg.context(), "parsing header of EBML element 0xEA \"cue codec state\" at"));
+        CPPUNIT_ASSERT_EQUAL("Data of EBML element seems to be truncated; unable to parse siblings of that element."s, msg.message());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Warning);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Warning);
 }
 
 /*!
@@ -402,7 +402,7 @@ void OverallTests::checkMkvTestfile8()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -468,7 +468,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Information);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
 /*!
@@ -508,13 +508,13 @@ void OverallTests::checkMkvTestfileNestedTags()
 
     // the file contains in fact the unknown element [44][B4]
     // TODO: find out what this element is about (its data is only the single byte 0x01)
-    for(const Notification &notification : m_fileInfo.gatherRelatedNotifications()) {
-        if(notification.type() != NotificationType::Warning) {
+    for(const auto &msg : m_diag) {
+        if(msg.level() != DiagLevel::Warning) {
             continue;
         }
-        CPPUNIT_ASSERT(startsWith(notification.message(), "\"SimpleTag\"-element contains unknown element 0x44B4 at"));
+        CPPUNIT_ASSERT(startsWith(msg.message(), "\"SimpleTag\"-element contains unknown element 0x44B4 at"));
     }
-    CPPUNIT_ASSERT(m_fileInfo.worstNotificationTypeIncludingRelatedObjects() <= NotificationType::Warning);
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Warning);
 }
 
 /*!
@@ -569,10 +569,10 @@ void OverallTests::checkMkvConstraints()
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
         }
         if(!(m_mode & RemoveTag) && (m_expectedTagPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
-            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineTagPosition());
+            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineTagPosition(m_diag));
         }
         if((m_expectedIndexPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceIndexPos))) {
-            CPPUNIT_ASSERT_EQUAL(m_expectedIndexPos, m_fileInfo.container()->determineIndexPosition());
+            CPPUNIT_ASSERT_EQUAL(m_expectedIndexPos, m_fileInfo.container()->determineIndexPosition(m_diag));
         }
     }
 }
@@ -616,7 +616,7 @@ void OverallTests::setMkvTestMetaData()
     // assign an attachment
     AbstractAttachment *attachment = container->createAttachment();
     CPPUNIT_ASSERT_MESSAGE("create attachment", attachment);
-    attachment->setFile(TestUtilities::testFilePath("matroska_wave1/logo3_256x256.png"));
+    attachment->setFile(TestUtilities::testFilePath("matroska_wave1/logo3_256x256.png"), m_diag);
     attachment->setMimeType("image/png");
     attachment->setName("cover.jpg");
 }

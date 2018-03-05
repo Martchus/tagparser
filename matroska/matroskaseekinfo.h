@@ -3,13 +3,11 @@
 
 #include "./ebmlelement.h"
 
-#include "../statusprovider.h"
-
 #include <utility>
 
 namespace Media {
 
-class TAG_PARSER_EXPORT MatroskaSeekInfo : public StatusProvider
+class TAG_PARSER_EXPORT MatroskaSeekInfo
 {
 public:
     MatroskaSeekInfo();
@@ -18,8 +16,8 @@ public:
     const std::vector<std::pair<EbmlElement::IdentifierType, uint64> > &info() const;
     std::vector<std::pair<EbmlElement::IdentifierType, uint64> > &info();
     void shift(uint64 start, int64 amount);
-    void parse(EbmlElement *seekHeadElement);
-    void make(std::ostream &stream);
+    void parse(EbmlElement *seekHeadElement, Diagnostics &diag);
+    void make(std::ostream &stream, Diagnostics &diag);
     uint64 minSize() const;
     uint64 maxSize() const;
     uint64 actualSize() const;

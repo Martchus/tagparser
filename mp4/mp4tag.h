@@ -57,12 +57,12 @@ class TAG_PARSER_EXPORT Mp4TagMaker
     friend class Mp4Tag;
 
 public:
-    void make(std::ostream &stream);
+    void make(std::ostream &stream, Diagnostics &diag);
     const Mp4Tag &tag() const;
     uint64 requiredSize() const;
 
 private:
-    Mp4TagMaker(Mp4Tag &tag);
+    Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag);
 
     Mp4Tag &m_tag;
     std::vector<Mp4TagFieldMaker> m_maker;
@@ -132,9 +132,9 @@ public:
     using FieldMapBasedTag<Mp4Tag>::hasField;
     bool hasField(KnownField value) const;
 
-    void parse(Mp4Atom &metaAtom);
-    Mp4TagMaker prepareMaking();
-    void make(std::ostream &stream);
+    void parse(Mp4Atom &metaAtom, Diagnostics &diag);
+    Mp4TagMaker prepareMaking(Diagnostics &diag);
+    void make(std::ostream &stream, Diagnostics &diag);
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;

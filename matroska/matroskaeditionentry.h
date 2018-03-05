@@ -7,7 +7,7 @@ namespace Media {
 
 class EbmlElement;
 
-class TAG_PARSER_EXPORT MatroskaEditionEntry : public StatusProvider
+class TAG_PARSER_EXPORT MatroskaEditionEntry
 {
 public:
     MatroskaEditionEntry(EbmlElement *editionEntryElement);
@@ -21,8 +21,8 @@ public:
     std::string label() const;
     const std::vector<std::unique_ptr<MatroskaChapter> > &chapters() const;
 
-    void parse();
-    void parseNested();
+    void parse(Diagnostics &diag);
+    void parseNested(Diagnostics &diag);
     void clear();
 
 private:

@@ -3,6 +3,7 @@
 #include "./id3v2frameids.h"
 
 #include "../exceptions.h"
+#include "../diagnostics.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
@@ -50,7 +51,7 @@ Id3v2Frame::Id3v2Frame() :
 /*!
  * \brief Constructs a new Id3v2Frame with the specified \a id, \a value, \a group and \a flag.
  */
-Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, const byte group, const int16 flag) :
+Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group, int16 flag) :
     TagField<Id3v2Frame>(id, value),
     m_flag(flag),
     m_group(group),
@@ -113,9 +114,8 @@ int parseGenreIndex(const stringtype &denotation)
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 maximalSize)
+void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize, Diagnostics &diag)
 {
-    invalidateStatus();
     clear();
     static const string defaultContext("parsing ID3v2 frame");
     string context;
@@ -130,7 +130,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         } else {
             // padding reached
             m_padding = true;
-            addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
+            diag.emplace_back(DiagLevel::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
             throw NoDataFoundException();
         }
 
@@ -141,7 +141,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         m_dataSize = reader.readUInt24BE();
         m_totalSize = m_dataSize + 6;
         if(m_totalSize > maximalSize) {
-            addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "The frame is truncated and will be ignored.", context);
             throw TruncatedDataException();
         }
 
@@ -158,7 +158,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         } else {
             // padding reached
             m_padding = true;
-            addNotification(NotificationType::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
+            diag.emplace_back(DiagLevel::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
             throw NoDataFoundException();
         }
 
@@ -171,7 +171,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
                 : reader.readUInt32BE();
         m_totalSize = m_dataSize + 10;
         if(m_totalSize > maximalSize) {
-            addNotification(NotificationType::Warning, "The frame is truncated and will be ignored.", context);
+            diag.emplace_back(DiagLevel::Warning, "The frame is truncated and will be ignored.", context);
             throw TruncatedDataException();
         }
 
@@ -180,14 +180,14 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         m_group = hasGroupInformation() ? reader.readByte() : 0;
         if(isEncrypted()) {
             // encryption is not implemented
-            addNotification(NotificationType::Critical, "Encrypted frames aren't supported.", context);
+            diag.emplace_back(DiagLevel::Critical, "Encrypted frames aren't supported.", context);
             throw VersionNotSupportedException();
         }
     }
 
     // frame size mustn't be 0
     if(m_dataSize <= 0) {
-        addNotification(NotificationType::Critical, "The frame size is 0.", context);
+        diag.emplace_back(DiagLevel::Critical, "The frame size is 0.", context);
         throw InvalidDataException();
     }
 
@@ -198,7 +198,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
     if(isCompressed()) {
         uLongf decompressedSize = version >= 4 ? reader.readSynchsafeUInt32BE() : reader.readUInt32BE();
         if(decompressedSize < m_dataSize) {
-            addNotification(NotificationType::Critical, "The decompressed size is smaller than the compressed size.", context);
+            diag.emplace_back(DiagLevel::Critical, "The decompressed size is smaller than the compressed size.", context);
             throw InvalidDataException();
         }
         auto bufferCompressed = make_unique<char[]>(m_dataSize);;
@@ -206,18 +206,18 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
         buffer = make_unique<char[]>(decompressedSize);
         switch(uncompress(reinterpret_cast<Bytef *>(buffer.get()), &decompressedSize, reinterpret_cast<Bytef *>(bufferCompressed.get()), m_dataSize)) {
         case Z_MEM_ERROR:
-            addNotification(NotificationType::Critical, "Decompressing failed. The source buffer was too small.", context);
+            diag.emplace_back(DiagLevel::Critical, "Decompressing failed. The source buffer was too small.", context);
             throw InvalidDataException();
         case Z_BUF_ERROR:
-            addNotification(NotificationType::Critical, "Decompressing failed. The destination buffer was too small.", context);
+            diag.emplace_back(DiagLevel::Critical, "Decompressing failed. The destination buffer was too small.", context);
             throw InvalidDataException();
         case Z_DATA_ERROR:
-            addNotification(NotificationType::Critical, "Decompressing failed. The input data was corrupted or incomplete.", context);
+            diag.emplace_back(DiagLevel::Critical, "Decompressing failed. The input data was corrupted or incomplete.", context);
             throw InvalidDataException();
         case Z_OK:
             break;
         default:
-            addNotification(NotificationType::Critical, "Decompressing failed (unknown reason).", context);
+            diag.emplace_back(DiagLevel::Critical, "Decompressing failed (unknown reason).", context);
             throw InvalidDataException();
         }
         m_dataSize = decompressedSize;
@@ -229,7 +229,7 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
     // -> get tag value depending of field type
     if(Id3v2FrameIds::isTextFrame(id())) {
         // frame contains text
-        TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer.get()); // the first byte stores the encoding
+        TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer.get(), diag); // the first byte stores the encoding
         if((version >= 3 &&
             (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && id() == Id3v2FrameIds::sTrackPosition)) {
@@ -237,13 +237,13 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
             try {
                 PositionInSet position;
                 if(characterSize(dataEncoding) > 1) {
-                    position = PositionInSet(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
+                    position = PositionInSet(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag));
                 } else {
-                    position = PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding));
+                    position = PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag));
                 }
                 value().assignPosition(position);
             } catch(const ConversionException &) {
-                addNotification(NotificationType::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
             }
 
         } else if((version >= 3 && id() == Id3v2FrameIds::lLength) || (version < 3 && id() == Id3v2FrameIds::sLength)) {
@@ -251,27 +251,27 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
             try {
                 string milliseconds;
                 if(dataEncoding == TagTextEncoding::Utf16BigEndian || dataEncoding == TagTextEncoding::Utf16LittleEndian) {
-                    const auto parsedStringRef = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                    const auto parsedStringRef = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                     const auto convertedStringData = dataEncoding == TagTextEncoding::Utf16BigEndian
                             ? convertUtf16BEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef))
                             : convertUtf16LEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef));
                     milliseconds = string(convertedStringData.first.get(), convertedStringData.second);
                 } else { // Latin-1 or UTF-8
-                    milliseconds = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                    milliseconds = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 }
                 value().assignTimeSpan(TimeSpan::fromMilliseconds(stringToNumber<double>(milliseconds)));
             } catch (const ConversionException &) {
-                addNotification(NotificationType::Warning, "The value of the length frame is not numeric and will be ignored.", context);
+                diag.emplace_back(DiagLevel::Warning, "The value of the length frame is not numeric and will be ignored.", context);
             }
 
         } else if((version >= 3 && id() == Id3v2FrameIds::lGenre) || (version < 3 && id() == Id3v2FrameIds::sGenre)) {
             // genre/content type
             int genreIndex;
             if(characterSize(dataEncoding) > 1) {
-                auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 genreIndex = parseGenreIndex(genreDenotation);
             } else {
-                auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 genreIndex = parseGenreIndex(genreDenotation);
             }
             if(genreIndex != -1) {
@@ -280,31 +280,31 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
             } else {
                 // genre is specified as string
                 // string might be null terminated
-                auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+                auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
             }
-        } else { // any other text frame
-            // string might be null terminated
-            auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding);
+        } else {
+            // any other text frame
+            auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
             value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
         }
 
     } else if(version >= 3 && id() == Id3v2FrameIds::lCover) {
         // frame stores picture
         byte type;
-        parsePicture(buffer.get(), m_dataSize, value(), type);
+        parsePicture(buffer.get(), m_dataSize, value(), type, diag);
         setTypeInfo(type);
 
     } else if(version < 3 && id() == Id3v2FrameIds::sCover) {
         // frame stores legacy picutre
         byte type;
-        parseLegacyPicture(buffer.get(), m_dataSize, value(), type);
+        parseLegacyPicture(buffer.get(), m_dataSize, value(), type, diag);
         setTypeInfo(type);
 
     } else if(((version >= 3 && id() == Id3v2FrameIds::lComment) || (version < 3 && id() == Id3v2FrameIds::sComment))
               || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics) || (version < 3 && id() == Id3v2FrameIds::sUnsynchronizedLyrics))) {
         // comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
-        parseComment(buffer.get(), m_dataSize, value());
+        parseComment(buffer.get(), m_dataSize, value(), diag);
 
     } else {
         // unknown frame
@@ -322,9 +322,9 @@ void Id3v2Frame::parse(BinaryReader &reader, const uint32 version, const uint32 
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
  */
-Id3v2FrameMaker Id3v2Frame::prepareMaking(const uint32 version)
+Id3v2FrameMaker Id3v2Frame::prepareMaking(const uint32 version, Diagnostics &diag)
 {
-    return Id3v2FrameMaker(*this, version);
+    return Id3v2FrameMaker(*this, version, diag);
 }
 
 /*!
@@ -335,9 +335,9 @@ Id3v2FrameMaker Id3v2Frame::prepareMaking(const uint32 version)
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Frame::make(BinaryWriter &writer, const uint32 version)
+void Id3v2Frame::make(BinaryWriter &writer, const uint32 version, Diagnostics &diag)
 {
-    prepareMaking(version).make(writer);
+    prepareMaking(version, diag).make(writer);
 }
 
 /*!
@@ -364,32 +364,31 @@ void Id3v2Frame::cleared()
  * \brief Prepares making the specified \a frame.
  * \sa See Id3v2Frame::prepareMaking() for more information.
  */
-Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
+Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version, Diagnostics &diag) :
     m_frame(frame),
     m_frameId(m_frame.id()),
     m_version(version)
 {
-    m_frame.invalidateStatus();
     const string context("making " % m_frame.frameIdString() + " frame");
 
     // validate assigned data
     if(m_frame.value().isEmpty()) {
-        m_frame.addNotification(NotificationType::Critical, "Cannot make an empty frame.", context);
+        diag.emplace_back(DiagLevel::Critical, "Cannot make an empty frame.", context);
         throw InvalidDataException();
     }
     if(m_frame.isEncrypted()) {
-        m_frame.addNotification(NotificationType::Critical, "Cannot make an encrypted frame (isn't supported by this tagging library).", context);
+        diag.emplace_back(DiagLevel::Critical, "Cannot make an encrypted frame (isn't supported by this tagging library).", context);
         throw InvalidDataException();
     }
     if(m_frame.hasPaddingReached()) {
-        m_frame.addNotification(NotificationType::Critical, "Cannot make a frame which is marked as padding.", context);
+        diag.emplace_back(DiagLevel::Critical, "Cannot make a frame which is marked as padding.", context);
         throw InvalidDataException();
     }
     if(version < 3 && m_frame.isCompressed()) {
-        m_frame.addNotification(NotificationType::Warning, "Compression is not supported by the version of ID3v2 and won't be applied.", context);
+        diag.emplace_back(DiagLevel::Warning, "Compression is not supported by the version of ID3v2 and won't be applied.", context);
     }
     if(version < 3 && (m_frame.flag() || m_frame.group())) {
-        m_frame.addNotification(NotificationType::Warning, "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
+        diag.emplace_back(DiagLevel::Warning, "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
     }
 
     // convert frame ID if necessary
@@ -397,7 +396,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
         if(Id3v2FrameIds::isShortId(m_frameId)) {
             // try to convert the short frame ID to its long equivalent
             if(!(m_frameId = Id3v2FrameIds::convertToLongId(m_frameId))) {
-                m_frame.addNotification(NotificationType::Critical, "The short frame ID can't be converted to its long equivalent which is needed to use the frame in a newer version of ID3v2.", context);
+                diag.emplace_back(DiagLevel::Critical, "The short frame ID can't be converted to its long equivalent which is needed to use the frame in a newer version of ID3v2.", context);
                 throw InvalidDataException();
             }
         }
@@ -405,7 +404,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
         if(Id3v2FrameIds::isLongId(m_frameId)) {
             // try to convert the long frame ID to its short equivalent
             if(!(m_frameId = Id3v2FrameIds::convertToShortId(m_frameId))) {
-                m_frame.addNotification(NotificationType::Critical, "The long frame ID can't be converted to its short equivalent which is needed to use the frame in the old version of ID3v2.", context);
+                diag.emplace_back(DiagLevel::Critical, "The long frame ID can't be converted to its short equivalent which is needed to use the frame in the old version of ID3v2.", context);
                 throw InvalidDataException();
             }
         }
@@ -440,14 +439,14 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
 
         } else if((version >= 3 && m_frameId == Id3v2FrameIds::lCover) || (version < 3 && m_frameId == Id3v2FrameIds::sCover)) {
             // picture frame
-            m_frame.makePictureConsideringVersion(m_data, m_decompressedSize, m_frame.value(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
+            m_frame.makePicture(m_data, m_decompressedSize, m_frame.value(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
 
         } else if(((version >= 3 && m_frameId == Id3v2FrameIds::lComment)
                    || (version < 3 && m_frameId == Id3v2FrameIds::sComment))
                   || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
                       || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
             // the comment frame or the unsynchronized lyrics frame
-            m_frame.makeCommentConsideringVersion(m_data, m_decompressedSize, m_frame.value(), version);
+            m_frame.makeComment(m_data, m_decompressedSize, m_frame.value(), version, diag);
 
         } else  {
             // an unknown frame
@@ -455,7 +454,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
             copy(m_frame.value().dataPointer(), m_frame.value().dataPointer() + m_decompressedSize, m_data.get());
         }
     } catch(const ConversionException &) {
-        m_frame.addNotification(NotificationType::Critical, "Assigned value can not be converted appropriately.", context);
+        diag.emplace_back(DiagLevel::Critical, "Assigned value can not be converted appropriately.", context);
         throw InvalidDataException();
     }
 
@@ -465,10 +464,10 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version) :
         auto compressedData = make_unique<char[]>(m_decompressedSize);
         switch(compress(reinterpret_cast<Bytef *>(compressedData.get()), reinterpret_cast<uLongf *>(&m_dataSize), reinterpret_cast<Bytef *>(m_data.get()), m_decompressedSize)) {
         case Z_MEM_ERROR:
-            m_frame.addNotification(NotificationType::Critical, "Decompressing failed. The source buffer was too small.", context);
+            diag.emplace_back(DiagLevel::Critical, "Decompressing failed. The source buffer was too small.", context);
             throw InvalidDataException();
         case Z_BUF_ERROR:
-            m_frame.addNotification(NotificationType::Critical, "Decompressing failed. The destination buffer was too small.", context);
+            diag.emplace_back(DiagLevel::Critical, "Decompressing failed. The destination buffer was too small.", context);
             throw InvalidDataException();
         case Z_OK:
             ;
@@ -538,7 +537,7 @@ void Id3v2FrameMaker::make(BinaryWriter &writer)
  * If the \a textEncodingByte doesn't match any encoding TagTextEncoding::Latin1 is
  * returned and a parsing notification is added.
  */
-TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte)
+TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte, Diagnostics &diag)
 {
     switch(textEncodingByte) {
     case Id3v2TextEncodingBytes::Ascii:
@@ -550,7 +549,7 @@ TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte)
     case Id3v2TextEncodingBytes::Utf8:
         return TagTextEncoding::Utf8;
     default:
-        addNotification(NotificationType::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + frameIdString());
+        diag.emplace_back(DiagLevel::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + frameIdString());
         return TagTextEncoding::Latin1;
     }
 }
@@ -583,12 +582,12 @@ byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
  * \param buffer Specifies a pointer to the possibly terminated string.
  * \param bufferSize Specifies the size of the string in byte.
  * \param encoding Specifies the encoding of the string. Might be adjusted if a byte order marks is found.
- * \param addWarnings Specifies whether warnings should be added to the status provider if the string is not terminated.
+ * \param addWarnings Specifies whether warnings should be added if the string is not terminated.
  * \returns Returns the start offset, the length of the string (without termination) and the end offset (after termination).
  * \remarks The length is always returned as the number of bytes, not as the number of characters (makes a difference for
  *          Unicode encodings).
  */
-tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char *buffer, std::size_t bufferSize, TagTextEncoding &encoding, bool addWarnings)
+tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char *buffer, std::size_t bufferSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
     tuple<const char *, size_t, const char *> res(buffer, 0, buffer + bufferSize);
     switch(encoding) {
@@ -597,7 +596,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
     case TagTextEncoding::Utf8: {
         if((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
             if(encoding == TagTextEncoding::Latin1) {
-                addNotification(NotificationType::Critical, "Denoted character set is Latin-1 but an UTF-8 BOM is present - assuming UTF-8.", "parsing frame " + frameIdString());
+                diag.emplace_back(DiagLevel::Critical, "Denoted character set is Latin-1 but an UTF-8 BOM is present - assuming UTF-8.", "parsing frame " + frameIdString());
                 encoding = TagTextEncoding::Utf8;
             }
             get<0>(res) += 3;
@@ -608,7 +607,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
                 ++get<1>(res);
             } else {
                 if(addWarnings) {
-                    addNotification(NotificationType::Warning, "String in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
+                    diag.emplace_back(DiagLevel::Warning, "String in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
                 }
                 break;
             }
@@ -622,7 +621,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
             switch(ConversionUtilities::LE::toUInt16(buffer)) {
             case 0xFEFF:
                 if(encoding == TagTextEncoding::Utf16BigEndian) {
-                    addNotification(NotificationType::Critical, "Denoted character set is UTF-16 Big Endian but UTF-16 Little Endian BOM is present - assuming UTF-16 LE.", "parsing frame " + frameIdString());
+                    diag.emplace_back(DiagLevel::Critical, "Denoted character set is UTF-16 Big Endian but UTF-16 Little Endian BOM is present - assuming UTF-16 LE.", "parsing frame " + frameIdString());
                     encoding = TagTextEncoding::Utf16LittleEndian;
                 }
                 get<0>(res) += 2;
@@ -638,7 +637,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
                 get<1>(res) += 2;
             } else {
                 if(addWarnings) {
-                    addNotification(NotificationType::Warning, "Wide string in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
+                    diag.emplace_back(DiagLevel::Warning, "Wide string in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
                 }
                 break;
             }
@@ -655,9 +654,9 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(const char 
  *
  * Same as Id3v2Frame::parseSubstring() but returns the substring as string object.
  */
-string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
+string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
-    auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
+    auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
     return string(get<0>(substr), get<1>(substr));
 }
 
@@ -668,9 +667,9 @@ string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncod
  *
  * \remarks Converts byte order to match host byte order (otherwise it wouldn't make much sense to use the resulting u16string).
  */
-u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings)
+u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
-    auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings);
+    auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
     u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
     TagValue::ensureHostByteOrder(res, encoding);
     return res;
@@ -685,7 +684,7 @@ u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTe
  *
  * \remarks This method is not used anymore and might be deleted.
  */
-void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &encoding)
+void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &encoding, Diagnostics &diag)
 {
     switch(encoding) {
     case TagTextEncoding::Utf16BigEndian:
@@ -699,7 +698,7 @@ void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &e
     default:
         if((maxSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
             encoding = TagTextEncoding::Utf8;
-            addNotification(NotificationType::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + frameIdString());
+            diag.emplace_back(DiagLevel::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + frameIdString());
         }
     }
 }
@@ -711,20 +710,20 @@ void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &e
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo)
+void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag)
 {
     static const string context("parsing ID3v2.2 picture frame");
     if(maxSize < 6) {
-        addNotification(NotificationType::Critical, "Picture frame is incomplete.", context);
+        diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete.", context);
         throw TruncatedDataException();
     }
     const char *end = buffer + maxSize;
-    auto dataEncoding = parseTextEncodingByte(*buffer); // the first byte stores the encoding
+    auto dataEncoding = parseTextEncodingByte(*buffer, diag); // the first byte stores the encoding
     typeInfo = static_cast<unsigned char>(*(buffer + 4));
-    auto substr = parseSubstring(buffer + 5, end - 5 - buffer, dataEncoding, true);
+    auto substr = parseSubstring(buffer + 5, end - 5 - buffer, dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) >= end) {
-        addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
+        diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (actual data is missing).", context);
         throw TruncatedDataException();
     }
     tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
@@ -737,29 +736,29 @@ void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, Tag
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo)
+void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag)
 {
     static const string context("parsing ID3v2.3 picture frame");
     const char *end = buffer + maxSize;
-    auto dataEncoding = parseTextEncodingByte(*buffer); // the first byte stores the encoding
+    auto dataEncoding = parseTextEncodingByte(*buffer, diag); // the first byte stores the encoding
     auto mimeTypeEncoding = TagTextEncoding::Latin1;
-    auto substr = parseSubstring(buffer + 1, maxSize - 1, mimeTypeEncoding, true);
+    auto substr = parseSubstring(buffer + 1, maxSize - 1, mimeTypeEncoding, true, diag);
     if(get<1>(substr)) {
         tagValue.setMimeType(string(get<0>(substr), get<1>(substr)));
     }
     if(get<2>(substr) >= end) {
-        addNotification(NotificationType::Critical, "Picture frame is incomplete (type info, description and actual data are missing).", context);
+        diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (type info, description and actual data are missing).", context);
         throw TruncatedDataException();
     }
     typeInfo = static_cast<unsigned char>(*get<2>(substr));
     if(++get<2>(substr) >= end) {
-        addNotification(NotificationType::Critical, "Picture frame is incomplete (description and actual data are missing).", context);
+        diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (description and actual data are missing).", context);
         throw TruncatedDataException();
     }
-    substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, true);
+    substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) >= end) {
-        addNotification(NotificationType::Critical, "Picture frame is incomplete (actual data is missing).", context);
+        diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (actual data is missing).", context);
         throw TruncatedDataException();
     }
     tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
@@ -771,25 +770,25 @@ void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue 
  * \param dataSize Specifies the maximal number of bytes to read from the buffer.
  * \param tagValue Specifies the tag value used to store the results.
  */
-void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue &tagValue)
+void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue &tagValue, Diagnostics &diag)
 {
     static const string context("parsing comment/unsynchronized lyrics frame");
     const char *end = buffer + dataSize;
     if(dataSize < 5) {
-        addNotification(NotificationType::Critical, "Comment frame is incomplete.", context);
+        diag.emplace_back(DiagLevel::Critical, "Comment frame is incomplete.", context);
         throw TruncatedDataException();
     }
-    TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer);
+    TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer, diag);
     if(*(++buffer)) {
         tagValue.setLanguage(string(buffer, 3));
     }
-    auto substr = parseSubstring(buffer += 3, dataSize -= 4, dataEncoding, true);
+    auto substr = parseSubstring(buffer += 3, dataSize -= 4, dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if(get<2>(substr) > end) {
-        addNotification(NotificationType::Critical, "Comment frame is incomplete (description not terminated?).", context);
+        diag.emplace_back(DiagLevel::Critical, "Comment frame is incomplete (description not terminated?).", context);
         throw TruncatedDataException();
     }
-    substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, false);
+    substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, false, diag);
     tagValue.assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
 }
 
@@ -922,17 +921,9 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
 }
 
 /*!
- * \brief Writes the specified picture to the specified buffer (ID3v2.3 compatible).
- */
-void Id3v2Frame::makePicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
-{
-    makePictureConsideringVersion(buffer, bufferSize, picture, typeInfo, 3);
-}
-
-/*!
  * \brief Writes the specified picture to the specified buffer.
  */
-void Id3v2Frame::makePictureConsideringVersion(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version)
+void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version)
 {
     if(version < 3) {
         makeLegacyPicture(buffer, bufferSize, picture, typeInfo);
@@ -987,26 +978,18 @@ void Id3v2Frame::makePictureConsideringVersion(std::unique_ptr<char[]> &buffer, 
 /*!
  * \brief Writes the specified comment to the specified buffer.
  */
-void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment)
-{
-    makeCommentConsideringVersion(buffer, bufferSize, comment, 3);
-}
-
-/*!
- * \brief Writes the specified comment to the specified buffer.
- */
-void Id3v2Frame::makeCommentConsideringVersion(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version)
+void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version, Diagnostics &diag)
 {
     static const string context("making comment frame");
     // check type and other values are valid
     TagTextEncoding encoding = comment.dataEncoding();
     if(!comment.description().empty() && encoding != comment.descriptionEncoding()) {
-        addNotification(NotificationType::Critical, "Data enoding and description encoding aren't equal.", context);
+        diag.emplace_back(DiagLevel::Critical, "Data enoding and description encoding aren't equal.", context);
         throw InvalidDataException();
     }
     const string &lng = comment.language();
     if(lng.length() > 3) {
-        addNotification(NotificationType::Critical, "The language must be 3 bytes long (ISO-639-2).", context);
+        diag.emplace_back(DiagLevel::Critical, "The language must be 3 bytes long (ISO-639-2).", context);
         throw InvalidDataException();
     }
     StringData convertedDescription;

@@ -4,6 +4,7 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/misc/traits.h>
 
 #include <string>
 
@@ -21,7 +22,7 @@ class TAG_PARSER_EXPORT PositionInSet
 {
 public:
     constexpr PositionInSet(int32 position = 0, int32 total = 0);
-    template <typename StringType = std::string>
+    template <typename StringType = std::string, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>>...>
     PositionInSet(const StringType &numericString);
 
     constexpr int32 position() const;
@@ -29,7 +30,7 @@ public:
     constexpr bool isNull() const;
     constexpr bool operator==(const PositionInSet &other) const;
 
-    template <typename StringType = std::string>
+    template <typename StringType = std::string, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>>...>
     StringType toString() const;
 
 private:
@@ -43,12 +44,12 @@ private:
  * \param numericString Specifies the string containing the position and possibly
  *                      the total element count (separated by "/").
  */
-template <typename StringType>
+template <typename StringType, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>>...>
 PositionInSet::PositionInSet(const StringType &numericString) :
     m_position(0),
     m_total(0)
 {
-    size_t separator = numericString.find('/');
+    const auto separator = numericString.find('/');
     if(separator == StringType::npos || separator == numericString.length() - 1) {
         m_position = ConversionUtilities::stringToNumber<int32, StringType>(numericString);
     } else if(separator == 0) {
@@ -104,7 +105,7 @@ constexpr inline bool PositionInSet::operator==(const PositionInSet &other) cons
 /*!
  * \brief Returns the string representation of the current PositionInSet.
  */
-template <typename StringType>
+template <typename StringType, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>>...>
 StringType PositionInSet::toString() const
 {
     std::basic_stringstream<typename StringType::value_type> ss;

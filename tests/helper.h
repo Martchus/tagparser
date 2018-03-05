@@ -2,7 +2,7 @@
 #define TAGPARSER_TEST_HELPER
 
 #include "../tagvalue.h"
-#include "../notification.h"
+#include "../diagnostics.h"
 
 #include <ostream>
 
@@ -27,11 +27,11 @@ inline std::ostream &operator <<(std::ostream &os, const Media::PositionInSet &p
 }
 
 /*!
- * \brief Prints a Notification to enable using it in CPPUNIT_ASSERT_EQUAL.
+ * \brief Prints a DiagMessage to enable using it in CPPUNIT_ASSERT_EQUAL.
  */
-inline std::ostream &operator <<(std::ostream &os, const Media::Notification &n)
+inline std::ostream &operator <<(std::ostream &os, const Media::DiagMessage &diagMessage)
 {
-    return os << n.typeName() << ':' << ' ' << n.message() << ' ' << '(' << n.context() << ')';
+    return os << diagMessage.levelName() << ':' << ' ' << diagMessage.message() << ' ' << '(' << diagMessage.context() << ')';
 }
 
 }

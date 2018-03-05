@@ -205,13 +205,12 @@ string AbstractTrack::description() const
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void AbstractTrack::parseHeader()
+void AbstractTrack::parseHeader(Diagnostics &diag)
 {
-    invalidateStatus();
     m_headerValid = false;
     m_istream->seekg(m_startOffset, ios_base::beg);
     try {
-        internalParseHeader();
+        internalParseHeader(diag);
         m_headerValid = true;
     } catch(Failure &) {
         throw;

@@ -56,12 +56,11 @@ string Mp4Atom::parsingContext() const
 /*!
  * \brief Parses the MP4 atom.
  */
-void Mp4Atom::internalParse()
+void Mp4Atom::internalParse(Diagnostics &diag)
 {
-    invalidateStatus();
     static const string context("parsing MP4 atom");
     if(maxTotalSize() < minimumElementSize()) {
-        addNotification(NotificationType::Critical, "Atom is smaller than 8 byte and hence invalid. The remaining size within the parent atom is " % numberToString(maxTotalSize()) + ".", context);
+        diag.emplace_back(DiagLevel::Critical, argsToString("Atom is smaller than 8 byte and hence invalid. The remaining size within the parent atom is ", maxTotalSize(), '.'), context);
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());
@@ -71,11 +70,11 @@ void Mp4Atom::internalParse()
         m_dataSize = maxTotalSize();
     }
     if(!m_dataSize) {
-        addNotification(NotificationType::Critical, "No data found (only null bytes).", context);
+        diag.emplace_back(DiagLevel::Critical, "No data found (only null bytes).", context);
         throw NoDataFoundException();
     }
     if(m_dataSize < 8 && m_dataSize != 1) {
-        addNotification(NotificationType::Critical, "Atom is smaller than 8 byte and hence invalid.", context);
+        diag.emplace_back(DiagLevel::Critical, "Atom is smaller than 8 byte and hence invalid.", context);
         throw TruncatedDataException();
     }
     m_id = reader().readUInt32BE();
@@ -84,14 +83,14 @@ void Mp4Atom::internalParse()
         m_dataSize = reader().readUInt64BE();
         m_sizeLength = 12; // 4 bytes indicate long size denotation + 8 bytes for actual size denotation
         if(dataSize() < 16 && m_dataSize != 1) {
-            addNotification(NotificationType::Critical, "Atom denoting 64-bit size is smaller than 16 byte and hence invalid.", parsingContext());
+            diag.emplace_back(DiagLevel::Critical, "Atom denoting 64-bit size is smaller than 16 byte and hence invalid.", parsingContext());
             throw TruncatedDataException();
         }
     } else {
         m_sizeLength = 4;
     }
     if(maxTotalSize() < m_dataSize) { // currently m_dataSize holds data size plus header size!
-        addNotification(NotificationType::Warning, "The atom seems to be truncated; unable to parse siblings of that ", parsingContext());
+        diag.emplace_back(DiagLevel::Warning, "The atom seems to be truncated; unable to parse siblings of that ", parsingContext());
         m_dataSize = maxTotalSize(); // using max size instead
     }
     // currently m_dataSize holds data size plus header size!
