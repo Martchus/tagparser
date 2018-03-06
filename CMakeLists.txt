@@ -10,8 +10,8 @@ set(HEADER_FILES
     mp4/mp4tagfield.h
     mp4/mp4track.h
     mp4/mpeg4descriptor.h
-#    aac/aaccodebook.h
-#    aac/aacframe.h
+    aac/aaccodebook.h
+    aac/aacframe.h
     abstractattachment.h
     abstractchapter.h
     abstractcontainer.h
@@ -84,8 +84,8 @@ set(SRC_FILES
     mp4/mp4tagfield.cpp
     mp4/mp4track.cpp
     mp4/mpeg4descriptor.cpp
-#    aac/aaccodebook.cpp
-#    aac/aacframe.cpp
+    aac/aaccodebook.cpp
+    aac/aacframe.cpp
     abstractattachment.cpp
     abstractchapter.cpp
     abstractcontainer.cpp

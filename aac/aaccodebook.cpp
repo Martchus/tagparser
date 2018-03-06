@@ -1,6 +1,6 @@
 #include "./aaccodebook.h"
 
-namespace Media {
+namespace TagParser {
 
 const AacHcb *const aacHcbTable[] = {
     0, aacHcb1Step1, aacHcb2Step1, 0, aacHcb4Step1, 0, aacHcb6Step1, 0, aacHcb8Step1, 0, aacHcb10Step1, aacHcb11Step1

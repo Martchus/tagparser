@@ -1,10 +1,12 @@
-#ifndef AACCODEBOOK_H
-#define AACCODEBOOK_H
+#ifndef TAG_PARSER_AACCODEBOOK_H
+#define TAG_PARSER_AACCODEBOOK_H
+
+// NOTE: The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
 
 #include <c++utilities/application/global.h>
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 struct LIB_EXPORT AacHcb
 {
@@ -82,4 +84,4 @@ extern const sbyte tHuffmanNoiseBal30dB[24][2];
 
 }
 
-#endif // AACCODEBOOK_H
+#endif // TAG_PARSER_AACCODEBOOK_H

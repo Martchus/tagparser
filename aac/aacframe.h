@@ -1,11 +1,13 @@
-#ifndef AACFRAME_H
-#define AACFRAME_H
+#ifndef TAG_PARSER_AACFRAME_H
+#define TAG_PARSER_AACFRAME_H
+
+// NOTE: The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
 
 #include <c++utilities/io/bitreader.h>
 
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class AdtsFrame;
 
@@ -513,8 +515,8 @@ private:
     AacDrcInfo m_drc;
     AacProgramConfig m_pce;
     byte m_sbrPresentFlag;
-    byte m_forceUpSampling;
-    byte m_downSampledSbr;
+    //byte m_forceUpSampling;
+    //byte m_downSampledSbr;
     std::shared_ptr<AacSbrInfo> m_sbrElements[aacMaxSyntaxElements];
     byte m_psUsed[aacMaxSyntaxElements];
     byte m_psUsedGlobal;
@@ -541,8 +543,8 @@ inline AacFrameElementParser::AacFrameElementParser(byte audioObjectId, byte sam
     //m_channel(0),
     //m_pairedChannel(0),
     m_sbrPresentFlag(0),
-    m_forceUpSampling(0),
-    m_downSampledSbr(0),
+    //m_forceUpSampling(0),
+    //m_downSampledSbr(0),
     m_sbrElements{0},
     m_psUsed{0},
     m_psUsedGlobal(0),
@@ -562,4 +564,4 @@ constexpr int16 AacFrameElementParser::huffmanCodebook(byte i)
 
 }
 
-#endif // AACFRAME_H
+#endif // TAG_PARSER_AACFRAME_H

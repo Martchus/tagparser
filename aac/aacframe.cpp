@@ -21,7 +21,7 @@ using namespace IoUtilities;
  *          in the rest of the library.
  */
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \cond
@@ -1334,7 +1334,8 @@ shared_ptr<AacSbrInfo> AacFrameElementParser::makeSbrInfo(byte sbrElement, bool 
 
 void AacFrameElementParser::parseSbrExtensionData(byte sbrElement, uint16 count, bool crcFlag)
 {
-    uint16 alignBitCount = 0;
+    VAR_UNUSED(count);
+    //uint16 alignBitCount = 0;
     std::shared_ptr<AacSbrInfo> &sbr = m_sbrElements[sbrElement];
     if(m_psResetFlag) {
         sbr->psResetFlag = m_psResetFlag;
@@ -1663,7 +1664,7 @@ void AacFrameElementParser::calculateWindowGroupingInfo(AacIcsInfo &ics)
         }
         ics.swbOffset[ics.swbCount] = ics.maxSwbOffset = m_frameLength / 8;
         for(byte i = 0; i < ics.windowCount - 1; ++i) {
-            if(!ics.scaleFactorGrouping & (1 << (6 - i))) {
+            if(!(ics.scaleFactorGrouping & (1 << (6 - i)))) {
                 ics.windowGroupLengths[ics.windowGroupCount] = 1;
                 ++ics.windowGroupCount;
             } else {
