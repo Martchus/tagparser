@@ -46,7 +46,57 @@ to the CMake arguments **when building `c++utilities`**. It is *not* sufficient 
 option only when building `tagparser`.
 
 ## Usage
-For examples check out the command line interface of [Tag Editor](https://github.com/Martchus/tageditor).
+This example shows how to read and write tag fields in a format-independent way:
+
+```
+#include <tagparser/mediafileinfo.h>
+#include <tagparser/diagnostics.h>
+
+using namespace TagParser;
+
+// create a MediaFileInfo for high-level access to overall functionality of the library
+MediaFileInfo fileInfo;
+// create container for errors, warnings, etc.
+Diagnostics diag;
+
+// open file (might throw ios_base::failure)
+fileInfo.setPath("/path/to/some/file");
+fileInfo.open();
+// parse tags
+// (might throw exception derived from Failure for fatal parsing error or ios_base::failure for IO errors)
+fileInfo.parseTags(diag);
+
+// get first tag as an object derived from the Tag class
+auto tag = fileInfo.tags().at(0);
+// extract title and convert it to UTF-8 std::string
+// (toString() might throw ConversionException)
+auto title = tag->value(KnownField::Title).toString(TagTextEncoding::Utf8);
+
+// change album using an encoding suitable for the tag format
+tag->setValue(KnownField::Album, TagValue("some UTF-8 string", TagTextEncoding::Utf8, tag->proposedTextEncoding()));
+
+// create progress
+AbortableProgressFeedback progress([callback for status update], [callback for percentage-only updates]);
+
+// apply changes to the file on disk
+// (might throw exception derived from Failure for fatal processing error or ios_base::failure for IO errors)
+fileInfo.applyChanges(diag, progress);
+```
+
+### Summary
+
+* So the most important class is `MediaFileInfo` providing access to everything else.
+* IO errors are propagated via standard `std::ios_base::failure`.
+* Fatal processing errors are propagated by throwing a class derived from Failure.
+* All operations which might generate warnings, non-fatal errors, ... take a `Diagnostics` object to store
+  those messages.
+* All operations which can be aborted or provide progress feedback take a `AbortableProgressFeedback` object
+  for callbacks and aborting.
+* Field values are stored using `TagValue` objects. Those objects erase the actual type similar to `QVariant`
+  from the Qt framework.
+
+### Further documentation
+For more examples check out the command line interface of [Tag Editor](https://github.com/Martchus/tageditor).
 API documentation can be generated using Doxygen with `make tagparser_apidoc`.
 
 ## Bugs, stability
