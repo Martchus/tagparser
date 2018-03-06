@@ -101,8 +101,8 @@ public:
     const ImplementationType* firstChild() const;
     ImplementationType* lastChild();
     const ImplementationType* lastChild() const;
-    ImplementationType* subelementByPath(const std::initializer_list<IdentifierType> &path, Diagnostics &diag);
-    ImplementationType* subelementByPath(std::list<IdentifierType> &path, Diagnostics &diag);
+    ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item);
+    ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...);
     ImplementationType* childById(const IdentifierType &id, Diagnostics &diag);
     ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag, bool includeThis = false);
     bool isParent() const;
@@ -522,7 +522,7 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::lastChi
 }
 
 /*!
- * \brief Returns the sub element for the specified \a path.
+ * \brief Returns the sub element for the specified path.
  *
  * The current element keeps ownership over the returned element.
  * If no element could be found nullptr is returned.
@@ -531,41 +531,45 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::lastChi
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-inline ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(const std::initializer_list<IdentifierType> &path, Diagnostics &diag)
+ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item)
 {
-    std::list<GenericFileElement<ImplementationType>::IdentifierType> list(path);
-    return subelementByPath(list, diag);
+    // ensure element is parsed
+    parse(diag);
+    // return the element if it matches the current and last item in the path
+    if(item == id()) {
+        return static_cast<ImplementationType *>(this);
+    }
+    // check whether a sibling matches the item
+    if(nextSibling()) {
+        return nextSibling()->subelementByPath(diag, item);
+    }
+    return nullptr;
 }
 
 /*!
- * \brief Returns the sub element for the specified \a path.
+ * \brief Returns the sub element for the specified path.
  *
  * The current element keeps ownership over the returned element.
  * If no element could be found nullptr is returned.
- * The specified \a path will modified.
  *
  * \throws Throws a parsing exception when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(std::list<IdentifierType> &path, Diagnostics &diag)
+ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...)
 {
-    parse(diag); // ensure element is parsed
-    if(path.size()) {
-        if(path.front() == id()) {
-            if(path.size() == 1) {
-                return static_cast<ImplementationType *>(this);
-            } else {
-                if(firstChild()) {
-                    path.pop_front();
-                    return firstChild()->subelementByPath(path, diag);
-                }
-            }
-        } else {
-            if(nextSibling()) {
-                return nextSibling()->subelementByPath(path, diag);
-            }
+    // ensure element is parsed
+    parse(diag);
+    // continue with next item in path if the element matches the current item
+    if(item == id()) {
+        if(!firstChild()) {
+            return nullptr;
         }
+        return firstChild()->subelementByPath(diag, remainingPath);
+    }
+    // check whether a sibling matches the current item
+    if(nextSibling()) {
+        return nextSibling()->subelementByPath(diag, item, remainingPath);
     }
     return nullptr;
 }

@@ -50,7 +50,7 @@ ElementPosition Mp4Container::determineTagPosition(Diagnostics &diag) const
 {
     if(m_firstElement) {
         const Mp4Atom *mediaDataAtom = m_firstElement->siblingById(Mp4AtomIds::MediaData, diag);
-        const Mp4Atom *userDataAtom = m_firstElement->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData}, diag);
+        const Mp4Atom *userDataAtom = m_firstElement->subelementByPath(diag, Mp4AtomIds::Movie, Mp4AtomIds::UserData);
         if(mediaDataAtom && userDataAtom) {
             return userDataAtom->startOffset() < mediaDataAtom->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
         }
@@ -89,7 +89,7 @@ void Mp4Container::internalParseHeader(Diagnostics &diag)
 void Mp4Container::internalParseTags(Diagnostics &diag)
 {
     const string context("parsing tags of MP4 container");
-    if(Mp4Atom *udtaAtom = firstElement()->subelementByPath({Mp4AtomIds::Movie, Mp4AtomIds::UserData}, diag)) {
+    if(Mp4Atom *udtaAtom = firstElement()->subelementByPath(diag, Mp4AtomIds::Movie, Mp4AtomIds::UserData)) {
         Mp4Atom *metaAtom = udtaAtom->childById(Mp4AtomIds::Meta, diag);
         bool surplusMetaAtoms = false;
         while(metaAtom) {
@@ -153,7 +153,7 @@ void Mp4Container::internalParseTracks(Diagnostics &diag)
                 diag.emplace_back(DiagLevel::Critical, "mvhd atom is does not exist.", context);
             }
             // get mvex atom which holds default values for fragmented files
-            if(Mp4Atom *mehdAtom = moovAtom->subelementByPath({Mp4AtomIds::MovieExtends, Mp4AtomIds::MovieExtendsHeader}, diag)) {
+            if(Mp4Atom *mehdAtom = moovAtom->subelementByPath(diag, Mp4AtomIds::MovieExtends, Mp4AtomIds::MovieExtendsHeader)) {
                 m_fragmented = true;
                 if(mehdAtom->dataSize() > 0) {
                     stream().seekg(static_cast<iostream::off_type>(mehdAtom->dataOffset()));
