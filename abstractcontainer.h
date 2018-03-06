@@ -1,5 +1,5 @@
-#ifndef MEDIA_ABSTRACTCONTAINER_H
-#define MEDIA_ABSTRACTCONTAINER_H
+#ifndef TAG_PARSER_ABSTRACTCONTAINER_H
+#define TAG_PARSER_ABSTRACTCONTAINER_H
 
 #include "./exceptions.h"
 #include "./tagtarget.h"
@@ -16,7 +16,7 @@ class BinaryReader;
 class BinaryWriter;
 }
 
-namespace Media {
+namespace TagParser {
 
 class Tag;
 class AbstractTrack;
@@ -312,4 +312,4 @@ inline uint32 AbstractContainer::timeScale() const
 
 }
 
-#endif // MEDIA_ABSTRACTCONTAINER_H
+#endif // TAG_PARSER_ABSTRACTCONTAINER_H

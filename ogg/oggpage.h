@@ -1,5 +1,5 @@
-#ifndef OGGPAGE_H
-#define OGGPAGE_H
+#ifndef TAG_PARSER_OGGPAGE_H
+#define TAG_PARSER_OGGPAGE_H
 
 #include "../global.h"
 
@@ -9,7 +9,7 @@
 #include <numeric>
 #include <iosfwd>
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT OggPage
 {
@@ -253,4 +253,4 @@ inline uint64 OggPage::dataOffset(byte segmentIndex) const
 
 }
 
-#endif // OGGPAGE_H
+#endif // TAG_PARSER_OGGPAGE_H

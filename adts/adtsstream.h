@@ -1,11 +1,11 @@
-#ifndef MEDIA_ADTSSTREAM_H
-#define MEDIA_ADTSSTREAM_H
+#ifndef TAG_PARSER_ADTSSTREAM_H
+#define TAG_PARSER_ADTSSTREAM_H
 
 #include "./adtsframe.h"
 
 #include "../abstracttrack.h"
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT AdtsStream : public AbstractTrack
 {
@@ -41,4 +41,4 @@ inline TrackType AdtsStream::type() const
 
 } // namespace Media
 
-#endif // MEDIA_ADTSSTREAM_H
+#endif // TAG_PARSER_ADTSSTREAM_H

@@ -10,7 +10,7 @@
 using namespace std;
 using namespace ConversionUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::MatroskaTag

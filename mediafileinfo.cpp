@@ -57,7 +57,7 @@ using namespace ChronoUtilities;
  * \brief Contains utility classes helping to read and write streams.
  */
 
-namespace Media {
+namespace TagParser {
 
 #ifdef FORCE_FULL_PARSE_DEFAULT
 # define MEDIAINFO_CPP_FORCE_FULL_PARSE true
@@ -747,7 +747,7 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
     default:
         ;
     }
-    return Media::containerFormatAbbreviation(m_containerFormat, mediaType, version);
+    return TagParser::containerFormatAbbreviation(m_containerFormat, mediaType, version);
 }
 
 /*!
@@ -772,7 +772,7 @@ const char *MediaFileInfo::mimeType() const
     default:
         mediaType = MediaType::Unknown;
     }
-    return Media::containerMimeType(m_containerFormat, mediaType);
+    return TagParser::containerMimeType(m_containerFormat, mediaType);
 }
 
 /*!

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace Media {
+namespace TagParser {
 
 
 

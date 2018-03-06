@@ -1,12 +1,12 @@
-#ifndef MEDIA_OGGITERATOR_H
-#define MEDIA_OGGITERATOR_H
+#ifndef TAG_PARSER_OGGITERATOR_H
+#define TAG_PARSER_OGGITERATOR_H
 
 #include "./oggpage.h"
 
 #include <iosfwd>
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT OggIterator
 {
@@ -326,4 +326,4 @@ inline bool OggIterator::matchesFilter(const OggPage &page)
 
 }
 
-#endif // MEDIA_OGGITERATOR_H
+#endif // TAG_PARSER_OGGITERATOR_H

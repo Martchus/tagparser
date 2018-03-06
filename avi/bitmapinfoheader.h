@@ -1,5 +1,5 @@
-#ifndef MEDIA_BITMAPINFOHEADER_H
-#define MEDIA_BITMAPINFOHEADER_H
+#ifndef TAG_PARSER_BITMAPINFOHEADER_H
+#define TAG_PARSER_BITMAPINFOHEADER_H
 
 #include "../global.h"
 
@@ -9,7 +9,7 @@ namespace IoUtilities {
 class BinaryReader;
 }
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT BitmapInfoHeader
 {
@@ -33,4 +33,4 @@ public:
 
 } // namespace Media
 
-#endif // MEDIA_BITMAPINFOHEADER_H
+#endif // TAG_PARSER_BITMAPINFOHEADER_H

@@ -1,11 +1,11 @@
-#ifndef ID3V2FRAMEIDS_H
-#define ID3V2FRAMEIDS_H
+#ifndef TAG_PARSER_ID3V2FRAMEIDS_H
+#define TAG_PARSER_ID3V2FRAMEIDS_H
 
 #include <c++utilities/conversion/types.h>
 
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 namespace Id3v2FrameIds {
 enum KnownValue : uint32 {
@@ -93,4 +93,4 @@ inline bool isTextFrame(uint32 id)
 }
 
 }
-#endif // ID3V2FRAMEIDS_H
+#endif // TAG_PARSER_ID3V2FRAMEIDS_H

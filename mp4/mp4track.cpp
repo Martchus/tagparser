@@ -26,7 +26,7 @@ using namespace IoUtilities;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The TrackHeaderInfo struct holds information about the present track header (tkhd atom) and
@@ -1638,7 +1638,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 // parse AVC configuration
                 if(Mp4Atom *avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration, diag)) {
                     m_istream->seekg(avcConfigAtom->dataOffset());
-                    m_avcConfig = make_unique<Media::AvcConfiguration>();
+                    m_avcConfig = make_unique<TagParser::AvcConfiguration>();
                     try {
                         m_avcConfig->parse(reader, avcConfigAtom->dataSize());
                         addInfo(*m_avcConfig, *this);

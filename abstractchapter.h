@@ -1,5 +1,5 @@
-#ifndef MEDIA_ABSTRACTCHAPTER_H
-#define MEDIA_ABSTRACTCHAPTER_H
+#ifndef TAG_PARSER_ABSTRACTCHAPTER_H
+#define TAG_PARSER_ABSTRACTCHAPTER_H
 
 #include "./localeawarestring.h"
 
@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 class Diagnostics;
 
@@ -127,4 +127,4 @@ inline std::size_t AbstractChapter::nestedChapterCount() const
 
 } // namespace Media
 
-#endif // MEDIA_ABSTRACTCHAPTER_H
+#endif // TAG_PARSER_ABSTRACTCHAPTER_H

@@ -1,5 +1,5 @@
-#ifndef MEDIAINFO_H
-#define MEDIAINFO_H
+#ifndef TAG_PARSER_MEDIAINFO_H
+#define TAG_PARSER_MEDIAINFO_H
 
 #include "./signature.h"
 #include "./basicfileinfo.h"
@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class Tag;
 class Id3v1Tag;
@@ -95,9 +95,9 @@ public:
     ParsingStatus tracksParsingStatus() const;
     std::size_t trackCount() const;
     std::vector<AbstractTrack *> tracks() const;
-    bool hasTracksOfType(Media::MediaType type) const;
+    bool hasTracksOfType(TagParser::MediaType type) const;
     ChronoUtilities::TimeSpan duration() const;
-    std::unordered_set<std::string> availableLanguages(Media::MediaType type = Media::MediaType::Audio) const;
+    std::unordered_set<std::string> availableLanguages(TagParser::MediaType type = TagParser::MediaType::Audio) const;
     std::string technicalSummary() const;
     bool areTracksSupported() const;
     // ... the tags
@@ -229,7 +229,7 @@ inline ContainerFormat MediaFileInfo::containerFormat() const
  */
 inline const char *MediaFileInfo::containerFormatName() const
 {
-    return Media::containerFormatName(m_containerFormat);
+    return TagParser::containerFormatName(m_containerFormat);
 }
 
 /*!
@@ -244,7 +244,7 @@ inline const char *MediaFileInfo::containerFormatName() const
  */
 inline const char *MediaFileInfo::containerFormatSubversion() const
 {
-    return Media::containerFormatSubversion(m_containerFormat);
+    return TagParser::containerFormatSubversion(m_containerFormat);
 }
 
 /*!
@@ -593,4 +593,4 @@ inline void MediaFileInfo::setForceIndexPosition(bool forceIndexPosition)
 
 }
 
-#endif // MEDIAINFO_H
+#endif // TAG_PARSER_MEDIAINFO_H

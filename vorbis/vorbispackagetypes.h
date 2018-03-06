@@ -1,9 +1,9 @@
-#ifndef VORBISPACKAGETYPES_H
-#define VORBISPACKAGETYPES_H
+#ifndef TAG_PARSER_VORBISPACKAGETYPES_H
+#define TAG_PARSER_VORBISPACKAGETYPES_H
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Encapsulates known Vorbis package type IDs.
@@ -18,4 +18,4 @@ enum KnownType : byte {
 
 }
 
-#endif // VORBISPACKAGETYPES_H
+#endif // TAG_PARSER_VORBISPACKAGETYPES_H

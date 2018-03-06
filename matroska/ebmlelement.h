@@ -1,5 +1,5 @@
-#ifndef EBMLELEMENT_H
-#define EBMLELEMENT_H
+#ifndef TAG_PARSER_EBMLELEMENT_H
+#define TAG_PARSER_EBMLELEMENT_H
 
 #include "./ebmlid.h"
 #include "./matroskaid.h"
@@ -13,7 +13,7 @@
 #include <iostream>
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 class MatroskaContainer;
@@ -130,4 +130,4 @@ inline uint64 EbmlElement::firstChildOffset() const
 }
 
 
-#endif // EBMLELEMENT_H
+#endif // TAG_PARSER_EBMLELEMENT_H

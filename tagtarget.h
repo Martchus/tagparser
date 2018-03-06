@@ -1,5 +1,5 @@
-#ifndef MEDIA_TAGTARGET_H
-#define MEDIA_TAGTARGET_H
+#ifndef TAG_PARSER_TAGTARGET_H
+#define TAG_PARSER_TAGTARGET_H
 
 #include "./global.h"
 
@@ -9,7 +9,7 @@
 #include <vector>
 #include <functional>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The TagTargetLevel enum specifies tag target levels.
@@ -222,4 +222,4 @@ inline std::string TagTarget::toString(const std::function<TagTargetLevel(uint64
 
 }
 
-#endif // MEDIA_TAGTARGET_H
+#endif // TAG_PARSER_TAGTARGET_H

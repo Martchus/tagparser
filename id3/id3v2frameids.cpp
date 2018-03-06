@@ -2,7 +2,7 @@
 
 #include "../exceptions.h"
 
-namespace Media
+namespace TagParser
 {
 
 /*!

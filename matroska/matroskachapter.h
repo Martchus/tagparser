@@ -1,11 +1,11 @@
-#ifndef MEDIA_MATROSKACHAPTER_H
-#define MEDIA_MATROSKACHAPTER_H
+#ifndef TAG_PARSER_MATROSKACHAPTER_H
+#define TAG_PARSER_MATROSKACHAPTER_H
 
 #include "../abstractchapter.h"
 
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 
@@ -47,4 +47,4 @@ inline std::size_t MatroskaChapter::nestedChapterCount() const
 
 } // namespace Media
 
-#endif // MEDIA_MATROSKACHAPTER_H
+#endif // TAG_PARSER_MATROSKACHAPTER_H

@@ -5,9 +5,9 @@ namespace TestUtilities {
 /*!
  * \brief Prints a TagTextEncoding to enable CPPUNIT_ASSERT_EQUAL for tag values.
  */
-std::ostream &operator <<(std::ostream &os, const Media::TagTextEncoding &encoding)
+std::ostream &operator <<(std::ostream &os, const TagParser::TagTextEncoding &encoding)
 {
-    using namespace Media;
+    using namespace TagParser;
     switch(encoding) {
     case TagTextEncoding::Unspecified:
         return os << "unspecified";

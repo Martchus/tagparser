@@ -1,11 +1,11 @@
-#ifndef MEDIA_ASPECTRATIO_H
-#define MEDIA_ASPECTRATIO_H
+#ifndef TAG_PARSER_ASPECTRATIO_H
+#define TAG_PARSER_ASPECTRATIO_H
 
 #include "./global.h"
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 struct TAG_PARSER_EXPORT AspectRatio {
     constexpr AspectRatio();
@@ -56,4 +56,4 @@ constexpr bool AspectRatio::isExtended() const
 
 }
 
-#endif // MEDIA_ASPECTRATIO_H
+#endif // TAG_PARSER_ASPECTRATIO_H

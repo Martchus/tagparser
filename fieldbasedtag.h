@@ -1,12 +1,12 @@
-#ifndef FIELDBASEDTAG_H
-#define FIELDBASEDTAG_H
+#ifndef TAG_PARSER_FIELDBASEDTAG_H
+#define TAG_PARSER_FIELDBASEDTAG_H
 
 #include "./tag.h"
 
 #include <map>
 #include <functional>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::FieldMapBasedTagTraits
@@ -197,7 +197,7 @@ bool FieldMapBasedTag<ImplementationType>::internallySetValue(const IdentifierTy
  * \sa Tag::setValue()
  */
 template <class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::setValue(const IdentifierType &id, const Media::TagValue &value)
+bool FieldMapBasedTag<ImplementationType>::setValue(const IdentifierType &id, const TagParser::TagValue &value)
 {
     return static_cast<ImplementationType *>(this)->internallySetValue(id, value);
 }
@@ -414,4 +414,4 @@ void FieldMapBasedTag<ImplementationType>::ensureTextValuesAreProperlyEncoded()
 
 }
 
-#endif // FIELDBASEDTAG_H
+#endif // TAG_PARSER_FIELDBASEDTAG_H

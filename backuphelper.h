@@ -1,11 +1,11 @@
-#ifndef BACKUPHELPER_H
-#define BACKUPHELPER_H
+#ifndef TAG_PARSER_BACKUPHELPER_H
+#define TAG_PARSER_BACKUPHELPER_H
 
 #include "./global.h"
 
 #include <c++utilities/io/nativefilestream.h>
 
-namespace Media {
+namespace TagParser {
 
 class MediaFileInfo;
 class Diagnostics;
@@ -21,4 +21,4 @@ TAG_PARSER_EXPORT void handleFailureAfterFileModified(MediaFileInfo &mediaFileIn
 
 }
 
-#endif // BACKUPHELPER_H
+#endif // TAG_PARSER_BACKUPHELPER_H

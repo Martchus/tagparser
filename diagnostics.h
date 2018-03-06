@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Specifies the level of the diagnostic message.

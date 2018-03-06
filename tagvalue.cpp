@@ -15,7 +15,7 @@ using namespace std;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::TagValue

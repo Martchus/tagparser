@@ -1,9 +1,9 @@
-#ifndef WAVEAUDIOSTREAM_H
-#define WAVEAUDIOSTREAM_H
+#ifndef TAG_PARSER_WAVEAUDIOSTREAM_H
+#define TAG_PARSER_WAVEAUDIOSTREAM_H
 
 #include "../abstracttrack.h"
 
-namespace Media
+namespace TagParser
 {
 
 class TAG_PARSER_EXPORT WaveFormatHeader
@@ -50,4 +50,4 @@ private:
 
 }
 
-#endif // WAVEAUDIOSTREAM_H
+#endif // TAG_PARSER_WAVEAUDIOSTREAM_H

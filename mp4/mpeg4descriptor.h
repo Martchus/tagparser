@@ -1,11 +1,11 @@
-#ifndef MPEG4DESCRIPTOR_H
-#define MPEG4DESCRIPTOR_H
+#ifndef TAG_PARSER_MPEG4DESCRIPTOR_H
+#define TAG_PARSER_MPEG4DESCRIPTOR_H
 
 #include "../genericfileelement.h"
 
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class Mp4Container;
 class Mpeg4Descriptor;
@@ -81,4 +81,4 @@ inline uint64 Mpeg4Descriptor::firstChildOffset() const
 
 }
 
-#endif // MPEG4DESCRIPTOR_H
+#endif // TAG_PARSER_MPEG4DESCRIPTOR_H

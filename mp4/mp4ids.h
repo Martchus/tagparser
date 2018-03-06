@@ -1,11 +1,11 @@
-#ifndef MP4TAGATOMNAMES_H
-#define MP4TAGATOMNAMES_H
+#ifndef TAG_PARSER_MP4IDS_H
+#define TAG_PARSER_MP4IDS_H
 
 #include "../global.h"
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media
+namespace TagParser
 {
 
 class MediaFormat;
@@ -712,4 +712,4 @@ enum class CountryCode
 
 }
 
-#endif // MP4TAGATOMNAMES_H
+#endif // TAG_PARSER_MP4IDS_H

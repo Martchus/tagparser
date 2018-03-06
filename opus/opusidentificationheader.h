@@ -1,11 +1,11 @@
-#ifndef MEDIA_OPUSIDENTIFICATIONHEADER_H
-#define MEDIA_OPUSIDENTIFICATIONHEADER_H
+#ifndef TAG_PARSER_OPUSIDENTIFICATIONHEADER_H
+#define TAG_PARSER_OPUSIDENTIFICATIONHEADER_H
 
 #include "../global.h"
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 class OggIterator;
 
@@ -106,4 +106,4 @@ inline byte OpusIdentificationHeader::channelMap() const
 
 }
 
-#endif // MEDIA_OPUSIDENTIFICATIONHEADER_H
+#endif // TAG_PARSER_OPUSIDENTIFICATIONHEADER_H

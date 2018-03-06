@@ -1,5 +1,5 @@
-#ifndef POSITIONINSET_H
-#define POSITIONINSET_H
+#ifndef TAG_PARSER_POSITIONINSET_H
+#define TAG_PARSER_POSITIONINSET_H
 
 #include "./global.h"
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::PositionInSet
@@ -120,4 +120,4 @@ StringType PositionInSet::toString() const
 
 }
 
-#endif // POSITIONINSET_H
+#endif // TAG_PARSER_POSITIONINSET_H

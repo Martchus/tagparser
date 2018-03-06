@@ -1,9 +1,9 @@
-#ifndef MEDIA_MATROSKAEDITIONENTRY_H
-#define MEDIA_MATROSKAEDITIONENTRY_H
+#ifndef TAG_PARSER_MATROSKAEDITIONENTRY_H
+#define TAG_PARSER_MATROSKAEDITIONENTRY_H
 
 #include "./matroskachapter.h"
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 
@@ -84,4 +84,4 @@ inline const std::vector<std::unique_ptr<MatroskaChapter> > &MatroskaEditionEntr
 
 } // namespace Media
 
-#endif // MEDIA_MATROSKAEDITIONENTRY_H
+#endif // TAG_PARSER_MATROSKAEDITIONENTRY_H

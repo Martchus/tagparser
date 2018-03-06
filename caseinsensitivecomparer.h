@@ -1,5 +1,5 @@
-#ifndef CASEINSENSITIVECOMPARER
-#define CASEINSENSITIVECOMPARER
+#ifndef TAG_PARSER_CASEINSENSITIVECOMPARER
+#define TAG_PARSER_CASEINSENSITIVECOMPARER
 
 #include "./global.h"
 
@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The CaseInsensitiveCharComparer struct defines a method for case-insensivive character comparsion (less).
@@ -38,5 +38,5 @@ struct TAG_PARSER_EXPORT CaseInsensitiveStringComparer
 
 }
 
-#endif // CASEINSENSITIVECOMPARER
+#endif // TAG_PARSER_CASEINSENSITIVECOMPARER
 

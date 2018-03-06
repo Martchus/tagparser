@@ -1,5 +1,5 @@
-#ifndef MEDIA_MP4CONTAINER_H
-#define MEDIA_MP4CONTAINER_H
+#ifndef TAG_PARSER_MP4CONTAINER_H
+#define TAG_PARSER_MP4CONTAINER_H
 
 #include "./mp4atom.h"
 #include "./mp4tag.h"
@@ -12,7 +12,7 @@
 #include <memory>
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 class MediaFileInfo;
 
@@ -56,4 +56,4 @@ inline bool Mp4Container::isFragmented() const
 
 }
 
-#endif // MEDIA_MP4CONTAINER_H
+#endif // TAG_PARSER_MP4CONTAINER_H

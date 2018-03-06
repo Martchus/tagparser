@@ -1,5 +1,5 @@
-#ifndef GENERICFILEELEMENT_H
-#define GENERICFILEELEMENT_H
+#ifndef TAG_PARSER_GENERICFILEELEMENT_H
+#define TAG_PARSER_GENERICFILEELEMENT_H
 
 #include "./progressfeedback.h"
 #include "./exceptions.h"
@@ -20,7 +20,7 @@ class BinaryWriter;
 
 }
 
-namespace Media {
+namespace TagParser {
 
 class Diagnostics;
 
@@ -921,4 +921,4 @@ constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
 
 }
 
-#endif // GENERICFILEELEMENT_H
+#endif // TAG_PARSER_GENERICFILEELEMENT_H

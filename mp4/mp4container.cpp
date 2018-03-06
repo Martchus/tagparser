@@ -22,7 +22,7 @@ using namespace IoUtilities;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::Mp4Container

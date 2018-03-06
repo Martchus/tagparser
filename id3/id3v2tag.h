@@ -1,5 +1,5 @@
-#ifndef ID3V2TAG_H
-#define ID3V2TAG_H
+#ifndef TAG_PARSER_ID3V2TAG_H
+#define TAG_PARSER_ID3V2TAG_H
 
 #include "./id3v2frame.h"
 
@@ -7,7 +7,7 @@
 
 #include <map>
 
-namespace Media
+namespace TagParser
 {
 
 class Id3v2Tag;
@@ -226,4 +226,4 @@ inline uint32 Id3v2Tag::paddingSize() const
 
 }
 
-#endif // ID3V2TAG_H
+#endif // TAG_PARSER_ID3V2TAG_H

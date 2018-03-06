@@ -1,12 +1,12 @@
-#ifndef MEDIA_MATROSKATAG_H
-#define MEDIA_MATROSKATAG_H
+#ifndef TAG_PARSER_MATROSKATAG_H
+#define TAG_PARSER_MATROSKATAG_H
 
 #include "./matroskatagfield.h"
 #include "./matroskatagid.h"
 
 #include "../fieldbasedtag.h"
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 class MatroskaTag;
@@ -107,4 +107,4 @@ inline bool MatroskaTag::canEncodingBeUsed(TagTextEncoding encoding) const
 
 }
 
-#endif // MEDIA_MATROSKATAG_H
+#endif // TAG_PARSER_MATROSKATAG_H

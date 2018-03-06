@@ -2,7 +2,7 @@
 
 #include "../mediaformat.h"
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Encapsulates the most common MP4 atom IDs.

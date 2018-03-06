@@ -1,9 +1,9 @@
-#ifndef MEDIA_MATROSKATRACK_H
-#define MEDIA_MATROSKATRACK_H
+#ifndef TAG_PARSER_MATROSKATRACK_H
+#define TAG_PARSER_MATROSKATRACK_H
 
 #include "../abstracttrack.h"
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 class MatroskaContainer;
@@ -103,4 +103,4 @@ inline void MatroskaTrack::makeHeader(std::ostream &stream, Diagnostics &diag) c
 
 }
 
-#endif // MEDIA_MATROSKATRACK_H
+#endif // TAG_PARSER_MATROSKATRACK_H

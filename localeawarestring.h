@@ -1,12 +1,12 @@
-#ifndef MEDIA_LOCALEAWARESTRING_H
-#define MEDIA_LOCALEAWARESTRING_H
+#ifndef TAG_PARSER_LOCALEAWARESTRING_H
+#define TAG_PARSER_LOCALEAWARESTRING_H
 
 #include "./global.h"
 
 #include <string>
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The LocaleAwareString class is a standard string with locale information (languages, countries).
@@ -82,4 +82,4 @@ inline std::vector<std::string> &LocaleAwareString::countries()
 
 } // namespace Media
 
-#endif // MEDIA_LOCALEAWARESTRING_H
+#endif // TAG_PARSER_LOCALEAWARESTRING_H

@@ -1,11 +1,11 @@
-#ifndef MEDIA_VORBISIDENTIFICATIONHEADER_H
-#define MEDIA_VORBISIDENTIFICATIONHEADER_H
+#ifndef TAG_PARSER_VORBISIDENTIFICATIONHEADER_H
+#define TAG_PARSER_VORBISIDENTIFICATIONHEADER_H
 
 #include "../global.h"
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 class OggIterator;
 
@@ -92,4 +92,4 @@ inline byte VorbisIdentificationHeader::framingFlag() const
 
 }
 
-#endif // MEDIA_VORBISIDENTIFICATIONHEADER_H
+#endif // TAG_PARSER_VORBISIDENTIFICATIONHEADER_H

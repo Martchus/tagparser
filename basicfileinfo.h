@@ -1,5 +1,5 @@
-#ifndef BASICFILEINFO_H
-#define BASICFILEINFO_H
+#ifndef TAG_PARSER_BASICFILEINFO_H
+#define TAG_PARSER_BASICFILEINFO_H
 
 #include "./global.h"
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT BasicFileInfo
 {
@@ -132,4 +132,4 @@ inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
 
 }
 
-#endif // BASICFILEINFO_H
+#endif // TAG_PARSER_BASICFILEINFO_H

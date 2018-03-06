@@ -7,7 +7,7 @@
 using namespace std;
 using namespace IoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Returns the string representation for the specified \a channelMode.

@@ -18,7 +18,7 @@ using namespace IoUtilities;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::FlacStream

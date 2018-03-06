@@ -1,9 +1,9 @@
-#ifndef MEDIA_MATROSKAATTACHMENT_H
-#define MEDIA_MATROSKAATTACHMENT_H
+#ifndef TAG_PARSER_MATROSKAATTACHMENT_H
+#define TAG_PARSER_MATROSKAATTACHMENT_H
 
 #include "../abstractattachment.h"
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 class MatroskaAttachment;
@@ -90,4 +90,4 @@ inline MatroskaAttachmentMaker MatroskaAttachment::prepareMaking(Diagnostics &di
 
 } // namespace Media
 
-#endif // MEDIA_MATROSKAATTACHMENT_H
+#endif // TAG_PARSER_MATROSKAATTACHMENT_H

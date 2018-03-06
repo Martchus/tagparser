@@ -1,5 +1,5 @@
-#ifndef MEDIA_GENERICCONTAINER_H
-#define MEDIA_GENERICCONTAINER_H
+#ifndef TAG_PARSER_GENERICCONTAINER_H
+#define TAG_PARSER_GENERICCONTAINER_H
 
 #include "./abstractcontainer.h"
 
@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::GenericContainer
@@ -376,4 +376,4 @@ void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::reset()
 
 } // namespace Media
 
-#endif // MEDIA_GENERICCONTAINER_H
+#endif // TAG_PARSER_GENERICCONTAINER_H

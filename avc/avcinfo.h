@@ -1,5 +1,5 @@
-#ifndef AVCINFO_H
-#define AVCINFO_H
+#ifndef TAG_PARSER_AVCINFO_H
+#define TAG_PARSER_AVCINFO_H
 
 #include "../margin.h"
 #include "../size.h"
@@ -10,7 +10,7 @@ class BinaryReader;
 class BitReader;
 }
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Type used to store unsigned integer values using golomb coding.
@@ -194,4 +194,4 @@ inline AvcFrame::AvcFrame() :
 
 }
 
-#endif // AVCINFO_H
+#endif // TAG_PARSER_AVCINFO_H

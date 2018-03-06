@@ -31,7 +31,7 @@ using namespace IoUtilities;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 constexpr const char appInfo[] = APP_NAME " v" APP_VERSION;
 constexpr uint64 appInfoElementDataSize = sizeof(appInfo) - 1;

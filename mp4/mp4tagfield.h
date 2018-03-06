@@ -1,5 +1,5 @@
-#ifndef MP4TAGATOM_H
-#define MP4TAGATOM_H
+#ifndef TAG_PARSER_MP4TAGATOM_H
+#define TAG_PARSER_MP4TAGATOM_H
 
 #include "../generictagfield.h"
 
@@ -9,7 +9,7 @@
 #include <vector>
 #include <sstream>
 
-namespace Media
+namespace TagParser
 {
 
 /*!
@@ -239,4 +239,4 @@ inline std::string Mp4TagField::fieldIdToString(Mp4TagField::IdentifierType id)
 
 }
 
-#endif // MP4TAGATOM_H
+#endif // TAG_PARSER_MP4TAGATOM_H

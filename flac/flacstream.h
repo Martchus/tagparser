@@ -1,12 +1,12 @@
-#ifndef FLACSTREAM_H
-#define FLACSTREAM_H
+#ifndef TAG_PARSER_FLACSTREAM_H
+#define TAG_PARSER_FLACSTREAM_H
 
 #include "../abstracttrack.h"
 
 #include <iosfwd>
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class MediaFileInfo;
 class VorbisComment;
@@ -72,4 +72,4 @@ inline uint32 FlacStream::streamOffset() const
 
 }
 
-#endif // FLACSTREAM_H
+#endif // TAG_PARSER_FLACSTREAM_H

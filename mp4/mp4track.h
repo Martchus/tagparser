@@ -1,12 +1,12 @@
-#ifndef MP4TRACK_H
-#define MP4TRACK_H
+#ifndef TAG_PARSER_MP4TRACK_H
+#define TAG_PARSER_MP4TRACK_H
 
 #include "../abstracttrack.h"
 
 #include <vector>
 #include <memory>
 
-namespace Media
+namespace TagParser
 {
 
 class Mp4Atom;
@@ -141,7 +141,7 @@ public:
     // methods to read the "index" (chunk offsets and sizes)
     std::vector<uint64> readChunkOffsets(bool parseFragments, Diagnostics &diag);
     std::vector<std::tuple<uint32, uint32, uint32> > readSampleToChunkTable(Diagnostics &diag);
-    std::vector<uint64> readChunkSizes(Media::Diagnostics &diag);
+    std::vector<uint64> readChunkSizes(TagParser::Diagnostics &diag);
 
     // methods to make the track header
     void bufferTrackAtoms(Diagnostics &diag);
@@ -259,4 +259,4 @@ inline const AvcConfiguration *Mp4Track::avcConfiguration() const
 
 }
 
-#endif // MP4TRACK_H
+#endif // TAG_PARSER_MP4TRACK_H

@@ -9,7 +9,7 @@
 using namespace std;
 using namespace ConversionUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Returns a string representation for the specified \a tagTargetLevel.

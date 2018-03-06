@@ -1,11 +1,11 @@
-#ifndef MATROSKAIDS_H
-#define MATROSKAIDS_H
+#ifndef TAG_PARSER_MATROSKAIDS_H
+#define TAG_PARSER_MATROSKAIDS_H
 
 #include "../global.h"
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 namespace MatroskaIds {
 
@@ -537,4 +537,4 @@ TAG_PARSER_EXPORT MatroskaElementLevel matroskaIdLevel(uint32 matroskaId);
 
 }
 
-#endif // MATROSKAIDS_H
+#endif // TAG_PARSER_MATROSKAIDS_H

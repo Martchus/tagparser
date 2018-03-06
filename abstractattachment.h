@@ -1,5 +1,5 @@
-#ifndef MEDIA_ABSTRACTATTACHMENT_H
-#define MEDIA_ABSTRACTATTACHMENT_H
+#ifndef TAG_PARSER_ABSTRACTATTACHMENT_H
+#define TAG_PARSER_ABSTRACTATTACHMENT_H
 
 #include "./diagnostics.h"
 
@@ -8,7 +8,7 @@
 #include <functional>
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class MediaFileInfo;
 
@@ -272,4 +272,4 @@ inline bool AbstractAttachment::isEmpty() const
 
 } // namespace Media
 
-#endif // MEDIA_ABSTRACTATTACHMENT_H
+#endif // TAG_PARSER_ABSTRACTATTACHMENT_H

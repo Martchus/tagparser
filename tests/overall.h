@@ -23,7 +23,7 @@ using namespace ConversionUtilities;
 using namespace IoUtilities;
 using namespace TestUtilities;
 using namespace TestUtilities::Literals;
-using namespace Media;
+using namespace TagParser;
 
 using namespace CPPUNIT_NS;
 

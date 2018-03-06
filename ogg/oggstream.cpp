@@ -21,7 +21,7 @@ using namespace std;
 using namespace std::placeholders;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::OggStream

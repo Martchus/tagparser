@@ -1,5 +1,5 @@
-#ifndef TAGVALUE_H
-#define TAGVALUE_H
+#ifndef TAG_PARSER_TAGVALUE_H
+#define TAG_PARSER_TAGVALUE_H
 
 #include "./positioninset.h"
 
@@ -11,7 +11,7 @@
 #include <string>
 #include <memory>
 
-namespace Media {
+namespace TagParser {
 
 class Tag;
 class Id3v2Frame;
@@ -493,4 +493,4 @@ inline TagTextEncoding TagValue::descriptionEncoding() const
 
 }
 
-#endif // TAGVALUE_H
+#endif // TAG_PARSER_TAGVALUE_H

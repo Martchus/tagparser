@@ -1,5 +1,5 @@
-#ifndef SIZE_H
-#define SIZE_H
+#ifndef TAG_PARSER_SIZE_H
+#define TAG_PARSER_SIZE_H
 
 #include "./global.h"
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The Size class defines the size of a two-dimensional object using integer point precision.
@@ -127,4 +127,4 @@ inline std::string Size::toString() const
 
 }
 
-#endif // SIZE_H
+#endif // TAG_PARSER_SIZE_H

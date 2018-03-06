@@ -1,5 +1,5 @@
-#ifndef MP4ATOM_H
-#define MP4ATOM_H
+#ifndef TAG_PARSER_MP4ATOM_H
+#define TAG_PARSER_MP4ATOM_H
 
 #include "./mp4ids.h"
 
@@ -12,7 +12,7 @@
 #include <iostream>
 #include <memory>
 
-namespace Media
+namespace TagParser
 {
 
 class Mp4Atom;
@@ -89,4 +89,4 @@ inline void Mp4Atom::addHeaderSize(uint64 &dataSize)
 
 }
 
-#endif // MP4ATOM_H
+#endif // TAG_PARSER_MP4ATOM_H

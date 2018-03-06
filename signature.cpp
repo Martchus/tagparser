@@ -5,7 +5,7 @@
 
 using namespace ConversionUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Holds 64-bit signatures.

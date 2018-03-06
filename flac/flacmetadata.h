@@ -1,5 +1,5 @@
-#ifndef MEDIA_FLACMETADATAHEADER_H
-#define MEDIA_FLACMETADATAHEADER_H
+#ifndef TAG_PARSER_FLACMETADATAHEADER_H
+#define TAG_PARSER_FLACMETADATAHEADER_H
 
 #include "../global.h"
 
@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace Media {
+namespace TagParser {
 
 class TagValue;
 
@@ -311,4 +311,4 @@ inline TagValue &FlacMetaDataBlockPicture::value()
 
 }
 
-#endif // MEDIA_FLACMETADATAHEADER_H
+#endif // TAG_PARSER_FLACMETADATAHEADER_H

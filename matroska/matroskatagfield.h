@@ -1,9 +1,9 @@
-#ifndef MEDIA_MATROSKATAGFIELD_H
-#define MEDIA_MATROSKATAGFIELD_H
+#ifndef TAG_PARSER_MATROSKATAGFIELD_H
+#define TAG_PARSER_MATROSKATAGFIELD_H
 
 #include "../generictagfield.h"
 
-namespace Media {
+namespace TagParser {
 
 class EbmlElement;
 class MatroskaTagField;
@@ -130,4 +130,4 @@ inline void MatroskaTagField::cleared()
 
 }
 
-#endif // MEDIA_MATROSKATAGFIELD_H
+#endif // TAG_PARSER_MATROSKATAGFIELD_H

@@ -1,5 +1,5 @@
-#ifndef MEDIA_VORBISCOMMENT_H
-#define MEDIA_VORBISCOMMENT_H
+#ifndef TAG_PARSER_VORBISCOMMENT_H
+#define TAG_PARSER_VORBISCOMMENT_H
 
 #include "./vorbiscommentfield.h"
 
@@ -7,7 +7,7 @@
 #include "../fieldbasedtag.h"
 #include "../mediaformat.h"
 
-namespace Media {
+namespace TagParser {
 
 class OggIterator;
 class VorbisComment;
@@ -91,4 +91,4 @@ inline void VorbisComment::setVendor(const TagValue &vendor)
 
 }
 
-#endif // MEDIA_VORBISCOMMENT_H
+#endif // TAG_PARSER_VORBISCOMMENT_H

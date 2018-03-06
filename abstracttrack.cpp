@@ -11,7 +11,7 @@ using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 using namespace IoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::AbstractTrack

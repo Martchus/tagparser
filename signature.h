@@ -1,11 +1,11 @@
-#ifndef SIGNATURE_H
-#define SIGNATURE_H
+#ifndef TAG_PARSER_SIGNATURE_H
+#define TAG_PARSER_SIGNATURE_H
 
 #include "./mediaformat.h"
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 DECLARE_ENUM_CLASS(TagTargetLevel, byte);
 
@@ -75,4 +75,4 @@ TAG_PARSER_EXPORT uint64 containerTargetLevelValue(ContainerFormat containerForm
 
 }
 
-#endif // SIGNATURE_H
+#endif // TAG_PARSER_SIGNATURE_H

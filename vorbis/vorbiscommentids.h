@@ -1,9 +1,9 @@
-#ifndef MEDIA_VORBISCOMMENTIDS_H
-#define MEDIA_VORBISCOMMENTIDS_H
+#ifndef TAG_PARSER_VORBISCOMMENTIDS_H
+#define TAG_PARSER_VORBISCOMMENTIDS_H
 
 #include "../global.h"
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Encapsulates Vorbis comment IDs.
@@ -74,7 +74,7 @@ inline TAG_PARSER_EXPORT const char *genre() {
     return "GENRE";
 }
 inline TAG_PARSER_EXPORT const char *originalMediaType() {
-    return "ORIGINAL_MEDIA_TYPE";
+    return "ORIGINAL_TAG_PARSER_TYPE";
 }
 inline TAG_PARSER_EXPORT const char *contentType() {
     return "CONTENT_TYPE";
@@ -123,4 +123,4 @@ inline TAG_PARSER_EXPORT const char *cover() {
 
 }
 
-#endif // MEDIA_VORBISCOMMENTIDS_H
+#endif // TAG_PARSER_VORBISCOMMENTIDS_H

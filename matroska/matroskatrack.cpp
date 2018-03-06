@@ -21,7 +21,7 @@
 using namespace std;
 using namespace ConversionUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::MatroskaTrack
@@ -500,7 +500,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         break;
     case GeneralMediaFormat::Avc:
         if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
-            auto avcConfig = make_unique<Media::AvcConfiguration>();
+            auto avcConfig = make_unique<TagParser::AvcConfiguration>();
             try {
                 m_istream->seekg(codecPrivateElement->dataOffset());
                 avcConfig->parse(m_reader, codecPrivateElement->dataSize());

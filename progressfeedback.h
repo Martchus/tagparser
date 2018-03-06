@@ -9,7 +9,7 @@
 #include <string>
 #include <functional>
 
-namespace Media {
+namespace TagParser {
 
 template<typename ActualProgressFeedback>
 class BasicProgressFeedback

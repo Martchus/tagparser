@@ -1,5 +1,5 @@
-#ifndef MPEGAUDIOFRAMESTREAM_H
-#define MPEGAUDIOFRAMESTREAM_H
+#ifndef TAG_PARSER_MPEGAUDIOFRAMESTREAM_H
+#define TAG_PARSER_MPEGAUDIOFRAMESTREAM_H
 
 #include "./mpegaudioframe.h"
 
@@ -7,7 +7,7 @@
 
 #include <list>
 
-namespace Media
+namespace TagParser
 {
 
 class TAG_PARSER_EXPORT MpegAudioFrameStream : public AbstractTrack

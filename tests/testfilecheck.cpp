@@ -15,7 +15,7 @@ using namespace std;
 using namespace ConversionUtilities;
 using namespace IoUtilities;
 using namespace TestUtilities;
-using namespace Media;
+using namespace TagParser;
 
 using namespace CPPUNIT_NS;
 

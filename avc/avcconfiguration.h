@@ -1,11 +1,11 @@
-#ifndef AVCCONFIGURATION_H
-#define AVCCONFIGURATION_H
+#ifndef TAG_PARSER_AVCCONFIGURATION_H
+#define TAG_PARSER_AVCCONFIGURATION_H
 
 #include "./avcinfo.h"
 
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 class MediaFormat;
 
@@ -34,4 +34,4 @@ inline AvcConfiguration::AvcConfiguration() :
 
 }
 
-#endif // AVCCONFIGURATION_H
+#endif // TAG_PARSER_AVCCONFIGURATION_H

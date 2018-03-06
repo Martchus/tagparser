@@ -1,9 +1,9 @@
-#ifndef ID3V1TAG_H
-#define ID3V1TAG_H
+#ifndef TAG_PARSER_ID3V1TAG_H
+#define TAG_PARSER_ID3V1TAG_H
 
 #include "../tag.h"
 
-namespace Media
+namespace TagParser
 {
 
 class Diagnostics;
@@ -45,4 +45,4 @@ private:
 
 }
 
-#endif // ID3V1TAG_H
+#endif // TAG_PARSER_ID3V1TAG_H

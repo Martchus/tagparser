@@ -1,6 +1,6 @@
 #include "./mediaformat.h"
 
-namespace Media {
+namespace TagParser {
 
 using namespace SubFormats;
 

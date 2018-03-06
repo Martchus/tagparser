@@ -1,5 +1,5 @@
-#ifndef MEDIA_ADTSFRAME_H
-#define MEDIA_ADTSFRAME_H
+#ifndef TAG_PARSER_ADTSFRAME_H
+#define TAG_PARSER_ADTSFRAME_H
 
 #include "../global.h"
 
@@ -9,7 +9,7 @@ namespace IoUtilities {
 class BinaryReader;
 }
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT AdtsFrame
 {
@@ -148,4 +148,4 @@ inline uint16 AdtsFrame::crc() const
 
 } // namespace Media
 
-#endif // MEDIA_ADTSFRAME_H
+#endif // TAG_PARSER_ADTSFRAME_H

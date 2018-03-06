@@ -1,6 +1,6 @@
 #include "./size.h"
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Returns an abbreviation for the current instance, eg. 720p for sizes greather than 1280×720

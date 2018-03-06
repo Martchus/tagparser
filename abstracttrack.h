@@ -1,5 +1,5 @@
-#ifndef ABSTRACTTRACK_H
-#define ABSTRACTTRACK_H
+#ifndef TAG_PARSER_ABSTRACTTRACK_H
+#define TAG_PARSER_ABSTRACTTRACK_H
 
 #include "./diagnostics.h"
 #include "./size.h"
@@ -16,7 +16,7 @@
 #include <iosfwd>
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 class MpegAudioFrameStream;
 class WaveAudioStream;
@@ -305,7 +305,7 @@ inline MediaType AbstractTrack::mediaType() const
  */
 inline const char *AbstractTrack::mediaTypeName() const
 {
-    return ::Media::mediaTypeName(m_mediaType);
+    return ::TagParser::mediaTypeName(m_mediaType);
 }
 
 /*!
@@ -686,4 +686,4 @@ inline bool AbstractTrack::isHeaderValid() const
 
 }
 
-#endif // ABSTRACTTRACK_H
+#endif // TAG_PARSER_ABSTRACTTRACK_H

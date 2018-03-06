@@ -13,7 +13,7 @@ using namespace std;
  *        file name, extension, directory and size for a specified file.
  */
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Constructs a new BasicFileInfo for the specified file.

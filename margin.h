@@ -1,5 +1,5 @@
-#ifndef MARGIN_H
-#define MARGIN_H
+#ifndef TAG_PARSER_MARGIN_H
+#define TAG_PARSER_MARGIN_H
 
 #include "./global.h"
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The Margin class defines the four margins of a rectangle.
@@ -127,4 +127,4 @@ inline std::string Margin::toString() const
 
 }
 
-#endif // MARGIN_H
+#endif // TAG_PARSER_MARGIN_H

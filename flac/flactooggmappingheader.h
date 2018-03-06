@@ -1,9 +1,9 @@
-#ifndef MEDIA_FLACIDENTIFICATIONHEADER_H
-#define MEDIA_FLACIDENTIFICATIONHEADER_H
+#ifndef TAG_PARSER_FLACIDENTIFICATIONHEADER_H
+#define TAG_PARSER_FLACIDENTIFICATIONHEADER_H
 
 #include "./flacmetadata.h"
 
-namespace Media {
+namespace TagParser {
 
 class OggIterator;
 
@@ -69,4 +69,4 @@ inline const FlacMetaDataBlockStreamInfo &FlacToOggMappingHeader::streamInfo() c
 
 }
 
-#endif // MEDIA_FLACIDENTIFICATIONHEADER_H
+#endif // TAG_PARSER_FLACIDENTIFICATIONHEADER_H

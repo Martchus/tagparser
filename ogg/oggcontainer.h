@@ -1,5 +1,5 @@
-#ifndef MEDIA_OGGCONTAINER_H
-#define MEDIA_OGGCONTAINER_H
+#ifndef TAG_PARSER_OGGCONTAINER_H
+#define TAG_PARSER_OGGCONTAINER_H
 
 #include "./oggpage.h"
 #include "./oggstream.h"
@@ -17,7 +17,7 @@ template<std::size_t bufferSize>
 class CopyHelper;
 }
 
-namespace Media {
+namespace TagParser {
 
 class MediaFileInfo;
 class OggContainer;
@@ -182,4 +182,4 @@ inline void OggContainer::setChecksumValidationEnabled(bool enabled)
 
 }
 
-#endif // MEDIA_OGGCONTAINER_H
+#endif // TAG_PARSER_OGGCONTAINER_H

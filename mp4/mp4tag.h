@@ -1,11 +1,11 @@
-#ifndef MP4TAG_H
-#define MP4TAG_H
+#ifndef TAG_PARSER_MP4TAG_H
+#define TAG_PARSER_MP4TAG_H
 
 #include "./mp4tagfield.h"
 
 #include "../fieldbasedtag.h"
 
-namespace Media
+namespace TagParser
 {
 
 class Mp4Atom;
@@ -176,4 +176,4 @@ inline bool Mp4Tag::setValue(const std::string &mean, const std::string &name, c
 
 }
 
-#endif // MP4TAG_H
+#endif // TAG_PARSER_MP4TAG_H

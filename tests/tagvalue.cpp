@@ -12,7 +12,7 @@ using namespace TestUtilities;
 #include <cppunit/extensions/HelperMacros.h>
 
 using namespace std;
-using namespace Media;
+using namespace TagParser;
 using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 

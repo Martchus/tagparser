@@ -12,7 +12,7 @@
 using namespace std;
 using namespace IoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::StreamDataBlock

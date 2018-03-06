@@ -1,11 +1,11 @@
-#ifndef MEDIAFORMAT_H
-#define MEDIAFORMAT_H
+#ifndef TAG_PARSER_MEDIAFORMAT_H
+#define TAG_PARSER_MEDIAFORMAT_H
 
 #include "./global.h"
 
 #include <utility>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The MediaType enum specifies the type of media data (audio, video, text, ...).
@@ -328,5 +328,5 @@ inline MediaFormat::operator bool() const
 
 }
 
-#endif // MEDIAFORMAT_H
+#endif // TAG_PARSER_MEDIAFORMAT_H
 

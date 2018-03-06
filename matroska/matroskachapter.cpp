@@ -12,7 +12,7 @@ using namespace std;
 using namespace ChronoUtilities;
 using namespace ConversionUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class MatroskaChapter

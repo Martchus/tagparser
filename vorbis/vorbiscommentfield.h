@@ -1,5 +1,5 @@
-#ifndef MEDIA_VORBISCOMMENTFIELD_H
-#define MEDIA_VORBISCOMMENTFIELD_H
+#ifndef TAG_PARSER_VORBISCOMMENTFIELD_H
+#define TAG_PARSER_VORBISCOMMENTFIELD_H
 
 #include "../generictagfield.h"
 
@@ -8,7 +8,7 @@ class BinaryReader;
 class BinaryWriter;
 }
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief The VorbisCommentFlags enum specifies flags which controls parsing and making of Vorbis comments.
@@ -115,4 +115,4 @@ inline void VorbisCommentField::cleared()
 
 }
 
-#endif // MEDIA_VORBISCOMMENTFIELD_H
+#endif // TAG_PARSER_VORBISCOMMENTFIELD_H

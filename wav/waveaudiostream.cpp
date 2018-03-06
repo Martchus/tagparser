@@ -11,7 +11,7 @@
 using namespace std;
 using namespace ChronoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::WaveFormatHeader

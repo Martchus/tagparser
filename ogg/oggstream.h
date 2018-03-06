@@ -1,11 +1,11 @@
-#ifndef MEDIA_OGGSTREAM_H
-#define MEDIA_OGGSTREAM_H
+#ifndef TAG_PARSER_OGGSTREAM_H
+#define TAG_PARSER_OGGSTREAM_H
 
 #include "./oggpage.h"
 
 #include "../abstracttrack.h"
 
-namespace Media {
+namespace TagParser {
 
 class OggContainer;
 class OggIterator;
@@ -44,4 +44,4 @@ inline TrackType OggStream::type() const
 
 }
 
-#endif // MEDIA_OGGSTREAM_H
+#endif // TAG_PARSER_OGGSTREAM_H

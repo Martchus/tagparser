@@ -1,5 +1,5 @@
-#ifndef TAG_H
-#define TAG_H
+#ifndef TAG_PARSER_TAG_H
+#define TAG_PARSER_TAG_H
 
 #include "./tagvalue.h"
 #include "./tagtarget.h"
@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Specifies the tag type.
@@ -415,4 +415,4 @@ inline bool Tag::supportsMimeType(KnownField ) const
 
 }
 
-#endif // TAG_H
+#endif // TAG_PARSER_TAG_H

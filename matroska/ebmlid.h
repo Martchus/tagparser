@@ -1,9 +1,9 @@
-#ifndef EBMLID_H
-#define EBMLID_H
+#ifndef TAG_PARSER_EBMLID_H
+#define TAG_PARSER_EBMLID_H
 
 #include <c++utilities/conversion/types.h>
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Encapsulates all EBML ID values.
@@ -67,4 +67,4 @@ enum SignatureElementListSlotIds
 
 }
 
-#endif // EBMLID_H
+#endif // TAG_PARSER_EBMLID_H

@@ -1,9 +1,9 @@
-#ifndef MEDIA_MATROSKATAGIDS_H
-#define MEDIA_MATROSKATAGIDS_H
+#ifndef TAG_PARSER_MATROSKATAGIDS_H
+#define TAG_PARSER_MATROSKATAGIDS_H
 
 #include "../tagtarget.h"
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Encapsulates Matroska tag IDs.
@@ -169,7 +169,7 @@ inline TAG_PARSER_EXPORT const char *mood() {
     return "MOOD";
 }
 inline TAG_PARSER_EXPORT const char *originalMediaType() {
-    return "ORIGINAL_MEDIA_TYPE";
+    return "ORIGINAL_TAG_PARSER_TYPE";
 }
 inline TAG_PARSER_EXPORT const char *contentType() {
     return "CONTENT_TYPE";
@@ -386,4 +386,4 @@ inline TAG_PARSER_EXPORT uint64 matroskaTagTargetLevelValue(TagTargetLevel targe
 
 } // namespace Media
 
-#endif // MEDIA_MATROSKATAGIDS_H
+#endif // TAG_PARSER_MATROSKATAGIDS_H

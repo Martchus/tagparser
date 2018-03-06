@@ -19,7 +19,7 @@ using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 using namespace IoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 namespace Id3v2TextEncodingBytes {
 enum Id3v2TextEncodingByte : byte

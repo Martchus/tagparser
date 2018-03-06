@@ -1,5 +1,5 @@
-#ifndef MP3FRAMEAUDIOSTREAM_H
-#define MP3FRAMEAUDIOSTREAM_H
+#ifndef TAG_PARSER_MP3FRAMEAUDIOSTREAM_H
+#define TAG_PARSER_MP3FRAMEAUDIOSTREAM_H
 
 #include "../global.h"
 
@@ -11,7 +11,7 @@ namespace IoUtilities {
 class BinaryReader;
 }
 
-namespace Media
+namespace TagParser
 {
 
 /*!
@@ -238,4 +238,4 @@ inline uint32 MpegAudioFrame::xingQualityIndicator() const
 
 }
 
-#endif // MP3FRAMEAUDIOSTREAM_H
+#endif // TAG_PARSER_MP3FRAMEAUDIOSTREAM_H

@@ -1,7 +1,7 @@
 #include "./ebmlid.h"
 #include "./matroskaid.h"
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \brief Encapsulates the most common Matroska element IDs.

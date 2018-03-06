@@ -15,7 +15,7 @@ using namespace std;
 using namespace ConversionUtilities;
 using namespace IoUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::FlacMetaDataBlockHeader

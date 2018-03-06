@@ -1,11 +1,11 @@
-#ifndef MEDIA_MATROSKASEEKINFO_H
-#define MEDIA_MATROSKASEEKINFO_H
+#ifndef TAG_PARSER_MATROSKASEEKINFO_H
+#define TAG_PARSER_MATROSKASEEKINFO_H
 
 #include "./ebmlelement.h"
 
 #include <utility>
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT MatroskaSeekInfo
 {
@@ -69,4 +69,4 @@ inline std::vector<std::pair<EbmlElement::IdentifierType, uint64> > &MatroskaSee
 
 }
 
-#endif // MEDIA_MATROSKASEEKINFO_H
+#endif // TAG_PARSER_MATROSKASEEKINFO_H

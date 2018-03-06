@@ -1,5 +1,5 @@
-#ifndef ID3V2FRAME_H
-#define ID3V2FRAME_H
+#ifndef TAG_PARSER_ID3V2FRAME_H
+#define TAG_PARSER_ID3V2FRAME_H
 
 #include "./id3v2frameids.h"
 
@@ -14,7 +14,7 @@
 #include <iosfwd>
 #include <vector>
 
-namespace Media
+namespace TagParser
 {
 
 class Id3v2Frame;
@@ -342,4 +342,4 @@ inline std::string Id3v2Frame::fieldIdToString(Id3v2Frame::IdentifierType id)
 
 }
 
-#endif // ID3V2FRAME_H
+#endif // TAG_PARSER_ID3V2FRAME_H

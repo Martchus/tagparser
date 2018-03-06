@@ -14,7 +14,7 @@ using namespace TestUtilities;
 #include <cstdio>
 
 using namespace std;
-using namespace Media;
+using namespace TagParser;
 using namespace IoUtilities;
 using namespace TestUtilities::Literals;
 

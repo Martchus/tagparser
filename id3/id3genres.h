@@ -1,5 +1,5 @@
-#ifndef ID3GENRES_H
-#define ID3GENRES_H
+#ifndef TAG_PARSER_ID3GENRES_H
+#define TAG_PARSER_ID3GENRES_H
 
 #include "../global.h"
 
@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace Media
+namespace TagParser
 {
 
 class TAG_PARSER_EXPORT Id3Genres
@@ -49,4 +49,4 @@ constexpr bool Id3Genres::isIndexSupported(int index)
 
 }
 
-#endif // ID3GENRES_H
+#endif // TAG_PARSER_ID3GENRES_H

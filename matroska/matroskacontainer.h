@@ -1,5 +1,5 @@
-#ifndef MATROSKACONTAINER_H
-#define MATROSKACONTAINER_H
+#ifndef TAG_PARSER_MATROSKACONTAINER_H
+#define TAG_PARSER_MATROSKACONTAINER_H
 
 #include "./ebmlelement.h"
 #include "./matroskatag.h"
@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace Media {
+namespace TagParser {
 
 class MatroskaSeekInfo;
 class MatroskaEditionEntry;

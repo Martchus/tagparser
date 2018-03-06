@@ -1,12 +1,12 @@
-#ifndef MEDIA_MATROSKACUES_H
-#define MEDIA_MATROSKACUES_H
+#ifndef TAG_PARSER_MATROSKACUES_H
+#define TAG_PARSER_MATROSKACUES_H
 
 #include "./ebmlelement.h"
 
 #include <unordered_map>
 #include <ostream>
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT MatroskaOffsetStates
 {
@@ -113,4 +113,4 @@ inline void MatroskaCuePositionUpdater::clear()
 
 } // namespace Media
 
-#endif // MEDIA_MATROSKACUES_H
+#endif // TAG_PARSER_MATROSKACUES_H

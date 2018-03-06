@@ -1,9 +1,9 @@
-#ifndef TAGFIELD_H
-#define TAGFIELD_H
+#ifndef TAG_PARSER_TAGFIELD_H
+#define TAG_PARSER_TAGFIELD_H
 
 #include "./tagvalue.h"
 
-namespace Media {
+namespace TagParser {
 
 template <class implementationType>
 class TagField;
@@ -300,4 +300,4 @@ inline void TagField<ImplementationType>::cleared()
 
 }
 
-#endif // TAGFIELD_H
+#endif // TAG_PARSER_TAGFIELD_H

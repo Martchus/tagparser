@@ -16,7 +16,7 @@ using namespace std;
 using namespace IoUtilities;
 using namespace ConversionUtilities;
 
-namespace Media {
+namespace TagParser {
 
 /*!
  * \class Media::OggVorbisComment

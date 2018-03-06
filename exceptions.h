@@ -1,12 +1,12 @@
-#ifndef MEDIA_EXCEPTIONS_H
-#define MEDIA_EXCEPTIONS_H
+#ifndef TAG_PARSER_EXCEPTIONS_H
+#define TAG_PARSER_EXCEPTIONS_H
 
 #include "./global.h"
 
 #include <stdexcept>
 #include <string>
 
-namespace Media {
+namespace TagParser {
 
 class TAG_PARSER_EXPORT Failure : public std::exception
 {
@@ -76,4 +76,4 @@ public:
 
 }
 
-#endif // MEDIA_EXCEPTIONS_H
+#endif // TAG_PARSER_EXCEPTIONS_H
