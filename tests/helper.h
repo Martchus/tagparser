@@ -2,6 +2,7 @@
 #define TAGPARSER_TEST_HELPER
 
 #include "../tagvalue.h"
+#include "../size.h"
 #include "../diagnostics.h"
 
 #include <ostream>
@@ -24,6 +25,14 @@ inline std::ostream &operator <<(std::ostream &os, const Media::TagValue &tagVal
 inline std::ostream &operator <<(std::ostream &os, const Media::PositionInSet &pos)
 {
     return os << pos.toString();
+}
+
+/*!
+ * \brief Prints a Size to enable using it in CPPUNIT_ASSERT_EQUAL.
+ */
+inline std::ostream &operator <<(std::ostream &os, const Media::Size &size)
+{
+    return os << size.toString();
 }
 
 /*!

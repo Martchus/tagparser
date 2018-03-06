@@ -1,6 +1,8 @@
 #ifndef TAGPARSER_OVERALL_TESTS_H
 #define TAGPARSER_OVERALL_TESTS_H
 
+#include "./helper.h"
+
 #include "../mediafileinfo.h"
 #include "../tagvalue.h"
 #include "../diagnostics.h"

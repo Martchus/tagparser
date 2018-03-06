@@ -42,12 +42,12 @@ void OverallTests::checkMp4Testfile1()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Danse Macabre, Op.40");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).toString() == "Saint-Saëns");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Genre).toString() == "Classical");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "qaac 1.32, CoreAudioToolbox 7.9.7.3, AAC-LC Encoder, TVBR q63, Quality 96");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::TrackPosition).toPositionInSet().position() == 10);
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Danse Macabre, Op.40"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL("Saint-Saëns"s, tags.front()->value(KnownField::Artist).toString());
+        CPPUNIT_ASSERT_EQUAL("Classical"s, tags.front()->value(KnownField::Genre).toString());
+        CPPUNIT_ASSERT_EQUAL("qaac 1.32, CoreAudioToolbox 7.9.7.3, AAC-LC Encoder, TVBR q63, Quality 96"s, tags.front()->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL(10, tags.front()->value(KnownField::TrackPosition).toPositionInSet().position());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
@@ -196,7 +196,7 @@ void OverallTests::checkMp4Testfile4()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Sad Song");
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).toString() == "Oasis");
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Album).toString() == "Don't Go Away (Apple Lossless)");
@@ -347,7 +347,7 @@ void OverallTests::checkMp4TestMetaData()
     // check whether a tag is assigned
     const auto tags = m_fileInfo.tags();
     Mp4Tag *tag = m_fileInfo.mp4Tag();
-    CPPUNIT_ASSERT(tags.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
     CPPUNIT_ASSERT(tag != nullptr);
 
     // check test meta data

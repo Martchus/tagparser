@@ -95,7 +95,7 @@ void OverallTests::checkOggTestMetaData()
     // check whether a tag is assigned
     const auto tags = m_fileInfo.tags();
     VorbisComment *tag = m_fileInfo.vorbisComment();
-    CPPUNIT_ASSERT(tags.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
     CPPUNIT_ASSERT(tag != nullptr);
 
     // check test meta data

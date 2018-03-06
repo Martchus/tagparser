@@ -5,6 +5,7 @@
 
 #include <c++utilities/conversion/conversionexception.h>
 #include <c++utilities/chrono/format.h>
+
 using namespace TestUtilities;
 
 #include <cppunit/TestFixture.h>

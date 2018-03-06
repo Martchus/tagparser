@@ -59,11 +59,11 @@ void OverallTests::checkMkvTestfile1()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Big Buck Bunny - test 1");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Year).toString() == "2010");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 1"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL("2010"s, tags.front()->value(KnownField::Year).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -86,14 +86,14 @@ void OverallTests::checkMkvTestfile2()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1863976627:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->displaySize() == Size(1354, 576));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(1354, 576), track->displaySize());
             break;
         case 3134325680:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -102,10 +102,10 @@ void OverallTests::checkMkvTestfile2()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Elephant Dream - test 2");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Elephant Dream - test 2"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -128,14 +128,14 @@ void OverallTests::checkMkvTestfile3()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 3927961528:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->displaySize() == Size(1024, 576));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
             break;
         case 3391885737:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Mpeg1Audio);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -144,10 +144,10 @@ void OverallTests::checkMkvTestfile3()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Elephant Dream - test 3");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File 3, header stripping on the video track and no SimpleBlock");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Elephant Dream - test 3"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 3, header stripping on the video track and no SimpleBlock"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -172,15 +172,15 @@ void OverallTests::checkMkvTestfile4()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1368622492:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Theora);
-            CPPUNIT_ASSERT(track->displaySize() == Size(1280, 720));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Theora, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(1280, 720), track->displaySize());
             break;
         case 3171450505:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Vorbis);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->channelCount() == 2);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Vorbis, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2u), track->channelCount());
             switch(m_tagStatus) {
             case TagStatus::Original:
             case TagStatus::Removed:
@@ -230,20 +230,20 @@ void OverallTests::checkMkvTestfile5()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1258329745:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->displaySize() == Size(1024, 576));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
             break;
         case 3452711582:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         case 3554194305:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Text);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::TextSubtitle);
-            CPPUNIT_ASSERT(track->language() == "ger");
+            CPPUNIT_ASSERT_EQUAL(MediaType::Text, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::TextSubtitle, track->format().general);
+            CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
             break;
         default:
             ;
@@ -252,10 +252,10 @@ void OverallTests::checkMkvTestfile5()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Big Buck Bunny - test 8");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 8"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -278,15 +278,15 @@ void OverallTests::checkMkvTestfile6()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 2422994868:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::MicrosoftMpeg4);
-            CPPUNIT_ASSERT(track->pixelSize() == Size(854, 480));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::MicrosoftMpeg4, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(854, 480), track->displaySize());
             break;
         case 3653291187:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Mpeg1Audio);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->channelConfig() == static_cast<byte>(MpegChannelMode::Stereo));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(MpegChannelMode::Stereo), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -295,10 +295,10 @@ void OverallTests::checkMkvTestfile6()
     const auto tags = m_fileInfo.tags();
     switch(m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Big Buck Bunny - test 6");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).toString() == "Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 6"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -321,16 +321,16 @@ void OverallTests::checkMkvTestfile7()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 568001708:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->pixelSize() == Size(1024, 576));
-            CPPUNIT_ASSERT(!strcmp(track->chromaFormat(), "YUV 4:2:0"));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
+            CPPUNIT_ASSERT_EQUAL("YUV 4:2:0"s, string(track->chromaFormat()));
             break;
         case 2088735154:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -341,7 +341,7 @@ void OverallTests::checkMkvTestfile7()
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 7"s, tags.front()->value(KnownField::Title).toString());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
         CPPUNIT_ASSERT_EQUAL("Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
@@ -373,16 +373,16 @@ void OverallTests::checkMkvTestfile8()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 568001708:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->pixelSize() == Size(1024, 576));
-            CPPUNIT_ASSERT(!strcmp(track->chromaFormat(), "YUV 4:2:0"));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
+            CPPUNIT_ASSERT_EQUAL("YUV 4:2:0"s, string(track->chromaFormat()));
             break;
         case 2088735154:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -393,7 +393,7 @@ void OverallTests::checkMkvTestfile8()
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 8"s, tags.front()->value(KnownField::Title).toString());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
+        CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
         CPPUNIT_ASSERT_EQUAL("Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
@@ -417,18 +417,18 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     for(const auto &track : tracks) {
         switch(track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
             CPPUNIT_ASSERT_EQUAL(4.0, track->version());
-            CPPUNIT_ASSERT(track->pixelSize() == Size(1280, 544));
-            CPPUNIT_ASSERT(track->displaySize() == Size(1280, 544));
-            CPPUNIT_ASSERT(track->fps() == 23);
+            CPPUNIT_ASSERT_EQUAL(Size(1280, 544), track->pixelSize());
+            CPPUNIT_ASSERT_EQUAL(Size(1280, 544), track->displaySize());
+            CPPUNIT_ASSERT_EQUAL(23u, track->fps());
             break;
         case 2:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Aac);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL(argsToString("unknown track ID ", track->id()));
@@ -439,12 +439,12 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     for(const auto &chapter : chapters) {
         switch(chapter->id()) {
         case 1:
-            CPPUNIT_ASSERT(!strcmp(chapter->names().at(0).data(), "Kapitel 01"));
+            CPPUNIT_ASSERT_EQUAL("Kapitel 01"s, static_cast<const string &>(chapter->names().at(0)));
             CPPUNIT_ASSERT_EQUAL(0l, chapter->startTime().totalTicks());
             CPPUNIT_ASSERT_EQUAL(15, chapter->endTime().seconds());
             break;
         case 2:
-            CPPUNIT_ASSERT(!strcmp(chapter->names().at(0).data(), "Kapitel 02"));
+            CPPUNIT_ASSERT_EQUAL("Kapitel 02"s, static_cast<const string &>(chapter->names().at(0)));
             CPPUNIT_ASSERT_EQUAL(15, chapter->startTime().seconds());
             CPPUNIT_ASSERT_EQUAL(27, chapter->endTime().seconds());
             break;
@@ -538,8 +538,8 @@ void OverallTests::checkMkvTestMetaData()
     // check attachments
     const auto attachments = m_fileInfo.attachments();
     CPPUNIT_ASSERT_EQUAL(1_st, attachments.size());
-    CPPUNIT_ASSERT(attachments[0]->mimeType() == "image/png");
-    CPPUNIT_ASSERT(attachments[0]->name() == "cover.jpg");
+    CPPUNIT_ASSERT_EQUAL("image/png"s, attachments[0]->mimeType());
+    CPPUNIT_ASSERT_EQUAL("cover.jpg"s, attachments[0]->name());
     const StreamDataBlock *attachmentData = attachments[0]->data();
     CPPUNIT_ASSERT(attachmentData != nullptr);
     if (m_testCover.empty()) {
