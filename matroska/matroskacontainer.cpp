@@ -342,7 +342,7 @@ ElementPosition MatroskaContainer::determineElementPosition(uint64 elementId, Di
     if(!m_firstElement || m_segmentCount != 1) {
         return ElementPosition::Keep;
     }
-    const auto *const segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag, true);
+    const auto *const segmentElement = m_firstElement->siblingByIdIncludingThis(MatroskaIds::Segment, diag);
     if(!segmentElement) {
         return ElementPosition::Keep;
     }

@@ -214,11 +214,11 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
     // read sample offsets of fragments
     if(parseFragments) {
         uint64 totalDuration = 0;
-        for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(Mp4AtomIds::MovieFragment, diag, true); moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag, false)) {
+        for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(Mp4AtomIds::MovieFragment, diag); moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
-            for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag, false)) {
+            for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
                 trafAtom->parse(diag);
-                for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag, false)) {
+                for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                     tfhdAtom->parse(diag);
                     uint32 calculatedDataSize = 0;
                     if(tfhdAtom->dataSize() < calculatedDataSize) {
@@ -271,7 +271,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                                     inputStream().seekg(4, ios_base::cur);
                                 }
                             }
-                            for(Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun, diag); trunAtom; trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag, false)) {
+                            for(Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun, diag); trunAtom; trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag)) {
                                 uint32 calculatedDataSize = 8;
                                 if(trunAtom->dataSize() < calculatedDataSize) {
                                     diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
@@ -1786,11 +1786,11 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
     // no sample sizes found, search for trun atoms
     uint64 totalDuration = 0;
-    for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingById(MovieFragment, diag, true); moofAtom; moofAtom = moofAtom->siblingById(MovieFragment, diag, false)) {
+    for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(MovieFragment, diag); moofAtom; moofAtom = moofAtom->siblingById(MovieFragment, diag)) {
         moofAtom->parse(diag);
-        for(Mp4Atom *trafAtom = moofAtom->childById(TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(TrackFragment, diag, false)) {
+        for(Mp4Atom *trafAtom = moofAtom->childById(TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(TrackFragment, diag)) {
             trafAtom->parse(diag);
-            for(Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader, diag); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag, false)) {
+            for(Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader, diag); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag)) {
                 tfhdAtom->parse(diag);
                 uint32 calculatedDataSize = 0;
                 if(tfhdAtom->dataSize() < calculatedDataSize) {
@@ -1842,7 +1842,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                                 m_istream->seekg(4, ios_base::cur);
                             }
                         }
-                        for(Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun, diag); trunAtom; trunAtom = trunAtom->siblingById(TrackFragmentRun, diag, false)) {
+                        for(Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun, diag); trunAtom; trunAtom = trunAtom->siblingById(TrackFragmentRun, diag)) {
                             uint32 calculatedDataSize = 8;
                             if(trunAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);

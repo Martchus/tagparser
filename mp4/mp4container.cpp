@@ -75,7 +75,7 @@ void Mp4Container::internalParseHeader(Diagnostics &diag)
     //const string context("parsing header of MP4 container"); will be used when generating notifications
     m_firstElement = make_unique<Mp4Atom>(*this, startOffset());
     m_firstElement->parse(diag);
-    Mp4Atom *ftypAtom = m_firstElement->siblingById(Mp4AtomIds::FileType, diag, true);
+    Mp4Atom *ftypAtom = m_firstElement->siblingByIdIncludingThis(Mp4AtomIds::FileType, diag);
     if(ftypAtom) {
         stream().seekg(static_cast<iostream::off_type>(ftypAtom->dataOffset()));
         m_doctype = reader().readString(4);
@@ -100,7 +100,7 @@ void Mp4Container::internalParseTags(Diagnostics &diag)
             } catch(const NoDataFoundException &) {
                 m_tags.pop_back();
             }
-            metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, diag, false);
+            metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, diag);
             if(metaAtom) {
                 surplusMetaAtoms = true;
             }
@@ -119,7 +119,7 @@ void Mp4Container::internalParseTracks(Diagnostics &diag)
     static const string context("parsing tracks of MP4 container");
     try {
         // get moov atom which holds track information
-        if(Mp4Atom *moovAtom = firstElement()->siblingById(Mp4AtomIds::Movie, diag, true)) {
+        if(Mp4Atom *moovAtom = firstElement()->siblingByIdIncludingThis(Mp4AtomIds::Movie, diag)) {
             // get mvhd atom which holds overall track information
             if(Mp4Atom *mvhdAtom = moovAtom->childById(Mp4AtomIds::MovieHeader, diag)) {
                 if(mvhdAtom->dataSize() > 0) {
@@ -191,7 +191,7 @@ void Mp4Container::internalParseTracks(Diagnostics &diag)
                 } catch(const Failure &) {
                     diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse track ", trackNum, '.'), context);
                 }
-                trakAtom = trakAtom->siblingById(Mp4AtomIds::Track, diag, false); // get next trak atom
+                trakAtom = trakAtom->siblingById(Mp4AtomIds::Track, diag); // get next trak atom
                 ++trackNum;
             }
             // get overall duration, creation time and modification time if not determined yet
@@ -263,7 +263,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten;
     try {
         // file type atom (mandatory)
-        if((fileTypeAtom = firstElement()->siblingById(Mp4AtomIds::FileType, diag, true))) {
+        if((fileTypeAtom = firstElement()->siblingByIdIncludingThis(Mp4AtomIds::FileType, diag))) {
             // buffer atom
             fileTypeAtom->makeBuffer();
         } else {
@@ -273,13 +273,13 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
 
         // progressive download information atom (not mandatory)
-        if((progressiveDownloadInfoAtom = firstElement()->siblingById(Mp4AtomIds::ProgressiveDownloadInformation, diag, true))) {
+        if((progressiveDownloadInfoAtom = firstElement()->siblingByIdIncludingThis(Mp4AtomIds::ProgressiveDownloadInformation, diag))) {
             // buffer atom
             progressiveDownloadInfoAtom->makeBuffer();
         }
 
         // movie atom (mandatory)
-        if(!(movieAtom = firstElement()->siblingById(Mp4AtomIds::Movie, diag, true))) {
+        if(!(movieAtom = firstElement()->siblingByIdIncludingThis(Mp4AtomIds::Movie, diag))) {
             // throw error if missing
             diag.emplace_back(DiagLevel::Critical, "Mandatory \"moov\"-atom not in the source file found.", context);
             throw InvalidDataException();
@@ -868,16 +868,16 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
     }
     // update "base-data-offset-present" of "tfhd"-atom (NOT tested properly)
     try {
-        for(Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, diag, false);
-            moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag, false)) {
+        for(Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, diag);
+            moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
             try {
                 for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom;
-                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag, false)) {
+                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
                     trafAtom->parse(diag);
                     int tfhdAtomCount = 0;
                     for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom;
-                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag, false)) {
+                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                         tfhdAtom->parse(diag);
                         ++tfhdAtomCount;
                         if(tfhdAtom->dataSize() >= 8) {

@@ -103,8 +103,14 @@ public:
     const ImplementationType* lastChild() const;
     ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item);
     ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...);
+    const ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item) const;
+    const ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const;
     ImplementationType* childById(const IdentifierType &id, Diagnostics &diag);
-    ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag, bool includeThis = false);
+    const ImplementationType* childById(const IdentifierType &id, Diagnostics &diag) const;
+    ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag);
+    const ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag) const;
+    ImplementationType* siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag);
+    const ImplementationType* siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag) const;
     bool isParent() const;
     bool isPadding() const;
     uint64 firstChildOffset() const;
@@ -575,6 +581,36 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Dia
 }
 
 /*!
+ * \brief Returns the sub element for the specified path.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no element could be found nullptr is returned.
+ *
+ * \throws Throws a parsing exception when a parsing error occurs.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ */
+template <class ImplementationType>
+const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item) const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->subelementByPath(diag, item);
+}
+
+/*!
+ * \brief Returns the sub element for the specified path.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no element could be found nullptr is returned.
+ *
+ * \throws Throws a parsing exception when a parsing error occurs.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ */
+template <class ImplementationType>
+const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->subelementByPath(diag, item, remainingPath);
+}
+
+/*!
  * \brief Returns the first child with the specified \a id.
  *
  * The current element keeps ownership over the returned element.
@@ -597,11 +633,22 @@ ImplementationType *GenericFileElement<ImplementationType>::childById(const Iden
 }
 
 /*!
- * \brief Returns the first sibling with the specified \a id.
+ * \brief Returns the first child with the specified \a id.
  *
- * \param id Specifies the id of the sibling to be returned.
- * \param includeThis Indicates whether this instance should be returned
- *                    if it has the specified \a id.
+ * The current element keeps ownership over the returned element.
+ * If no element could be found nullptr is returned.
+ *
+ * \throws Throws a parsing exception when a parsing error occurs.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ */
+template <class ImplementationType>
+const ImplementationType *GenericFileElement<ImplementationType>::childById(const IdentifierType &id, Diagnostics &diag) const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->childById(id, diag);
+}
+
+/*!
+ * \brief Returns the first sibling with the specified \a id.
  *
  * The current element keeps ownership over the returned element.
  * If no element could be found nullptr is returned.
@@ -611,16 +658,71 @@ ImplementationType *GenericFileElement<ImplementationType>::childById(const Iden
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, Diagnostics &diag, bool includeThis)
+ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, Diagnostics &diag)
 {
     parse(diag); // ensure element is parsed
-    for(ImplementationType *sibling = includeThis ? static_cast<ImplementationType *>(this) : nextSibling(); sibling; sibling = sibling->nextSibling()) {
+    for(ImplementationType *sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
         sibling->parse(diag);
         if(sibling->id() == id) {
             return sibling;
         }
     }
     return nullptr;
+}
+
+/*!
+ * \brief Returns the first sibling with the specified \a id.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no element could be found nullptr is returned.
+ * Possibly returns a pointer to the current instance (see \a includeThis).
+ *
+ * \throws Throws a parsing exception when a parsing error occurs.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ */
+template <class ImplementationType>
+const ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, Diagnostics &diag) const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->siblingById(id, diag);
+}
+
+/*!
+ * \brief Returns the first sibling with the specified \a id or the current instance if its ID equals \a id.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no element could be found nullptr is returned.
+ * Possibly returns a pointer to the current instance (see \a includeThis).
+ *
+ * \throws Throws a parsing exception when a parsing error occurs.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ */
+template <class ImplementationType>
+ImplementationType *GenericFileElement<ImplementationType>::siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag)
+{
+    parse(diag); // ensure element is parsed
+    for(ImplementationType *sibling = static_cast<ImplementationType *>(this); sibling; sibling = sibling->nextSibling()) {
+        sibling->parse(diag);
+        if(sibling->id() == id) {
+            return sibling;
+        }
+    }
+    return nullptr;
+}
+
+/*!
+ * \brief Returns the first sibling with the specified \a id or the current instance if its ID equals \a id.
+ *
+ * The current element keeps ownership over the returned element.
+ * If no element could be found nullptr is returned.
+ * Possibly returns a pointer to the current instance (see \a includeThis).
+ *
+ * \throws Throws a parsing exception when a parsing error occurs.
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ */
+template <class ImplementationType>
+const ImplementationType *GenericFileElement<ImplementationType>::siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag) const
+{
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->siblingByIdIncludingThis(id, diag);
 }
 
 /*!
