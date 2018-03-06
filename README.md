@@ -3,13 +3,14 @@ C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Ma
 
 ## Supported formats
 The tag library can read and write the following tag formats:
-- iTunes-style MP4/M4A tags (MP4-DASH is supported)
-- ID3v1 and ID3v2 tags
-  - conversion between ID3v1 and different versions of ID3v2 is possible
-- Vorbis, Opus and FLAC comments in Ogg streams
-  - cover art via "METADATA_BLOCK_PICTURE" is supported
-- Vorbis comments and "METADATA_BLOCK_PICTURE" in raw FLAC streams
-- Matroska/WebM tags and attachments
+
+* iTunes-style MP4/M4A tags (MP4-DASH is supported)
+* ID3v1 and ID3v2 tags
+    * conversion between ID3v1 and different versions of ID3v2 is possible
+* Vorbis, Opus and FLAC comments in Ogg streams
+    * cover art via "METADATA_BLOCK_PICTURE" is supported
+* Vorbis comments and "METADATA_BLOCK_PICTURE" in raw FLAC streams
+* Matroska/WebM tags and attachments
 
 ## File layout options
 ### Tag position
@@ -19,8 +20,8 @@ the end of an MP4/Matroska file.
 ### Padding
 Padding allows adding additional tag information without rewriting the entire file
 or appending the tag. Usage of padding can be configured:
-- minimum/maximum padding: The file is rewritten if the padding would fall below/exceed the specifed limits.
-- preferred padding: If the file needs to be rewritten the preferred padding is used.
+* minimum/maximum padding: The file is rewritten if the padding would fall below/exceed the specifed limits.
+* preferred padding: If the file needs to be rewritten the preferred padding is used.
 
 Default value for minimum and maximum padding is zero. Hence the library will almost always have to rewrite
 the entire file to apply changes. To prevent this, set at least the maximum padding to a higher value.
@@ -58,6 +59,8 @@ in the same way.
 It also depends on zlib. For checking integrity of testfiles, the OpenSSL crypto
 library is required.
 
-## TODO
-- Support more formats (EXIF, PDF metadata, Theora, ...)
-- Support adding cue-sheet to FLAC files
+## TODOs
+* Support more formats (EXIF, PDF metadata, Theora, ...)
+* Support adding cue-sheet to FLAC files
+
+More TODOs are tracked in the [issue section at GitHub](https://github.com/Martchus/tagparser/issues).
