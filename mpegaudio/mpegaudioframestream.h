@@ -14,14 +14,14 @@ class TAG_PARSER_EXPORT MpegAudioFrameStream : public AbstractTrack
 {
 public:
     MpegAudioFrameStream(std::iostream &stream, uint64 startOffset);
-    ~MpegAudioFrameStream();
+    ~MpegAudioFrameStream() override;
 
-    TrackType type() const;
+    TrackType type() const override;
 
     static void addInfo(const MpegAudioFrame &frame, AbstractTrack &track);
 
 protected:
-    void internalParseHeader(Diagnostics &diag);
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     std::list<MpegAudioFrame> m_frames;

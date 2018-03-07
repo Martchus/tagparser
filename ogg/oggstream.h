@@ -16,13 +16,13 @@ class TAG_PARSER_EXPORT OggStream : public AbstractTrack
 
 public:
     OggStream(OggContainer &container, std::vector<OggPage>::size_type startPage);
-    ~OggStream();
+    ~OggStream() override;
 
-    TrackType type() const;
+    TrackType type() const override;
     std::size_t startPage() const;
 
 protected:
-    void internalParseHeader(Diagnostics &diag);
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     void calculateDurationViaSampleCount(uint16 preSkip = 0);

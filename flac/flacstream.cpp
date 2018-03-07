@@ -57,12 +57,11 @@ VorbisComment *FlacStream::createVorbisComment()
  */
 bool FlacStream::removeVorbisComment()
 {
-    if(m_vorbisComment) {
-        m_vorbisComment.reset();
-        return true;
-    } else {
+    if(!m_vorbisComment) {
         return false;
     }
+    m_vorbisComment.reset();
+    return true;
 }
 
 void FlacStream::internalParseHeader(Diagnostics &diag)
@@ -76,94 +75,92 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
     char buffer[0x22];
 
     // check signature
-    if(m_reader.readUInt32BE() == 0x664C6143) {
-        m_format = GeneralMediaFormat::Flac;
-
-        // parse meta data blocks
-        for(FlacMetaDataBlockHeader header; !header.isLast(); ) {
-            // parse block header
-            m_istream->read(buffer, 4);
-            header.parseHeader(buffer);
-
-            // remember start offset
-            const auto startOffset = m_istream->tellg();
-
-            // parse relevant meta data
-            switch(static_cast<FlacMetaDataBlockType>(header.type())) {
-            case FlacMetaDataBlockType::StreamInfo:
-                if(header.dataSize() >= 0x22) {
-                    m_istream->read(buffer, 0x22);
-                    FlacMetaDataBlockStreamInfo streamInfo;
-                    streamInfo.parse(buffer);
-                    m_channelCount = streamInfo.channelCount();
-                    m_samplingFrequency = streamInfo.samplingFrequency();
-                    m_sampleCount = streamInfo.totalSampleCount();
-                    m_bitsPerSample = streamInfo.bitsPerSample();
-                    m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
-                } else {
-                    diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_STREAMINFO\" is truncated and will be ignored.", context);
-                }
-                break;
-
-            case FlacMetaDataBlockType::VorbisComment:
-                // parse Vorbis comment
-                // if more than one comment exist, simply thread those comments as one
-                if(!m_vorbisComment) {
-                    m_vorbisComment = make_unique<VorbisComment>();
-                }
-                try {
-                    m_vorbisComment->parse(*m_istream, header.dataSize(), VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
-                } catch(const Failure &) {
-                    // error is logged via notifications, just continue with the next metadata block
-                }
-                break;
-
-            case FlacMetaDataBlockType::Picture:
-                try {
-                    // parse the cover
-                    VorbisCommentField coverField;
-                    coverField.setId(m_vorbisComment->fieldId(KnownField::Cover));
-                    FlacMetaDataBlockPicture picture(coverField.value());
-                    picture.parse(*m_istream, header.dataSize());
-                    coverField.setTypeInfo(picture.pictureType());
-
-                    if(coverField.value().isEmpty()) {
-                        diag.emplace_back(DiagLevel::Warning, "\"METADATA_BLOCK_PICTURE\" contains no picture.", context);
-                    } else {
-                        // add the cover to the Vorbis comment
-                        if(!m_vorbisComment) {
-                            // create one if none exists yet
-                            m_vorbisComment = make_unique<VorbisComment>();
-                            m_vorbisComment->setVendor(TagValue(APP_NAME " v" APP_VERSION, TagTextEncoding::Utf8));
-                        }
-                        m_vorbisComment->fields().insert(make_pair(coverField.id(), move(coverField)));
-                    }
-
-                } catch(const TruncatedDataException &) {
-                    diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_PICTURE\" is truncated and will be ignored.", context);
-                }
-                break;
-
-            case FlacMetaDataBlockType::Padding:
-                m_paddingSize += 4 + header.dataSize();
-                break;
-
-            default:
-                ;
-            }
-
-            // seek to next block
-            m_istream->seekg(startOffset + static_cast<decltype(startOffset)>(header.dataSize()));
-
-            // TODO: check first FLAC frame
-        }
-
-        m_streamOffset = m_istream->tellg();
-
-    } else {
+    if(m_reader.readUInt32BE() != 0x664C6143) {
         diag.emplace_back(DiagLevel::Critical, "Signature (fLaC) not found.", context);
         throw InvalidDataException();
     }
+    m_format = GeneralMediaFormat::Flac;
+
+    // parse meta data blocks
+    for(FlacMetaDataBlockHeader header; !header.isLast(); ) {
+        // parse block header
+        m_istream->read(buffer, 4);
+        header.parseHeader(buffer);
+
+        // remember start offset
+        const auto startOffset = m_istream->tellg();
+
+        // parse relevant meta data
+        switch(static_cast<FlacMetaDataBlockType>(header.type())) {
+        case FlacMetaDataBlockType::StreamInfo:
+            if(header.dataSize() >= 0x22) {
+                m_istream->read(buffer, 0x22);
+                FlacMetaDataBlockStreamInfo streamInfo;
+                streamInfo.parse(buffer);
+                m_channelCount = streamInfo.channelCount();
+                m_samplingFrequency = streamInfo.samplingFrequency();
+                m_sampleCount = streamInfo.totalSampleCount();
+                m_bitsPerSample = streamInfo.bitsPerSample();
+                m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / m_samplingFrequency);
+            } else {
+                diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_STREAMINFO\" is truncated and will be ignored.", context);
+            }
+            break;
+
+        case FlacMetaDataBlockType::VorbisComment:
+            // parse Vorbis comment
+            // if more than one comment exist, simply thread those comments as one
+            if(!m_vorbisComment) {
+                m_vorbisComment = make_unique<VorbisComment>();
+            }
+            try {
+                m_vorbisComment->parse(*m_istream, header.dataSize(), VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
+            } catch(const Failure &) {
+                // error is logged via notifications, just continue with the next metadata block
+            }
+            break;
+
+        case FlacMetaDataBlockType::Picture:
+            try {
+                // parse the cover
+                VorbisCommentField coverField;
+                coverField.setId(m_vorbisComment->fieldId(KnownField::Cover));
+                FlacMetaDataBlockPicture picture(coverField.value());
+                picture.parse(*m_istream, header.dataSize());
+                coverField.setTypeInfo(picture.pictureType());
+
+                if(coverField.value().isEmpty()) {
+                    diag.emplace_back(DiagLevel::Warning, "\"METADATA_BLOCK_PICTURE\" contains no picture.", context);
+                } else {
+                    // add the cover to the Vorbis comment
+                    if(!m_vorbisComment) {
+                        // create one if none exists yet
+                        m_vorbisComment = make_unique<VorbisComment>();
+                        m_vorbisComment->setVendor(TagValue(APP_NAME " v" APP_VERSION, TagTextEncoding::Utf8));
+                    }
+                    m_vorbisComment->fields().insert(make_pair(coverField.id(), move(coverField)));
+                }
+
+            } catch(const TruncatedDataException &) {
+                diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_PICTURE\" is truncated and will be ignored.", context);
+            }
+            break;
+
+        case FlacMetaDataBlockType::Padding:
+            m_paddingSize += 4 + header.dataSize();
+            break;
+
+        default:
+            ;
+        }
+
+        // seek to next block
+        m_istream->seekg(startOffset + static_cast<decltype(startOffset)>(header.dataSize()));
+
+        // TODO: check first FLAC frame
+    }
+
+    m_streamOffset = m_istream->tellg();
 }
 
 /*!
@@ -210,41 +207,43 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     }
 
     // write Vorbis comment
-    if(m_vorbisComment) {
-        // leave 4 bytes space for the "METADATA_BLOCK_HEADER"
+    if(!m_vorbisComment) {
+        return lastStartOffset;
+    }
+    // leave 4 bytes space for the "METADATA_BLOCK_HEADER"
+    lastStartOffset = outputStream.tellp();
+    outputStream.write(copy.buffer(), 4);
+
+    // determine cover ID since covers must be written separately
+    const auto coverId = m_vorbisComment->fieldId(KnownField::Cover);
+
+    // write Vorbis comment
+    m_vorbisComment->make(outputStream, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte | VorbisCommentFlags::NoCovers, diag);
+
+    // write "METADATA_BLOCK_HEADER"
+    const uint32 endOffset = outputStream.tellp();
+    FlacMetaDataBlockHeader header;
+    header.setType(FlacMetaDataBlockType::VorbisComment);
+    header.setDataSize(endOffset - lastStartOffset - 4);
+    header.setLast(!m_vorbisComment->hasField(coverId));
+    outputStream.seekp(lastStartOffset);
+    header.makeHeader(outputStream);
+    outputStream.seekp(endOffset);
+
+    // write cover fields separately as "METADATA_BLOCK_PICTURE"
+    if(header.isLast()) {
+        return lastStartOffset;
+    }
+    header.setType(FlacMetaDataBlockType::Picture);
+    const auto coverFields = m_vorbisComment->fields().equal_range(coverId);
+    for(auto i = coverFields.first; i != coverFields.second; ) {
         lastStartOffset = outputStream.tellp();
-        outputStream.write(copy.buffer(), 4);
-
-        // determine cover ID since covers must be written separately
-        const auto coverId = m_vorbisComment->fieldId(KnownField::Cover);
-
-        // write Vorbis comment
-        m_vorbisComment->make(outputStream, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte | VorbisCommentFlags::NoCovers, diag);
-
-        // write "METADATA_BLOCK_HEADER"
-        const uint32 endOffset = outputStream.tellp();
-        FlacMetaDataBlockHeader header;
-        header.setType(FlacMetaDataBlockType::VorbisComment);
-        header.setDataSize(endOffset - lastStartOffset - 4);
-        header.setLast(!m_vorbisComment->hasField(coverId));
-        outputStream.seekp(lastStartOffset);
+        FlacMetaDataBlockPicture pictureBlock(i->second.value());
+        pictureBlock.setPictureType(i->second.typeInfo());
+        header.setDataSize(pictureBlock.requiredSize());
+        header.setLast(++i == coverFields.second);
         header.makeHeader(outputStream);
-        outputStream.seekp(endOffset);
-
-        // write cover fields separately as "METADATA_BLOCK_PICTURE"
-        if(!header.isLast()) {
-            header.setType(FlacMetaDataBlockType::Picture);
-            const auto coverFields = m_vorbisComment->fields().equal_range(coverId);
-            for(auto i = coverFields.first; i != coverFields.second; ) {
-                lastStartOffset = outputStream.tellp();
-                FlacMetaDataBlockPicture pictureBlock(i->second.value());
-                pictureBlock.setPictureType(i->second.typeInfo());
-                header.setDataSize(pictureBlock.requiredSize());
-                header.setLast(++i == coverFields.second);
-                header.makeHeader(outputStream);
-                pictureBlock.make(outputStream);
-            }
-        }
+        pictureBlock.make(outputStream);
     }
 
     return lastStartOffset;

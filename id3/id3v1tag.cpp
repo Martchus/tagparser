@@ -100,11 +100,12 @@ void Id3v1Tag::make(ostream &stream, Diagnostics &diag)
     buffer[1] = 0x0; // track nr
     buffer[2] = 0x0; // genre
     // track
-    try {
-    if(!m_trackPos.isEmpty() && m_trackPos.type() == TagDataType::PositionInSet)
-        buffer[1] = m_trackPos.toPositionInSet().position();
-    } catch(const ConversionException &) {
-        diag.emplace_back(DiagLevel::Warning, "Track position field can not be set because given value can not be converted appropriately.", context);
+    if(!m_trackPos.isEmpty() && m_trackPos.type() == TagDataType::PositionInSet) {
+        try {
+            buffer[1] = m_trackPos.toPositionInSet().position();
+        } catch(const ConversionException &) {
+            diag.emplace_back(DiagLevel::Warning, "Track position field can not be set because given value can not be converted appropriately.", context);
+        }
     }
     // genre
     try {

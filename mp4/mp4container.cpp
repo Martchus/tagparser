@@ -75,42 +75,43 @@ void Mp4Container::internalParseHeader(Diagnostics &diag)
     //const string context("parsing header of MP4 container"); will be used when generating notifications
     m_firstElement = make_unique<Mp4Atom>(*this, startOffset());
     m_firstElement->parse(diag);
-    Mp4Atom *ftypAtom = m_firstElement->siblingByIdIncludingThis(Mp4AtomIds::FileType, diag);
-    if(ftypAtom) {
-        stream().seekg(static_cast<iostream::off_type>(ftypAtom->dataOffset()));
-        m_doctype = reader().readString(4);
-        m_version = reader().readUInt32BE();
-    } else {
+    auto *const ftypAtom = m_firstElement->siblingByIdIncludingThis(Mp4AtomIds::FileType, diag);
+    if(!ftypAtom) {
         m_doctype.clear();
         m_version = 0;
+        return;
     }
+    stream().seekg(static_cast<iostream::off_type>(ftypAtom->dataOffset()));
+    m_doctype = reader().readString(4);
+    m_version = reader().readUInt32BE();
 }
 
 void Mp4Container::internalParseTags(Diagnostics &diag)
 {
     const string context("parsing tags of MP4 container");
-    if(Mp4Atom *udtaAtom = firstElement()->subelementByPath(diag, Mp4AtomIds::Movie, Mp4AtomIds::UserData)) {
-        Mp4Atom *metaAtom = udtaAtom->childById(Mp4AtomIds::Meta, diag);
-        bool surplusMetaAtoms = false;
-        while(metaAtom) {
-            metaAtom->parse(diag);
-            m_tags.emplace_back(make_unique<Mp4Tag>());
-            try {
-                m_tags.back()->parse(*metaAtom, diag);
-            } catch(const NoDataFoundException &) {
-                m_tags.pop_back();
-            }
-            metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, diag);
-            if(metaAtom) {
-                surplusMetaAtoms = true;
-            }
-            if(!m_tags.empty()) {
-                break;
-            }
+    auto *const udtaAtom = firstElement()->subelementByPath(diag, Mp4AtomIds::Movie, Mp4AtomIds::UserData);
+    if(!udtaAtom) {
+        return;
+    }
+    auto *metaAtom = udtaAtom->childById(Mp4AtomIds::Meta, diag);
+    bool surplusMetaAtoms = false;
+    while(metaAtom) {
+        metaAtom->parse(diag);
+        m_tags.emplace_back(make_unique<Mp4Tag>());
+        try {
+            m_tags.back()->parse(*metaAtom, diag);
+        } catch(const NoDataFoundException &) {
+            m_tags.pop_back();
         }
-        if(surplusMetaAtoms) {
-            diag.emplace_back(DiagLevel::Warning, "udta atom contains multiple meta atoms. Surplus meta atoms will be ignored.", context);
+        if((metaAtom = metaAtom->siblingById(Mp4AtomIds::Meta, diag))) {
+            surplusMetaAtoms = true;
         }
+        if(!m_tags.empty()) {
+            break;
+        }
+    }
+    if(surplusMetaAtoms) {
+        diag.emplace_back(DiagLevel::Warning, "udta atom contains multiple meta atoms. Surplus meta atoms will be ignored.", context);
     }
 }
 
@@ -217,7 +218,7 @@ void Mp4Container::internalParseTracks(Diagnostics &diag)
 void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("making MP4 container");
-    progress.updateStep("Calculating atom sizes and padding ...", 0);
+    progress.updateStep("Calculating atom sizes and padding ...");
 
     // basic validation of original file
     if(!isHeaderParsed()) {
@@ -880,28 +881,28 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                         tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                         tfhdAtom->parse(diag);
                         ++tfhdAtomCount;
-                        if(tfhdAtom->dataSize() >= 8) {
-                            stream().seekg(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 1);
-                            uint32 flags = reader().readUInt24BE();
-                            if(flags & 1) {
-                                if(tfhdAtom->dataSize() >= 16) {
-                                    stream().seekg(4, ios_base::cur); // skip track ID
-                                    uint64 off = reader().readUInt64BE();
-                                    for(auto iOld = oldMdatOffsets.cbegin(), iNew = newMdatOffsets.cbegin(), end = oldMdatOffsets.cend();
-                                        iOld != end; ++iOld, ++iNew) {
-                                        if(off >= static_cast<uint64>(*iOld)) {
-                                            off += (*iNew - *iOld);
-                                            stream().seekp(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 8);
-                                            writer().writeUInt64BE(off);
-                                            break;
-                                        }
-                                    }
-                                } else {
-                                    diag.emplace_back(DiagLevel::Warning, "tfhd atom (denoting base-data-offset-present) is truncated.", context);
-                                }
-                            }
-                        } else {
+                        if(tfhdAtom->dataSize() < 8) {
                             diag.emplace_back(DiagLevel::Warning, "tfhd atom is truncated.", context);
+                            continue;
+                        }
+                        stream().seekg(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 1);
+                        uint32 flags = reader().readUInt24BE();
+                        if(!(flags & 1)) {
+                            continue;
+                        }
+                        if(tfhdAtom->dataSize() < 16) {
+                            diag.emplace_back(DiagLevel::Warning, "tfhd atom (denoting base-data-offset-present) is truncated.", context);
+                            continue;
+                        }
+                        stream().seekg(4, ios_base::cur); // skip track ID
+                        uint64 off = reader().readUInt64BE();
+                        for(auto iOld = oldMdatOffsets.cbegin(), iNew = newMdatOffsets.cbegin(), end = oldMdatOffsets.cend(); iOld != end; ++iOld, ++iNew) {
+                            if(off >= static_cast<uint64>(*iOld)) {
+                                off += (*iNew - *iOld);
+                                stream().seekp(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 8);
+                                writer().writeUInt64BE(off);
+                                break;
+                            }
                         }
                     }
                     switch(tfhdAtomCount) {

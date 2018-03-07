@@ -11,12 +11,12 @@ class TAG_PARSER_EXPORT AdtsStream : public AbstractTrack
 {
 public:
     AdtsStream(std::iostream &stream, uint64 startOffset);
-    ~AdtsStream();
+    ~AdtsStream() override;
 
-    TrackType type() const;
+    TrackType type() const override;
 
 protected:
-    void internalParseHeader(Diagnostics &diag);
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     AdtsFrame m_firstFrame;

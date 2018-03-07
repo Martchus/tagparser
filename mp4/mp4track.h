@@ -121,8 +121,8 @@ class TAG_PARSER_EXPORT Mp4Track : public AbstractTrack
 {
 public:
     Mp4Track(Mp4Atom &trakAtom);
-    ~Mp4Track();
-    TrackType type() const;
+    ~Mp4Track() override;
+    TrackType type() const override;
 
     // getter methods specific for MP4 tracks
     Mp4Atom &trakAtom();
@@ -160,7 +160,7 @@ public:
     static void addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track);
 
 protected:
-    void internalParseHeader(Diagnostics &diag);
+    void internalParseHeader(Diagnostics &diag) override;
 
 private:
     // private helper methods

@@ -17,8 +17,7 @@ using namespace IoUtilities;
 
 /*!
  * \file aacframe.cpp
- * \remarks Nothing of this code has been tested yet. It is currently not used
- *          in the rest of the library.
+ * \remarks The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
  */
 
 namespace TagParser {

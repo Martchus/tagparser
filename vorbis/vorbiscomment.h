@@ -34,12 +34,12 @@ public:
     static constexpr TagType tagType = TagType::VorbisComment;
     static constexpr const char *tagName = "Vorbis comment";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const;
+    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
 
     using FieldMapBasedTag<VorbisComment>::value;
-    const TagValue &value(KnownField field) const;
+    const TagValue &value(KnownField field) const override;
     using FieldMapBasedTag<VorbisComment>::setValue;
-    bool setValue(KnownField field, const TagValue &value);
+    bool setValue(KnownField field, const TagValue &value) override;
 
     void parse(OggIterator &iterator, VorbisCommentFlags flags, Diagnostics &diag);
     void parse(std::istream &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);

@@ -73,10 +73,10 @@ public:
     static constexpr TagType tagType = TagType::Id3v2Tag;
     static constexpr const char *tagName = "ID3v2 tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf16LittleEndian;
-    TagTextEncoding proposedTextEncoding() const;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const;
-    bool supportsDescription(KnownField field) const;
-    bool supportsMimeType(KnownField field) const;
+    TagTextEncoding proposedTextEncoding() const override;
+    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
+    bool supportsDescription(KnownField field) const override;
+    bool supportsMimeType(KnownField field) const override;
 
     void parse(std::istream &sourceStream, const uint64 maximalSize, Diagnostics &diag);
     Id3v2TagMaker prepareMaking(Diagnostics &diag);

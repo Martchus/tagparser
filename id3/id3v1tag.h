@@ -15,17 +15,17 @@ public:
 
     static constexpr TagType tagType = TagType::Id3v1Tag;
     static constexpr const char *tagName = "ID3v1 tag";
-    TagType type() const;
-    const char *typeName() const;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const;
-    const TagValue &value(KnownField value) const;
-    bool setValue(KnownField field, const TagValue &value);
+    TagType type() const override;
+    const char *typeName() const override;
+    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
+    const TagValue &value(KnownField value) const override;
+    bool setValue(KnownField field, const TagValue &value) override;
     bool setValueConsideringTypeInfo(KnownField field, const TagValue &value, const std::string &typeInfo);
-    bool hasField(KnownField field) const;
-    void removeAllFields();
-    unsigned int fieldCount() const;
-    bool supportsField(KnownField field) const;
-    void ensureTextValuesAreProperlyEncoded();
+    bool hasField(KnownField field) const override;
+    void removeAllFields() override;
+    unsigned int fieldCount() const override;
+    bool supportsField(KnownField field) const override;
+    void ensureTextValuesAreProperlyEncoded() override;
 
     void parse(std::istream &sourceStream, Diagnostics &diag);
     void make(std::ostream &targetStream, Diagnostics &diag);

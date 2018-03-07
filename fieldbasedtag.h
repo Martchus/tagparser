@@ -368,8 +368,9 @@ int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<Im
     int fieldsInserted = 0;
     for(const auto &pair : from.fields()) {
         const FieldType &fromField = pair.second;
-        if(fromField.value().isEmpty())
+        if(fromField.value().isEmpty()) {
             continue;
+        }
         bool fieldInserted = false;
         auto range = fields().equal_range(fromField.id());
         for(auto i = range.first; i != range.second; ++i) {

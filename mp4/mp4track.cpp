@@ -1551,7 +1551,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_istream->seekg(m_stsdAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
     uint32 entryCount = reader.readUInt32BE();
     Mp4Atom *esDescParentAtom = nullptr;
-    if(entryCount > 0) {
+    if(entryCount) {
         try {
             for(Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom; codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
                 codecConfigContainerAtom->parse(diag);
@@ -1703,11 +1703,11 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                                 ;
                             }
                         }
-                    } catch(Failure &) {
+                    } catch(const Failure &) {
                     }
                 }
             }
-        } catch (Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Unable to parse child atoms of \"stsd\"-atom.", context);
         }
     }

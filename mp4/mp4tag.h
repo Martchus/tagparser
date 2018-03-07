@@ -108,29 +108,29 @@ public:
     static constexpr TagType tagType = TagType::Mp4Tag;
     static constexpr const char *tagName = "MP4/iTunes tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const;
+    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
 
-    bool supportsField(KnownField field) const;
+    bool supportsField(KnownField field) const override;
     using FieldMapBasedTag<Mp4Tag>::value;
-    const TagValue &value(KnownField value) const;
+    const TagValue &value(KnownField value) const override;
     using FieldMapBasedTag<Mp4Tag>::values;
-    std::vector<const TagValue *> values(KnownField field) const;
+    std::vector<const TagValue *> values(KnownField field) const override;
 #ifdef LEGACY_API
     const TagValue &value(const std::string mean, const std::string name) const;
 #endif
     const TagValue &value(const std::string &mean, const std::string &name) const;
     const TagValue &value(const char *mean, const char *name) const;
     using FieldMapBasedTag<Mp4Tag>::setValue;
-    bool setValue(KnownField field, const TagValue &value);
+    bool setValue(KnownField field, const TagValue &value) override;
     using FieldMapBasedTag<Mp4Tag>::setValues;
-    bool setValues(KnownField field, const std::vector<TagValue> &values);
+    bool setValues(KnownField field, const std::vector<TagValue> &values) override;
 #ifdef LEGACY_API
     bool setValue(const std::string mean, const std::string name, const TagValue &value);
 #endif
     bool setValue(const std::string &mean, const std::string &name, const TagValue &value);
     bool setValue(const char *mean, const char *name, const TagValue &value);
     using FieldMapBasedTag<Mp4Tag>::hasField;
-    bool hasField(KnownField value) const;
+    bool hasField(KnownField value) const override;
 
     void parse(Mp4Atom &metaAtom, Diagnostics &diag);
     Mp4TagMaker prepareMaking(Diagnostics &diag);

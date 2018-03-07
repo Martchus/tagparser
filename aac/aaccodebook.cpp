@@ -1,7 +1,13 @@
 #include "./aaccodebook.h"
 
+/*!
+ * \file aaccodebook.cpp
+ * \remarks The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
+ */
+
 namespace TagParser {
 
+// clang-format off
 const AacHcb *const aacHcbTable[] = {
     0, aacHcb1Step1, aacHcb2Step1, 0, aacHcb4Step1, 0, aacHcb6Step1, 0, aacHcb8Step1, 0, aacHcb10Step1, aacHcb11Step1
 };
@@ -2614,5 +2620,6 @@ const sbyte tHuffmanNoiseBal30dB[24][2] = {
     { -61, -60 },    {  18,  21 },    {  19,  20 },    { -59, -58 },
     { -57, -56 },    {  22,  23 },    { -55, -54 },    { -53, -52 }
 };
+// clang-format on
 
 }

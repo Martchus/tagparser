@@ -27,30 +27,30 @@ class TAG_PARSER_EXPORT GenericContainer : public AbstractContainer
 
 public:
     GenericContainer(FileInfoType &fileInfo, uint64 startOffset);
-    ~GenericContainer();
+    ~GenericContainer() override;
 
     void validateElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
     FileInfoType &fileInfo() const;
     ElementType *firstElement() const;
     const std::vector<std::unique_ptr<ElementType> > &additionalElements() const;
     std::vector<std::unique_ptr<ElementType> > &additionalElements();
-    TagType *tag(std::size_t index);
-    std::size_t tagCount() const;
-    TrackType *track(std::size_t index);
+    TagType *tag(std::size_t index) override;
+    std::size_t tagCount() const override;
+    TrackType *track(std::size_t index) override;
     TrackType *trackById(uint64 id);
-    std::size_t trackCount() const;
+    std::size_t trackCount() const override;
     const std::vector<std::unique_ptr<TagType> > &tags() const;
     std::vector<std::unique_ptr<TagType> > &tags();
     const std::vector<std::unique_ptr<TrackType> > &tracks() const;
     std::vector<std::unique_ptr<TrackType> > &tracks();
 
-    TagType *createTag(const TagTarget &target = TagTarget());
-    bool removeTag(Tag *tag);
-    void removeAllTags();
+    TagType *createTag(const TagTarget &target = TagTarget()) override;
+    bool removeTag(Tag *tag) override;
+    void removeAllTags() override;
     bool addTrack(TrackType *track);
-    bool removeTrack(AbstractTrack *track);
-    void removeAllTracks();
-    void reset();
+    bool removeTrack(AbstractTrack *track) override;
+    void removeAllTracks() override;
+    void reset() override;
 
     typedef FileInfoType ContainerFileInfoType;
     typedef TagType ContainerTagType;
