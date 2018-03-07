@@ -5,8 +5,7 @@
 
 #include <c++utilities/conversion/types.h>
 
-namespace TagParser
-{
+namespace TagParser {
 
 class MediaFormat;
 
@@ -126,7 +125,7 @@ extern const char *iTunes;
 namespace Mp4TagExtendedNameIds {
 extern const char *cdec;
 extern const char *label;
-}
+} // namespace Mp4TagExtendedNameIds
 
 namespace Mp4MediaTypeIds {
 enum KnownValue : uint32 {
@@ -407,11 +406,12 @@ enum KnownValue : uint32 {
 
 TAG_PARSER_EXPORT MediaFormat fourccToMediaFormat(uint32 fourccId);
 
-}
+} // namespace FourccIds
 
 namespace Mp4FormatExtensionIds {
 enum KnownValue : uint32 {
-    GammaLevel = 0x67616D61, /**< A 32-bit fixed-point number indicating the gamma level at which the image was captured. The decompressor can use this value to gamma-correct at display time. */
+    GammaLevel
+    = 0x67616D61, /**< A 32-bit fixed-point number indicating the gamma level at which the image was captured. The decompressor can use this value to gamma-correct at display time. */
     FieldHandling = 0x6669656C, /**< Two 8-bit integers that define field handling. */
     DefaultQuantizationTable = 0x6D6A7174, /**< The default quantization table for a Motion-JPEG data stream. */
     DefaultHuffmanTable = 0x6D6A6874, /**< The default Huffman table for a Motion-JPEG data stream. */
@@ -474,7 +474,7 @@ enum KnownValue : byte {
 
 TAG_PARSER_EXPORT MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
 
-}
+} // namespace Mpeg4ElementaryStreamObjectIds
 
 namespace Mpeg4ElementaryStreamTypeIds {
 enum KnownValue : byte {
@@ -495,7 +495,7 @@ enum KnownValue : byte {
 
 TAG_PARSER_EXPORT const char *streamTypeName(byte streamTypeId);
 
-}
+} // namespace Mpeg4ElementaryStreamTypeIds
 
 namespace Mpeg4DescriptorIds {
 enum KnownValue : byte {
@@ -592,13 +592,12 @@ enum KnownValue : byte {
 
 TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
 
-}
+} // namespace Mpeg4AudioObjectIds
 
 extern uint32 mpeg4SamplingFrequencyTable[13];
 
 namespace Mpeg4ChannelConfigs {
-enum Mpeg4ChannelConfig : byte
-{
+enum Mpeg4ChannelConfig : byte {
     AotSpecificConfig = 0,
     FrontCenter,
     FrontLeftFrontRight,
@@ -612,7 +611,7 @@ enum Mpeg4ChannelConfig : byte
 TAG_PARSER_EXPORT const char *channelConfigString(byte config);
 TAG_PARSER_EXPORT byte channelCount(byte config);
 
-}
+} // namespace Mpeg4ChannelConfigs
 
 namespace Mpeg4VideoCodes {
 enum KnownValue : byte {
@@ -639,12 +638,7 @@ enum KnownValue : byte {
 }
 
 namespace Mpeg2VideoCodes {
-enum KnownValue : byte {
-    Pic = 0x00,
-    Seq = 0xB3,
-    Ext = 0xB5,
-    Gop = 0xB8
-};
+enum KnownValue : byte { Pic = 0x00, Seq = 0xB3, Ext = 0xB5, Gop = 0xB8 };
 }
 
 /*!
@@ -673,18 +667,12 @@ enum class Mp4TagContentRating : byte {
 /*!
  * \brief Specifies the account type.
  */
-enum class AccountType : byte
-{
-    Itunes = 0,
-    Aol = 1,
-    Undefined = 255
-};
+enum class AccountType : byte { Itunes = 0, Aol = 1, Undefined = 255 };
 
 /*!
  * \brief Specifies the country.
  */
-enum class CountryCode
-{
+enum class CountryCode {
     Usa = 143441,
     Fra = 143442,
     Deu = 143443,
@@ -710,6 +698,6 @@ enum class CountryCode
     Undefined = 0
 };
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP4IDS_H

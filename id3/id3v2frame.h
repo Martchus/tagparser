@@ -6,22 +6,20 @@
 #include "../generictagfield.h"
 #include "../tagvalue.h"
 
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/conversion/stringconversion.h>
 
-#include <string>
 #include <iosfwd>
+#include <string>
 #include <vector>
 
-namespace TagParser
-{
+namespace TagParser {
 
 class Id3v2Frame;
 class Diagnostics;
 
-class TAG_PARSER_EXPORT Id3v2FrameMaker
-{
+class TAG_PARSER_EXPORT Id3v2FrameMaker {
     friend class Id3v2Frame;
 
 public:
@@ -77,16 +75,13 @@ inline uint32 Id3v2FrameMaker::requiredSize() const
 /*!
  * \brief Defines traits for the TagField implementation of the Id3v2Frame class.
  */
-template <>
-class TAG_PARSER_EXPORT TagFieldTraits<Id3v2Frame>
-{
+template <> class TAG_PARSER_EXPORT TagFieldTraits<Id3v2Frame> {
 public:
     typedef uint32 IdentifierType;
     typedef byte TypeInfoType;
 };
 
-class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame>
-{
+class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame> {
     friend class TagField<Id3v2Frame>;
 
 public:
@@ -122,7 +117,8 @@ public:
 
     // parsing helper
     TagTextEncoding parseTextEncodingByte(byte textEncodingByte, Diagnostics &diag);
-    std::tuple<const char *, size_t, const char *> parseSubstring(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
+    std::tuple<const char *, size_t, const char *> parseSubstring(
+        const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
     std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
     std::u16string parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
     void parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag);
@@ -322,7 +318,7 @@ inline bool Id3v2Frame::supportsNestedFields() const
  */
 inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(const char *idString, std::size_t idStringSize)
 {
-    switch(idStringSize != std::string::npos ? idStringSize : std::strlen(idString)) {
+    switch (idStringSize != std::string::npos ? idStringSize : std::strlen(idString)) {
     case 3:
         return ConversionUtilities::BE::toUInt24(idString);
     case 4:
@@ -340,6 +336,6 @@ inline std::string Id3v2Frame::fieldIdToString(Id3v2Frame::IdentifierType id)
     return ConversionUtilities::interpretIntegerAsString<uint32>(id, Id3v2FrameIds::isLongId(id) ? 0 : 1);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ID3V2FRAME_H

@@ -11,8 +11,7 @@ namespace TagParser {
 class EbmlElement;
 class MatroskaTag;
 
-class TAG_PARSER_EXPORT MatroskaTagMaker
-{
+class TAG_PARSER_EXPORT MatroskaTagMaker {
     friend class MatroskaTag;
 
 public:
@@ -50,16 +49,13 @@ inline uint64 MatroskaTagMaker::requiredSize() const
 /*!
  * \brief Defines traits for the TagField implementation of the MatroskaTag class.
  */
-template <>
-class TAG_PARSER_EXPORT FieldMapBasedTagTraits<MatroskaTag>
-{
+template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<MatroskaTag> {
 public:
     typedef MatroskaTagField FieldType;
     typedef std::less<typename FieldType::IdentifierType> Compare;
 };
 
-class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag>
-{
+class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag> {
     friend class FieldMapBasedTag<MatroskaTag>;
 
 public:
@@ -88,7 +84,8 @@ private:
  * \brief Constructs a new tag.
  */
 inline MatroskaTag::MatroskaTag()
-{}
+{
+}
 
 inline bool MatroskaTag::supportsTarget() const
 {
@@ -105,6 +102,6 @@ inline bool MatroskaTag::canEncodingBeUsed(TagTextEncoding encoding) const
     return encoding == TagTextEncoding::Utf8;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKATAG_H

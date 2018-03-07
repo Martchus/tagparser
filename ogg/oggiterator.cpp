@@ -45,9 +45,9 @@ void OggIterator::clear(istream &stream, uint64 startOffset, uint64 streamSize)
  */
 void OggIterator::reset()
 {
-    for(m_page = m_segment =  m_offset = 0; m_page < m_pages.size() || fetchNextPage(); ++m_page) {
+    for (m_page = m_segment = m_offset = 0; m_page < m_pages.size() || fetchNextPage(); ++m_page) {
         const OggPage &page = m_pages[m_page];
-        if(!page.segmentSizes().empty() && matchesFilter(page)) {
+        if (!page.segmentSizes().empty() && matchesFilter(page)) {
             // page is not empty and matches ID filter if set
             m_offset = page.startOffset() + page.headerSize();
             break;
@@ -62,9 +62,9 @@ void OggIterator::reset()
  */
 void OggIterator::nextPage()
 {
-    while(++m_page < m_pages.size() || fetchNextPage()) {
+    while (++m_page < m_pages.size() || fetchNextPage()) {
         const OggPage &page = m_pages[m_page];
-        if(!page.segmentSizes().empty() && matchesFilter(page)) {
+        if (!page.segmentSizes().empty() && matchesFilter(page)) {
             // page is not empty and matches ID filter if set
             m_segment = m_bytesRead = 0;
             m_offset = page.startOffset() + page.headerSize();
@@ -81,7 +81,7 @@ void OggIterator::nextPage()
 void OggIterator::nextSegment()
 {
     const OggPage &page = m_pages[m_page];
-    if(matchesFilter(page) && ++m_segment < page.segmentSizes().size()) {
+    if (matchesFilter(page) && ++m_segment < page.segmentSizes().size()) {
         // current page has next segment
         m_bytesRead = 0;
         m_offset += page.segmentSizes()[m_segment - 1];
@@ -97,9 +97,9 @@ void OggIterator::nextSegment()
  */
 void OggIterator::previousPage()
 {
-    while(m_page) {
+    while (m_page) {
         const OggPage &page = m_pages[--m_page];
-        if(matchesFilter(page)) {
+        if (matchesFilter(page)) {
             m_offset = page.dataOffset(m_segment = page.segmentSizes().size() - 1);
             return;
         }
@@ -113,7 +113,7 @@ void OggIterator::previousPage()
 void OggIterator::previousSegment()
 {
     const OggPage &page = m_pages[m_page];
-    if(m_segment && matchesFilter(page)) {
+    if (m_segment && matchesFilter(page)) {
         m_offset -= page.segmentSizes()[m_segment--];
     } else {
         previousPage();
@@ -134,10 +134,10 @@ void OggIterator::previousSegment()
 void OggIterator::read(char *buffer, size_t count)
 {
     size_t bytesRead = 0;
-    while(*this && count) {
+    while (*this && count) {
         const uint32 available = currentSegmentSize() - m_bytesRead;
         stream().seekg(currentCharacterOffset());
-        if(count <= available) {
+        if (count <= available) {
             stream().read(buffer + bytesRead, count);
             m_bytesRead += count;
             return;
@@ -148,7 +148,7 @@ void OggIterator::read(char *buffer, size_t count)
             count -= available;
         }
     }
-    if(count) {
+    if (count) {
         // still bytes to read but no more available
         throw TruncatedDataException();
     }
@@ -169,10 +169,10 @@ void OggIterator::read(char *buffer, size_t count)
 size_t OggIterator::readAll(char *buffer, size_t max)
 {
     size_t bytesRead = 0;
-    while(*this && max) {
+    while (*this && max) {
         const uint32 available = currentSegmentSize() - m_bytesRead;
         stream().seekg(currentCharacterOffset());
-        if(max <= available) {
+        if (max <= available) {
             stream().read(buffer + bytesRead, max);
             m_bytesRead += max;
             return bytesRead + max;
@@ -199,9 +199,9 @@ size_t OggIterator::readAll(char *buffer, size_t max)
 void OggIterator::ignore(size_t count)
 {
     uint32 available = currentSegmentSize() - m_bytesRead;
-    while(*this) {
+    while (*this) {
         available = currentSegmentSize() - m_bytesRead;
-        if(count <= available) {
+        if (count <= available) {
             m_bytesRead += count;
             return;
         } else {
@@ -238,15 +238,15 @@ void OggIterator::ignore(size_t count)
 bool OggIterator::resyncAt(uint64 offset)
 {
     // check whether offset is valid
-    if(offset >= streamSize() || offset < (m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize())) {
+    if (offset >= streamSize() || offset < (m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize())) {
         return false;
     }
 
     // find capture pattern 'OggS'
     stream().seekg(offset);
     byte lettersFound = 0;
-    for(uint64 bytesAvailable = max<uint64>(streamSize() - offset, 65307ul); bytesAvailable >= 27; --bytesAvailable) {
-        switch(static_cast<char>(stream().get())) {
+    for (uint64 bytesAvailable = max<uint64>(streamSize() - offset, 65307ul); bytesAvailable >= 27; --bytesAvailable) {
+        switch (static_cast<char>(stream().get())) {
         case 'O':
             lettersFound = 1;
             break;
@@ -254,12 +254,13 @@ bool OggIterator::resyncAt(uint64 offset)
             lettersFound = lettersFound == 1 || lettersFound == 2 ? lettersFound + 1 : 0;
             break;
         case 'S':
-            if(lettersFound == 3) {
+            if (lettersFound == 3) {
                 // capture pattern found
                 const auto currentOffset = stream().tellg();
                 // -> try to parse an OGG page at this position
                 try {
-                    m_pages.emplace_back(stream(), static_cast<uint64>(stream().tellg()) - 4, bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
+                    m_pages.emplace_back(stream(), static_cast<uint64>(stream().tellg()) - 4,
+                        bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
                     setPageIndex(m_pages.size() - 1);
                     return true;
                 } catch (const Failure &) {
@@ -286,15 +287,16 @@ bool OggIterator::resyncAt(uint64 offset)
  */
 bool OggIterator::fetchNextPage()
 {
-    if(m_page == m_pages.size()) { // can only fetch the next page if the current page is the last page
+    if (m_page == m_pages.size()) { // can only fetch the next page if the current page is the last page
         m_offset = m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize();
-        if(m_offset < m_streamSize) {
+        if (m_offset < m_streamSize) {
             const uint64 bytesAvailable = m_streamSize - m_offset;
-            m_pages.emplace_back(*m_stream, m_offset, bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
+            m_pages.emplace_back(*m_stream, m_offset,
+                bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
             return true;
         }
     }
     return false;
 }
 
-}
+} // namespace TagParser

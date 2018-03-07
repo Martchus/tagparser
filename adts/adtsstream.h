@@ -7,8 +7,7 @@
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT AdtsStream : public AbstractTrack
-{
+class TAG_PARSER_EXPORT AdtsStream : public AbstractTrack {
 public:
     AdtsStream(std::iostream &stream, uint64 startOffset);
     ~AdtsStream() override;
@@ -25,20 +24,21 @@ private:
 /*!
  * \brief Constructs a new track for the \a stream at the specified \a startOffset.
  */
-inline AdtsStream::AdtsStream(std::iostream &stream, uint64 startOffset) :
-    AbstractTrack(stream, startOffset)
+inline AdtsStream::AdtsStream(std::iostream &stream, uint64 startOffset)
+    : AbstractTrack(stream, startOffset)
 {
     m_mediaType = MediaType::Audio;
 }
 
 inline AdtsStream::~AdtsStream()
-{}
+{
+}
 
 inline TrackType AdtsStream::type() const
 {
     return TrackType::AdtsStream;
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_ADTSSTREAM_H

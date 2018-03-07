@@ -83,14 +83,14 @@ inline bool isShortId(uint32 id)
  */
 inline bool isTextFrame(uint32 id)
 {
-    if(isShortId(id)) {
+    if (isShortId(id)) {
         return ((id & 0x00FF0000u) == 0x00540000u) && (id != Id3v2FrameIds::sUserDefinedText);
     } else {
         return (id & 0xFF000000u) == 0x54000000u && (id != Id3v2FrameIds::lUserDefinedText);
     }
 }
 
-}
+} // namespace Id3v2FrameIds
 
-}
+} // namespace TagParser
 #endif // TAG_PARSER_ID3V2FRAMEIDS_H

@@ -29,7 +29,7 @@ const char *iTunes = "com.apple.iTunes";
 namespace Mp4TagExtendedNameIds {
 const char *cdec = "cdec";
 const char *label = "LABEL";
-}
+} // namespace Mp4TagExtendedNameIds
 
 /*!
  * \brief Encapsulates all supported MP4 media type IDs.
@@ -45,27 +45,56 @@ namespace FourccIds {
 
 MediaFormat fourccToMediaFormat(uint32 fourccId)
 {
-    switch(fourccId) {
+    switch (fourccId) {
     case Mpeg:
         return GeneralMediaFormat::Mpeg1Video;
-    case Mpeg2Imx30: case Mpeg2Imx50:
+    case Mpeg2Imx30:
+    case Mpeg2Imx50:
         return GeneralMediaFormat::Mpeg2Video;
     case Mpeg4Video:
         return GeneralMediaFormat::Mpeg4Video;
     case Mpeg4TimedText:
         return GeneralMediaFormat::Mpeg4TimedText;
-    case Hevc1: case Hevc2:
+    case Hevc1:
+    case Hevc2:
         return MediaFormat(GeneralMediaFormat::Hevc);
-    case Avc1: case Avc2: case Avc3: case Avc4: case H264Decoder1: case H264Decoder2:
-    case H264Decoder3: case H264Decoder4: case H264Decoder5: case H264Decoder6:
+    case Avc1:
+    case Avc2:
+    case Avc3:
+    case Avc4:
+    case H264Decoder1:
+    case H264Decoder2:
+    case H264Decoder3:
+    case H264Decoder4:
+    case H264Decoder5:
+    case H264Decoder6:
         return MediaFormat(GeneralMediaFormat::Avc);
-    case Divx4Decoder1: case Divx4Decoder2:
-    case H263Quicktime: case H2633GPP: case XvidDecoder1: case XvidDecoder2:
-    case XvidDecoder3: case XvidDecoder4: case XvidDecoder5: case Divx5Decoder:
+    case Divx4Decoder1:
+    case Divx4Decoder2:
+    case H263Quicktime:
+    case H2633GPP:
+    case XvidDecoder1:
+    case XvidDecoder2:
+    case XvidDecoder3:
+    case XvidDecoder4:
+    case XvidDecoder5:
+    case Divx5Decoder:
         return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4AdvancedSimpleProfile0);
-    case Divx3Decoder1: case Divx3Decoder2: case Divx3Decoder3: case Divx3Decoder4: case Divx3Decoder5:
-    case Divx3Decoder6: case Divx3Decoder7: case Divx3Decoder8: case Divx3Decoder9: case Divx3Decoder10:
-    case Divx3Decoder11: case Divx3Decoder12: case Divx3Decoder13: case Divx3Decoder14: case Divx3Decoder15:
+    case Divx3Decoder1:
+    case Divx3Decoder2:
+    case Divx3Decoder3:
+    case Divx3Decoder4:
+    case Divx3Decoder5:
+    case Divx3Decoder6:
+    case Divx3Decoder7:
+    case Divx3Decoder8:
+    case Divx3Decoder9:
+    case Divx3Decoder10:
+    case Divx3Decoder11:
+    case Divx3Decoder12:
+    case Divx3Decoder13:
+    case Divx3Decoder14:
+    case Divx3Decoder15:
         return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg4SimpleProfile0);
     case Tiff:
         return GeneralMediaFormat::Tiff;
@@ -83,7 +112,8 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return GeneralMediaFormat::AdpcmAcm;
     case ImaadpcmAcm:
         return GeneralMediaFormat::ImaadpcmAcm;
-    case Mp3CbrOnly: case Mp3:
+    case Mp3CbrOnly:
+    case Mp3:
         return MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
     case Mpeg4Audio:
         return GeneralMediaFormat::Aac;
@@ -97,38 +127,54 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return GeneralMediaFormat::DolbyMlp;
     case Ac4:
         return GeneralMediaFormat::Ac4;
-    case Rv20: case Rv30: case Rv40:
+    case Rv20:
+    case Rv30:
+    case Rv40:
         return GeneralMediaFormat::RealVideo;
-    case Int24: case Int32:
+    case Int24:
+    case Int32:
         return MediaFormat(GeneralMediaFormat::Pcm);
     case Int16Be:
         return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntBe);
     case Int16Le:
         return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntLe);
-    case FloatingPoint32Bit: case FloatingPoint64Bit:
+    case FloatingPoint32Bit:
+    case FloatingPoint64Bit:
         return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmFloatIeee);
-    case Amr: case AmrNarrowband:
+    case Amr:
+    case AmrNarrowband:
         return MediaFormat(GeneralMediaFormat::Amr);
-    case Dts: case DtsH:
+    case Dts:
+    case DtsH:
         return MediaFormat(GeneralMediaFormat::Dts);
     case DtsE:
         return MediaFormat(GeneralMediaFormat::Dts, SubFormats::DtsExpress);
-    case WindowsMediaAudio: case WindowsMediaAudio7:
-    case WindowsMediaAudio9Professional: case WindowsMediaAudio9Standard:
+    case WindowsMediaAudio:
+    case WindowsMediaAudio7:
+    case WindowsMediaAudio9Professional:
+    case WindowsMediaAudio9Standard:
         return MediaFormat(GeneralMediaFormat::WindowsMediaAudio);
-    case MsMpeg4V1Decoder1: case MsMpeg4V1Decoder2: case MsMpeg4V1Decoder3:
-    case MsMpeg4V1Decoder4: case MsMpeg4V1Decoder5: case MsMpeg4V1Decoder6:
+    case MsMpeg4V1Decoder1:
+    case MsMpeg4V1Decoder2:
+    case MsMpeg4V1Decoder3:
+    case MsMpeg4V1Decoder4:
+    case MsMpeg4V1Decoder5:
+    case MsMpeg4V1Decoder6:
         return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 1);
-    case MsMpeg4V2Decoder1: case MsMpeg4V2Decoder2: case MsMpeg4V2Decoder3:
+    case MsMpeg4V2Decoder1:
+    case MsMpeg4V2Decoder2:
+    case MsMpeg4V2Decoder3:
     case MsMpeg4V2Decoder4:
         return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 2);
-    case MsMpeg4V3Decoder1: case MsMpeg4V3Decoder2:
+    case MsMpeg4V3Decoder1:
+    case MsMpeg4V3Decoder2:
         return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 3);
     case WavPack:
         return MediaFormat(GeneralMediaFormat::WavPack);
     case WindowsMediaVideoV17:
         return MediaFormat(GeneralMediaFormat::WindowsMediaVideo, 1);
-    case WindowsMediaVideoV2: case WindowsMediaVideoV8:
+    case WindowsMediaVideoV2:
+    case WindowsMediaVideoV8:
         return MediaFormat(GeneralMediaFormat::WindowsMediaVideo, 2);
     // TODO: map more FOURCCs
     default:
@@ -136,7 +182,7 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     }
 }
 
-}
+} // namespace FourccIds
 
 /*!
  * \brief Encapsulates all supported MP4 media format description extensions.
@@ -155,52 +201,97 @@ namespace Mpeg4ElementaryStreamObjectIds {
  */
 MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
 {
-    switch(streamObjectTypeId) {
-    case SystemsIso144961: return GeneralMediaFormat::Systems;
-    case SystemsIso144961v2: return MediaFormat(GeneralMediaFormat::Systems, 2);
-    case InteractionStream: return GeneralMediaFormat::InteractionStream;
-    case AfxStream: return GeneralMediaFormat::AfxStream;
-    case FontDataStream: return GeneralMediaFormat::FontDataStream;
-    case SynthesizedTextureStream: return GeneralMediaFormat::SynthesizedTextureStream;
-    case StreamingTextStream: return GeneralMediaFormat::StreamingTextStream;
-    case Mpeg4Visual: return GeneralMediaFormat::Mpeg4Video;
-    case Avc: return GeneralMediaFormat::Avc;
-    case ParameterSetsForAvc: return GeneralMediaFormat::Avc;
-    case Als: return GeneralMediaFormat::Als;
-    case Sa0c: return GeneralMediaFormat::Sa0c;
-    case Aac: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile);
-    case Mpeg2VideoSimpleProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SimpleProfile);
-    case Mpeg2VideoMainProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SnrProfile);
-    case Mpeg2VideoSnrProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SpatialProfile);
-    case Mpeg2VideoSpatialProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2HighProfile);
-    case Mpeg2VideoHighProfile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2HighProfile);
-    case Mpeg2Video422Profile: return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SimpleProfile);
-    case Mpeg2AacMainProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2MainProfile);
-    case Mpeg2AacLowComplexityProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2LowComplexityProfile);
-    case Mpeg2AacScaleableSamplingRateProfile: return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2ScalableSamplingRateProfile);
-    case Mpeg2Audio: return GeneralMediaFormat::Mpeg2Audio;
-    case Mpeg1Video: return GeneralMediaFormat::Mpeg1Video;
-    case Mpeg1Audio: return GeneralMediaFormat::Mpeg1Audio;
-    case Jpeg: return GeneralMediaFormat::Jpeg;
-    case Png: return GeneralMediaFormat::Png;
-    case Evrc: case PrivateEvrc: return GeneralMediaFormat::Evrc;
-    case Smv: return GeneralMediaFormat::Smv;
-    case Gpp2Cmf: return GeneralMediaFormat::Gpp2Cmf;
-    case Vc1: return GeneralMediaFormat::Vc1;
-    case Dirac: return GeneralMediaFormat::Dirac;
-    case Ac3: case PrivateAc3: return GeneralMediaFormat::Ac3;
-    case EAc3: return GeneralMediaFormat::EAc3;
-    case Dts: case PrivateDts: return GeneralMediaFormat::Dts;
-    case DtsHdHighResolution: return MediaFormat(GeneralMediaFormat::DtsHd, SubFormats::DtsHdHighResolution);
-    case DtsHdMasterAudio: return MediaFormat(GeneralMediaFormat::DtsHd, SubFormats::DtsHdMasterAudio);
-    case DtsHdExpress: return MediaFormat(GeneralMediaFormat::DtsHd, SubFormats::DtsExpress);
-    case PrivateOgg: case PrivateOgg2: return GeneralMediaFormat::Vorbis;
-    case PrivateQcelp: return GeneralMediaFormat::Qcelp;
-    default: return MediaFormat();
+    switch (streamObjectTypeId) {
+    case SystemsIso144961:
+        return GeneralMediaFormat::Systems;
+    case SystemsIso144961v2:
+        return MediaFormat(GeneralMediaFormat::Systems, 2);
+    case InteractionStream:
+        return GeneralMediaFormat::InteractionStream;
+    case AfxStream:
+        return GeneralMediaFormat::AfxStream;
+    case FontDataStream:
+        return GeneralMediaFormat::FontDataStream;
+    case SynthesizedTextureStream:
+        return GeneralMediaFormat::SynthesizedTextureStream;
+    case StreamingTextStream:
+        return GeneralMediaFormat::StreamingTextStream;
+    case Mpeg4Visual:
+        return GeneralMediaFormat::Mpeg4Video;
+    case Avc:
+        return GeneralMediaFormat::Avc;
+    case ParameterSetsForAvc:
+        return GeneralMediaFormat::Avc;
+    case Als:
+        return GeneralMediaFormat::Als;
+    case Sa0c:
+        return GeneralMediaFormat::Sa0c;
+    case Aac:
+        return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4LowComplexityProfile);
+    case Mpeg2VideoSimpleProfile:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SimpleProfile);
+    case Mpeg2VideoMainProfile:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SnrProfile);
+    case Mpeg2VideoSnrProfile:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SpatialProfile);
+    case Mpeg2VideoSpatialProfile:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2HighProfile);
+    case Mpeg2VideoHighProfile:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2HighProfile);
+    case Mpeg2Video422Profile:
+        return MediaFormat(GeneralMediaFormat::Mpeg4Video, SubFormats::Mpeg2SimpleProfile);
+    case Mpeg2AacMainProfile:
+        return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2MainProfile);
+    case Mpeg2AacLowComplexityProfile:
+        return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2LowComplexityProfile);
+    case Mpeg2AacScaleableSamplingRateProfile:
+        return MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg2ScalableSamplingRateProfile);
+    case Mpeg2Audio:
+        return GeneralMediaFormat::Mpeg2Audio;
+    case Mpeg1Video:
+        return GeneralMediaFormat::Mpeg1Video;
+    case Mpeg1Audio:
+        return GeneralMediaFormat::Mpeg1Audio;
+    case Jpeg:
+        return GeneralMediaFormat::Jpeg;
+    case Png:
+        return GeneralMediaFormat::Png;
+    case Evrc:
+    case PrivateEvrc:
+        return GeneralMediaFormat::Evrc;
+    case Smv:
+        return GeneralMediaFormat::Smv;
+    case Gpp2Cmf:
+        return GeneralMediaFormat::Gpp2Cmf;
+    case Vc1:
+        return GeneralMediaFormat::Vc1;
+    case Dirac:
+        return GeneralMediaFormat::Dirac;
+    case Ac3:
+    case PrivateAc3:
+        return GeneralMediaFormat::Ac3;
+    case EAc3:
+        return GeneralMediaFormat::EAc3;
+    case Dts:
+    case PrivateDts:
+        return GeneralMediaFormat::Dts;
+    case DtsHdHighResolution:
+        return MediaFormat(GeneralMediaFormat::DtsHd, SubFormats::DtsHdHighResolution);
+    case DtsHdMasterAudio:
+        return MediaFormat(GeneralMediaFormat::DtsHd, SubFormats::DtsHdMasterAudio);
+    case DtsHdExpress:
+        return MediaFormat(GeneralMediaFormat::DtsHd, SubFormats::DtsExpress);
+    case PrivateOgg:
+    case PrivateOgg2:
+        return GeneralMediaFormat::Vorbis;
+    case PrivateQcelp:
+        return GeneralMediaFormat::Qcelp;
+    default:
+        return MediaFormat();
     }
 }
 
-}
+} // namespace Mpeg4ElementaryStreamObjectIds
 
 /*!
  * \brief Encapsulates all known MPEG-4 descriptor IDs.
@@ -218,25 +309,39 @@ namespace Mpeg4ElementaryStreamTypeIds {
  */
 const char *streamTypeName(byte streamTypeId)
 {
-    switch(streamTypeId) {
-    case ObjectDescriptor: return "object descriptor";
-    case ClockReference: return "clock reference";
-    case SceneDescriptor: return "scene descriptor";
-    case Visual: return "visual";
-    case Audio: return "audio";
-    case Mpeg7: return "MPEG-7";
-    case Ipmps: return "IMPS";
-    case ObjectContentInfo: return "object content info";
-    case MpegJava: return "MPEG Java";
-    case Interaction: return "interaction";
-    case Ipmp: return "IPMP";
-    case FontData: return "font data";
-    case StreamingText: return "streaming text";
-    default: return "";
+    switch (streamTypeId) {
+    case ObjectDescriptor:
+        return "object descriptor";
+    case ClockReference:
+        return "clock reference";
+    case SceneDescriptor:
+        return "scene descriptor";
+    case Visual:
+        return "visual";
+    case Audio:
+        return "audio";
+    case Mpeg7:
+        return "MPEG-7";
+    case Ipmps:
+        return "IMPS";
+    case ObjectContentInfo:
+        return "object content info";
+    case MpegJava:
+        return "MPEG Java";
+    case Interaction:
+        return "interaction";
+    case Ipmp:
+        return "IPMP";
+    case FontData:
+        return "font data";
+    case StreamingText:
+        return "streaming text";
+    default:
+        return "";
     }
 }
 
-}
+} // namespace Mpeg4ElementaryStreamTypeIds
 
 /*!
  * \brief Encapsulates all supported MPEG-4 audio object type IDs.
@@ -247,7 +352,7 @@ namespace Mpeg4AudioObjectIds {
 TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent, bool psPresent)
 {
     MediaFormat fmt;
-    switch(mpeg4AudioObjectId) {
+    switch (mpeg4AudioObjectId) {
     case AacMain:
         fmt = MediaFormat(GeneralMediaFormat::Aac, SubFormats::AacMpeg4MainProfile);
         break;
@@ -287,24 +392,20 @@ TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrP
     case Layer3:
         fmt = MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
         break;
-    default:
-        ;
+    default:;
     }
-    if(sbrPresent) {
+    if (sbrPresent) {
         fmt.extension |= ExtensionFormats::SpectralBandReplication;
     }
-    if(psPresent) {
+    if (psPresent) {
         fmt.extension |= ExtensionFormats::ParametricStereo;
     }
     return fmt;
 }
 
-}
+} // namespace Mpeg4AudioObjectIds
 
-uint32 mpeg4SamplingFrequencyTable[] = {
-    96000, 88200, 64000, 48000, 44100, 32000,
-    24000, 22050, 16000, 12000, 11025, 8000, 7350
-};
+uint32 mpeg4SamplingFrequencyTable[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350 };
 
 /*!
  * \brief Encapsulates all supported MPEG-4 channel configurations.
@@ -316,7 +417,7 @@ namespace Mpeg4ChannelConfigs {
  */
 const char *channelConfigString(byte config)
 {
-    switch(config) {
+    switch (config) {
     case AotSpecificConfig:
         return "defined in AOT Specific Config";
     case FrontCenter:
@@ -343,7 +444,7 @@ const char *channelConfigString(byte config)
  */
 byte channelCount(byte config)
 {
-    switch(config) {
+    switch (config) {
     case FrontCenter:
         return 1;
     case FrontLeftFrontRight:
@@ -363,7 +464,7 @@ byte channelCount(byte config)
     }
 }
 
-}
+} // namespace Mpeg4ChannelConfigs
 
 /*!
  * \brief Encapsulates MPEG-4 video (14496-2) codes.
@@ -377,4 +478,4 @@ namespace Mpeg4VideoCodes {
 namespace Mpeg2VideoCodes {
 }
 
-}
+} // namespace TagParser

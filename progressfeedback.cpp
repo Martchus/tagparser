@@ -3,8 +3,4 @@
 using namespace std;
 
 namespace TagParser {
-
-
-
 }
-

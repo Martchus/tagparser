@@ -7,18 +7,15 @@
 
 #include <map>
 
-namespace TagParser
-{
+namespace TagParser {
 
 class Id3v2Tag;
 
-struct TAG_PARSER_EXPORT FrameComparer
-{
+struct TAG_PARSER_EXPORT FrameComparer {
     bool operator()(const uint32 &lhs, const uint32 &rhs) const;
 };
 
-class TAG_PARSER_EXPORT Id3v2TagMaker
-{
+class TAG_PARSER_EXPORT Id3v2TagMaker {
     friend class Id3v2Tag;
 
 public:
@@ -55,16 +52,13 @@ inline uint64 Id3v2TagMaker::requiredSize() const
 /*!
  * \brief Defines traits for the TagField implementation of the Id3v2Tag class.
  */
-template <>
-class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Id3v2Tag>
-{
+template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Id3v2Tag> {
 public:
     typedef Id3v2Frame FieldType;
     typedef FrameComparer Compare;
 };
 
-class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag>
-{
+class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag> {
     friend class FieldMapBasedTag<Id3v2Tag>;
 
 public:
@@ -111,14 +105,15 @@ private:
 /*!
  * \brief Constructs a new tag.
  */
-inline Id3v2Tag::Id3v2Tag() :
-    m_majorVersion(4),
-    m_revisionVersion(0),
-    m_flags(0),
-    m_sizeExcludingHeader(0),
-    m_extendedHeaderSize(0),
-    m_paddingSize(0)
-{}
+inline Id3v2Tag::Id3v2Tag()
+    : m_majorVersion(4)
+    , m_revisionVersion(0)
+    , m_flags(0)
+    , m_sizeExcludingHeader(0)
+    , m_extendedHeaderSize(0)
+    , m_paddingSize(0)
+{
+}
 
 inline TagTextEncoding Id3v2Tag::proposedTextEncoding() const
 {
@@ -127,7 +122,8 @@ inline TagTextEncoding Id3v2Tag::proposedTextEncoding() const
 
 inline bool Id3v2Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 {
-    return encoding == TagTextEncoding::Latin1 || (encoding == TagTextEncoding::Utf8 && m_majorVersion > 3) || encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian;
+    return encoding == TagTextEncoding::Latin1 || (encoding == TagTextEncoding::Utf8 && m_majorVersion > 3)
+        || encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian;
 }
 
 inline bool Id3v2Tag::supportsDescription(KnownField field) const
@@ -224,6 +220,6 @@ inline uint32 Id3v2Tag::paddingSize() const
     return m_paddingSize;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ID3V2TAG_H

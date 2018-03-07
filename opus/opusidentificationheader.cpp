@@ -25,7 +25,7 @@ void OpusIdentificationHeader::parseHeader(OggIterator &iterator)
 {
     char buff[19 - 8];
     iterator.read(buff, 8);
-    if(BE::toUInt64(buff) != 0x4F70757348656164u) {
+    if (BE::toUInt64(buff) != 0x4F70757348656164u) {
         throw InvalidDataException(); // not Opus identification header
     }
     iterator.read(buff, sizeof(buff));
@@ -37,4 +37,4 @@ void OpusIdentificationHeader::parseHeader(OggIterator &iterator)
     m_channelMap = static_cast<byte>(*(buff + 10));
 }
 
-}
+} // namespace TagParser

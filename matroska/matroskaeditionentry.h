@@ -7,8 +7,7 @@ namespace TagParser {
 
 class EbmlElement;
 
-class TAG_PARSER_EXPORT MatroskaEditionEntry
-{
+class TAG_PARSER_EXPORT MatroskaEditionEntry {
 public:
     MatroskaEditionEntry(EbmlElement *editionEntryElement);
     ~MatroskaEditionEntry();
@@ -19,7 +18,7 @@ public:
     bool isDefault() const;
     bool isOrdered() const;
     std::string label() const;
-    const std::vector<std::unique_ptr<MatroskaChapter> > &chapters() const;
+    const std::vector<std::unique_ptr<MatroskaChapter>> &chapters() const;
 
     void parse(Diagnostics &diag);
     void parseNested(Diagnostics &diag);
@@ -31,7 +30,7 @@ private:
     bool m_hidden;
     bool m_default;
     bool m_ordered;
-    std::vector<std::unique_ptr<MatroskaChapter> > m_chapters;
+    std::vector<std::unique_ptr<MatroskaChapter>> m_chapters;
 };
 
 /*!
@@ -77,11 +76,11 @@ inline bool MatroskaEditionEntry::isOrdered() const
 /*!
  * \brief Returns the chapters the edition contains.
  */
-inline const std::vector<std::unique_ptr<MatroskaChapter> > &MatroskaEditionEntry::chapters() const
+inline const std::vector<std::unique_ptr<MatroskaChapter>> &MatroskaEditionEntry::chapters() const
 {
     return m_chapters;
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKAEDITIONENTRY_H

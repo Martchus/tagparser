@@ -6,27 +6,26 @@
 namespace IoUtilities {
 class BinaryReader;
 class BinaryWriter;
-}
+} // namespace IoUtilities
 
 namespace TagParser {
 
 /*!
  * \brief The VorbisCommentFlags enum specifies flags which controls parsing and making of Vorbis comments.
  */
-enum class VorbisCommentFlags : byte
-{
+enum class VorbisCommentFlags : byte {
     None = 0x0, /**< Regular parsing/making. */
     NoSignature = 0x1, /**< Skips the signature when parsing and making. */
     NoFramingByte = 0x2, /**< Doesn't expect the framing bit to be present when parsing; does not make the framing bit when making. */
     NoCovers = 0x4 /**< Skips all covers when making. */
 };
 
-inline bool operator &(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
+inline bool operator&(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
 {
     return static_cast<byte>(lhs) & static_cast<byte>(rhs);
 }
 
-inline VorbisCommentFlags operator |(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
+inline VorbisCommentFlags operator|(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
 {
     return static_cast<VorbisCommentFlags>(static_cast<byte>(lhs) | static_cast<byte>(rhs));
 }
@@ -37,9 +36,7 @@ class Diagnostics;
 /*!
  * \brief Defines traits for the TagField implementation of the VorbisCommentField class.
  */
-template <>
-class TAG_PARSER_EXPORT TagFieldTraits<VorbisCommentField>
-{
+template <> class TAG_PARSER_EXPORT TagFieldTraits<VorbisCommentField> {
 public:
     typedef std::string IdentifierType;
     typedef uint32 TypeInfoType;
@@ -47,8 +44,7 @@ public:
 
 class OggIterator;
 
-class TAG_PARSER_EXPORT VorbisCommentField : public TagField<VorbisCommentField>
-{
+class TAG_PARSER_EXPORT VorbisCommentField : public TagField<VorbisCommentField> {
     friend class TagField<VorbisCommentField>;
 
 public:
@@ -69,8 +65,7 @@ protected:
     void cleared();
 
 private:
-    template<class StreamType>
-    void internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag);
+    template <class StreamType> void internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag);
 };
 
 /*!
@@ -111,8 +106,9 @@ inline std::string VorbisCommentField::fieldIdToString(const std::string &id)
  * \brief Ensures the field is cleared.
  */
 inline void VorbisCommentField::cleared()
-{}
-
+{
 }
+
+} // namespace TagParser
 
 #endif // TAG_PARSER_VORBISCOMMENTFIELD_H

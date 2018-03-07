@@ -16,23 +16,24 @@ namespace TagParser {
 /*!
  * \brief Constructs a new container for the specified file \a stream at the specified \a startOffset.
  */
-AbstractContainer::AbstractContainer(iostream &stream, uint64 startOffset) :
-    m_version(0),
-    m_readVersion(0),
-    m_doctypeVersion(0),
-    m_doctypeReadVersion(0),
-    m_timeScale(0),
-    m_headerParsed(false),
-    m_tagsParsed(false),
-    m_tracksParsed(false),
-    m_tracksAltered(false),
-    m_chaptersParsed(false),
-    m_attachmentsParsed(false),
-    m_startOffset(startOffset),
-    m_stream(&stream),
-    m_reader(BinaryReader(m_stream)),
-    m_writer(BinaryWriter(m_stream))
-{}
+AbstractContainer::AbstractContainer(iostream &stream, uint64 startOffset)
+    : m_version(0)
+    , m_readVersion(0)
+    , m_doctypeVersion(0)
+    , m_doctypeReadVersion(0)
+    , m_timeScale(0)
+    , m_headerParsed(false)
+    , m_tagsParsed(false)
+    , m_tracksParsed(false)
+    , m_tracksAltered(false)
+    , m_chaptersParsed(false)
+    , m_attachmentsParsed(false)
+    , m_startOffset(startOffset)
+    , m_stream(&stream)
+    , m_reader(BinaryReader(m_stream))
+    , m_writer(BinaryWriter(m_stream))
+{
+}
 
 /*!
  * \brief Destroys the container.
@@ -41,7 +42,8 @@ AbstractContainer::AbstractContainer(iostream &stream, uint64 startOffset) :
  * Does NOT destroy the stream which has been specified when constructing the object.
  */
 AbstractContainer::~AbstractContainer()
-{}
+{
+}
 
 /*!
  * \brief Parses the header if not parsed yet.
@@ -54,7 +56,7 @@ AbstractContainer::~AbstractContainer()
  */
 void AbstractContainer::parseHeader(Diagnostics &diag)
 {
-    if(!isHeaderParsed()) {
+    if (!isHeaderParsed()) {
         removeAllTags();
         removeAllTracks();
         internalParseHeader(diag);
@@ -81,7 +83,7 @@ void AbstractContainer::parseHeader(Diagnostics &diag)
  */
 void AbstractContainer::parseTags(Diagnostics &diag)
 {
-    if(!areTagsParsed()) {
+    if (!areTagsParsed()) {
         parseHeader(diag);
         internalParseTags(diag);
         m_tagsParsed = true;
@@ -105,7 +107,7 @@ void AbstractContainer::parseTags(Diagnostics &diag)
  */
 void AbstractContainer::parseTracks(Diagnostics &diag)
 {
-    if(!areTracksParsed()) {
+    if (!areTracksParsed()) {
         parseHeader(diag);
         internalParseTracks(diag);
         m_tracksParsed = true;
@@ -125,7 +127,7 @@ void AbstractContainer::parseTracks(Diagnostics &diag)
  */
 void AbstractContainer::parseChapters(Diagnostics &diag)
 {
-    if(!areChaptersParsed()) {
+    if (!areChaptersParsed()) {
         parseHeader(diag);
         internalParseChapters(diag);
         m_chaptersParsed = true;
@@ -144,7 +146,7 @@ void AbstractContainer::parseChapters(Diagnostics &diag)
  */
 void AbstractContainer::parseAttachments(Diagnostics &diag)
 {
-    if(!areAttachmentsParsed()) {
+    if (!areAttachmentsParsed()) {
         parseHeader(diag);
         internalParseAttachments(diag);
         m_attachmentsParsed = true;
@@ -337,7 +339,8 @@ bool AbstractContainer::removeTag(Tag *tag)
  *          by calling tag() are invalidated.
  */
 void AbstractContainer::removeAllTags()
-{}
+{
+}
 
 /*!
  * \brief Determines the position of the tags inside the file.
@@ -407,7 +410,8 @@ bool AbstractContainer::removeTrack(AbstractTrack *track)
  *          by calling track() are invalidated.
  */
 void AbstractContainer::removeAllTracks()
-{}
+{
+}
 
 /*!
  * \brief Returns the chapter with the specified \a index.
@@ -492,4 +496,4 @@ void AbstractContainer::reset()
     m_titles.clear();
 }
 
-} // namespace Media
+} // namespace TagParser

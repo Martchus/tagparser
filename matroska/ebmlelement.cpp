@@ -3,23 +3,22 @@
 #include "./matroskacontainer.h"
 #include "./matroskaid.h"
 
-#include "../mediafileinfo.h"
 #include "../exceptions.h"
+#include "../mediafileinfo.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 
-#include <string>
-#include <sstream>
 #include <cstring>
 #include <memory>
+#include <sstream>
+#include <string>
 
 using namespace std;
 using namespace IoUtilities;
 using namespace ConversionUtilities;
-
 
 namespace TagParser {
 
@@ -36,23 +35,26 @@ uint64 EbmlElement::bytesToBeSkipped = 0x4000;
 /*!
  * \brief Constructs a new top level element with the specified \a container at the specified \a startOffset.
  */
-EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset) :
-    GenericFileElement<EbmlElement>(container, startOffset)
-{}
+EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset)
+    : GenericFileElement<EbmlElement>(container, startOffset)
+{
+}
 
 /*!
  * \brief Constructs a new top level element with the specified \a container at the specified \a startOffset.
  */
-EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize) :
-    GenericFileElement<EbmlElement>(container, startOffset, maxSize)
-{}
+EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize)
+    : GenericFileElement<EbmlElement>(container, startOffset, maxSize)
+{
+}
 
 /*!
  * \brief Constructs a new sub level element with the specified \a parent at the specified \a startOffset.
  */
-EbmlElement::EbmlElement(EbmlElement &parent, uint64 startOffset) :
-    GenericFileElement<EbmlElement>(parent, startOffset)
-{}
+EbmlElement::EbmlElement(EbmlElement &parent, uint64 startOffset)
+    : GenericFileElement<EbmlElement>(parent, startOffset)
+{
+}
 
 /*!
  * \brief Returns the parsing context.
@@ -69,30 +71,31 @@ void EbmlElement::internalParse(Diagnostics &diag)
 {
     static const string context("parsing EBML element header");
 
-    for(uint64 skipped = 0; skipped < bytesToBeSkipped; ++m_startOffset, --m_maxSize, ++skipped) {
+    for (uint64 skipped = 0; skipped < bytesToBeSkipped; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
-        if(maxTotalSize() < 2) {
+        if (maxTotalSize() < 2) {
             diag.emplace_back(DiagLevel::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
             throw TruncatedDataException();
         }
         stream().seekg(startOffset());
 
         // read ID
-        char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = {0};
+        char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = { 0 };
         byte beg = static_cast<byte>(stream().peek()), mask = 0x80;
         m_idLength = 1;
-        while(m_idLength <= maximumIdLengthSupported() && (beg & mask) == 0) {
+        while (m_idLength <= maximumIdLengthSupported() && (beg & mask) == 0) {
             ++m_idLength;
             mask >>= 1;
         }
-        if(m_idLength > maximumIdLengthSupported()) {
-            if(!skipped) {
-                diag.emplace_back(DiagLevel::Critical, argsToString("EBML ID length at ", startOffset(), " is not supported, trying to skip."), context);
+        if (m_idLength > maximumIdLengthSupported()) {
+            if (!skipped) {
+                diag.emplace_back(
+                    DiagLevel::Critical, argsToString("EBML ID length at ", startOffset(), " is not supported, trying to skip."), context);
             }
             continue; // try again
         }
-        if(m_idLength > container().maxIdLength()) {
-            if(!skipped) {
+        if (m_idLength > container().maxIdLength()) {
+            if (!skipped) {
                 diag.emplace_back(DiagLevel::Critical, argsToString("EBML ID length at ", startOffset(), " is invalid, trying to skip."), context);
             }
             continue; // try again
@@ -102,26 +105,26 @@ void EbmlElement::internalParse(Diagnostics &diag)
 
         // check whether this element is actually a sibling of one of its parents rather then a child
         // (might be the case if the parent's size is unknown and hence assumed to be the max file size)
-        if(m_parent && m_parent->m_sizeUnknown) {
+        if (m_parent && m_parent->m_sizeUnknown) {
             // check at which level in the hierarchy the element is supposed to occour using its ID
             // (the only chance to find out whether the element belongs higher up in the hierarchy)
             const MatroskaElementLevel supposedLevel = matroskaIdLevel(m_id);
             const byte actualLevel = level();
-            if(actualLevel > supposedLevel) {
+            if (actualLevel > supposedLevel) {
                 // the file belongs higher up in the hierarchy so find a better parent
-                if(EbmlElement *betterParent = m_parent->parent(actualLevel - static_cast<byte>(supposedLevel))) {
+                if (EbmlElement *betterParent = m_parent->parent(actualLevel - static_cast<byte>(supposedLevel))) {
                     // recompute the parent size (assumption - which was rest of the available space - was wrong)
                     m_parent->m_dataSize = m_startOffset - m_parent->m_startOffset - m_parent->headerSize();
                     m_parent->m_sizeUnknown = false;
                     // detatch from ...
-                    if(m_parent->firstChild() == this) {
+                    if (m_parent->firstChild() == this) {
                         // ... parent
                         m_parent->m_firstChild.release();
                         m_parent->m_firstChild = move(m_nextSibling);
                     } else {
                         // ... previous sibling
-                        for(EbmlElement *sibling = m_parent->firstChild(); sibling; sibling = sibling->nextSibling()) {
-                            if(sibling->nextSibling() == this) {
+                        for (EbmlElement *sibling = m_parent->firstChild(); sibling; sibling = sibling->nextSibling()) {
+                            if (sibling->nextSibling() == this) {
                                 sibling->m_nextSibling.release();
                                 sibling->m_nextSibling = move(m_nextSibling);
                                 break;
@@ -129,7 +132,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
                         }
                     }
                     // insert as child of better parent
-                    if(EbmlElement *previousSibling = betterParent->lastChild()) {
+                    if (EbmlElement *previousSibling = betterParent->lastChild()) {
                         previousSibling->m_nextSibling.reset(this);
                     } else {
                         betterParent->m_firstChild.reset(this);
@@ -143,23 +146,23 @@ void EbmlElement::internalParse(Diagnostics &diag)
         // read size
         beg = static_cast<byte>(stream().peek()), mask = 0x80;
         m_sizeLength = 1;
-        if((m_sizeUnknown = (beg == 0xFF))) {
+        if ((m_sizeUnknown = (beg == 0xFF))) {
             // this indicates that the element size is unknown
             // -> just assume the element takes the maximum available size
             m_dataSize = maxTotalSize() - headerSize();
         } else {
-           while(m_sizeLength <= maximumSizeLengthSupported() && (beg & mask) == 0) {
+            while (m_sizeLength <= maximumSizeLengthSupported() && (beg & mask) == 0) {
                 ++m_sizeLength;
                 mask >>= 1;
             }
-            if(m_sizeLength > maximumSizeLengthSupported()) {
-                if(!skipped) {
+            if (m_sizeLength > maximumSizeLengthSupported()) {
+                if (!skipped) {
                     diag.emplace_back(DiagLevel::Critical, "EBML size length is not supported.", parsingContext());
                 }
                 continue; // try again
             }
-            if(m_sizeLength > container().maxSizeLength()) {
-                if(!skipped) {
+            if (m_sizeLength > container().maxSizeLength()) {
+                if (!skipped) {
                     diag.emplace_back(DiagLevel::Critical, "EBML size length is invalid.", parsingContext());
                 }
                 continue; // try again
@@ -171,14 +174,15 @@ void EbmlElement::internalParse(Diagnostics &diag)
             *(buf + (maximumSizeLengthSupported() - m_sizeLength)) ^= mask;
             m_dataSize = ConversionUtilities::BE::toUInt64(buf);
             // check if element is truncated
-            if(totalSize() > maxTotalSize()) {
-                if(m_idLength + m_sizeLength > maxTotalSize()) { // header truncated
-                    if(!skipped) {
+            if (totalSize() > maxTotalSize()) {
+                if (m_idLength + m_sizeLength > maxTotalSize()) { // header truncated
+                    if (!skipped) {
                         diag.emplace_back(DiagLevel::Critical, "EBML header seems to be truncated.", parsingContext());
                     }
                     continue; // try again
                 } else { // data truncated
-                    diag.emplace_back(DiagLevel::Warning, "Data of EBML element seems to be truncated; unable to parse siblings of that element.", parsingContext());
+                    diag.emplace_back(DiagLevel::Warning, "Data of EBML element seems to be truncated; unable to parse siblings of that element.",
+                        parsingContext());
                     m_dataSize = maxTotalSize() - m_idLength - m_sizeLength; // using max size instead
                 }
             }
@@ -186,15 +190,15 @@ void EbmlElement::internalParse(Diagnostics &diag)
 
         // check if there's a first child
         const uint64 firstChildOffset = this->firstChildOffset();
-        if(firstChildOffset && firstChildOffset < totalSize()) {
+        if (firstChildOffset && firstChildOffset < totalSize()) {
             m_firstChild.reset(new EbmlElement(static_cast<EbmlElement &>(*this), startOffset() + firstChildOffset));
         } else {
             m_firstChild.reset();
         }
 
         // check if there's a sibling
-        if(totalSize() < maxTotalSize()) {
-            if(parent()) {
+        if (totalSize() < maxTotalSize()) {
+            if (parent()) {
                 m_nextSibling.reset(new EbmlElement(*(parent()), startOffset() + totalSize()));
             } else {
                 m_nextSibling.reset(new EbmlElement(container(), startOffset() + totalSize(), maxTotalSize() - totalSize()));
@@ -205,7 +209,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
 
         // no critical errors occured
         // -> add a warning if bytes have been skipped
-        if(skipped) {
+        if (skipped) {
             diag.emplace_back(DiagLevel::Warning, argsToString(skipped, " bytes have been skipped"), parsingContext());
         }
         // -> don't need another try, return here
@@ -233,9 +237,9 @@ std::string EbmlElement::readString()
  */
 uint64 EbmlElement::readUInteger()
 {
-    char buff[sizeof(uint64)] = {0};
+    char buff[sizeof(uint64)] = { 0 };
     int i = static_cast<int>(sizeof(buff)) - dataSize();
-    if(i < 0) {
+    if (i < 0) {
         i = 0;
     }
     stream().seekg(dataOffset(), ios_base::beg);
@@ -250,7 +254,7 @@ uint64 EbmlElement::readUInteger()
 float64 EbmlElement::readFloat()
 {
     stream().seekg(dataOffset());
-    switch(dataSize()) {
+    switch (dataSize()) {
     case sizeof(float32):
         return reader().readFloat32BE();
     case sizeof(float64):
@@ -266,13 +270,13 @@ float64 EbmlElement::readFloat()
  */
 byte EbmlElement::calculateIdLength(GenericFileElement::IdentifierType id)
 {
-    if(id <= 0xFF) {
+    if (id <= 0xFF) {
         return 1;
-    } else if(id <= 0x7FFF) {
+    } else if (id <= 0x7FFF) {
         return 2;
-    } else if(id <= 0x3FFFFF) {
+    } else if (id <= 0x3FFFFF) {
         return 3;
-    } else if(id <= 0x1FFFFFFF) {
+    } else if (id <= 0x1FFFFFFF) {
         return 4;
     } else {
         throw InvalidDataException();
@@ -285,21 +289,21 @@ byte EbmlElement::calculateIdLength(GenericFileElement::IdentifierType id)
  */
 byte EbmlElement::calculateSizeDenotationLength(uint64 size)
 {
-    if(size < 126) {
+    if (size < 126) {
         return 1;
-    } else if(size <= 16382ul) {
+    } else if (size <= 16382ul) {
         return 2;
-    } else if(size <= 2097150ul) {
+    } else if (size <= 2097150ul) {
         return 3;
-    } else if(size <= 268435454ul) {
+    } else if (size <= 268435454ul) {
         return 4;
-    } else if(size <= 34359738366ul) {
+    } else if (size <= 34359738366ul) {
         return 5;
-    } else if(size <= 4398046511102ul) {
+    } else if (size <= 4398046511102ul) {
         return 6;
-    } else if(size <= 562949953421310ul) {
+    } else if (size <= 562949953421310ul) {
         return 7;
-    } else if(size <= 72057594037927934ul) {
+    } else if (size <= 72057594037927934ul) {
         return 8;
     } else {
         throw InvalidDataException();
@@ -314,16 +318,16 @@ byte EbmlElement::calculateSizeDenotationLength(uint64 size)
  */
 byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
 {
-    if(id <= 0xFF) {
+    if (id <= 0xFF) {
         *buff = static_cast<byte>(id);
         return 1;
-    } else if(id <= 0x7FFF) {
+    } else if (id <= 0x7FFF) {
         BE::getBytes(static_cast<uint16>(id), buff);
         return 2;
-    } else if(id <= 0x3FFFFF) {
+    } else if (id <= 0x3FFFFF) {
         BE::getBytes(static_cast<uint32>(id << 0x8), buff);
         return 3;
-    } else if(id <= 0x1FFFFFFF) {
+    } else if (id <= 0x1FFFFFFF) {
         BE::getBytes(static_cast<uint32>(id), buff);
         return 4;
     } else {
@@ -340,28 +344,28 @@ byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
  */
 byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
 {
-    if(size < 126) {
+    if (size < 126) {
         *buff = static_cast<byte>(size | 0x80);
         return 1;
-    } else if(size <= 16382ul) {
+    } else if (size <= 16382ul) {
         BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
         return 2;
-    } else if(size <= 2097150ul) {
+    } else if (size <= 2097150ul) {
         BE::getBytes(static_cast<uint32>((size | 0x200000) << 0x08), buff);
         return 3;
-    } else if(size <= 268435454ul) {
+    } else if (size <= 268435454ul) {
         BE::getBytes(static_cast<uint32>(size | 0x10000000), buff);
         return 4;
-    } else if(size <= 34359738366ul) {
+    } else if (size <= 34359738366ul) {
         BE::getBytes(static_cast<uint64>((size | 0x800000000) << 0x18), buff);
         return 5;
-    } else if(size <= 4398046511102ul) {
+    } else if (size <= 4398046511102ul) {
         BE::getBytes(static_cast<uint64>((size | 0x40000000000) << 0x10), buff);
         return 6;
-    } else if(size <= 562949953421310ul) {
+    } else if (size <= 562949953421310ul) {
         BE::getBytes(static_cast<uint64>((size | 0x2000000000000) << 0x08), buff);
         return 7;
-    } else if(size <= 72057594037927934ul) {
+    } else if (size <= 72057594037927934ul) {
         BE::getBytes(static_cast<uint64>(size | 0x100000000000000), buff);
         return 8;
     }
@@ -378,28 +382,28 @@ byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
  */
 byte EbmlElement::makeSizeDenotation(uint64 size, char *buff, byte minBytes)
 {
-    if(minBytes <= 1 && size < 126) {
+    if (minBytes <= 1 && size < 126) {
         *buff = static_cast<byte>(size | 0x80);
         return 1;
-    } else if(minBytes <= 2 && size <= 16382ul) {
+    } else if (minBytes <= 2 && size <= 16382ul) {
         BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
         return 2;
-    } else if(minBytes <= 3 && size <= 2097150ul) {
+    } else if (minBytes <= 3 && size <= 2097150ul) {
         BE::getBytes(static_cast<uint32>((size | 0x200000) << 0x08), buff);
         return 3;
-    } else if(minBytes <= 4 && size <= 268435454ul) {
+    } else if (minBytes <= 4 && size <= 268435454ul) {
         BE::getBytes(static_cast<uint32>(size | 0x10000000), buff);
         return 4;
-    } else if(minBytes <= 5 && size <= 34359738366ul) {
+    } else if (minBytes <= 5 && size <= 34359738366ul) {
         BE::getBytes(static_cast<uint64>((size | 0x800000000) << 0x18), buff);
         return 5;
-    } else if(minBytes <= 6 && size <= 4398046511102ul) {
+    } else if (minBytes <= 6 && size <= 4398046511102ul) {
         BE::getBytes(static_cast<uint64>((size | 0x40000000000) << 0x10), buff);
         return 6;
-    } else if(minBytes <= 7 && size <= 562949953421310ul) {
+    } else if (minBytes <= 7 && size <= 562949953421310ul) {
         BE::getBytes(static_cast<uint64>((size | 0x2000000000000) << 0x08), buff);
         return 7;
-    } else if(minBytes <= 8 && size <= 72057594037927934ul) {
+    } else if (minBytes <= 8 && size <= 72057594037927934ul) {
         BE::getBytes(static_cast<uint64>(size | 0x100000000000000), buff);
         return 8;
     }
@@ -412,19 +416,19 @@ byte EbmlElement::makeSizeDenotation(uint64 size, char *buff, byte minBytes)
  */
 byte EbmlElement::calculateUIntegerLength(uint64 integer)
 {
-    if(integer <= 0xFFul) {
+    if (integer <= 0xFFul) {
         return 1;
-    } else if(integer <= 0xFFFFul) {
+    } else if (integer <= 0xFFFFul) {
         return 2;
-    } else if(integer <= 0xFFFFFFul) {
+    } else if (integer <= 0xFFFFFFul) {
         return 3;
-    } else if(integer <= 0xFFFFFFFFul) {
+    } else if (integer <= 0xFFFFFFFFul) {
         return 4;
-    } else if(integer <= 0xFFFFFFFFFFul) {
+    } else if (integer <= 0xFFFFFFFFFFul) {
         return 5;
-    } else if(integer <= 0xFFFFFFFFFFFFul) {
+    } else if (integer <= 0xFFFFFFFFFFFFul) {
         return 6;
-    } else if(integer <= 0xFFFFFFFFFFFFFFul) {
+    } else if (integer <= 0xFFFFFFFFFFFFFFul) {
         return 7;
     } else {
         return 8;
@@ -437,25 +441,25 @@ byte EbmlElement::calculateUIntegerLength(uint64 integer)
  */
 byte EbmlElement::makeUInteger(uint64 value, char *buff)
 {
-    if(value <= 0xFFul) {
+    if (value <= 0xFFul) {
         *buff = static_cast<char>(value);
         return 1;
-    } else if(value <= 0xFFFFul) {
+    } else if (value <= 0xFFFFul) {
         BE::getBytes(static_cast<uint16>(value), buff);
         return 2;
-    } else if(value <= 0xFFFFFFul) {
+    } else if (value <= 0xFFFFFFul) {
         BE::getBytes(static_cast<uint32>(value << 0x08), buff);
         return 3;
-    } else if(value <= 0xFFFFFFFFul) {
+    } else if (value <= 0xFFFFFFFFul) {
         BE::getBytes(static_cast<uint32>(value), buff);
         return 4;
-    } else if(value <= 0xFFFFFFFFFFul) {
+    } else if (value <= 0xFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x18), buff);
         return 5;
-    } else if(value <= 0xFFFFFFFFFFFFul) {
+    } else if (value <= 0xFFFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x10), buff);
         return 6;
-    } else if(value <= 0xFFFFFFFFFFFFFFul) {
+    } else if (value <= 0xFFFFFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x08), buff);
         return 7;
     } else {
@@ -473,25 +477,25 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff)
  */
 byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
 {
-    if(minBytes <= 1 && value <= 0xFFul) {
+    if (minBytes <= 1 && value <= 0xFFul) {
         *buff = static_cast<char>(value);
         return 1;
-    } else if(minBytes <= 2 && value <= 0xFFFFul) {
+    } else if (minBytes <= 2 && value <= 0xFFFFul) {
         BE::getBytes(static_cast<uint16>(value), buff);
         return 2;
-    } else if(minBytes <= 3 && value <= 0xFFFFFFul) {
+    } else if (minBytes <= 3 && value <= 0xFFFFFFul) {
         BE::getBytes(static_cast<uint32>(value << 0x08), buff);
         return 3;
-    } else if(minBytes <= 4 && value <= 0xFFFFFFFFul) {
+    } else if (minBytes <= 4 && value <= 0xFFFFFFFFul) {
         BE::getBytes(static_cast<uint32>(value), buff);
         return 4;
-    } else if(minBytes <= 5 && value <= 0xFFFFFFFFFFul) {
+    } else if (minBytes <= 5 && value <= 0xFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x18), buff);
         return 5;
-    } else if(minBytes <= 6 && value <= 0xFFFFFFFFFFFFul) {
+    } else if (minBytes <= 6 && value <= 0xFFFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x10), buff);
         return 6;
-    } else if(minBytes <= 7 && value <= 0xFFFFFFFFFFFFFFul) {
+    } else if (minBytes <= 7 && value <= 0xFFFFFFFFFFFFFFul) {
         BE::getBytes(static_cast<uint64>(value << 0x08), buff);
         return 7;
     } else {
@@ -551,7 +555,4 @@ void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::Identif
     stream.write(data, dataSize);
 }
 
-}
-
-
-
+} // namespace TagParser

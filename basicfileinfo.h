@@ -10,8 +10,7 @@
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT BasicFileInfo
-{
+class TAG_PARSER_EXPORT BasicFileInfo {
 public:
     // constructor, destructor
     BasicFileInfo(const std::string &path = std::string());
@@ -130,6 +129,6 @@ inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
     m_path = newPath;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_BASICFILEINFO_H

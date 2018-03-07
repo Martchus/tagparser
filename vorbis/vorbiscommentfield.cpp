@@ -7,14 +7,14 @@
 
 #include "../id3/id3v2frame.h"
 
-#include "../exceptions.h"
 #include "../diagnostics.h"
+#include "../exceptions.h"
 
+#include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/catchiofailure.h>
-#include <c++utilities/conversion/binaryconversion.h>
-#include <c++utilities/conversion/stringconversion.h>
 
 #include <iostream>
 #include <memory>
@@ -34,45 +34,47 @@ namespace TagParser {
  * \brief Constructs a new Vorbis comment field.
  */
 VorbisCommentField::VorbisCommentField()
-{}
+{
+}
 
 /*!
  * \brief Constructs a new Vorbis comment with the specified \a id and \a value.
  */
-VorbisCommentField::VorbisCommentField(const IdentifierType &id, const TagValue &value) :
-    TagField<VorbisCommentField>(id, value)
-{}
+VorbisCommentField::VorbisCommentField(const IdentifierType &id, const TagValue &value)
+    : TagField<VorbisCommentField>(id, value)
+{
+}
 
 /*!
  * \brief Internal implementation for parsing.
  */
-template<class StreamType>
-void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag)
+template <class StreamType> void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag)
 {
     static const string context("parsing Vorbis comment  field");
     char buff[4];
-    if(maxSize < 4) {
+    if (maxSize < 4) {
         diag.emplace_back(DiagLevel::Critical, "Field expected.", context);
         throw TruncatedDataException();
     } else {
         maxSize -= 4;
     }
     stream.read(buff, 4);
-    if(const auto size = LE::toUInt32(buff)) { // read size
-        if(size <= maxSize) {
+    if (const auto size = LE::toUInt32(buff)) { // read size
+        if (size <= maxSize) {
             maxSize -= size;
             // read data
-            auto data = make_unique<char []>(size);
+            auto data = make_unique<char[]>(size);
             stream.read(data.get(), size);
             uint32 idSize = 0;
-            for(const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize);
+            for (const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize)
+                ;
             // extract id
             setId(string(data.get(), idSize));
-            if(!idSize) {
+            if (!idSize) {
                 // empty field ID
                 diag.emplace_back(DiagLevel::Critical, "The field ID is empty.", context);
                 throw InvalidDataException();
-            } else if(id() == VorbisCommentIds::cover()) {
+            } else if (id() == VorbisCommentIds::cover()) {
                 // extract cover value
                 try {
                     auto decoded = decodeBase64(data.get() + idSize + 1, size - idSize - 1);
@@ -82,18 +84,18 @@ void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize, Diag
                     FlacMetaDataBlockPicture pictureBlock(value());
                     pictureBlock.parse(bufferStream, decoded.second);
                     setTypeInfo(pictureBlock.pictureType());
-                } catch(const TruncatedDataException &) {
+                } catch (const TruncatedDataException &) {
                     diag.emplace_back(DiagLevel::Critical, "METADATA_BLOCK_PICTURE is truncated.", context);
                     throw;
-                } catch(const ConversionException &) {
+                } catch (const ConversionException &) {
                     diag.emplace_back(DiagLevel::Critical, "Base64 coding of METADATA_BLOCK_PICTURE is invalid.", context);
                     throw InvalidDataException();
-                } catch(...) {
+                } catch (...) {
                     catchIoFailure();
                     diag.emplace_back(DiagLevel::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
                     throw Failure();
                 }
-            } else if(id().size() + 1 < size) {
+            } else if (id().size() + 1 < size) {
                 // extract other values (as string)
                 setValue(TagValue(string(data.get() + idSize + 1, size - idSize - 1), TagTextEncoding::Utf8));
             }
@@ -162,18 +164,18 @@ void VorbisCommentField::parse(istream &stream, uint64 &maxSize, Diagnostics &di
 bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag)
 {
     static const string context("making Vorbis comment  field");
-    if(id().empty()) {
+    if (id().empty()) {
         diag.emplace_back(DiagLevel::Critical, "The field ID is empty.", context);
     }
     try {
         // try to convert value to string
         string valueString;
-        if(id() == VorbisCommentIds::cover()) {
-            if(flags & VorbisCommentFlags::NoCovers) {
+        if (id() == VorbisCommentIds::cover()) {
+            if (flags & VorbisCommentFlags::NoCovers) {
                 return false;
             }
             // make cover
-            if(value().type() != TagDataType::Picture) {
+            if (value().type() != TagDataType::Picture) {
                 diag.emplace_back(DiagLevel::Critical, "Assigned value of cover field is not picture data.", context);
                 throw InvalidDataException();
             }
@@ -189,7 +191,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
 
                 pictureBlock.make(bufferStream);
                 valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), requiredSize);
-            } catch(...) {
+            } catch (...) {
                 catchIoFailure();
                 diag.emplace_back(DiagLevel::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
                 throw Failure();
@@ -202,11 +204,11 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
         writer.writeString(id());
         writer.writeChar('=');
         writer.writeString(valueString);
-    } catch(const ConversionException &) {
+    } catch (const ConversionException &) {
         diag.emplace_back(DiagLevel::Critical, "Assigned value can not be converted appropriately.", context);
         throw InvalidDataException();
     }
     return true;
 }
 
-}
+} // namespace TagParser

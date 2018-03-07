@@ -5,14 +5,13 @@
 
 #include <c++utilities/conversion/types.h>
 
-#include <vector>
-#include <numeric>
 #include <iosfwd>
+#include <numeric>
+#include <vector>
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT OggPage
-{
+class TAG_PARSER_EXPORT OggPage {
 public:
     OggPage();
     OggPage(std::istream &stream, uint64 startOffset, int32 maxSize);
@@ -55,23 +54,24 @@ private:
 /*!
  * \brief Constructs a new OGG page.
  */
-inline OggPage::OggPage() :
-    m_startOffset(0),
-    m_streamStructureVersion(0),
-    m_headerTypeFlag(0),
-    m_absoluteGranulePosition(0),
-    m_streamSerialNumber(0),
-    m_sequenceNumber(0),
-    m_checksum(0),
-    m_segmentCount(0)
-{}
+inline OggPage::OggPage()
+    : m_startOffset(0)
+    , m_streamStructureVersion(0)
+    , m_headerTypeFlag(0)
+    , m_absoluteGranulePosition(0)
+    , m_streamSerialNumber(0)
+    , m_sequenceNumber(0)
+    , m_checksum(0)
+    , m_segmentCount(0)
+{
+}
 
 /*!
  * \brief Constructs a new OggPage and instantly parses the header read from the specified \a stream
  *        at the specified \a startOffset.
  */
-inline OggPage::OggPage(std::istream &stream, uint64 startOffset, int32 maxSize) :
-    OggPage()
+inline OggPage::OggPage(std::istream &stream, uint64 startOffset, int32 maxSize)
+    : OggPage()
 {
     parseHeader(stream, startOffset, maxSize);
 }
@@ -251,6 +251,6 @@ inline uint64 OggPage::dataOffset(byte segmentIndex) const
     return startOffset() + headerSize() + std::accumulate(m_segmentSizes.cbegin(), m_segmentSizes.cbegin() + segmentIndex, 0);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_OGGPAGE_H

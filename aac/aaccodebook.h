@@ -8,21 +8,18 @@
 
 namespace TagParser {
 
-struct LIB_EXPORT AacHcb
-{
+struct LIB_EXPORT AacHcb {
     byte offset;
     byte extraBits;
 };
 
-struct LIB_EXPORT AacHcb2Pair
-{
+struct LIB_EXPORT AacHcb2Pair {
     byte bits;
     sbyte x;
     sbyte y;
 };
 
-struct LIB_EXPORT AacHcb2Quad
-{
+struct LIB_EXPORT AacHcb2Quad {
     byte bits;
     sbyte x;
     sbyte y;
@@ -30,14 +27,12 @@ struct LIB_EXPORT AacHcb2Quad
     sbyte w;
 };
 
-struct LIB_EXPORT AacHcbBinPair
-{
+struct LIB_EXPORT AacHcbBinPair {
     byte isLeaf;
     sbyte data[2];
 };
 
-struct LIB_EXPORT AacHcbBinQuad
-{
+struct LIB_EXPORT AacHcbBinQuad {
     byte isLeaf;
     sbyte data[4];
 };
@@ -82,6 +77,6 @@ extern const sbyte fHuffmanEnvBal30dB[24][2];
 extern const sbyte tHuffmanNoise30dB[62][2];
 extern const sbyte tHuffmanNoiseBal30dB[24][2];
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_AACCODEBOOK_H

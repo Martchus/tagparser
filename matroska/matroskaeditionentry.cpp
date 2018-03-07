@@ -7,8 +7,8 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 
-#include <string>
 #include <memory>
+#include <string>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -23,19 +23,21 @@ namespace TagParser {
 /*!
  * \brief Constructs a new MatroskaEditionEntry for the specified \a editionEntryElement.
  */
-MatroskaEditionEntry::MatroskaEditionEntry(EbmlElement *editionEntryElement) :
-    m_editionEntryElement(editionEntryElement),
-    m_id(0),
-    m_hidden(false),
-    m_default(false),
-    m_ordered(false)
-{}
+MatroskaEditionEntry::MatroskaEditionEntry(EbmlElement *editionEntryElement)
+    : m_editionEntryElement(editionEntryElement)
+    , m_id(0)
+    , m_hidden(false)
+    , m_default(false)
+    , m_ordered(false)
+{
+}
 
 /*!
  * \brief Destroys the MatroskaEditionEntry.
  */
 MatroskaEditionEntry::~MatroskaEditionEntry()
-{}
+{
+}
 
 /*!
  * \brief Returns a label for the entry.
@@ -59,9 +61,9 @@ void MatroskaEditionEntry::parse(Diagnostics &diag)
     clear();
     // iterate through children of "EditionEntry"-element
     EbmlElement *entryChild = m_editionEntryElement->firstChild();
-    while(entryChild) {
+    while (entryChild) {
         entryChild->parse(diag);
-        switch(entryChild->id()) {
+        switch (entryChild->id()) {
         case MatroskaIds::EditionUID:
             m_id = entryChild->readUInteger();
             break;
@@ -78,7 +80,8 @@ void MatroskaEditionEntry::parse(Diagnostics &diag)
             m_chapters.emplace_back(make_unique<MatroskaChapter>(entryChild));
             break;
         default:
-            diag.emplace_back(DiagLevel::Warning, "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ingored.", context);
+            diag.emplace_back(DiagLevel::Warning,
+                "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ingored.", context);
         }
         entryChild = entryChild->nextSibling();
     }
@@ -93,7 +96,7 @@ void MatroskaEditionEntry::parse(Diagnostics &diag)
 void MatroskaEditionEntry::parseNested(Diagnostics &diag)
 {
     parse(diag);
-    for(auto &chapter : chapters()) {
+    for (auto &chapter : chapters()) {
         chapter->parseNested(diag);
     }
 }
@@ -108,5 +111,4 @@ void MatroskaEditionEntry::clear()
     m_chapters.clear();
 }
 
-} // namespace Media
-
+} // namespace TagParser

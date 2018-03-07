@@ -16,8 +16,7 @@ namespace TagParser {
 
 class MediaFileInfo;
 
-class TAG_PARSER_EXPORT Mp4Container : public GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom>
-{
+class TAG_PARSER_EXPORT Mp4Container : public GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom> {
 public:
     Mp4Container(MediaFileInfo &fileInfo, uint64 startOffset);
     ~Mp4Container() override;
@@ -54,6 +53,6 @@ inline bool Mp4Container::isFragmented() const
     return m_fragmented;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP4CONTAINER_H

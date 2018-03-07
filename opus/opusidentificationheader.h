@@ -9,8 +9,7 @@ namespace TagParser {
 
 class OggIterator;
 
-class TAG_PARSER_EXPORT OpusIdentificationHeader
-{
+class TAG_PARSER_EXPORT OpusIdentificationHeader {
 public:
     OpusIdentificationHeader();
 
@@ -35,13 +34,14 @@ private:
 /*!
  * \brief Constructs a new Opus identification header.
  */
-inline OpusIdentificationHeader::OpusIdentificationHeader() :
-    m_version(0),
-    m_channels(0),
-    m_sampleRate(0),
-    m_outputGain(0),
-    m_channelMap(0)
-{}
+inline OpusIdentificationHeader::OpusIdentificationHeader()
+    : m_version(0)
+    , m_channels(0)
+    , m_sampleRate(0)
+    , m_outputGain(0)
+    , m_channelMap(0)
+{
+}
 
 /*!
  * \brief Returns the version (which should be 1 currently).
@@ -104,6 +104,6 @@ inline byte OpusIdentificationHeader::channelMap() const
     return m_channelMap;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_OPUSIDENTIFICATIONHEADER_H

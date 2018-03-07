@@ -1,8 +1,8 @@
 #include "./id3v1tag.h"
 #include "./id3genres.h"
 
-#include "../exceptions.h"
 #include "../diagnostics.h"
+#include "../exceptions.h"
 
 #include <c++utilities/conversion/conversionexception.h>
 
@@ -22,7 +22,8 @@ namespace TagParser {
  * \brief Constructs a new tag.
  */
 Id3v1Tag::Id3v1Tag()
-{}
+{
+}
 
 TagType Id3v1Tag::type() const
 {
@@ -52,7 +53,7 @@ void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
     VAR_UNUSED(diag);
     char buffer[128];
     stream.read(buffer, 128);
-    if(buffer[0] != 0x54 || buffer[1] != 0x41 || buffer[2] != 0x47) {
+    if (buffer[0] != 0x54 || buffer[1] != 0x41 || buffer[2] != 0x47) {
         throw NoDataFoundException();
     }
     m_size = 128;
@@ -60,7 +61,7 @@ void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
     readValue(m_artist, 30, buffer + 33);
     readValue(m_album, 30, buffer + 63);
     readValue(m_year, 4, buffer + 93);
-    if(buffer[125] == 0) {
+    if (buffer[125] == 0) {
         readValue(m_comment, 28, buffer + 97);
         m_version = "1.1";
     } else {
@@ -68,7 +69,7 @@ void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
         m_version = "1.0";
     }
     readValue(m_comment, buffer[125] == 0 ? 28 : 30, buffer + 97);
-    if(buffer[125] == 0) {
+    if (buffer[125] == 0) {
         m_trackPos.assignPosition(PositionInSet(*reinterpret_cast<char *>(buffer + 126), 0));
     }
     m_genre.assignStandardGenreIndex(*reinterpret_cast<unsigned char *>(buffer + 127));
@@ -100,17 +101,18 @@ void Id3v1Tag::make(ostream &stream, Diagnostics &diag)
     buffer[1] = 0x0; // track nr
     buffer[2] = 0x0; // genre
     // track
-    if(!m_trackPos.isEmpty() && m_trackPos.type() == TagDataType::PositionInSet) {
+    if (!m_trackPos.isEmpty() && m_trackPos.type() == TagDataType::PositionInSet) {
         try {
             buffer[1] = m_trackPos.toPositionInSet().position();
-        } catch(const ConversionException &) {
-            diag.emplace_back(DiagLevel::Warning, "Track position field can not be set because given value can not be converted appropriately.", context);
+        } catch (const ConversionException &) {
+            diag.emplace_back(
+                DiagLevel::Warning, "Track position field can not be set because given value can not be converted appropriately.", context);
         }
     }
     // genre
     try {
         buffer[2] = m_genre.toStandardGenreIndex();
-    } catch(const ConversionException &) {
+    } catch (const ConversionException &) {
         diag.emplace_back(DiagLevel::Warning, "Genre field can not be set because given value can not be converted appropriately.", context);
     }
     stream.write(buffer, 3);
@@ -119,7 +121,7 @@ void Id3v1Tag::make(ostream &stream, Diagnostics &diag)
 
 const TagValue &Id3v1Tag::value(KnownField field) const
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Title:
         return m_title;
     case KnownField::Artist:
@@ -141,7 +143,7 @@ const TagValue &Id3v1Tag::value(KnownField field) const
 
 bool Id3v1Tag::setValue(KnownField field, const TagValue &value)
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Title:
         m_title = value;
         break;
@@ -176,7 +178,7 @@ bool Id3v1Tag::setValueConsideringTypeInfo(KnownField field, const TagValue &val
 
 bool Id3v1Tag::hasField(KnownField field) const
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Title:
         return !m_title.isEmpty();
     case KnownField::Artist:
@@ -210,9 +212,8 @@ void Id3v1Tag::removeAllFields()
 unsigned int Id3v1Tag::fieldCount() const
 {
     unsigned int count = 0;
-    for(const auto &value : {m_title, m_artist, m_album,
-            m_year, m_comment, m_trackPos, m_genre}) {
-        if(!value.isEmpty()) {
+    for (const auto &value : { m_title, m_artist, m_album, m_year, m_comment, m_trackPos, m_genre }) {
+        if (!value.isEmpty()) {
             ++count;
         }
     }
@@ -221,7 +222,7 @@ unsigned int Id3v1Tag::fieldCount() const
 
 bool Id3v1Tag::supportsField(KnownField field) const
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Title:
     case KnownField::Artist:
     case KnownField::Album:
@@ -252,13 +253,12 @@ void Id3v1Tag::ensureTextValuesAreProperlyEncoded()
 void Id3v1Tag::readValue(TagValue &value, size_t maxLength, const char *buffer)
 {
     const char *end = buffer + maxLength - 1;
-    while((*end == 0x0 || *end == ' ') && end >= buffer) {
+    while ((*end == 0x0 || *end == ' ') && end >= buffer) {
         --end;
         --maxLength;
     }
     value.assignData(buffer, maxLength, TagDataType::Text, TagTextEncoding::Latin1);
 }
-
 
 /*!
  * \brief Internally used to write values.
@@ -268,10 +268,11 @@ void Id3v1Tag::writeValue(const TagValue &value, size_t length, char *buffer, os
     memset(buffer, 0, length);
     try {
         value.toString().copy(buffer, length);
-    } catch(const ConversionException &) {
-        diag.emplace_back(DiagLevel::Warning, "Field can not be set because given value can not be converted appropriately.", "making ID3v1 tag field");
+    } catch (const ConversionException &) {
+        diag.emplace_back(
+            DiagLevel::Warning, "Field can not be set because given value can not be converted appropriately.", "making ID3v1 tag field");
     }
     targetStream.write(buffer, length);
 }
 
-}
+} // namespace TagParser

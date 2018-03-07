@@ -2,13 +2,12 @@
 #include "./overall.h"
 
 #include "../abstracttrack.h"
-#include "../mpegaudio/mpegaudioframe.h"
 #include "../id3/id3v1tag.h"
 #include "../id3/id3v2tag.h"
+#include "../mpegaudio/mpegaudioframe.h"
 
 namespace Mp3TestFlags {
-enum TestFlag
-{
+enum TestFlag {
     ForceRewring = 0x1,
     Id3v2AndId3v1 = 0x2,
     PaddingConstraints = 0x4,
@@ -26,7 +25,7 @@ void OverallTests::checkMp3Testfile1()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::MpegAudioFrames);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
+    for (const auto &track : tracks) {
         CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
         CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Mpeg1Audio);
         CPPUNIT_ASSERT(track->format().sub == SubFormats::Mpeg1Layer3);
@@ -36,15 +35,15 @@ void OverallTests::checkMp3Testfile1()
         CPPUNIT_ASSERT(track->duration().seconds() == 3);
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(m_fileInfo.id3v1Tag());
         CPPUNIT_ASSERT(m_fileInfo.id3v2Tags().size() == 1);
         CPPUNIT_ASSERT(tags.size() == 2);
-        for(const auto &tag : tags) {
+        for (const auto &tag : tags) {
             CPPUNIT_ASSERT(tag->value(KnownField::TrackPosition).toPositionInSet().position() == 4);
             CPPUNIT_ASSERT(tag->value(KnownField::Year).toString() == "1984");
-            switch(tag->type()) {
+            switch (tag->type()) {
             case TagType::Id3v1Tag:
                 CPPUNIT_ASSERT(tag->value(KnownField::Title).toString() == "Cohesion");
                 CPPUNIT_ASSERT(tag->value(KnownField::Artist).toString() == "Minutemen");
@@ -68,8 +67,7 @@ void OverallTests::checkMp3Testfile1()
                 CPPUNIT_ASSERT(tag->value(KnownField::Length).toTimeSpan().isNull());
                 CPPUNIT_ASSERT(tag->value(KnownField::Lyricist).isEmpty());
                 break;
-            default:
-                ;
+            default:;
             }
         }
         break;
@@ -93,10 +91,10 @@ void OverallTests::checkMp3TestMetaData()
     // check whether tags are assigned according to the current test mode
     Id3v1Tag *id3v1Tag = nullptr;
     Id3v2Tag *id3v2Tag = nullptr;
-    if(m_mode & Id3v2AndId3v1) {
+    if (m_mode & Id3v2AndId3v1) {
         CPPUNIT_ASSERT(id3v1Tag = m_fileInfo.id3v1Tag());
         CPPUNIT_ASSERT(id3v2Tag = m_fileInfo.id3v2Tags().at(0).get());
-    } else if(m_mode & Id3v1Only) {
+    } else if (m_mode & Id3v1Only) {
         CPPUNIT_ASSERT(id3v1Tag = m_fileInfo.id3v1Tag());
         CPPUNIT_ASSERT(m_fileInfo.id3v2Tags().empty());
     } else {
@@ -105,18 +103,18 @@ void OverallTests::checkMp3TestMetaData()
     }
 
     // check common test meta data
-    if(id3v1Tag) {
+    if (id3v1Tag) {
         CPPUNIT_ASSERT_EQUAL(m_testTitle, id3v1Tag->value(KnownField::Title));
         CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), id3v1Tag->value(KnownField::Comment).toString()); // ignore encoding here
         CPPUNIT_ASSERT_EQUAL(m_testAlbum, id3v1Tag->value(KnownField::Album));
         CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v1Tag->value(KnownField::Artist));
         m_preservedMetaData.pop();
     }
-    if(id3v2Tag) {
+    if (id3v2Tag) {
         const TagValue &titleValue = id3v2Tag->value(KnownField::Title);
         const TagValue &commentValue = id3v2Tag->value(KnownField::Comment);
 
-        if(m_mode & UseId3v24) {
+        if (m_mode & UseId3v24) {
             CPPUNIT_ASSERT_EQUAL(m_testTitle, titleValue);
             CPPUNIT_ASSERT_EQUAL(m_testComment, commentValue);
             CPPUNIT_ASSERT_EQUAL(m_testAlbum, id3v2Tag->value(KnownField::Album));
@@ -128,7 +126,8 @@ void OverallTests::checkMp3TestMetaData()
             CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
             CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.descriptionEncoding() == TagTextEncoding::Utf16LittleEndian);
             CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), commentValue.toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL_MESSAGE("description is also converted to UTF-16", "s\0o\0m\0e\0 \0d\0e\0s\0c\0r\0i\0p\0t\0i\0\xf3\0n\0"s, commentValue.description());
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(
+                "description is also converted to UTF-16", "s\0o\0m\0e\0 \0d\0e\0s\0c\0r\0i\0p\0t\0i\0\xf3\0n\0"s, commentValue.description());
             CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(TagTextEncoding::Utf8), id3v2Tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v2Tag->value(KnownField::Artist));
             // TODO: check more fields
@@ -138,11 +137,11 @@ void OverallTests::checkMp3TestMetaData()
     }
 
     // test ID3v1 specific test meta data
-    if(id3v1Tag) {
+    if (id3v1Tag) {
         CPPUNIT_ASSERT(id3v1Tag->value(KnownField::TrackPosition).toPositionInSet().position() == m_testPosition.toPositionInSet().position());
     }
     // test ID3v2 specific test meta data
-    if(id3v2Tag) {
+    if (id3v2Tag) {
         CPPUNIT_ASSERT(id3v2Tag->value(KnownField::TrackPosition) == m_testPosition);
         CPPUNIT_ASSERT(id3v2Tag->value(KnownField::DiskPosition) == m_testPosition);
     }
@@ -155,9 +154,9 @@ void OverallTests::checkMp3PaddingConstraints()
 {
     using namespace Mp3TestFlags;
 
-    if(!(m_mode & Id3v1Only)) {
-        if(m_mode & PaddingConstraints) {
-            if(m_mode & ForceRewring) {
+    if (!(m_mode & Id3v1Only)) {
+        if (m_mode & PaddingConstraints) {
+            if (m_mode & ForceRewring) {
                 CPPUNIT_ASSERT(m_fileInfo.paddingSize() == 4096);
             } else {
                 CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
@@ -177,23 +176,23 @@ void OverallTests::setMp3TestMetaData()
     // ensure tags are assigned according to the current test mode
     Id3v1Tag *id3v1Tag = nullptr;
     Id3v2Tag *id3v2Tag = nullptr;
-    if(m_mode & Id3v2AndId3v1) {
+    if (m_mode & Id3v2AndId3v1) {
         id3v1Tag = m_fileInfo.createId3v1Tag();
         id3v2Tag = m_fileInfo.createId3v2Tag();
-    } else if(m_mode & Id3v1Only) {
+    } else if (m_mode & Id3v1Only) {
         id3v1Tag = m_fileInfo.createId3v1Tag();
         m_fileInfo.removeAllId3v2Tags();
     } else {
         m_fileInfo.removeId3v1Tag();
         id3v2Tag = m_fileInfo.createId3v2Tag();
     }
-    if(!(m_mode & Id3v1Only) && m_mode & UseId3v24) {
+    if (!(m_mode & Id3v1Only) && m_mode & UseId3v24) {
         id3v2Tag->setVersion(4, 0);
     }
 
     // assign some test meta data
-    for(Tag *tag : initializer_list<Tag *>{id3v1Tag, id3v2Tag}) {
-        if(tag) {
+    for (Tag *tag : initializer_list<Tag *>{ id3v1Tag, id3v2Tag }) {
+        if (tag) {
             tag->setValue(KnownField::Title, m_testTitle);
             tag->setValue(KnownField::Comment, m_testComment);
             tag->setValue(KnownField::Album, m_testAlbum);
@@ -227,13 +226,13 @@ void OverallTests::testMp3Making()
     m_fileInfo.setForceFullParse(true);
 
     // do the test under different conditions
-    for(m_mode = 0; m_mode != 0x20; ++m_mode) {
+    for (m_mode = 0; m_mode != 0x20; ++m_mode) {
         using namespace Mp3TestFlags;
 
         // setup test conditions
         m_fileInfo.setForceRewrite(m_mode & ForceRewring);
-        if(m_mode & UseId3v24) {
-            if(m_mode & Id3v1Only) {
+        if (m_mode & UseId3v24) {
+            if (m_mode & Id3v1Only) {
                 continue;
             }
         }
@@ -247,24 +246,24 @@ void OverallTests::testMp3Making()
 
         // print test conditions
         list<string> testConditions;
-        if(m_mode & ForceRewring) {
+        if (m_mode & ForceRewring) {
             testConditions.emplace_back("forcing rewrite");
         }
-        if(m_mode & Id3v2AndId3v1) {
-            if(m_mode & RemoveTag) {
+        if (m_mode & Id3v2AndId3v1) {
+            if (m_mode & RemoveTag) {
                 testConditions.emplace_back("removing tag");
             } else {
                 testConditions.emplace_back("ID3v1 and ID3v2");
             }
-        } else if(m_mode & Id3v1Only) {
+        } else if (m_mode & Id3v1Only) {
             testConditions.emplace_back("ID3v1 only");
         } else {
             testConditions.emplace_back("ID3v2 only");
         }
-        if(m_mode & PaddingConstraints) {
+        if (m_mode & PaddingConstraints) {
             testConditions.emplace_back("padding constraints");
         }
-        if(m_mode & UseId3v24) {
+        if (m_mode & UseId3v24) {
             testConditions.emplace_back("use ID3v2.4");
         }
         cerr << endl << "MP3 maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;

@@ -18,12 +18,12 @@ namespace TagParser {
 void AdtsStream::internalParseHeader(Diagnostics &diag)
 {
     //static const string context("parsing ADTS frame header");
-    if(!m_istream) {
+    if (!m_istream) {
         throw NoDataFoundException();
     }
     // get size
     m_istream->seekg(-128, ios_base::end);
-    if(m_reader.readUInt24BE() == 0x544147) {
+    if (m_reader.readUInt24BE() == 0x544147) {
         m_size = static_cast<uint64>(m_istream->tellg()) - 3u - m_startOffset;
     } else {
         m_size = static_cast<uint64>(m_istream->tellg()) + 125u - m_startOffset;
@@ -37,5 +37,4 @@ void AdtsStream::internalParseHeader(Diagnostics &diag)
     m_samplingFrequency = sampleRateIndex < sizeof(mpeg4SamplingFrequencyTable) ? mpeg4SamplingFrequencyTable[sampleRateIndex] : 0;
 }
 
-} // namespace Media
-
+} // namespace TagParser

@@ -5,14 +5,12 @@
 
 #include "../fieldbasedtag.h"
 
-namespace TagParser
-{
+namespace TagParser {
 
 class Mp4Atom;
 class Mp4Tag;
 
-struct TAG_PARSER_EXPORT Mp4ExtendedFieldId
-{
+struct TAG_PARSER_EXPORT Mp4ExtendedFieldId {
     Mp4ExtendedFieldId(const char *mean = nullptr, const char *name = nullptr, bool updateOnly = false);
     Mp4ExtendedFieldId(KnownField field);
 
@@ -30,11 +28,12 @@ struct TAG_PARSER_EXPORT Mp4ExtendedFieldId
 /*!
  * \brief Constructs a new instance with the specified parameter.
  */
-inline Mp4ExtendedFieldId::Mp4ExtendedFieldId(const char *mean, const char *name, bool updateOnly) :
-    mean(mean),
-    name(name),
-    updateOnly(updateOnly)
-{}
+inline Mp4ExtendedFieldId::Mp4ExtendedFieldId(const char *mean, const char *name, bool updateOnly)
+    : mean(mean)
+    , name(name)
+    , updateOnly(updateOnly)
+{
+}
 
 /*!
  * \brief Returns whether valid parameter are assigned.
@@ -52,8 +51,7 @@ inline bool Mp4ExtendedFieldId::matches(const Mp4TagField &field) const
     return field.mean() == mean && field.name() == name;
 }
 
-class TAG_PARSER_EXPORT Mp4TagMaker
-{
+class TAG_PARSER_EXPORT Mp4TagMaker {
     friend class Mp4Tag;
 
 public:
@@ -90,16 +88,13 @@ inline uint64 Mp4TagMaker::requiredSize() const
 /*!
  * \brief Defines traits for the TagField implementation of the Mp4Tag class.
  */
-template <>
-class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Mp4Tag>
-{
+template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Mp4Tag> {
 public:
     typedef Mp4TagField FieldType;
     typedef std::less<typename FieldType::IdentifierType> Compare;
 };
 
-class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag>
-{
+class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag> {
     friend class FieldMapBasedTag<Mp4Tag>;
 
 public:
@@ -139,18 +134,18 @@ public:
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
     KnownField internallyGetKnownField(const IdentifierType &id) const;
-
 };
 
 /*!
  * \brief Constructs a new tag.
  */
 inline Mp4Tag::Mp4Tag()
-{}
+{
+}
 
 inline bool Mp4Tag::supportsField(KnownField field) const
 {
-    switch(field) {
+    switch (field) {
     case KnownField::EncoderSettings:
         return true;
     default:
@@ -174,6 +169,6 @@ inline bool Mp4Tag::setValue(const std::string &mean, const std::string &name, c
     return setValue(mean.data(), name.data(), value);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP4TAG_H

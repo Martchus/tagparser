@@ -1,14 +1,14 @@
 #include "./helper.h"
 
+#include "../aspectratio.h"
+#include "../backuphelper.h"
+#include "../exceptions.h"
+#include "../margin.h"
+#include "../mediafileinfo.h"
+#include "../mediaformat.h"
+#include "../signature.h"
 #include "../size.h"
 #include "../tagtarget.h"
-#include "../signature.h"
-#include "../margin.h"
-#include "../aspectratio.h"
-#include "../mediaformat.h"
-#include "../mediafileinfo.h"
-#include "../exceptions.h"
-#include "../backuphelper.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/catchiofailure.h>
@@ -27,7 +27,6 @@ using namespace IoUtilities;
 using namespace TestUtilities::Literals;
 
 using namespace CPPUNIT_NS;
-
 
 /*!
  * \brief The UtilitiesTests class tests various utility classes and functions of the tagparser library.
@@ -91,29 +90,26 @@ void UtilitiesTests::testTagTarget()
     CPPUNIT_ASSERT(target.isEmpty());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("default level is 50", 50ul, target.level());
     CPPUNIT_ASSERT_EQUAL("level 50"s, target.toString(TagTargetLevel::Unspecified));
-    target = TagTarget(30, {1, 2, 3}, {4}, {5, 6}, {7, 8, 9});
+    target = TagTarget(30, { 1, 2, 3 }, { 4 }, { 5, 6 }, { 7, 8, 9 });
     CPPUNIT_ASSERT(!target.isEmpty());
-    const auto mapping = [] (uint64 level) {
-        return level == 30 ? TagTargetLevel::Track : TagTargetLevel::Unspecified;
-    };
-    CPPUNIT_ASSERT_EQUAL("level 30 'track, song, chapter', track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s, target.toString(mapping));
+    const auto mapping = [](uint64 level) { return level == 30 ? TagTargetLevel::Track : TagTargetLevel::Unspecified; };
+    CPPUNIT_ASSERT_EQUAL(
+        "level 30 'track, song, chapter', track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s,
+        target.toString(mapping));
     target.setLevel(40);
-    CPPUNIT_ASSERT_EQUAL("level 40, track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s, target.toString(mapping));
+    CPPUNIT_ASSERT_EQUAL("level 40, track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s,
+        target.toString(mapping));
     target.setLevelName("test");
-    CPPUNIT_ASSERT_EQUAL("level 40 'test', track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s, target.toString(mapping));
-    CPPUNIT_ASSERT(target == TagTarget(40, {1, 2, 3}, {4}, {5, 6}, {7, 8, 9}));
+    CPPUNIT_ASSERT_EQUAL("level 40 'test', track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s,
+        target.toString(mapping));
+    CPPUNIT_ASSERT(target == TagTarget(40, { 1, 2, 3 }, { 4 }, { 5, 6 }, { 7, 8, 9 }));
     target.clear();
     CPPUNIT_ASSERT(target.isEmpty());
-
 }
 
 void UtilitiesTests::testSignature()
 {
-    const unsigned char xzHead[12] = {
-        0xfd, 0x37, 0x7a, 0x58,
-        0x5a, 0x00, 0x00, 0x04,
-        0xe6, 0xd6, 0xb4, 0x46
-    };
+    const unsigned char xzHead[12] = { 0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00, 0x00, 0x04, 0xe6, 0xd6, 0xb4, 0x46 };
 
     // truncated buffer
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Unknown, parseSignature(reinterpret_cast<const char *>(xzHead), 3));
@@ -206,7 +202,7 @@ void UtilitiesTests::testBackupFile()
     try {
         createBackupFile(file.path(), backupPath2, file.stream(), backupStream2);
         CPPUNIT_FAIL("renaming failed because backup dir does not exist");
-    } catch(...) {
+    } catch (...) {
         const char *what = catchIoFailure();
         CPPUNIT_ASSERT(strstr(what, "Unable to rename original file before rewriting it."));
     }
@@ -240,9 +236,10 @@ void UtilitiesTests::testBackupFile()
     createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throw OperationAbortedException();
-    } catch(...) {
+    } catch (...) {
         Diagnostics diag;
-        CPPUNIT_ASSERT_THROW(handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test"), OperationAbortedException);
+        CPPUNIT_ASSERT_THROW(
+            handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test"), OperationAbortedException);
         CPPUNIT_ASSERT(diag.level() < DiagLevel::Critical);
         CPPUNIT_ASSERT(!diag.empty());
         CPPUNIT_ASSERT_EQUAL("Rewriting the file to apply changed tag information has been aborted."s, diag.front().message());
@@ -253,7 +250,7 @@ void UtilitiesTests::testBackupFile()
     createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throw Failure();
-    } catch(...) {
+    } catch (...) {
         Diagnostics diag;
         CPPUNIT_ASSERT_THROW(handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test"), Failure);
         CPPUNIT_ASSERT(diag.level() >= DiagLevel::Critical);
@@ -265,12 +262,12 @@ void UtilitiesTests::testBackupFile()
     createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throwIoFailure("simulated IO failure");
-    } catch(...) {
+    } catch (...) {
         Diagnostics diag;
         try {
             handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test");
             CPPUNIT_FAIL("IO failure not rethrown");
-        } catch(...) {
+        } catch (...) {
             catchIoFailure();
         }
         CPPUNIT_ASSERT(diag.level() >= DiagLevel::Critical);

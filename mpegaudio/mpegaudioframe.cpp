@@ -14,12 +14,17 @@ namespace TagParser {
  */
 const char *mpegChannelModeString(MpegChannelMode channelMode)
 {
-    switch(channelMode) {
-    case MpegChannelMode::Stereo: return "2 channels: stereo";
-    case MpegChannelMode::JointStereo: return "2 channels: joint stereo";
-    case MpegChannelMode::DualChannel: return "2 channels: dual channel";
-    case MpegChannelMode::SingleChannel: return "1 channel: single channel";
-    default: return nullptr;
+    switch (channelMode) {
+    case MpegChannelMode::Stereo:
+        return "2 channels: stereo";
+    case MpegChannelMode::JointStereo:
+        return "2 channels: joint stereo";
+    case MpegChannelMode::DualChannel:
+        return "2 channels: dual channel";
+    case MpegChannelMode::SingleChannel:
+        return "1 channel: single channel";
+    default:
+        return nullptr;
     }
 }
 
@@ -30,15 +35,11 @@ const uint64 MpegAudioFrame::m_xingHeaderOffset = 0x24;
  * \brief The MpegAudioFrame class is used to parse MPEG audio frames.
  */
 
-const int MpegAudioFrame::m_bitrateTable[0x2][0x3][0xF] =
-{
-    {{0,32,64,96,128,160,192,224,256,288,320,352,384,416,448},
-     {0,32,48,56,64,80,96,112,128,160,192,224,256,320,384},
-     {0,32,40,48,56,64,80,96,112,128,160,192,224,256,320}},
-    {{0,32,48,56,64,80,96,112,128,144,160,176,192,224,256},
-     {0,8,16,24,32,40,48,56,64,80,96,112,128,144,160},
-     {0,8,16,24,32,40,48,56,64,80,96,112,128,144,160}}
-};
+const int MpegAudioFrame::m_bitrateTable[0x2][0x3][0xF] = { { { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448 },
+                                                                { 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384 },
+                                                                { 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320 } },
+    { { 0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256 }, { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 },
+        { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 } } };
 
 const uint32 MpegAudioFrame::m_sync = 0xFFE00000u;
 
@@ -50,23 +51,23 @@ const uint32 MpegAudioFrame::m_sync = 0xFFE00000u;
 void MpegAudioFrame::parseHeader(BinaryReader &reader)
 {
     m_header = reader.readUInt32BE();
-    if(!isValid()) {
+    if (!isValid()) {
         throw InvalidDataException();
     }
     reader.stream()->seekg(m_xingHeaderOffset - 4, ios_base::cur);
     m_xingHeader = reader.readUInt64BE();
     m_xingHeaderFlags = static_cast<XingHeaderFlags>(m_xingHeader & 0xffffffffuL);
-    if(isXingHeaderAvailable()) {
-        if(isXingFramefieldPresent()) {
+    if (isXingHeaderAvailable()) {
+        if (isXingFramefieldPresent()) {
             m_xingFramefield = reader.readUInt32BE();
         }
-        if(isXingBytesfieldPresent()) {
+        if (isXingBytesfieldPresent()) {
             m_xingBytesfield = reader.readUInt32BE();
         }
-        if(isXingTocFieldPresent()) {
+        if (isXingTocFieldPresent()) {
             reader.stream()->seekg(64, ios_base::cur);
         }
-        if(isXingQualityIndicatorFieldPresent()) {
+        if (isXingQualityIndicatorFieldPresent()) {
             m_xingQualityIndicator = reader.readUInt32BE();
         }
     }
@@ -77,7 +78,7 @@ void MpegAudioFrame::parseHeader(BinaryReader &reader)
  */
 double MpegAudioFrame::mpegVersion() const
 {
-    switch(m_header & 0x180000u) {
+    switch (m_header & 0x180000u) {
     case 0x180000u:
         return 1.0;
     case 0x100000u:
@@ -153,7 +154,7 @@ uint32 MpegAudioFrame::samplingFrequency() const
  */
 MpegChannelMode MpegAudioFrame::channelMode() const
 {
-    if(isValid()) {
+    if (isValid()) {
         switch (m_header & 0xc0u) {
         case 0xc0u:
             return MpegChannelMode::SingleChannel;
@@ -163,8 +164,7 @@ MpegChannelMode MpegAudioFrame::channelMode() const
             return MpegChannelMode::JointStereo;
         case 0x00:
             return MpegChannelMode::Stereo;
-        default:
-            ;
+        default:;
         }
     }
     return MpegChannelMode::Unspecifed;
@@ -188,8 +188,7 @@ uint32 MpegAudioFrame::sampleCount() const
         case 0x0u:
             return 576u;
         }
-    default:
-        ;
+    default:;
     }
     return 0;
 }
@@ -201,13 +200,17 @@ uint32 MpegAudioFrame::size() const
 {
     switch (m_header & 0x60000u) {
     case 0x60000u:
-        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
+        return static_cast<uint32>(
+            ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
+            + static_cast<double>(paddingSize()));
     case 0x40000u:
     case 0x20000u:
-        return static_cast<uint32>(((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount()) + static_cast<double>(paddingSize()));
+        return static_cast<uint32>(
+            ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
+            + static_cast<double>(paddingSize()));
     default:
         return 0;
     }
 }
 
-}
+} // namespace TagParser

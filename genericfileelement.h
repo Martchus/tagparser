@@ -1,16 +1,16 @@
 #ifndef TAG_PARSER_GENERICFILEELEMENT_H
 #define TAG_PARSER_GENERICFILEELEMENT_H
 
-#include "./progressfeedback.h"
 #include "./exceptions.h"
+#include "./progressfeedback.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/copy.h>
 
-#include <list>
 #include <initializer_list>
-#include <memory>
 #include <iostream>
+#include <list>
+#include <memory>
 #include <string>
 
 namespace IoUtilities {
@@ -18,7 +18,7 @@ namespace IoUtilities {
 class BinaryReader;
 class BinaryWriter;
 
-}
+} // namespace IoUtilities
 
 namespace TagParser {
 
@@ -33,9 +33,8 @@ class Diagnostics;
  *
  * For an example of such a specialization see FileElementTraits<Mp4Atom> or FileElementTraits<EbmlElement>.
  */
-template<typename ImplementationType>
-class FileElementTraits
-{};
+template <typename ImplementationType> class FileElementTraits {
+};
 
 /*!
  * \class Media::GenericFileElement
@@ -45,9 +44,7 @@ class FileElementTraits
  * \remarks This template class is intended to be subclassed using
  *          with the "Curiously recurring template pattern".
  */
-template <class ImplementationType>
-class TAG_PARSER_EXPORT GenericFileElement
-{
+template <class ImplementationType> class TAG_PARSER_EXPORT GenericFileElement {
     friend class FileElementTraits<ImplementationType>;
 
 public:
@@ -69,12 +66,12 @@ public:
     GenericFileElement(ContainerType &container, uint64 startOffset);
     GenericFileElement(ImplementationType &parent, uint64 startOffset);
     GenericFileElement(ContainerType &container, uint64 startOffset, uint64 maxSize);
-    GenericFileElement(const GenericFileElement& other) = delete;
-    GenericFileElement(GenericFileElement& other) = delete;
-    GenericFileElement& operator =(const GenericFileElement& other) = delete;
+    GenericFileElement(const GenericFileElement &other) = delete;
+    GenericFileElement(GenericFileElement &other) = delete;
+    GenericFileElement &operator=(const GenericFileElement &other) = delete;
 
-    ContainerType& container();
-    const ContainerType& container() const;
+    ContainerType &container();
+    const ContainerType &container() const;
     std::iostream &stream();
     IoUtilities::BinaryReader &reader();
     IoUtilities::BinaryWriter &writer();
@@ -91,26 +88,26 @@ public:
     uint64 endOffset() const;
     uint64 maxTotalSize() const;
     byte level() const;
-    ImplementationType* parent();
-    const ImplementationType* parent() const;
-    ImplementationType* parent(byte n);
-    const ImplementationType* parent(byte n) const;
-    ImplementationType* nextSibling();
-    const ImplementationType* nextSibling() const;
-    ImplementationType* firstChild();
-    const ImplementationType* firstChild() const;
-    ImplementationType* lastChild();
-    const ImplementationType* lastChild() const;
-    ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item);
-    ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...);
-    const ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item) const;
-    const ImplementationType* subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const;
-    ImplementationType* childById(const IdentifierType &id, Diagnostics &diag);
-    const ImplementationType* childById(const IdentifierType &id, Diagnostics &diag) const;
-    ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag);
-    const ImplementationType* siblingById(const IdentifierType &id, Diagnostics &diag) const;
-    ImplementationType* siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag);
-    const ImplementationType* siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag) const;
+    ImplementationType *parent();
+    const ImplementationType *parent() const;
+    ImplementationType *parent(byte n);
+    const ImplementationType *parent(byte n) const;
+    ImplementationType *nextSibling();
+    const ImplementationType *nextSibling() const;
+    ImplementationType *firstChild();
+    const ImplementationType *firstChild() const;
+    ImplementationType *lastChild();
+    const ImplementationType *lastChild() const;
+    ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item);
+    ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...);
+    const ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item) const;
+    const ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const;
+    ImplementationType *childById(const IdentifierType &id, Diagnostics &diag);
+    const ImplementationType *childById(const IdentifierType &id, Diagnostics &diag) const;
+    ImplementationType *siblingById(const IdentifierType &id, Diagnostics &diag);
+    const ImplementationType *siblingById(const IdentifierType &id, Diagnostics &diag) const;
+    ImplementationType *siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag);
+    const ImplementationType *siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag) const;
     bool isParent() const;
     bool isPadding() const;
     uint64 firstChildOffset() const;
@@ -120,7 +117,7 @@ public:
     void reparse(Diagnostics &diag);
     void validateSubsequentElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
     static constexpr uint32 maximumIdLengthSupported();
-    static constexpr uint32 maximumSizeLengthSupported();    
+    static constexpr uint32 maximumSizeLengthSupported();
     static constexpr byte minimumElementSize();
     void copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     void copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
@@ -139,7 +136,7 @@ protected:
     uint32 m_idLength;
     DataSizeType m_dataSize;
     uint32 m_sizeLength;
-    ImplementationType* m_parent;
+    ImplementationType *m_parent;
     std::unique_ptr<ImplementationType> m_nextSibling;
     std::unique_ptr<ImplementationType> m_firstChild;
     std::unique_ptr<char[]> m_buffer;
@@ -147,8 +144,9 @@ protected:
 private:
     void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress);
 
-    ContainerType* m_container;
+    ContainerType *m_container;
     bool m_parsed;
+
 protected:
     bool m_sizeUnknown;
 };
@@ -158,19 +156,19 @@ protected:
  * \remarks The available size is obtained using the stream of the \a container.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset) :
-    m_id(IdentifierType()),
-    m_startOffset(startOffset),
-    m_idLength(0),
-    m_dataSize(0),
-    m_sizeLength(0),
-    m_parent(nullptr),
-    m_container(&container),
-    m_parsed(false),
-    m_sizeUnknown(false)
+GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset)
+    : m_id(IdentifierType())
+    , m_startOffset(startOffset)
+    , m_idLength(0)
+    , m_dataSize(0)
+    , m_sizeLength(0)
+    , m_parent(nullptr)
+    , m_container(&container)
+    , m_parsed(false)
+    , m_sizeUnknown(false)
 {
     m_maxSize = container.fileInfo().size();
-    if(m_maxSize > startOffset) {
+    if (m_maxSize > startOffset) {
         m_maxSize -= startOffset;
         stream().seekg(startOffset, std::ios_base::beg);
     } else {
@@ -182,41 +180,44 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
  * \brief Constructs a new sub level file element with the specified \a parent at the specified \a startOffset.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &parent, uint64 startOffset) :
-    m_id(IdentifierType()),
-    m_startOffset(startOffset),
-    m_maxSize(parent.startOffset() + parent.totalSize() - startOffset),
-    m_idLength(0),
-    m_dataSize(0),
-    m_sizeLength(0),
-    m_parent(&parent),
-    m_container(&parent.container()),
-    m_parsed(false),
-    m_sizeUnknown(false)
-{}
+GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &parent, uint64 startOffset)
+    : m_id(IdentifierType())
+    , m_startOffset(startOffset)
+    , m_maxSize(parent.startOffset() + parent.totalSize() - startOffset)
+    , m_idLength(0)
+    , m_dataSize(0)
+    , m_sizeLength(0)
+    , m_parent(&parent)
+    , m_container(&parent.container())
+    , m_parsed(false)
+    , m_sizeUnknown(false)
+{
+}
 
 /*!
  * \brief Constructs a new sub level file element with the specified \a container, \a startOffset and \a maxSize.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset, uint64 maxSize) :
-    m_id(IdentifierType()),
-    m_startOffset(startOffset),
-    m_maxSize(maxSize),
-    m_idLength(0),
-    m_dataSize(0),
-    m_sizeLength(0),
-    m_parent(nullptr),
-    m_container(&container),
-    m_parsed(false),
-    m_sizeUnknown(false)
-{}
+GenericFileElement<ImplementationType>::GenericFileElement(
+    GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset, uint64 maxSize)
+    : m_id(IdentifierType())
+    , m_startOffset(startOffset)
+    , m_maxSize(maxSize)
+    , m_idLength(0)
+    , m_dataSize(0)
+    , m_sizeLength(0)
+    , m_parent(nullptr)
+    , m_container(&container)
+    , m_parsed(false)
+    , m_sizeUnknown(false)
+{
+}
 
 /*!
  * \brief Returns the related container.
  */
 template <class ImplementationType>
-inline typename GenericFileElement<ImplementationType>::ContainerType& GenericFileElement<ImplementationType>::container()
+inline typename GenericFileElement<ImplementationType>::ContainerType &GenericFileElement<ImplementationType>::container()
 {
     return *m_container;
 }
@@ -233,8 +234,7 @@ inline const typename GenericFileElement<ImplementationType>::ContainerType &Gen
 /*!
  * \brief Returns the related stream.
  */
-template <class ImplementationType>
-inline std::iostream &GenericFileElement<ImplementationType>::stream()
+template <class ImplementationType> inline std::iostream &GenericFileElement<ImplementationType>::stream()
 {
     return m_container->stream();
 }
@@ -242,8 +242,7 @@ inline std::iostream &GenericFileElement<ImplementationType>::stream()
 /*!
  * \brief Returns the related BinaryReader.
  */
-template <class ImplementationType>
-inline IoUtilities::BinaryReader &GenericFileElement<ImplementationType>::reader()
+template <class ImplementationType> inline IoUtilities::BinaryReader &GenericFileElement<ImplementationType>::reader()
 {
     return m_container->reader();
 }
@@ -251,8 +250,7 @@ inline IoUtilities::BinaryReader &GenericFileElement<ImplementationType>::reader
 /*!
  * \brief Returns the related BinaryWriter.
  */
-template <class ImplementationType>
-inline IoUtilities::BinaryWriter &GenericFileElement<ImplementationType>::writer()
+template <class ImplementationType> inline IoUtilities::BinaryWriter &GenericFileElement<ImplementationType>::writer()
 {
     return m_container->writer();
 }
@@ -260,8 +258,7 @@ inline IoUtilities::BinaryWriter &GenericFileElement<ImplementationType>::writer
 /*!
  * \brief Returns the start offset in the related stream.
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::startOffset() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::startOffset() const
 {
     return m_startOffset;
 }
@@ -269,8 +266,7 @@ inline uint64 GenericFileElement<ImplementationType>::startOffset() const
 /*!
  * \brief Returns the offset of the element in its parent or - if it is a top-level element - in the related stream.
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::relativeStartOffset() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::relativeStartOffset() const
 {
     return parent() ? startOffset() - parent()->startOffset() : startOffset();
 }
@@ -287,8 +283,7 @@ inline const typename GenericFileElement<ImplementationType>::IdentifierType &Ge
 /*!
  * \brief Returns a printable string representation of the element ID.
  */
-template <class ImplementationType>
-inline std::string GenericFileElement<ImplementationType>::idToString() const
+template <class ImplementationType> inline std::string GenericFileElement<ImplementationType>::idToString() const
 {
     return static_cast<ImplementationType *>(this)->idToString();
 }
@@ -296,8 +291,7 @@ inline std::string GenericFileElement<ImplementationType>::idToString() const
 /*!
  * \brief Returns the length of the id denotation in byte.
  */
-template <class ImplementationType>
-inline uint32 GenericFileElement<ImplementationType>::idLength() const
+template <class ImplementationType> inline uint32 GenericFileElement<ImplementationType>::idLength() const
 {
     return m_idLength;
 }
@@ -307,8 +301,7 @@ inline uint32 GenericFileElement<ImplementationType>::idLength() const
  *
  * This is the sum of the id length and the size length.
  */
-template <class ImplementationType>
-inline uint32 GenericFileElement<ImplementationType>::headerSize() const
+template <class ImplementationType> inline uint32 GenericFileElement<ImplementationType>::headerSize() const
 {
     return m_idLength + m_sizeLength;
 }
@@ -327,8 +320,7 @@ inline typename GenericFileElement<ImplementationType>::DataSizeType GenericFile
 /*!
  * \brief Returns the length of the size denotation of the element in byte.
  */
-template <class ImplementationType>
-inline uint32 GenericFileElement<ImplementationType>::sizeLength() const
+template <class ImplementationType> inline uint32 GenericFileElement<ImplementationType>::sizeLength() const
 {
     return m_sizeLength;
 }
@@ -338,8 +330,7 @@ inline uint32 GenericFileElement<ImplementationType>::sizeLength() const
  *
  * This is the sum of start offset and header size.
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::dataOffset() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::dataOffset() const
 {
     return startOffset() + headerSize();
 }
@@ -349,8 +340,7 @@ inline uint64 GenericFileElement<ImplementationType>::dataOffset() const
  *
  * This is the sum of the header size and the data size.
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::totalSize() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::totalSize() const
 {
     return headerSize() + dataSize();
 }
@@ -358,8 +348,7 @@ inline uint64 GenericFileElement<ImplementationType>::totalSize() const
 /*!
  * \brief Returns the offset of the first byte which doesn't belong to this element anymore.
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::endOffset() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::endOffset() const
 {
     return startOffset() + totalSize();
 }
@@ -370,8 +359,7 @@ inline uint64 GenericFileElement<ImplementationType>::endOffset() const
  * This is usually the size of the file for top-level elements and
  * the remaining size of the parent for non-top-level elements.
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
 {
     return m_maxSize;
 }
@@ -380,11 +368,11 @@ inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
  * \brief Returns how deep the element is nested (0 for top-level elements, 1 for children of
  *        top-level elements, ...).
  */
-template<class ImplementationType>
-byte GenericFileElement<ImplementationType>::level() const
+template <class ImplementationType> byte GenericFileElement<ImplementationType>::level() const
 {
     byte level = 0;
-    for(const ImplementationType *parent = m_parent; parent; ++level, parent = parent->m_parent);
+    for (const ImplementationType *parent = m_parent; parent; ++level, parent = parent->m_parent)
+        ;
     return level;
 }
 
@@ -394,8 +382,7 @@ byte GenericFileElement<ImplementationType>::level() const
  * The returned element has ownership over the current instance.
  * If the current element is a top level element nullptr is returned.
  */
-template <class ImplementationType>
-inline ImplementationType *GenericFileElement<ImplementationType>::parent()
+template <class ImplementationType> inline ImplementationType *GenericFileElement<ImplementationType>::parent()
 {
     return m_parent;
 }
@@ -406,8 +393,7 @@ inline ImplementationType *GenericFileElement<ImplementationType>::parent()
  * The returned element has ownership over the current instance.
  * If the current element is a top level element nullptr is returned.
  */
-template <class ImplementationType>
-inline const ImplementationType *GenericFileElement<ImplementationType>::parent() const
+template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::parent() const
 {
     return m_parent;
 }
@@ -418,11 +404,11 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::parent(
  * - The returned element has ownership (at least indirect) over the current instance.
  * - Returns nullptr if level() < \a n.
  */
-template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::parent(byte n)
+template <class ImplementationType> ImplementationType *GenericFileElement<ImplementationType>::parent(byte n)
 {
     ImplementationType *parent = static_cast<ImplementationType *>(this);
-    for(; n && parent; --n, parent = parent->m_parent);
+    for (; n && parent; --n, parent = parent->m_parent)
+        ;
     return parent;
 }
 
@@ -432,8 +418,7 @@ ImplementationType *GenericFileElement<ImplementationType>::parent(byte n)
  * - The returned element has ownership (at least indirect) over the current instance.
  * - Returns nullptr if level() < \a n.
  */
-template <class ImplementationType>
-inline const ImplementationType *GenericFileElement<ImplementationType>::parent(byte n) const
+template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::parent(byte n) const
 {
     return const_cast<GenericFileElement<ImplementationType> *>(this)->parent(n);
 }
@@ -446,8 +431,7 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::parent(
  *
  * \remarks parse() needs to be called before.
  */
-template <class ImplementationType>
-inline ImplementationType *GenericFileElement<ImplementationType>::nextSibling()
+template <class ImplementationType> inline ImplementationType *GenericFileElement<ImplementationType>::nextSibling()
 {
     return m_nextSibling.get();
 }
@@ -460,8 +444,7 @@ inline ImplementationType *GenericFileElement<ImplementationType>::nextSibling()
  *
  * \remarks parse() needs to be called before.
  */
-template <class ImplementationType>
-inline const ImplementationType *GenericFileElement<ImplementationType>::nextSibling() const
+template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::nextSibling() const
 {
     return m_nextSibling.get();
 }
@@ -474,8 +457,7 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::nextSib
  *
  * \remarks parse() needs to be called before.
  */
-template <class ImplementationType>
-inline ImplementationType *GenericFileElement<ImplementationType>::firstChild()
+template <class ImplementationType> inline ImplementationType *GenericFileElement<ImplementationType>::firstChild()
 {
     return m_firstChild.get();
 }
@@ -488,8 +470,7 @@ inline ImplementationType *GenericFileElement<ImplementationType>::firstChild()
  *
  * \remarks parse() needs to be called before.
  */
-template <class ImplementationType>
-inline const ImplementationType *GenericFileElement<ImplementationType>::firstChild() const
+template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::firstChild() const
 {
     return m_firstChild.get();
 }
@@ -502,11 +483,10 @@ inline const ImplementationType *GenericFileElement<ImplementationType>::firstCh
  *
  * \remarks parse() needs to be called before.
  */
-template <class ImplementationType>
-inline ImplementationType *GenericFileElement<ImplementationType>::lastChild()
+template <class ImplementationType> inline ImplementationType *GenericFileElement<ImplementationType>::lastChild()
 {
-    for(ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
-        if(!child->m_nextSibling) {
+    for (ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->m_nextSibling) {
             return child;
         }
     }
@@ -521,8 +501,7 @@ inline ImplementationType *GenericFileElement<ImplementationType>::lastChild()
  *
  * \remarks parse() needs to be called before.
  */
-template <class ImplementationType>
-inline const ImplementationType *GenericFileElement<ImplementationType>::lastChild() const
+template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::lastChild() const
 {
     return const_cast<GenericFileElement<ImplementationType> *>(this)->lastChild();
 }
@@ -542,11 +521,11 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Dia
     // ensure element is parsed
     parse(diag);
     // return the element if it matches the current and last item in the path
-    if(item == id()) {
+    if (item == id()) {
         return static_cast<ImplementationType *>(this);
     }
     // check whether a sibling matches the item
-    if(nextSibling()) {
+    if (nextSibling()) {
         return nextSibling()->subelementByPath(diag, item);
     }
     return nullptr;
@@ -567,14 +546,14 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Dia
     // ensure element is parsed
     parse(diag);
     // continue with next item in path if the element matches the current item
-    if(item == id()) {
-        if(!firstChild()) {
+    if (item == id()) {
+        if (!firstChild()) {
             return nullptr;
         }
         return firstChild()->subelementByPath(diag, remainingPath);
     }
     // check whether a sibling matches the current item
-    if(nextSibling()) {
+    if (nextSibling()) {
         return nextSibling()->subelementByPath(diag, item, remainingPath);
     }
     return nullptr;
@@ -605,7 +584,8 @@ const ImplementationType *GenericFileElement<ImplementationType>::subelementByPa
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const
+const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(
+    Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const
 {
     return const_cast<GenericFileElement<ImplementationType> *>(this)->subelementByPath(diag, item, remainingPath);
 }
@@ -619,13 +599,12 @@ const ImplementationType *GenericFileElement<ImplementationType>::subelementByPa
  * \throws Throws a parsing exception when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::childById(const IdentifierType &id, Diagnostics &diag)
+template <class ImplementationType> ImplementationType *GenericFileElement<ImplementationType>::childById(const IdentifierType &id, Diagnostics &diag)
 {
     parse(diag); // ensure element is parsed
-    for(ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
+    for (ImplementationType *child = firstChild(); child; child = child->nextSibling()) {
         child->parse(diag);
-        if(child->id() == id) {
+        if (child->id() == id) {
             return child;
         }
     }
@@ -661,9 +640,9 @@ template <class ImplementationType>
 ImplementationType *GenericFileElement<ImplementationType>::siblingById(const IdentifierType &id, Diagnostics &diag)
 {
     parse(diag); // ensure element is parsed
-    for(ImplementationType *sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
+    for (ImplementationType *sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
         sibling->parse(diag);
-        if(sibling->id() == id) {
+        if (sibling->id() == id) {
             return sibling;
         }
     }
@@ -700,9 +679,9 @@ template <class ImplementationType>
 ImplementationType *GenericFileElement<ImplementationType>::siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag)
 {
     parse(diag); // ensure element is parsed
-    for(ImplementationType *sibling = static_cast<ImplementationType *>(this); sibling; sibling = sibling->nextSibling()) {
+    for (ImplementationType *sibling = static_cast<ImplementationType *>(this); sibling; sibling = sibling->nextSibling()) {
         sibling->parse(diag);
-        if(sibling->id() == id) {
+        if (sibling->id() == id) {
             return sibling;
         }
     }
@@ -728,8 +707,7 @@ const ImplementationType *GenericFileElement<ImplementationType>::siblingByIdInc
 /*!
  * \brief Returns an indication whether this instance is a parent element.
  */
-template <class ImplementationType>
-inline bool GenericFileElement<ImplementationType>::isParent() const
+template <class ImplementationType> inline bool GenericFileElement<ImplementationType>::isParent() const
 {
     return static_cast<const ImplementationType *>(this)->isParent();
 }
@@ -737,8 +715,7 @@ inline bool GenericFileElement<ImplementationType>::isParent() const
 /*!
  * \brief Returns an indication whether this instance is a padding element.
  */
-template <class ImplementationType>
-inline bool GenericFileElement<ImplementationType>::isPadding() const
+template <class ImplementationType> inline bool GenericFileElement<ImplementationType>::isPadding() const
 {
     return static_cast<const ImplementationType *>(this)->isPadding();
 }
@@ -746,8 +723,7 @@ inline bool GenericFileElement<ImplementationType>::isPadding() const
 /*!
  * \brief Returns the offset of the first child (relative to the start offset of this element).
  */
-template <class ImplementationType>
-inline uint64 GenericFileElement<ImplementationType>::firstChildOffset() const
+template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::firstChildOffset() const
 {
     return static_cast<const ImplementationType *>(this)->firstChildOffset();
 }
@@ -755,8 +731,7 @@ inline uint64 GenericFileElement<ImplementationType>::firstChildOffset() const
 /*!
  * \brief Returns an indication whether this instance has been parsed yet.
  */
-template <class ImplementationType>
-inline bool GenericFileElement<ImplementationType>::isParsed() const
+template <class ImplementationType> inline bool GenericFileElement<ImplementationType>::isParsed() const
 {
     return m_parsed;
 }
@@ -767,8 +742,7 @@ inline bool GenericFileElement<ImplementationType>::isParsed() const
  * Resets id length, data size, size length to zero. Subsequent elements
  * will be deleted.
  */
-template <class ImplementationType>
-void GenericFileElement<ImplementationType>::clear()
+template <class ImplementationType> void GenericFileElement<ImplementationType>::clear()
 {
     m_id = IdentifierType();
     //m_startOffset = 0;
@@ -794,10 +768,9 @@ void GenericFileElement<ImplementationType>::clear()
  * \throws Throws Media::Failure or a derived exception when a parsing
  *         error occurs.
  */
-template <class ImplementationType>
-void GenericFileElement<ImplementationType>::parse(Diagnostics &diag)
+template <class ImplementationType> void GenericFileElement<ImplementationType>::parse(Diagnostics &diag)
 {
-    if(!m_parsed) {
+    if (!m_parsed) {
         static_cast<ImplementationType *>(this)->internalParse(diag);
         m_parsed = true;
     }
@@ -819,8 +792,7 @@ void GenericFileElement<ImplementationType>::parse(Diagnostics &diag)
  *
  * \sa parse()
  */
-template <class ImplementationType>
-void GenericFileElement<ImplementationType>::reparse(Diagnostics &diag)
+template <class ImplementationType> void GenericFileElement<ImplementationType>::reparse(Diagnostics &diag)
 {
     clear();
     static_cast<ImplementationType *>(this)->parse(diag);
@@ -845,18 +817,18 @@ void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
     // validate element itself by just parsing it
     parse(diag);
     // validate children
-    if(firstChild()) {
+    if (firstChild()) {
         try {
             firstChild()->validateSubsequentElementStructure(diag, paddingSize);
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             // ignore critical errors in child structure to continue validating siblings
             // (critical notifications about the errors should have already been added to diag, so nothing to do)
         }
-    } else if(paddingSize && isPadding()) { // element is padding
+    } else if (paddingSize && isPadding()) { // element is padding
         *paddingSize += totalSize();
     }
     // validate siblings
-    if(nextSibling()) {
+    if (nextSibling()) {
         nextSibling()->validateSubsequentElementStructure(diag, paddingSize);
     }
 }
@@ -876,7 +848,7 @@ void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStre
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
-    if(uint32 firstChildOffset = this->firstChildOffset()) {
+    if (uint32 firstChildOffset = this->firstChildOffset()) {
         copyInternal(targetStream, startOffset(), firstChildOffset, diag, progress);
     } else {
         copyInternal(targetStream, startOffset(), totalSize(), diag, progress);
@@ -896,8 +868,7 @@ void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetSt
  * \brief Buffers the element (header and data).
  * \remarks The element must have been parsed.
  */
-template <class ImplementationType>
-void GenericFileElement<ImplementationType>::makeBuffer()
+template <class ImplementationType> void GenericFileElement<ImplementationType>::makeBuffer()
 {
     m_buffer = std::make_unique<char[]>(totalSize());
     container().stream().seekg(startOffset());
@@ -907,8 +878,7 @@ void GenericFileElement<ImplementationType>::makeBuffer()
 /*!
  * \brief Discards buffered data.
  */
-template <class ImplementationType>
-inline void GenericFileElement<ImplementationType>::discardBuffer()
+template <class ImplementationType> inline void GenericFileElement<ImplementationType>::discardBuffer()
 {
     m_buffer.reset();
 }
@@ -917,8 +887,7 @@ inline void GenericFileElement<ImplementationType>::discardBuffer()
  * \brief Copies buffered data to \a targetStream.
  * \remarks Data must have been buffered using the makeBuffer() method.
  */
-template <class ImplementationType>
-inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
+template <class ImplementationType> inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
 {
     targetStream.write(m_buffer.get(), totalSize());
 }
@@ -928,7 +897,8 @@ inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &tar
  * \remarks So this is copyBuffer() with a fallback to copyEntirely().
  */
 template <class ImplementationType>
-inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
+inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(
+    std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     m_buffer ? copyBuffer(targetStream) : copyEntirely(targetStream, diag, progress);
 }
@@ -937,8 +907,7 @@ inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(std
  * \brief Returns buffered data. The returned array is totalSize() bytes long.
  * \remarks Data must have been buffered using the makeBuffer() method.
  */
-template <class ImplementationType>
-inline const std::unique_ptr<char[]> &GenericFileElement<ImplementationType>::buffer()
+template <class ImplementationType> inline const std::unique_ptr<char[]> &GenericFileElement<ImplementationType>::buffer()
 {
     return m_buffer;
 }
@@ -951,19 +920,21 @@ inline const std::unique_ptr<char[]> &GenericFileElement<ImplementationType>::bu
  * \sa copyEntireAtomToStream()
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
+void GenericFileElement<ImplementationType>::copyInternal(
+    std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     // ensure the header has been parsed correctly
     try {
         parse(diag);
-    } catch(const Failure &) {
+    } catch (const Failure &) {
         throw InvalidDataException();
     }
     auto &stream = container().stream();
     stream.seekg(startOffset);
     IoUtilities::CopyHelper<0x2000> copyHelper;
     if (progress) {
-        copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)), std::bind(&AbortableProgressFeedback::updateStepPercentageFromFraction, std::ref(progress), std::placeholders::_1));
+        copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)),
+            std::bind(&AbortableProgressFeedback::updateStepPercentageFromFraction, std::ref(progress), std::placeholders::_1));
     } else {
         copyHelper.copy(stream, targetStream, bytesToCopy);
     }
@@ -973,10 +944,9 @@ void GenericFileElement<ImplementationType>::copyInternal(std::ostream &targetSt
  * \brief Denotes the first child to start at the specified \a offset (relative to the start offset of this descriptor).
  * \remarks A new first child is constructed. A possibly existing subtree is invalidated.
  */
-template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
+template <class ImplementationType> ImplementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
 {
-    if(relativeFirstChildOffset + minimumElementSize() <= totalSize()) {
+    if (relativeFirstChildOffset + minimumElementSize() <= totalSize()) {
         m_firstChild.reset(new ImplementationType(static_cast<ImplementationType &>(*this), startOffset() + relativeFirstChildOffset));
     } else {
         m_firstChild.reset();
@@ -987,8 +957,7 @@ ImplementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uin
 /*!
  * \brief Returns the maximum id length supported by the class in byte.
  */
-template <class ImplementationType>
-constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupported()
+template <class ImplementationType> constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupported()
 {
     return sizeof(IdentifierType);
 }
@@ -996,8 +965,7 @@ constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupporte
 /*!
  * \brief Returns the maximum size length supported by the class in byte.
  */
-template <class ImplementationType>
-constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
+template <class ImplementationType> constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
 {
     return sizeof(DataSizeType);
 }
@@ -1005,8 +973,7 @@ constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSuppor
 /*!
  * \brief Returns the mimimum element size.
  */
-template <class ImplementationType>
-constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
+template <class ImplementationType> constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
 {
     return FileElementTraits<ImplementationType>::minimumElementSize();
 }
@@ -1025,6 +992,6 @@ constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
  * \sa reparse()
  */
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_GENERICFILEELEMENT_H

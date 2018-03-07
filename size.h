@@ -3,8 +3,8 @@
 
 #include "./global.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/types.h>
 
 #include <string>
 
@@ -13,8 +13,7 @@ namespace TagParser {
 /*!
  * \brief The Size class defines the size of a two-dimensional object using integer point precision.
  */
-class TAG_PARSER_EXPORT Size
-{
+class TAG_PARSER_EXPORT Size {
 public:
     constexpr Size();
     constexpr Size(uint32 width, uint32 height);
@@ -39,18 +38,20 @@ private:
 /*!
  * \brief Constructs a new Size.
  */
-constexpr Size::Size() :
-    m_width(0),
-    m_height(0)
-{}
+constexpr Size::Size()
+    : m_width(0)
+    , m_height(0)
+{
+}
 
 /*!
  * \brief Constructs a new Size of the specified \a width and \a height.
  */
-constexpr Size::Size(uint32 width, uint32 height) :
-    m_width(width),
-    m_height(height)
-{}
+constexpr Size::Size(uint32 width, uint32 height)
+    : m_width(width)
+    , m_height(height)
+{
+}
 
 /*!
  * \brief Returns the width.
@@ -125,6 +126,6 @@ inline std::string Size::toString() const
     return ConversionUtilities::argsToString("width: ", m_width, ", height: ", m_height);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_SIZE_H

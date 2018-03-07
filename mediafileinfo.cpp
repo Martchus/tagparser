@@ -1,11 +1,11 @@
 #include "./mediafileinfo.h"
-#include "./exceptions.h"
-#include "./tag.h"
-#include "./signature.h"
 #include "./abstracttrack.h"
 #include "./backuphelper.h"
 #include "./diagnostics.h"
+#include "./exceptions.h"
 #include "./progressfeedback.h"
+#include "./signature.h"
+#include "./tag.h"
 
 #include "./id3/id3v1tag.h"
 #include "./id3/id3v2tag.h"
@@ -16,10 +16,10 @@
 
 #include "./adts/adtsstream.h"
 
-#include "./mp4/mp4container.h"
 #include "./mp4/mp4atom.h"
-#include "./mp4/mp4tag.h"
+#include "./mp4/mp4container.h"
 #include "./mp4/mp4ids.h"
+#include "./mp4/mp4tag.h"
 #include "./mp4/mp4track.h"
 
 #include "./matroska/ebmlelement.h"
@@ -29,22 +29,22 @@
 
 #include "./ogg/oggcontainer.h"
 
-#include "./flac/flacstream.h"
 #include "./flac/flacmetadata.h"
+#include "./flac/flacstream.h"
 
+#include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/catchiofailure.h>
-#include <c++utilities/chrono/timespan.h>
 
 #include <unistd.h>
 
-#include <cstdio>
 #include <algorithm>
+#include <cstdio>
+#include <functional>
 #include <iomanip>
 #include <ios>
-#include <system_error>
-#include <functional>
 #include <memory>
+#include <system_error>
 
 using namespace std;
 using namespace std::placeholders;
@@ -60,9 +60,9 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 #ifdef FORCE_FULL_PARSE_DEFAULT
-# define MEDIAINFO_CPP_FORCE_FULL_PARSE true
+#define MEDIAINFO_CPP_FORCE_FULL_PARSE true
 #else
-# define MEDIAINFO_CPP_FORCE_FULL_PARSE false
+#define MEDIAINFO_CPP_FORCE_FULL_PARSE false
 #endif
 
 /*!
@@ -78,57 +78,60 @@ namespace TagParser {
 /*!
  * \brief Constructs a new MediaFileInfo.
  */
-MediaFileInfo::MediaFileInfo() :
-    m_containerParsingStatus(ParsingStatus::NotParsedYet),
-    m_containerFormat(ContainerFormat::Unknown),
-    m_containerOffset(0),
-    m_actualExistingId3v1Tag(false),
-    m_tracksParsingStatus(ParsingStatus::NotParsedYet),
-    m_tagsParsingStatus(ParsingStatus::NotParsedYet),
-    m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
-    m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
-    m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
-    m_forceRewrite(true),
-    m_minPadding(0),
-    m_maxPadding(0),
-    m_preferredPadding(0),
-    m_tagPosition(ElementPosition::BeforeData),
-    m_forceTagPosition(true),
-    m_indexPosition(ElementPosition::BeforeData),
-    m_forceIndexPosition(true)
-{}
+MediaFileInfo::MediaFileInfo()
+    : m_containerParsingStatus(ParsingStatus::NotParsedYet)
+    , m_containerFormat(ContainerFormat::Unknown)
+    , m_containerOffset(0)
+    , m_actualExistingId3v1Tag(false)
+    , m_tracksParsingStatus(ParsingStatus::NotParsedYet)
+    , m_tagsParsingStatus(ParsingStatus::NotParsedYet)
+    , m_chaptersParsingStatus(ParsingStatus::NotParsedYet)
+    , m_attachmentsParsingStatus(ParsingStatus::NotParsedYet)
+    , m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
+    , m_forceRewrite(true)
+    , m_minPadding(0)
+    , m_maxPadding(0)
+    , m_preferredPadding(0)
+    , m_tagPosition(ElementPosition::BeforeData)
+    , m_forceTagPosition(true)
+    , m_indexPosition(ElementPosition::BeforeData)
+    , m_forceIndexPosition(true)
+{
+}
 
 /*!
  * \brief Constructs a new MediaFileInfo for the specified file.
  *
  * \param path Specifies the absolute or relative path of the file.
  */
-MediaFileInfo::MediaFileInfo(const string &path) :
-    BasicFileInfo(path),
-    m_containerParsingStatus(ParsingStatus::NotParsedYet),
-    m_containerFormat(ContainerFormat::Unknown),
-    m_containerOffset(0),
-    m_actualExistingId3v1Tag(false),
-    m_tracksParsingStatus(ParsingStatus::NotParsedYet),
-    m_tagsParsingStatus(ParsingStatus::NotParsedYet),
-    m_chaptersParsingStatus(ParsingStatus::NotParsedYet),
-    m_attachmentsParsingStatus(ParsingStatus::NotParsedYet),
-    m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE),
-    m_forceRewrite(true),
-    m_minPadding(0),
-    m_maxPadding(0),
-    m_preferredPadding(0),
-    m_tagPosition(ElementPosition::BeforeData),
-    m_forceTagPosition(true),
-    m_indexPosition(ElementPosition::BeforeData),
-    m_forceIndexPosition(true)
-{}
+MediaFileInfo::MediaFileInfo(const string &path)
+    : BasicFileInfo(path)
+    , m_containerParsingStatus(ParsingStatus::NotParsedYet)
+    , m_containerFormat(ContainerFormat::Unknown)
+    , m_containerOffset(0)
+    , m_actualExistingId3v1Tag(false)
+    , m_tracksParsingStatus(ParsingStatus::NotParsedYet)
+    , m_tagsParsingStatus(ParsingStatus::NotParsedYet)
+    , m_chaptersParsingStatus(ParsingStatus::NotParsedYet)
+    , m_attachmentsParsingStatus(ParsingStatus::NotParsedYet)
+    , m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
+    , m_forceRewrite(true)
+    , m_minPadding(0)
+    , m_maxPadding(0)
+    , m_preferredPadding(0)
+    , m_tagPosition(ElementPosition::BeforeData)
+    , m_forceTagPosition(true)
+    , m_indexPosition(ElementPosition::BeforeData)
+    , m_forceIndexPosition(true)
+{
+}
 
 /*!
  * \brief Destroys the MediaFileInfo.
  */
 MediaFileInfo::~MediaFileInfo()
-{}
+{
+}
 
 /*!
  * \brief Parses the container format of the current file.
@@ -147,7 +150,7 @@ MediaFileInfo::~MediaFileInfo()
  */
 void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
 {
-    if(containerParsingStatus() != ParsingStatus::NotParsedYet) {
+    if (containerParsingStatus() != ParsingStatus::NotParsedYet) {
         // there's no need to read the container format twice
         return;
     }
@@ -164,18 +167,19 @@ void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
     char buff[16];
     const char *const buffEnd = buff + sizeof(buff), *buffOffset;
 startParsingSignature:
-    if(size() - m_containerOffset >= 16) {
+    if (size() - m_containerOffset >= 16) {
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
 
         // skip zero bytes/padding
         size_t bytesSkipped = 0;
-        for(buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped);
-        if(bytesSkipped >= 4) {
+        for (buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped)
+            ;
+        if (bytesSkipped >= 4) {
             m_containerOffset += bytesSkipped;
 
             // give up after 0x100 bytes
-            if((m_paddingSize += bytesSkipped) >= 0x100u) {
+            if ((m_paddingSize += bytesSkipped) >= 0x100u) {
                 m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
                 return;
@@ -184,16 +188,16 @@ startParsingSignature:
             // try again
             goto startParsingSignature;
         }
-        if(m_paddingSize) {
+        if (m_paddingSize) {
             diag.emplace_back(DiagLevel::Warning, argsToString(m_paddingSize, " zero-bytes skipped at the beginning of the file."), context);
         }
 
         // parse signature
-        switch((m_containerFormat = parseSignature(buff, sizeof(buff)))) {
+        switch ((m_containerFormat = parseSignature(buff, sizeof(buff)))) {
         case ContainerFormat::Id2v2Tag:
             // save position of ID3v2 tag
             m_actualId3v2TagOffsets.push_back(m_containerOffset);
-            if(m_actualId3v2TagOffsets.size() == 2) {
+            if (m_actualId3v2TagOffsets.size() == 2) {
                 diag.emplace_back(DiagLevel::Warning, "There is more than just one ID3v2 header at the beginning of the file.", context);
             }
 
@@ -203,7 +207,7 @@ startParsingSignature:
 
             // set the container offset to skip ID3v2 header
             m_containerOffset += toNormalInt(BE::toUInt32(buff + 1)) + 10;
-            if((*buff) & 0x10) {
+            if ((*buff) & 0x10) {
                 // footer present
                 m_containerOffset += 10;
             }
@@ -217,33 +221,34 @@ startParsingSignature:
             m_container = make_unique<Mp4Container>(*this, m_containerOffset);
             try {
                 static_cast<Mp4Container *>(m_container.get())->validateElementStructure(diag, &m_paddingSize);
-            } catch(const Failure &) {
+            } catch (const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             break;
-
-        } case ContainerFormat::Ebml: {
+        }
+        case ContainerFormat::Ebml: {
             // EBML/Matroska is handled using MatroskaContainer instance
             auto container = make_unique<MatroskaContainer>(*this, m_containerOffset);
             try {
                 container->parseHeader(diag);
-                if(container->documentType() == "matroska") {
+                if (container->documentType() == "matroska") {
                     m_containerFormat = ContainerFormat::Matroska;
-                } else if(container->documentType() == "webm") {
+                } else if (container->documentType() == "webm") {
                     m_containerFormat = ContainerFormat::Webm;
                 }
-                if(m_forceFullParse) {
+                if (m_forceFullParse) {
                     // validating the element structure of Matroska files takes too long when
                     // parsing big files so do this only when explicitely desired
                     container->validateElementStructure(diag, &m_paddingSize);
                     container->validateIndex(diag);
                 }
-            } catch(const Failure &) {
+            } catch (const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
             m_container = move(container);
             break;
-        } case ContainerFormat::Ogg:
+        }
+        case ContainerFormat::Ogg:
             // Ogg is handled by OggContainer instance
             m_container = make_unique<OggContainer>(*this, m_containerOffset);
             static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
@@ -251,22 +256,21 @@ startParsingSignature:
         case ContainerFormat::Unknown:
             // container format is still unknown -> check for magic numbers at odd offsets
             // -> check for tar (magic number at offset 0x101)
-            if(size() > 0x107) {
+            if (size() > 0x107) {
                 stream().seekg(0x101);
                 stream().read(buff, 6);
-                if(buff[0] == 0x75 && buff[1] == 0x73 && buff[2] == 0x74 && buff[3] == 0x61 && buff[4] == 0x72 && buff[5] == 0x00) {
+                if (buff[0] == 0x75 && buff[1] == 0x73 && buff[2] == 0x74 && buff[3] == 0x61 && buff[4] == 0x72 && buff[5] == 0x00) {
                     m_containerFormat = ContainerFormat::Tar;
                     break;
                 }
             }
-        default:
-            ;
+        default:;
         }
     }
 
     // set parsing status
-    if(m_containerParsingStatus == ParsingStatus::NotParsedYet) {
-        if(m_containerFormat == ContainerFormat::Unknown) {
+    if (m_containerParsingStatus == ParsingStatus::NotParsedYet) {
+        if (m_containerFormat == ContainerFormat::Unknown) {
             m_containerParsingStatus = ParsingStatus::NotSupported;
         } else {
             m_containerParsingStatus = ParsingStatus::Ok;
@@ -289,15 +293,15 @@ startParsingSignature:
  */
 void MediaFileInfo::parseTracks(Diagnostics &diag)
 {
-    if(tracksParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tracks twice
+    if (tracksParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tracks twice
         return;
     }
     static const string context("parsing tracks");
     try {
-        if(m_container) {
+        if (m_container) {
             m_container->parseTracks(diag);
         } else {
-            switch(m_containerFormat) {
+            switch (m_containerFormat) {
             case ContainerFormat::Adts:
                 m_singleTrack = make_unique<AdtsStream>(stream(), m_containerOffset);
                 break;
@@ -315,20 +319,19 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
             }
             m_singleTrack->parseHeader(diag);
 
-            switch(m_containerFormat) {
+            switch (m_containerFormat) {
             case ContainerFormat::Flac:
                 // FLAC streams might container padding
                 m_paddingSize += static_cast<FlacStream *>(m_singleTrack.get())->paddingSize();
                 break;
-            default:
-                ;
+            default:;
             }
         }
         m_tracksParsingStatus = ParsingStatus::Ok;
-    } catch(const NotImplementedException &) {
+    } catch (const NotImplementedException &) {
         diag.emplace_back(DiagLevel::Information, "Parsing tracks is not implemented for the container format of the file.", context);
         m_tracksParsingStatus = ParsingStatus::NotSupported;
-    } catch(const Failure &) {
+    } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Unable to parse tracks.", context);
         m_tracksParsingStatus = ParsingStatus::CriticalFailure;
     }
@@ -350,55 +353,55 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
  */
 void MediaFileInfo::parseTags(Diagnostics &diag)
 {
-    if(tagsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tags twice
+    if (tagsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tags twice
         return;
     }
     static const string context("parsing tag");
     // check for id3v1 tag
-    if(size() >= 128) {
+    if (size() >= 128) {
         m_id3v1Tag = make_unique<Id3v1Tag>();
         try {
             stream().seekg(-128, ios_base::end);
             m_id3v1Tag->parse(stream(), diag);
             m_actualExistingId3v1Tag = true;
-        } catch(const NoDataFoundException &) {
+        } catch (const NoDataFoundException &) {
             m_id3v1Tag.reset();
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v1 tag.", context);
         }
     }
     // the offsets of the ID3v2 tags have already been parsed when parsing the container format
     m_id3v2Tags.clear();
-    for(const auto offset : m_actualId3v2TagOffsets) {
+    for (const auto offset : m_actualId3v2TagOffsets) {
         auto id3v2Tag = make_unique<Id3v2Tag>();
         stream().seekg(offset, ios_base::beg);
         try {
             id3v2Tag->parse(stream(), size() - offset, diag);
             m_paddingSize += id3v2Tag->paddingSize();
-        } catch(const NoDataFoundException &) {
+        } catch (const NoDataFoundException &) {
             continue;
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v2 tag.", context);
         }
         m_id3v2Tags.emplace_back(id3v2Tag.release());
     }
-    if(m_container) {
+    if (m_container) {
         try {
             m_container->parseTags(diag);
-        } catch(const NotImplementedException &) {
-            if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+        } catch (const NotImplementedException &) {
+            if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
                 // do not override parsing status from ID3 tags here
                 m_tagsParsingStatus = ParsingStatus::NotSupported;
             }
             diag.emplace_back(DiagLevel::Information, "Parsing tags is not implemented for the container format of the file.", context);
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             diag.emplace_back(DiagLevel::Critical, "Unable to parse tag.", context);
         }
     }
-    if(m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+    if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
         // do not override error status here
         m_tagsParsingStatus = ParsingStatus::Ok;
     }
@@ -417,12 +420,12 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
  */
 void MediaFileInfo::parseChapters(Diagnostics &diag)
 {
-    if(chaptersParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the chapters twice
+    if (chaptersParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the chapters twice
         return;
     }
     static const string context("parsing chapters");
     try {
-        if(m_container) {
+        if (m_container) {
             m_container->parseChapters(diag);
             m_chaptersParsingStatus = ParsingStatus::Ok;
         } else {
@@ -450,12 +453,12 @@ void MediaFileInfo::parseChapters(Diagnostics &diag)
  */
 void MediaFileInfo::parseAttachments(Diagnostics &diag)
 {
-    if(attachmentsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the attachments twice
+    if (attachmentsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the attachments twice
         return;
     }
     static const string context("parsing attachments");
     try {
-        if(m_container) {
+        if (m_container) {
             m_container->parseAttachments(diag);
             m_attachmentsParsingStatus = ParsingStatus::Ok;
         } else {
@@ -506,33 +509,35 @@ void MediaFileInfo::parseEverything(Diagnostics &diag)
  *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transfered.
  * \todo Refactoring required, there are too much params (not sure how to refactor though, since not all of the params are simple flags).
  */
-bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool id3InitOnCreate, bool id3TransferValuesOnRemoval, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, byte id3v2MajorVersion, const std::vector<TagTarget> &requiredTargets)
+bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool id3InitOnCreate,
+    bool id3TransferValuesOnRemoval, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, byte id3v2MajorVersion,
+    const std::vector<TagTarget> &requiredTargets)
 {
     // check if tags have been parsed yet (tags must have been parsed yet to create appropriate tags)
-    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet) {
         return false;
     }
     // check if tags need to be created/adjusted/removed
     bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 || !requiredTargets.front().isEmpty());
     bool targetsSupported = false;
-    if(areTagsSupported() && m_container) {
+    if (areTagsSupported() && m_container) {
         // container object takes care of tag management
-        if(targetsRequired) {
+        if (targetsRequired) {
             // check whether container supports targets
-            if(m_container->tagCount()) {
+            if (m_container->tagCount()) {
                 // all tags in the container should support targets if the first one supports targets
                 targetsSupported = m_container->tag(0)->supportsTarget();
             } else {
                 // try to create a new tag and check whether targets are supported
                 auto *tag = m_container->createTag();
-                if(tag) {
-                    if((targetsSupported = tag->supportsTarget())) {
+                if (tag) {
+                    if ((targetsSupported = tag->supportsTarget())) {
                         tag->setTarget(requiredTargets.front());
                     }
                 }
             }
-            if(targetsSupported) {
-                for(const auto &target : requiredTargets) {
+            if (targetsSupported) {
+                for (const auto &target : requiredTargets) {
                     m_container->createTag(target);
                 }
             }
@@ -542,13 +547,13 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
         }
     } else {
         // no container object present
-        if(m_containerFormat == ContainerFormat::Flac) {
+        if (m_containerFormat == ContainerFormat::Flac) {
             // creation of Vorbis comment is possible
             static_cast<FlacStream *>(m_singleTrack.get())->createVorbisComment();
         } else {
             // creation of ID3 tag is possible
-            if(!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
-                switch(containerFormat()) {
+            if (!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
+                switch (containerFormat()) {
                 case ContainerFormat::Adts:
                 case ContainerFormat::MpegAudioFrames:
                 case ContainerFormat::WavPack:
@@ -558,12 +563,12 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
                 }
             }
             // create ID3 tags according to id3v2usage and id3v2usage
-            if(id3v1usage == TagUsage::Always) {
+            if (id3v1usage == TagUsage::Always) {
                 // always create ID3v1 tag -> ensure there is one
-                if(!id3v1Tag()) {
+                if (!id3v1Tag()) {
                     Id3v1Tag *id3v1Tag = createId3v1Tag();
-                    if(id3InitOnCreate) {
-                        for(const auto &id3v2Tag : id3v2Tags()) {
+                    if (id3InitOnCreate) {
+                        for (const auto &id3v2Tag : id3v2Tags()) {
                             // overwrite existing values to ensure default ID3v1 genre "Blues" is updated as well
                             id3v1Tag->insertValues(*id3v2Tag, true);
                             // ID3v1 does not support all text encodings which might be used in ID3v2
@@ -572,42 +577,42 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
                     }
                 }
             }
-            if(id3v2usage == TagUsage::Always) {
+            if (id3v2usage == TagUsage::Always) {
                 // always create ID3v2 tag -> ensure there is one and set version
-                if(!hasId3v2Tag()) {
+                if (!hasId3v2Tag()) {
                     Id3v2Tag *id3v2Tag = createId3v2Tag();
                     id3v2Tag->setVersion(id3v2MajorVersion, 0);
-                    if(id3InitOnCreate && id3v1Tag()) {
+                    if (id3InitOnCreate && id3v1Tag()) {
                         id3v2Tag->insertValues(*id3v1Tag(), true);
                     }
                 }
             }
         }
 
-        if(mergeMultipleSuccessiveId3v2Tags) {
+        if (mergeMultipleSuccessiveId3v2Tags) {
             mergeId3v2Tags();
         }
         // remove ID3 tags according to id3v1usage and id3v2usage
-        if(id3v1usage == TagUsage::Never) {
-            if(hasId3v1Tag()) {
+        if (id3v1usage == TagUsage::Never) {
+            if (hasId3v1Tag()) {
                 // transfer tags to ID3v2 tag before removing
-                if(id3TransferValuesOnRemoval && hasId3v2Tag()) {
+                if (id3TransferValuesOnRemoval && hasId3v2Tag()) {
                     id3v2Tags().front()->insertValues(*id3v1Tag(), false);
                 }
                 removeId3v1Tag();
             }
         }
-        if(id3v2usage == TagUsage::Never) {
-            if(id3TransferValuesOnRemoval && hasId3v1Tag()) {
+        if (id3v2usage == TagUsage::Never) {
+            if (id3TransferValuesOnRemoval && hasId3v1Tag()) {
                 // transfer tags to ID3v1 tag before removing
-                for(const auto &tag : id3v2Tags()) {
+                for (const auto &tag : id3v2Tags()) {
                     id3v1Tag()->insertValues(*tag, false);
                 }
             }
             removeAllId3v2Tags();
-        } else if(!keepExistingId3v2version) {
+        } else if (!keepExistingId3v2version) {
             // set version of ID3v2 tag according user preferences
-            for(const auto &tag : id3v2Tags()) {
+            for (const auto &tag : id3v2Tags()) {
                 tag->setVersion(id3v2MajorVersion, 0);
             }
         }
@@ -618,7 +623,6 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
     //}
     return true;
 }
-
 
 /*!
  * \brief Applies assigned/changed tag information to the current file.
@@ -641,11 +645,11 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
  * \sa clearParsingResults()
  */
 void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &progress)
-{   
+{
     static const string context("making file");
     diag.emplace_back(DiagLevel::Information, "Changes are about to be applied.", context);
     bool previousParsingSuccessful = true;
-    switch(tagsParsingStatus()) {
+    switch (tagsParsingStatus()) {
     case ParsingStatus::Ok:
     case ParsingStatus::NotSupported:
         break;
@@ -653,7 +657,7 @@ void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &p
         previousParsingSuccessful = false;
         diag.emplace_back(DiagLevel::Critical, "Tags have to be parsed without critical errors before changes can be applied.", context);
     }
-    switch(tracksParsingStatus()) {
+    switch (tracksParsingStatus()) {
     case ParsingStatus::Ok:
     case ParsingStatus::NotSupported:
         break;
@@ -661,22 +665,22 @@ void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &p
         previousParsingSuccessful = false;
         diag.emplace_back(DiagLevel::Critical, "Tracks have to be parsed without critical errors before changes can be applied.", context);
     }
-    if(!previousParsingSuccessful) {
+    if (!previousParsingSuccessful) {
         throw InvalidDataException();
     }
-    if(m_container) { // container object takes care
+    if (m_container) { // container object takes care
         // ID3 tags can not be applied in this case -> add warnings if ID3 tags have been assigned
-        if(hasId3v1Tag()) {
+        if (hasId3v1Tag()) {
             diag.emplace_back(DiagLevel::Warning, "Assigned ID3v1 tag can't be attached and will be ignored.", context);
         }
-        if(hasId3v2Tag()) {
+        if (hasId3v2Tag()) {
             diag.emplace_back(DiagLevel::Warning, "Assigned ID3v2 tag can't be attached and will be ignored.", context);
         }
         m_tracksParsingStatus = ParsingStatus::NotParsedYet;
         m_tagsParsingStatus = ParsingStatus::NotParsedYet;
         try {
             m_container->makeFile(diag, progress);
-        } catch(...) {
+        } catch (...) {
             // since the file might be messed up, invalidate the parsing results
             clearParsingResults();
             throw;
@@ -685,7 +689,7 @@ void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &p
         // assume the file is a MP3 file
         try {
             makeMp3File(diag, progress);
-        } catch(...) {
+        } catch (...) {
             // since the file might be messed up, invalidate the parsing results
             clearParsingResults();
             throw;
@@ -710,42 +714,42 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
 {
     MediaType mediaType = MediaType::Unknown;
     unsigned int version = 0;
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Ogg: {
         // check for video track or whether only Opus or Speex tracks are present
         const auto &tracks = static_cast<OggContainer *>(m_container.get())->tracks();
-        if(tracks.empty()) {
+        if (tracks.empty()) {
             break;
         }
         bool onlyOpus = true, onlySpeex = true;
-        for(const auto &track : static_cast<OggContainer *>(m_container.get())->tracks()) {
-            if(track->mediaType() == MediaType::Video) {
+        for (const auto &track : static_cast<OggContainer *>(m_container.get())->tracks()) {
+            if (track->mediaType() == MediaType::Video) {
                 mediaType = MediaType::Video;
             }
-            if(track->format().general != GeneralMediaFormat::Opus) {
+            if (track->format().general != GeneralMediaFormat::Opus) {
                 onlyOpus = false;
             }
-            if(track->format().general != GeneralMediaFormat::Speex) {
+            if (track->format().general != GeneralMediaFormat::Speex) {
                 onlySpeex = false;
             }
         }
-        if(onlyOpus) {
+        if (onlyOpus) {
             version = static_cast<unsigned int>(GeneralMediaFormat::Opus);
-        } else if(onlySpeex) {
+        } else if (onlySpeex) {
             version = static_cast<unsigned int>(GeneralMediaFormat::Speex);
         }
         break;
-    } case ContainerFormat::Matroska:
+    }
+    case ContainerFormat::Matroska:
     case ContainerFormat::Mp4:
         mediaType = hasTracksOfType(MediaType::Video) ? MediaType::Video : MediaType::Audio;
         break;
     case ContainerFormat::MpegAudioFrames:
-        if(m_singleTrack) {
+        if (m_singleTrack) {
             version = m_singleTrack->format().sub;
         }
         break;
-    default:
-        ;
+    default:;
     }
     return TagParser::containerFormatAbbreviation(m_containerFormat, mediaType, version);
 }
@@ -763,7 +767,7 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
 const char *MediaFileInfo::mimeType() const
 {
     MediaType mediaType;
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Mp4:
     case ContainerFormat::Ogg:
     case ContainerFormat::Matroska:
@@ -792,18 +796,18 @@ vector<AbstractTrack *> MediaFileInfo::tracks() const
     vector<AbstractTrack *> res;
     size_t trackCount = 0;
     size_t containerTrackCount = 0;
-    if(m_singleTrack) {
+    if (m_singleTrack) {
         trackCount = 1;
     }
-    if(m_container) {
+    if (m_container) {
         trackCount += (containerTrackCount = m_container->trackCount());
     }
     res.reserve(trackCount);
 
-    if(m_singleTrack) {
+    if (m_singleTrack) {
         res.push_back(m_singleTrack.get());
     }
-    for(size_t i = 0; i != containerTrackCount; ++i) {
+    for (size_t i = 0; i != containerTrackCount; ++i) {
         res.push_back(m_container->track(i));
     }
     return res;
@@ -819,14 +823,14 @@ vector<AbstractTrack *> MediaFileInfo::tracks() const
  */
 bool MediaFileInfo::hasTracksOfType(MediaType type) const
 {
-    if(tracksParsingStatus() == ParsingStatus::NotParsedYet) {
+    if (tracksParsingStatus() == ParsingStatus::NotParsedYet) {
         return false;
     }
-    if(m_singleTrack && m_singleTrack->mediaType() == type) {
+    if (m_singleTrack && m_singleTrack->mediaType() == type) {
         return true;
-    } else if(m_container) {
-        for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
-            if(m_container->track(i)->mediaType() == type) {
+    } else if (m_container) {
+        for (size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
+            if (m_container->track(i)->mediaType() == type) {
                 return true;
             }
         }
@@ -845,9 +849,9 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
  */
 ChronoUtilities::TimeSpan MediaFileInfo::duration() const
 {
-    if(m_container) {
+    if (m_container) {
         return m_container->duration();
-    } else if(m_singleTrack) {
+    } else if (m_singleTrack) {
         return m_singleTrack->duration();
     }
     return TimeSpan();
@@ -866,14 +870,15 @@ ChronoUtilities::TimeSpan MediaFileInfo::duration() const
 unordered_set<string> MediaFileInfo::availableLanguages(MediaType type) const
 {
     unordered_set<string> res;
-    if(m_container) {
-        for(size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
+    if (m_container) {
+        for (size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
             const AbstractTrack *track = m_container->track(i);
-            if((type == MediaType::Unknown || track->mediaType() == type) && !track->language().empty() && track->language() != "und") {
+            if ((type == MediaType::Unknown || track->mediaType() == type) && !track->language().empty() && track->language() != "und") {
                 res.emplace(track->language());
             }
         }
-    } else if(m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type) && !m_singleTrack->language().empty() && m_singleTrack->language() != "und") {
+    } else if (m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type) && !m_singleTrack->language().empty()
+        && m_singleTrack->language() != "und") {
         res.emplace(m_singleTrack->language());
     }
     return res;
@@ -892,18 +897,18 @@ unordered_set<string> MediaFileInfo::availableLanguages(MediaType type) const
  */
 string MediaFileInfo::technicalSummary() const
 {
-    if(m_container) {
+    if (m_container) {
         const size_t trackCount = m_container->trackCount();
         vector<string> parts;
         parts.reserve(trackCount);
-        for(size_t i = 0; i != trackCount; ++i) {
+        for (size_t i = 0; i != trackCount; ++i) {
             const string description(m_container->track(i)->description());
-            if(!description.empty()) {
+            if (!description.empty()) {
                 parts.emplace_back(move(description));
             }
         }
         return joinStrings(parts, " / ");
-    } else if(m_singleTrack) {
+    } else if (m_singleTrack) {
         return m_singleTrack->description();
     }
     return string();
@@ -920,10 +925,10 @@ string MediaFileInfo::technicalSummary() const
  */
 bool MediaFileInfo::removeId3v1Tag()
 {
-    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet) {
         return false;
     }
-    if(m_id3v1Tag) {
+    if (m_id3v1Tag) {
         m_id3v1Tag.reset();
         return true;
     }
@@ -947,10 +952,10 @@ bool MediaFileInfo::removeId3v1Tag()
  */
 Id3v1Tag *MediaFileInfo::createId3v1Tag()
 {
-    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet) {
         return nullptr;
     }
-    if(!m_id3v1Tag) {
+    if (!m_id3v1Tag) {
         m_id3v1Tag = make_unique<Id3v1Tag>();
     }
     return m_id3v1Tag.get();
@@ -971,11 +976,11 @@ Id3v1Tag *MediaFileInfo::createId3v1Tag()
  */
 bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
 {
-    if(tagsParsingStatus() == ParsingStatus::NotParsedYet) {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet) {
         return false;
     }
-    for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
-        if(i->get() == tag) {
+    for (auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
+        if (i->get() == tag) {
             m_id3v2Tags.erase(i);
             return true;
         }
@@ -993,7 +998,7 @@ bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
  */
 bool MediaFileInfo::removeAllId3v2Tags()
 {
-    if(tagsParsingStatus() == ParsingStatus::NotParsedYet || m_id3v2Tags.empty()) {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet || m_id3v2Tags.empty()) {
         return false;
     }
     m_id3v2Tags.clear();
@@ -1017,7 +1022,7 @@ bool MediaFileInfo::removeAllId3v2Tags()
  */
 Id3v2Tag *MediaFileInfo::createId3v2Tag()
 {
-    if(m_id3v2Tags.empty()) {
+    if (m_id3v2Tags.empty()) {
         m_id3v2Tags.emplace_back(make_unique<Id3v2Tag>());
     }
     return m_id3v2Tags.front().get();
@@ -1037,17 +1042,17 @@ Id3v2Tag *MediaFileInfo::createId3v2Tag()
  */
 void MediaFileInfo::removeTag(Tag *tag)
 {
-    if(!tag) {
+    if (!tag) {
         return;
     }
-    if(m_container) {
+    if (m_container) {
         m_container->removeTag(tag);
     }
-    if(m_id3v1Tag.get() == tag) {
+    if (m_id3v1Tag.get() == tag) {
         m_id3v1Tag.reset();
     }
-    for(auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
-        if(i->get() == tag) {
+    for (auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
+        if (i->get() == tag) {
             m_id3v2Tags.erase(i);
             break;
         }
@@ -1061,10 +1066,10 @@ void MediaFileInfo::removeTag(Tag *tag)
  */
 void MediaFileInfo::removeAllTags()
 {
-    if(m_container) {
+    if (m_container) {
         m_container->removeAllTags();
     }
-    if(m_singleTrack && m_containerFormat == ContainerFormat::Flac) {
+    if (m_singleTrack && m_containerFormat == ContainerFormat::Flac) {
         static_cast<FlacStream *>(m_singleTrack.get())->removeVorbisComment();
     }
     m_id3v1Tag.reset();
@@ -1076,10 +1081,10 @@ void MediaFileInfo::removeAllTags()
  */
 bool MediaFileInfo::areChaptersSupported() const
 {
-    if(m_container && m_container->chapterCount()) {
+    if (m_container && m_container->chapterCount()) {
         return true;
     }
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Matroska:
     case ContainerFormat::Webm:
         return true;
@@ -1093,10 +1098,10 @@ bool MediaFileInfo::areChaptersSupported() const
  */
 bool MediaFileInfo::areAttachmentsSupported() const
 {
-    if(m_container && m_container->attachmentCount()) {
+    if (m_container && m_container->attachmentCount()) {
         return true;
     }
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Matroska:
     case ContainerFormat::Webm:
         return true;
@@ -1110,16 +1115,16 @@ bool MediaFileInfo::areAttachmentsSupported() const
  */
 bool MediaFileInfo::areTracksSupported() const
 {
-    if(trackCount()) {
+    if (trackCount()) {
         return true;
     }
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Mp4:
     case ContainerFormat::MpegAudioFrames:
     case ContainerFormat::RiffWave:
     case ContainerFormat::Ogg:
     case ContainerFormat::Matroska:
-        case ContainerFormat::Webm:
+    case ContainerFormat::Webm:
         return true;
     default:
         return false;
@@ -1131,7 +1136,7 @@ bool MediaFileInfo::areTracksSupported() const
  */
 bool MediaFileInfo::areTagsSupported() const
 {
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Adts:
     case ContainerFormat::Flac:
     case ContainerFormat::Matroska:
@@ -1157,7 +1162,10 @@ bool MediaFileInfo::areTagsSupported() const
 Mp4Tag *MediaFileInfo::mp4Tag() const
 {
     // simply return the first tag here since MP4 files never contain multiple tags
-    return (m_containerFormat == ContainerFormat::Mp4 || m_containerFormat == ContainerFormat::QuickTime) && m_container && m_container->tagCount() > 0 ? static_cast<Mp4Container *>(m_container.get())->tags().front().get() : nullptr;
+    return (m_containerFormat == ContainerFormat::Mp4 || m_containerFormat == ContainerFormat::QuickTime) && m_container
+            && m_container->tagCount() > 0
+        ? static_cast<Mp4Container *>(m_container.get())->tags().front().get()
+        : nullptr;
 }
 
 /*!
@@ -1166,13 +1174,13 @@ Mp4Tag *MediaFileInfo::mp4Tag() const
  *          pointers. The returned Matroska tags will be destroyed when the
  *          MediaFileInfo is invalidated.
  */
-const vector<unique_ptr<MatroskaTag> > &MediaFileInfo::matroskaTags() const
+const vector<unique_ptr<MatroskaTag>> &MediaFileInfo::matroskaTags() const
 {
     // matroska files might contain multiple tags (targeting different scopes)
-    if(m_containerFormat == ContainerFormat::Matroska && m_container) {
+    if (m_containerFormat == ContainerFormat::Matroska && m_container) {
         return static_cast<MatroskaContainer *>(m_container.get())->tags();
     } else {
-        static const std::vector<std::unique_ptr<MatroskaTag> > empty;
+        static const std::vector<std::unique_ptr<MatroskaTag>> empty;
         return empty;
     }
 }
@@ -1185,10 +1193,8 @@ const vector<unique_ptr<MatroskaTag> > &MediaFileInfo::matroskaTags() const
 VorbisComment *MediaFileInfo::vorbisComment() const
 {
     return m_containerFormat == ContainerFormat::Ogg && m_container && m_container->tagCount()
-            ? static_cast<OggContainer *>(m_container.get())->tags().front().get()
-            : (m_containerFormat == ContainerFormat::Flac && m_singleTrack
-               ? static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment()
-               : nullptr);
+        ? static_cast<OggContainer *>(m_container.get())->tags().front().get()
+        : (m_containerFormat == ContainerFormat::Flac && m_singleTrack ? static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment() : nullptr);
 }
 
 /*!
@@ -1199,10 +1205,10 @@ VorbisComment *MediaFileInfo::vorbisComment() const
 vector<AbstractChapter *> MediaFileInfo::chapters() const
 {
     vector<AbstractChapter *> res;
-    if(m_container) {
+    if (m_container) {
         const size_t count = m_container->chapterCount();
         res.reserve(count);
-        for(size_t i = 0; i != count; ++i) {
+        for (size_t i = 0; i != count; ++i) {
             res.push_back(m_container->chapter(i));
         }
     }
@@ -1217,10 +1223,10 @@ vector<AbstractChapter *> MediaFileInfo::chapters() const
 vector<AbstractAttachment *> MediaFileInfo::attachments() const
 {
     vector<AbstractAttachment *> res;
-    if(m_container) {
+    if (m_container) {
         const size_t count = m_container->attachmentCount();
         res.reserve(count);
-        for(size_t i = 0; i != count; ++i) {
+        for (size_t i = 0; i != count; ++i) {
             res.push_back(m_container->attachment(i));
         }
     }
@@ -1275,15 +1281,15 @@ void MediaFileInfo::clearParsingResults()
 void MediaFileInfo::mergeId3v2Tags()
 {
     auto begin = m_id3v2Tags.begin(), end = m_id3v2Tags.end();
-    if(begin == end) {
+    if (begin == end) {
         return;
     }
     Id3v2Tag &first = **begin;
     auto isecond = begin + 1;
-    if(isecond == end) {
+    if (isecond == end) {
         return;
     }
-    for(auto i = isecond; i != end; ++i) {
+    for (auto i = isecond; i != end; ++i) {
         first.insertFields(**i, false);
     }
     m_id3v2Tags.erase(isecond, end - 1);
@@ -1301,7 +1307,7 @@ void MediaFileInfo::mergeId3v2Tags()
  */
 bool MediaFileInfo::id3v1ToId3v2()
 {
-    if(tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v1Tag()) {
+    if (tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v1Tag()) {
         return createAppropriateTags(false, TagUsage::Never, TagUsage::Always, true, true, 3);
     } else {
         return false;
@@ -1320,7 +1326,7 @@ bool MediaFileInfo::id3v1ToId3v2()
  */
 bool MediaFileInfo::id3v2ToId3v1()
 {
-    if(tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v2Tag()) {
+    if (tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v2Tag()) {
         return createAppropriateTags(false, TagUsage::Always, TagUsage::Never, true, true, 3);
     } else {
         return false;
@@ -1343,19 +1349,18 @@ bool MediaFileInfo::id3v2ToId3v1()
  */
 VorbisComment *MediaFileInfo::createVorbisComment()
 {
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Ogg:
-        if(m_container) {
+        if (m_container) {
             return static_cast<OggContainer *>(m_container.get())->createTag(TagTarget());
         }
         break;
     case ContainerFormat::Flac:
-        if(m_singleTrack) {
+        if (m_singleTrack) {
             return static_cast<FlacStream *>(m_singleTrack.get())->createVorbisComment();
         }
         break;
-    default:
-        ;
+    default:;
     }
     return nullptr;
 }
@@ -1371,21 +1376,20 @@ VorbisComment *MediaFileInfo::createVorbisComment()
  */
 bool MediaFileInfo::removeVorbisComment()
 {
-    switch(m_containerFormat) {
+    switch (m_containerFormat) {
     case ContainerFormat::Ogg:
-        if(m_container) {
+        if (m_container) {
             bool hadTags = static_cast<OggContainer *>(m_container.get())->tagCount();
             static_cast<OggContainer *>(m_container.get())->removeAllTags();
             return hadTags;
         }
         break;
     case ContainerFormat::Flac:
-        if(m_singleTrack) {
+        if (m_singleTrack) {
             return static_cast<FlacStream *>(m_singleTrack.get())->removeVorbisComment();
         }
         break;
-    default:
-        ;
+    default:;
     }
     return false;
 }
@@ -1400,19 +1404,19 @@ bool MediaFileInfo::removeVorbisComment()
  */
 void MediaFileInfo::tags(vector<Tag *> &tags) const
 {
-    if(hasId3v1Tag()) {
+    if (hasId3v1Tag()) {
         tags.push_back(m_id3v1Tag.get());
     }
-    for(const unique_ptr<Id3v2Tag> &tag : m_id3v2Tags) {
+    for (const unique_ptr<Id3v2Tag> &tag : m_id3v2Tags) {
         tags.push_back(tag.get());
     }
-    if(m_containerFormat == ContainerFormat::Flac && m_singleTrack) {
-        if(auto *vorbisComment = static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment()) {
+    if (m_containerFormat == ContainerFormat::Flac && m_singleTrack) {
+        if (auto *vorbisComment = static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment()) {
             tags.push_back(vorbisComment);
         }
     }
-    if(m_container) {
-        for(size_t i = 0, count = m_container->tagCount(); i < count; ++i) {
+    if (m_container) {
+        for (size_t i = 0, count = m_container->tagCount(); i < count; ++i) {
             tags.push_back(m_container->tag(i));
         }
     }
@@ -1423,10 +1427,8 @@ void MediaFileInfo::tags(vector<Tag *> &tags) const
  */
 bool MediaFileInfo::hasAnyTag() const
 {
-    return hasId3v1Tag()
-            || hasId3v2Tag()
-            || (m_container && m_container->tagCount())
-            || (m_containerFormat == ContainerFormat::Flac && static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment());
+    return hasId3v1Tag() || hasId3v2Tag() || (m_container && m_container->tagCount())
+        || (m_containerFormat == ContainerFormat::Flac && static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment());
 }
 
 /*!
@@ -1458,10 +1460,11 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
 {
     static const string context("making MP3/FLAC file");
     // there's no need to rewrite the complete file if there are no ID3v2 tags present or to be written
-    if(!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty() && m_containerFormat != ContainerFormat::Flac) {
-        if(m_actualExistingId3v1Tag) {
+    if (!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty()
+        && m_containerFormat != ContainerFormat::Flac) {
+        if (m_actualExistingId3v1Tag) {
             // there is currently an ID3v1 tag at the end of the file
-            if(m_id3v1Tag) {
+            if (m_id3v1Tag) {
                 // the file shall still have an ID3v1 tag
                 progress.updateStep("Updating ID3v1 tag ...");
                 // ensure the file is still open / not readonly
@@ -1469,14 +1472,14 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 stream().seekp(-128, ios_base::end);
                 try {
                     m_id3v1Tag->make(stream(), diag);
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
                 // the currently existing ID3v1 tag shall be removed
                 progress.updateStep("Removing ID3v1 tag ...");
                 stream().close();
-                if(truncate(path().c_str(), size() - 128) == 0) {
+                if (truncate(path().c_str(), size() - 128) == 0) {
                     reportSizeChanged(size() - 128);
                 } else {
                     diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
@@ -1486,14 +1489,14 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
 
         } else {
             // there is currently no ID3v1 tag at the end of the file
-            if(m_id3v1Tag) {
+            if (m_id3v1Tag) {
                 progress.updateStep("Adding ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(0, ios_base::end);
                 try {
                     m_id3v1Tag->make(stream(), diag);
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
@@ -1509,11 +1512,11 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         vector<Id3v2TagMaker> makers;
         makers.reserve(m_id3v2Tags.size());
         uint32 tagsSize = 0;
-        for(auto &tag : m_id3v2Tags) {
+        for (auto &tag : m_id3v2Tags) {
             try {
                 makers.emplace_back(tag->prepareMaking(diag));
                 tagsSize += makers.back().requiredSize();
-            } catch(const Failure &) {
+            } catch (const Failure &) {
             }
         }
 
@@ -1524,7 +1527,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
         uint32 startOfLastMetaDataBlock;
 
-        if(flacStream) {
+        if (flacStream) {
             // if it is a raw FLAC stream, make FLAC metadata
             startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
             tagsSize += flacMetaData.tellp();
@@ -1537,34 +1540,34 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         // check whether rewrite is required
         bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > streamOffset);
         uint32 padding = 0;
-        if(!rewriteRequired) {
+        if (!rewriteRequired) {
             // rewriting is not forced and new tag is not too big for available space
             // -> calculate new padding
             padding = streamOffset - tagsSize;
             // -> check whether the new padding matches specifications
-            if(padding < minPadding() || padding > maxPadding()) {
+            if (padding < minPadding() || padding > maxPadding()) {
                 rewriteRequired = true;
             }
         }
-        if(makers.empty() && !flacStream) {
+        if (makers.empty() && !flacStream) {
             // an ID3v2 tag is not written and it is not a FLAC stream
             // -> can't include padding
-            if(padding) {
+            if (padding) {
                 // but padding would be present -> need to rewrite
                 padding = 0; // can't write the preferred padding despite rewriting
                 rewriteRequired = true;
             }
-        } else if(rewriteRequired) {
+        } else if (rewriteRequired) {
             // rewriting is forced or new ID3v2 tag is too big for available space
             // -> use preferred padding when rewriting anyways
             padding = preferredPadding();
-        } else if(makers.empty() && flacStream && padding && padding < 4) {
+        } else if (makers.empty() && flacStream && padding && padding < 4) {
             // no ID3v2 tag -> must include padding in FLAC stream
             // but padding of 1, 2, and 3 byte isn't possible -> need to rewrite
             padding = preferredPadding();
             rewriteRequired = true;
         }
-        if(rewriteRequired && flacStream && makers.empty() && padding) {
+        if (rewriteRequired && flacStream && makers.empty() && padding) {
             // the first 4 byte of FLAC padding actually don't count because these
             // can not be used for additional meta data
             padding += 4;
@@ -1577,14 +1580,14 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         NativeFileStream &outputStream = stream();
         NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
 
-        if(rewriteRequired) {
-            if(m_saveFilePath.empty()) {
+        if (rewriteRequired) {
+            if (m_saveFilePath.empty()) {
                 // move current file to temp dir and reopen it as backupStream, recreate original file
                 try {
                     BackupHelper::createBackupFile(path(), backupPath, outputStream, backupStream);
                     // recreate original file, define buffer variables
                     outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
-                } catch(...) {
+                } catch (...) {
                     const char *what = catchIoFailure();
                     diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
                     throwIoFailure(what);
@@ -1596,7 +1599,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                     backupStream.exceptions(ios_base::badbit | ios_base::failbit);
                     backupStream.open(path(), ios_base::in | ios_base::binary);
                     outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
-                } catch(...) {
+                } catch (...) {
                     const char *what = catchIoFailure();
                     diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
                     throwIoFailure(what);
@@ -1608,7 +1611,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             try {
                 close();
                 outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
-            } catch(...) {
+            } catch (...) {
                 const char *what = catchIoFailure();
                 diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
                 throwIoFailure(what);
@@ -1617,18 +1620,18 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
 
         // start actual writing
         try {
-            if(!makers.empty()) {
+            if (!makers.empty()) {
                 // write ID3v2 tags
                 progress.updateStep("Writing ID3v2 tag ...");
-                for(auto i = makers.begin(), end = makers.end() - 1; i != end; ++i) {
+                for (auto i = makers.begin(), end = makers.end() - 1; i != end; ++i) {
                     i->make(outputStream, 0, diag);
                 }
                 // include padding into the last ID3v2 tag
                 makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : padding, diag);
             }
 
-            if(flacStream) {
-                if(padding && startOfLastMetaDataBlock) {
+            if (flacStream) {
+                if (padding && startOfLastMetaDataBlock) {
                     // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
                     flacMetaData.seekg(startOfLastMetaDataBlock);
                     flacMetaData.seekp(startOfLastMetaDataBlock);
@@ -1640,14 +1643,14 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 outputStream << flacMetaData.rdbuf();
 
                 // write padding
-                if(padding) {
+                if (padding) {
                     flacStream->makePadding(outputStream, padding, true, diag);
                 }
             }
 
-            if(makers.empty() && !flacStream){
+            if (makers.empty() && !flacStream) {
                 // just write padding (however, padding should be set to 0 in this case?)
-                for(; padding; --padding) {
+                for (; padding; --padding) {
                     outputStream.put(0);
                 }
             }
@@ -1655,13 +1658,13 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             // copy / skip actual stream data
             // -> determine media data size
             uint64 mediaDataSize = size() - streamOffset;
-            if(m_actualExistingId3v1Tag) {
+            if (m_actualExistingId3v1Tag) {
                 mediaDataSize -= 128;
             }
 
-            if(rewriteRequired) {
+            if (rewriteRequired) {
                 // copy data from original file
-                switch(m_containerFormat) {
+                switch (m_containerFormat) {
                 case ContainerFormat::MpegAudioFrames:
                     progress.updateStep("Writing MPEG audio frames ...");
                     break;
@@ -1670,28 +1673,29 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 }
                 backupStream.seekg(streamOffset);
                 CopyHelper<0x4000> copyHelper;
-                copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)), bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
+                copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)),
+                    bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
             } else {
                 // just skip actual stream data
                 outputStream.seekp(mediaDataSize, ios_base::cur);
             }
 
             // write ID3v1 tag
-            if(m_id3v1Tag) {
+            if (m_id3v1Tag) {
                 progress.updateStep("Writing ID3v1 tag ...");
                 try {
                     m_id3v1Tag->make(stream(), diag);
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             }
 
             // handle streams
-            if(rewriteRequired) {
+            if (rewriteRequired) {
                 // report new size
                 reportSizeChanged(outputStream.tellp());
                 // "save as path" is now the regular path
-                if(!saveFilePath().empty()) {
+                if (!saveFilePath().empty()) {
                     reportPathChanged(saveFilePath());
                     m_saveFilePath.clear();
                 }
@@ -1699,12 +1703,12 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 outputStream.close();
             } else {
                 const auto newSize = static_cast<uint64>(outputStream.tellp());
-                if(newSize < size()) {
+                if (newSize < size()) {
                     // file is smaller after the modification -> truncate
                     // -> close stream before truncating
                     outputStream.close();
                     // -> truncate file
-                    if(truncate(path().c_str(), newSize) == 0) {
+                    if (truncate(path().c_str(), newSize) == 0) {
                         reportSizeChanged(newSize);
                     } else {
                         diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
@@ -1715,10 +1719,9 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 }
             }
 
-        } catch(...) {
+        } catch (...) {
             BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, diag, context);
         }
     }
 }
-
 }

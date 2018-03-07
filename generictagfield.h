@@ -5,8 +5,7 @@
 
 namespace TagParser {
 
-template <class implementationType>
-class TagField;
+template <class implementationType> class TagField;
 
 /*!
  * \class Media::TagFieldTraits
@@ -14,9 +13,8 @@ class TagField;
  *
  * A template specialization for each TagField subclass must be provided.
  */
-template<typename ImplementationType>
-class TagFieldTraits
-{};
+template <typename ImplementationType> class TagFieldTraits {
+};
 
 /*!
  * \brief The TagField class is used by FieldMapBasedTag to store the fields.
@@ -29,9 +27,7 @@ class TagFieldTraits
  * \remarks This template class is intended to be subclassed using
  *          with the "Curiously recurring template pattern".
  */
-template <class ImplementationType>
-class TAG_PARSER_EXPORT TagField
-{
+template <class ImplementationType> class TAG_PARSER_EXPORT TagField {
     friend class TagFieldTraits<ImplementationType>;
 
 public:
@@ -68,7 +64,7 @@ public:
     std::vector<ImplementationType> &nestedFields();
     bool supportsNestedFields() const;
 
-private:    
+private:
     void cleared();
 
 private:
@@ -84,44 +80,44 @@ private:
  * \brief Constructs an empty TagField.
  */
 template <class ImplementationType>
-TagField<ImplementationType>::TagField() :
-    m_id(IdentifierType()),
-    m_value(TagValue()),
-    m_typeInfo(TypeInfoType()),
-    m_typeInfoAssigned(false),
-    m_default(false)
-{}
+TagField<ImplementationType>::TagField()
+    : m_id(IdentifierType())
+    , m_value(TagValue())
+    , m_typeInfo(TypeInfoType())
+    , m_typeInfoAssigned(false)
+    , m_default(false)
+{
+}
 
 /*!
  * \brief Constructs a new TagField with the specified \a id and \a value.
  */
 template <class ImplementationType>
-TagField<ImplementationType>::TagField(const IdentifierType &id, const TagValue &value) :
-    m_id(id),
-    m_value(value),
-    m_typeInfo(TypeInfoType()),
-    m_typeInfoAssigned(false),
-    m_default(false)
-{}
+TagField<ImplementationType>::TagField(const IdentifierType &id, const TagValue &value)
+    : m_id(id)
+    , m_value(value)
+    , m_typeInfo(TypeInfoType())
+    , m_typeInfoAssigned(false)
+    , m_default(false)
+{
+}
 
 /*!
  * \brief Destroys the TagField.
  */
-template <class ImplementationType>
-TagField<ImplementationType>::~TagField()
-{}
+template <class ImplementationType> TagField<ImplementationType>::~TagField()
+{
+}
 
 /*!
  * \brief Returns the id of the current TagField.
  */
-template <class ImplementationType>
-inline const typename TagField<ImplementationType>::IdentifierType &TagField<ImplementationType>::id() const
+template <class ImplementationType> inline const typename TagField<ImplementationType>::IdentifierType &TagField<ImplementationType>::id() const
 {
     return m_id;
 }
 
-template<class ImplementationType>
-inline std::string TagField<ImplementationType>::idToString() const
+template <class ImplementationType> inline std::string TagField<ImplementationType>::idToString() const
 {
     return ImplementationType::fieldIdToString(m_id);
 }
@@ -129,8 +125,7 @@ inline std::string TagField<ImplementationType>::idToString() const
 /*!
  * \brief Sets the id of the current Tag Field.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::setId(const IdentifierType &id)
+template <class ImplementationType> inline void TagField<ImplementationType>::setId(const IdentifierType &id)
 {
     m_id = id;
 }
@@ -138,8 +133,7 @@ inline void TagField<ImplementationType>::setId(const IdentifierType &id)
 /*!
  * \brief Clears the id of the current TagField.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::clearId()
+template <class ImplementationType> inline void TagField<ImplementationType>::clearId()
 {
     m_id = IdentifierType();
 }
@@ -147,8 +141,7 @@ inline void TagField<ImplementationType>::clearId()
 /*!
  * \brief Returns the value of the current TagField.
  */
-template <class ImplementationType>
-inline TagValue &TagField<ImplementationType>::value()
+template <class ImplementationType> inline TagValue &TagField<ImplementationType>::value()
 {
     return m_value;
 }
@@ -156,8 +149,7 @@ inline TagValue &TagField<ImplementationType>::value()
 /*!
  * \brief Returns the value of the current TagField.
  */
-template <class ImplementationType>
-inline const TagValue &TagField<ImplementationType>::value() const
+template <class ImplementationType> inline const TagValue &TagField<ImplementationType>::value() const
 {
     return m_value;
 }
@@ -165,8 +157,7 @@ inline const TagValue &TagField<ImplementationType>::value() const
 /*!
  * \brief Sets the value of the current TagField.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::setValue(const TagValue &value)
+template <class ImplementationType> inline void TagField<ImplementationType>::setValue(const TagValue &value)
 {
     m_value = value;
 }
@@ -174,8 +165,7 @@ inline void TagField<ImplementationType>::setValue(const TagValue &value)
 /*!
  * \brief Clears the value of the current TagField.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::clearValue()
+template <class ImplementationType> inline void TagField<ImplementationType>::clearValue()
 {
     m_value.clearDataAndMetadata();
 }
@@ -183,8 +173,7 @@ inline void TagField<ImplementationType>::clearValue()
 /*!
  * \brief Returns the type info of the current TagField.
  */
-template <class ImplementationType>
-inline const typename TagField<ImplementationType>::TypeInfoType &TagField<ImplementationType>::typeInfo() const
+template <class ImplementationType> inline const typename TagField<ImplementationType>::TypeInfoType &TagField<ImplementationType>::typeInfo() const
 {
     return m_typeInfo;
 }
@@ -192,8 +181,7 @@ inline const typename TagField<ImplementationType>::TypeInfoType &TagField<Imple
 /*!
  * \brief Sets the type info of the current TagField.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::setTypeInfo(const TypeInfoType &typeInfo)
+template <class ImplementationType> inline void TagField<ImplementationType>::setTypeInfo(const TypeInfoType &typeInfo)
 {
     m_typeInfo = typeInfo;
     m_typeInfoAssigned = true;
@@ -202,8 +190,7 @@ inline void TagField<ImplementationType>::setTypeInfo(const TypeInfoType &typeIn
 /*!
  * \brief Removes the type info from the current TagField.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::removeTypeInfo()
+template <class ImplementationType> inline void TagField<ImplementationType>::removeTypeInfo()
 {
     m_typeInfo = TypeInfoType();
     m_typeInfoAssigned = false;
@@ -212,8 +199,7 @@ inline void TagField<ImplementationType>::removeTypeInfo()
 /*!
  * \brief Returns an indication whether a type info is assigned.
  */
-template <class ImplementationType>
-inline bool TagField<ImplementationType>::isTypeInfoAssigned() const
+template <class ImplementationType> inline bool TagField<ImplementationType>::isTypeInfoAssigned() const
 {
     return m_typeInfoAssigned;
 }
@@ -221,8 +207,7 @@ inline bool TagField<ImplementationType>::isTypeInfoAssigned() const
 /*!
  * \brief Returns an indication whether the field is labeled as default.
  */
-template <class ImplementationType>
-inline bool TagField<ImplementationType>::isDefault() const
+template <class ImplementationType> inline bool TagField<ImplementationType>::isDefault() const
 {
     return m_default;
 }
@@ -230,8 +215,7 @@ inline bool TagField<ImplementationType>::isDefault() const
 /*!
  * \brief Sets whether the field is labeled as default.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::setDefault(bool isDefault)
+template <class ImplementationType> inline void TagField<ImplementationType>::setDefault(bool isDefault)
 {
     m_default = isDefault;
 }
@@ -239,8 +223,7 @@ inline void TagField<ImplementationType>::setDefault(bool isDefault)
 /*!
  * \brief Clears id, value, type info and sets default flag to false.
  */
-template <class ImplementationType>
-void TagField<ImplementationType>::clear()
+template <class ImplementationType> void TagField<ImplementationType>::clear()
 {
     clearId();
     clearValue();
@@ -256,8 +239,7 @@ void TagField<ImplementationType>::clear()
  * The default implementation always returns false. The method might be reimplemented
  * when subclassing.
  */
-template <class ImplementationType>
-inline bool TagField<ImplementationType>::isAdditionalTypeInfoUsed() const
+template <class ImplementationType> inline bool TagField<ImplementationType>::isAdditionalTypeInfoUsed() const
 {
     return static_cast<ImplementationType *>(this)->isAdditionalTypeInfoUsed();
 }
@@ -265,8 +247,7 @@ inline bool TagField<ImplementationType>::isAdditionalTypeInfoUsed() const
 /*!
  * \brief Returns the nested fields.
  */
-template <class ImplementationType>
-const std::vector<ImplementationType> &TagField<ImplementationType>::nestedFields() const
+template <class ImplementationType> const std::vector<ImplementationType> &TagField<ImplementationType>::nestedFields() const
 {
     return m_nestedFields;
 }
@@ -276,8 +257,7 @@ const std::vector<ImplementationType> &TagField<ImplementationType>::nestedField
  * \remarks Might be modified. Not all implementations support nested fields.
  * \sa supportsNestedFields()
  */
-template <class ImplementationType>
-inline std::vector<ImplementationType> &TagField<ImplementationType>::nestedFields()
+template <class ImplementationType> inline std::vector<ImplementationType> &TagField<ImplementationType>::nestedFields()
 {
     return m_nestedFields;
 }
@@ -285,8 +265,7 @@ inline std::vector<ImplementationType> &TagField<ImplementationType>::nestedFiel
 /*!
  * \brief Returns whether nested fields are supported by the implementation.
  */
-template <class ImplementationType>
-inline bool TagField<ImplementationType>::supportsNestedFields() const
+template <class ImplementationType> inline bool TagField<ImplementationType>::supportsNestedFields() const
 {
     return static_cast<ImplementationType *>(this)->supportsNestedFields();
 }
@@ -294,10 +273,10 @@ inline bool TagField<ImplementationType>::supportsNestedFields() const
 /*!
  * \brief Called when the field is cleared.
  */
-template <class ImplementationType>
-inline void TagField<ImplementationType>::cleared()
-{}
-
+template <class ImplementationType> inline void TagField<ImplementationType>::cleared()
+{
 }
+
+} // namespace TagParser
 
 #endif // TAG_PARSER_TAGFIELD_H

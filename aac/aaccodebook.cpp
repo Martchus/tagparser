@@ -2622,4 +2622,4 @@ const sbyte tHuffmanNoiseBal30dB[24][2] = {
 };
 // clang-format on
 
-}
+} // namespace TagParser

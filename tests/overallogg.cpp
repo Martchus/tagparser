@@ -1,8 +1,8 @@
 #include "./helper.h"
 #include "./overall.h"
 
-#include "../tag.h"
 #include "../abstracttrack.h"
+#include "../tag.h"
 #include "../vorbis/vorbiscomment.h"
 
 /*!
@@ -13,8 +13,8 @@ void OverallTests::checkOggTestfile1()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 2);
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 897658443:
             CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Theora);
@@ -31,7 +31,7 @@ void OverallTests::checkOggTestfile1()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(m_fileInfo.hasAnyTag());
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
@@ -57,8 +57,8 @@ void OverallTests::checkOggTestfile2()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1375632254:
             CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Opus);
@@ -71,7 +71,7 @@ void OverallTests::checkOggTestfile2()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(m_fileInfo.hasAnyTag());
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
@@ -150,7 +150,7 @@ void OverallTests::testOggMaking()
     m_fileInfo.setForceFullParse(true);
 
     // do the test under different conditions
-    for(m_mode = 0; m_mode != 0x2; ++m_mode) {
+    for (m_mode = 0; m_mode != 0x2; ++m_mode) {
         using namespace SimpleTestFlags;
 
         // no need to setup test conditions because the Ogg maker
@@ -158,7 +158,7 @@ void OverallTests::testOggMaking()
 
         // print test conditions
         list<string> testConditions;
-        if(m_mode & RemoveTag) {
+        if (m_mode & RemoveTag) {
             testConditions.emplace_back("removing tag");
         } else {
             testConditions.emplace_back("modifying tag");

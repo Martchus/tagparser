@@ -28,8 +28,7 @@ constexpr auto aacSbrMaxNtsrhfg = 40;
 typedef const sbyte (*SbrHuffTab)[2];
 
 namespace AacSyntaxElementTypes {
-enum KnownTypes : byte
-{
+enum KnownTypes : byte {
     SingleChannelElement, /**< codes a single audio channel */
     ChannelPairElement, /**< codes steroe signal */
     ChannelCouplingElement, /**< something to do with channel coupling (not implemented in libfaad2) */
@@ -42,57 +41,26 @@ enum KnownTypes : byte
 }
 
 namespace AacIcsSequenceTypes {
-enum KnownTypes : byte {
-    OnlyLongSequence,
-    LongStartSequence,
-    EightShortSequence,
-    LongStopSequence
-};
+enum KnownTypes : byte { OnlyLongSequence, LongStartSequence, EightShortSequence, LongStopSequence };
 }
 
 namespace AacScaleFactorTypes {
-enum KnownTypes : byte {
-    ZeroHcb = 0,
-    FirstPairHcb = 5,
-    EscHcb = 11,
-    QuadLen = 4,
-    PairLen = 2,
-    NoiseHcb = 13,
-    IntensityHcb2 = 14,
-    IntensityHcb = 15
-};
+enum KnownTypes : byte { ZeroHcb = 0, FirstPairHcb = 5, EscHcb = 11, QuadLen = 4, PairLen = 2, NoiseHcb = 13, IntensityHcb2 = 14, IntensityHcb = 15 };
 }
 
 namespace AacExtensionTypes {
-enum KnownTypes : byte {
-    Fill = 0,
-    FillData = 1,
-    DataElement = 2,
-    DynamicRange = 11,
-    SacData = 12,
-    SbrData = 13,
-    SbrDataCrc = 14
-};
+enum KnownTypes : byte { Fill = 0, FillData = 1, DataElement = 2, DynamicRange = 11, SacData = 12, SbrData = 13, SbrDataCrc = 14 };
 }
 
 namespace BsFrameClasses {
-enum BsFrameClass : byte {
-    FixFix,
-    FixVar,
-    VarFix,
-    VarVar
-};
+enum BsFrameClass : byte { FixFix, FixVar, VarFix, VarVar };
 }
 
 namespace AacSbrExtensionIds {
-enum KnownIds : byte {
-    DrmParametricStereo = 0,
-    Ps = 2
-};
+enum KnownIds : byte { DrmParametricStereo = 0, Ps = 2 };
 }
 
-struct LIB_EXPORT AacLtpInfo
-{
+struct LIB_EXPORT AacLtpInfo {
     AacLtpInfo();
     byte lastBand;
     byte dataPresent;
@@ -105,8 +73,7 @@ struct LIB_EXPORT AacLtpInfo
     byte shortLag[8];
 };
 
-struct LIB_EXPORT AacPredictorInfo
-{
+struct LIB_EXPORT AacPredictorInfo {
     AacPredictorInfo();
     byte maxSfb;
     byte reset;
@@ -114,8 +81,7 @@ struct LIB_EXPORT AacPredictorInfo
     byte predictionUsed[aacMaxSfb];
 };
 
-struct LIB_EXPORT AacPulseInfo
-{
+struct LIB_EXPORT AacPulseInfo {
     AacPulseInfo();
     byte count;
     byte startSfb;
@@ -123,8 +89,7 @@ struct LIB_EXPORT AacPulseInfo
     byte amp[4];
 };
 
-struct LIB_EXPORT AacTnsInfo
-{
+struct LIB_EXPORT AacTnsInfo {
     AacTnsInfo();
     byte filt[8];
     byte coefRes[8];
@@ -135,8 +100,7 @@ struct LIB_EXPORT AacTnsInfo
     byte coef[8][4][32];
 };
 
-struct LIB_EXPORT AacSsrInfo
-{
+struct LIB_EXPORT AacSsrInfo {
     AacSsrInfo();
     byte maxBand;
     byte adjustNum[4][8];
@@ -144,8 +108,7 @@ struct LIB_EXPORT AacSsrInfo
     byte aloccode[4][8][8];
 };
 
-struct LIB_EXPORT AacDrcInfo
-{
+struct LIB_EXPORT AacDrcInfo {
     AacDrcInfo();
     byte present;
     byte bandCount;
@@ -159,8 +122,7 @@ struct LIB_EXPORT AacDrcInfo
     byte additionalExcludedChannels[aacMaxChannels];
 };
 
-struct LIB_EXPORT AacPsInfo
-{
+struct LIB_EXPORT AacPsInfo {
     AacPsInfo();
     byte headerRead;
     byte use34HybridBands;
@@ -171,8 +133,7 @@ struct LIB_EXPORT AacPsInfo
     // TODO
 };
 
-struct LIB_EXPORT AacDrmPsInfo
-{
+struct LIB_EXPORT AacDrmPsInfo {
     AacDrmPsInfo();
     byte headerRead;
     byte use34HybridBands;
@@ -183,8 +144,7 @@ struct LIB_EXPORT AacDrmPsInfo
     // TODO
 };
 
-struct LIB_EXPORT AacSbrInfo
-{
+struct LIB_EXPORT AacSbrInfo {
     AacSbrInfo(byte sbrElementType, uint16 samplingFrequency, uint16 frameLength, bool isDrm);
 
     byte aacElementId;
@@ -334,8 +294,7 @@ struct LIB_EXPORT AacSbrInfo
     byte bsDfNoise[2][3];
 };
 
-struct LIB_EXPORT AacProgramConfig
-{
+struct LIB_EXPORT AacProgramConfig {
     AacProgramConfig();
     byte elementInstanceTag;
     byte objectType;
@@ -374,8 +333,7 @@ struct LIB_EXPORT AacProgramConfig
     byte cpeChannel[16];
 };
 
-struct LIB_EXPORT AacIcsInfo
-{
+struct LIB_EXPORT AacIcsInfo {
     AacIcsInfo();
 
     byte maxSfb;
@@ -431,12 +389,12 @@ struct LIB_EXPORT AacIcsInfo
     uint16 dpcmNoiseLastPos;
 };
 
-class LIB_EXPORT AacFrameElementParser
-{
+class LIB_EXPORT AacFrameElementParser {
 public:
-    AacFrameElementParser(byte audioObjectId, byte samplingFrequencyIndex, byte extensionSamplingFrequencyIndex, byte channelConfig, uint16 frameLength = 1024);
+    AacFrameElementParser(
+        byte audioObjectId, byte samplingFrequencyIndex, byte extensionSamplingFrequencyIndex, byte channelConfig, uint16 frameLength = 1024);
 
-    void parse(const AdtsFrame &adtsFrame, std::unique_ptr<char []> &data, std::size_t dataSize);
+    void parse(const AdtsFrame &adtsFrame, std::unique_ptr<char[]> &data, std::size_t dataSize);
     void parse(const AdtsFrame &adtsFrame, std::istream &stream, std::size_t dataSize);
 
 private:
@@ -526,34 +484,38 @@ private:
 /*!
  * \brief Constructs a new parser with the specified setup information.
  */
-inline AacFrameElementParser::AacFrameElementParser(byte audioObjectId, byte samplingFrequencyIndex, byte extensionSamplingFrequencyIndex, byte channelConfig, uint16 frameLength) :
-    m_reader(nullptr, nullptr),
-    m_mpeg4AudioObjectId(audioObjectId),
-    m_mpeg4SamplingFrequencyIndex(samplingFrequencyIndex),
-    m_mpeg4ExtensionSamplingFrequencyIndex(extensionSamplingFrequencyIndex),
-    m_mpeg4ChannelConfig(channelConfig),
-    m_frameLength(frameLength),
-    m_aacSpectralDataResilienceFlag(0),
-    m_elementId{0},
-    m_channelCount(0),
-    m_elementCount(0),
-    m_elementChannelCount{0},
-    m_elementInstanceTag{0},
-    m_commonWindow(0),
+inline AacFrameElementParser::AacFrameElementParser(
+    byte audioObjectId, byte samplingFrequencyIndex, byte extensionSamplingFrequencyIndex, byte channelConfig, uint16 frameLength)
+    : m_reader(nullptr, nullptr)
+    , m_mpeg4AudioObjectId(audioObjectId)
+    , m_mpeg4SamplingFrequencyIndex(samplingFrequencyIndex)
+    , m_mpeg4ExtensionSamplingFrequencyIndex(extensionSamplingFrequencyIndex)
+    , m_mpeg4ChannelConfig(channelConfig)
+    , m_frameLength(frameLength)
+    , m_aacSpectralDataResilienceFlag(0)
+    , m_elementId{ 0 }
+    , m_channelCount(0)
+    , m_elementCount(0)
+    , m_elementChannelCount{ 0 }
+    , m_elementInstanceTag{ 0 }
+    , m_commonWindow(0)
+    ,
     //m_channel(0),
     //m_pairedChannel(0),
-    m_sbrPresentFlag(0),
+    m_sbrPresentFlag(0)
+    ,
     //m_forceUpSampling(0),
     //m_downSampledSbr(0),
-    m_sbrElements{0},
-    m_psUsed{0},
-    m_psUsedGlobal(0),
-    m_psResetFlag(0)
-{}
+    m_sbrElements{ 0 }
+    , m_psUsed{ 0 }
+    , m_psUsedGlobal(0)
+    , m_psResetFlag(0)
+{
+}
 
 inline sbyte AacFrameElementParser::sbrLog2(const sbyte val)
 {
-    static const int log2tab[] = {0, 0, 1, 2, 2, 3, 3, 3, 3, 4};
+    static const int log2tab[] = { 0, 0, 1, 2, 2, 3, 3, 3, 3, 4 };
     return (val < 10 && val >= 0) ? log2tab[val] : 0;
 }
 
@@ -562,6 +524,6 @@ constexpr int16 AacFrameElementParser::huffmanCodebook(byte i)
     return static_cast<int16>(i ? (16428320 & 0xFFFF) : ((16428320 >> 16) & 0xFFFF));
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_AACFRAME_H

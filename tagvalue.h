@@ -3,13 +3,13 @@
 
 #include "./positioninset.h"
 
-#include <c++utilities/conversion/binaryconversion.h>
-#include <c++utilities/chrono/timespan.h>
 #include <c++utilities/chrono/datetime.h>
+#include <c++utilities/chrono/timespan.h>
+#include <c++utilities/conversion/binaryconversion.h>
 
 #include <iosfwd>
-#include <string>
 #include <memory>
+#include <string>
 
 namespace TagParser {
 
@@ -19,8 +19,7 @@ class Id3v2Frame;
 /*!
  * \brief Specifies the text encoding.
  */
-enum class TagTextEncoding : unsigned int
-{
+enum class TagTextEncoding : unsigned int {
     Latin1, /**< ISO/IEC 8859-1 aka "Latin 1" */
     Utf8, /**< UTF-8 */
     Utf16LittleEndian, /**< UTF-16 (little endian) */
@@ -32,8 +31,9 @@ enum class TagTextEncoding : unsigned int
  * \brief Returns the size of one character for the specified \a encoding in bytes.
  * \remarks For variable-width encoding the minimum size is returned.
  */
-inline int characterSize(TagTextEncoding encoding) {
-    switch(encoding) {
+inline int characterSize(TagTextEncoding encoding)
+{
+    switch (encoding) {
     case TagTextEncoding::Latin1:
     case TagTextEncoding::Utf8:
         return 1;
@@ -48,8 +48,7 @@ inline int characterSize(TagTextEncoding encoding) {
 /*!
  * \brief Specifies the data type.
  */
-enum class TagDataType : unsigned int
-{
+enum class TagDataType : unsigned int {
     Text, /**< text/string */
     Integer, /**< integer */
     PositionInSet, /**< position in set, see Media::PositionInSet */
@@ -61,18 +60,20 @@ enum class TagDataType : unsigned int
     Undefined /**< undefined/invalid data type */
 };
 
-class TAG_PARSER_EXPORT TagValue
-{
+class TAG_PARSER_EXPORT TagValue {
     friend class Id3v2Frame; // FIXME: make ensureHostByteOrder() public in next minor release
 
 public:
     // constructor, destructor
     TagValue();
-    TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    TagValue(const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
+        TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    TagValue(
+        const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(int value);
     TagValue(const char *data, size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
-    TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    TagValue(
+        std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
     TagValue(const PositionInSet &value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
@@ -115,16 +116,18 @@ public:
     TagTextEncoding descriptionEncoding() const;
     static const TagValue &empty();
 
-    void assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    void assignText(const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    void assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
+        TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    void assignText(
+        const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
     void assignStandardGenreIndex(int index);
     void assignData(const char *data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
-    void assignData(std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    void assignData(
+        std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
     void assignPosition(PositionInSet value);
     void assignTimeSpan(ChronoUtilities::TimeSpan value);
     void assignDateTime(ChronoUtilities::DateTime value);
-
 
 private:
     static void stripBom(const char *&text, size_t &length, TagTextEncoding encoding);
@@ -144,13 +147,14 @@ private:
 /*!
  * \brief Constructs an empty TagValue.
  */
-inline TagValue::TagValue() :
-    m_size(0),
-    m_type(TagDataType::Undefined),
-    m_labeledAsReadonly(false),
-    m_encoding(TagTextEncoding::Latin1),
-    m_descEncoding(TagTextEncoding::Latin1)
-{}
+inline TagValue::TagValue()
+    : m_size(0)
+    , m_type(TagDataType::Undefined)
+    , m_labeledAsReadonly(false)
+    , m_encoding(TagTextEncoding::Latin1)
+    , m_descEncoding(TagTextEncoding::Latin1)
+{
+}
 
 /*!
  * \brief Constructs a new TagValue holding a copy of the given \a text.
@@ -162,9 +166,9 @@ inline TagValue::TagValue() :
  * \throws Throws a ConversionException if the conversion the specified character set fails.
  * \remarks Strips the BOM of the specified \a text.
  */
-inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo) :
-    m_labeledAsReadonly(false),
-    m_descEncoding(TagTextEncoding::Latin1)
+inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+    : m_labeledAsReadonly(false)
+    , m_descEncoding(TagTextEncoding::Latin1)
 {
     assignText(text, textSize, textEncoding, convertTo);
 }
@@ -178,9 +182,9 @@ inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncodin
  * \throws Throws a ConversionException if the conversion the specified character set fails.
  * \remarks Strips the BOM of the specified \a text.
  */
-inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo) :
-    m_labeledAsReadonly(false),
-    m_descEncoding(TagTextEncoding::Latin1)
+inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+    : m_labeledAsReadonly(false)
+    , m_descEncoding(TagTextEncoding::Latin1)
 {
     assignText(text, textEncoding, convertTo);
 }
@@ -188,9 +192,10 @@ inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding,
 /*!
  * \brief Constructs a new TagValue holding the given integer \a value.
  */
-inline TagValue::TagValue(int value) :
-    TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::Integer)
-{}
+inline TagValue::TagValue(int value)
+    : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::Integer)
+{
+}
 
 /*!
  * \brief Constructs a new TagValue with a copy of the given \a data.
@@ -202,18 +207,18 @@ inline TagValue::TagValue(int value) :
  *                 encoding will only be considered if a text is assigned.
  * \remarks Strips the BOM of the specified \a data if \a type is TagDataType::Text.
  */
-inline TagValue::TagValue(const char *data, size_t length, TagDataType type, TagTextEncoding encoding) :
-    m_size(length),
-    m_type(type),
-    m_labeledAsReadonly(false),
-    m_encoding(encoding),
-    m_descEncoding(TagTextEncoding::Latin1)
+inline TagValue::TagValue(const char *data, size_t length, TagDataType type, TagTextEncoding encoding)
+    : m_size(length)
+    , m_type(type)
+    , m_labeledAsReadonly(false)
+    , m_encoding(encoding)
+    , m_descEncoding(TagTextEncoding::Latin1)
 {
-    if(length) {
-        if(type == TagDataType::Text) {
+    if (length) {
+        if (type == TagDataType::Text) {
             stripBom(data, m_size, encoding);
         }
-        m_ptr = std::make_unique<char []>(m_size);
+        m_ptr = std::make_unique<char[]>(m_size);
         std::copy(data, data + m_size, m_ptr.get());
     }
 }
@@ -230,14 +235,14 @@ inline TagValue::TagValue(const char *data, size_t length, TagDataType type, Tag
  *                 encoding will only be considered if a text is assigned.
  * \remarks Does not strip the BOM so for consistency the caller must ensure there is no BOM present.
  */
-inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type, TagTextEncoding encoding) :
-    m_size(length),
-    m_type(type),
-    m_labeledAsReadonly(false),
-    m_encoding(encoding),
-    m_descEncoding(TagTextEncoding::Latin1)
+inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type, TagTextEncoding encoding)
+    : m_size(length)
+    , m_type(type)
+    , m_labeledAsReadonly(false)
+    , m_encoding(encoding)
+    , m_descEncoding(TagTextEncoding::Latin1)
 {
-    if(length) {
+    if (length) {
         m_ptr = move(data);
     }
 }
@@ -246,9 +251,10 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagData
  * \brief Constructs a new TagValue holding a copy of the given PositionInSet \a value.
  * \param value Specifies the PositionInSet.
  */
-inline TagValue::TagValue(const PositionInSet &value) :
-    TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
-{}
+inline TagValue::TagValue(const PositionInSet &value)
+    : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
+{
+}
 
 /*!
  * \brief Returns whether both instances are not equal.
@@ -278,7 +284,7 @@ inline void TagValue::assignText(const std::string &text, TagTextEncoding textEn
  */
 inline void TagValue::assignPosition(PositionInSet value)
 {
-    if(value.isNull()) {
+    if (value.isNull()) {
         m_type = TagDataType::PositionInSet;
         clearData();
     } else {
@@ -491,6 +497,6 @@ inline TagTextEncoding TagValue::descriptionEncoding() const
     return m_descEncoding;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_TAGVALUE_H

@@ -3,23 +3,22 @@
 #include "./overall.h"
 
 #include "../abstracttrack.h"
-#include "../mpegaudio/mpegaudioframe.h"
-#include "../mp4/mp4ids.h"
 #include "../matroska/matroskacontainer.h"
+#include "../mp4/mp4ids.h"
+#include "../mpegaudio/mpegaudioframe.h"
 
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/misc.h>
 
-#include <fstream>
 #include <cstring>
+#include <fstream>
 
 using namespace ChronoUtilities;
 
 namespace MkvTestFlags {
-enum TestFlag
-{
+enum TestFlag {
     ForceRewring = 0x1,
     KeepTagPos = 0x2,
     TagsBeforeData = 0x40,
@@ -41,8 +40,8 @@ void OverallTests::checkMkvTestfile1()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromMinutes(1) + TimeSpan::fromSeconds(27) + TimeSpan::fromMilliseconds(336), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 2422994868:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::MicrosoftMpeg4, track->format().general);
@@ -57,12 +56,13 @@ void OverallTests::checkMkvTestfile1()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 1"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL(
+            "Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock"s, tags.front()->value(KnownField::Comment).toString());
         CPPUNIT_ASSERT_EQUAL("2010"s, tags.front()->value(KnownField::Year).toString());
         break;
     case TagStatus::TestMetaDataPresent:
@@ -83,8 +83,8 @@ void OverallTests::checkMkvTestfile2()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(47) + TimeSpan::fromMilliseconds(509), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1863976627:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -100,12 +100,13 @@ void OverallTests::checkMkvTestfile2()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Elephant Dream - test 2"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 2, 100,000 timecode scale, odd aspect ratio, and CRC-32. Codecs are AVC and AAC"s,
+            tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -125,8 +126,8 @@ void OverallTests::checkMkvTestfile3()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(49) + TimeSpan::fromMilliseconds(64), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 3927961528:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -142,12 +143,13 @@ void OverallTests::checkMkvTestfile3()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Elephant Dream - test 3"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 3, header stripping on the video track and no SimpleBlock"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 3, header stripping on the video track and no SimpleBlock"s,
+            tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -169,8 +171,8 @@ void OverallTests::checkMkvTestfile4()
     // this file is messed up, it should contain tags but it doesn't
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1368622492:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Theora, track->format().general);
@@ -181,7 +183,7 @@ void OverallTests::checkMkvTestfile4()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Vorbis, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2u), track->channelCount());
-            switch(m_tagStatus) {
+            switch (m_tagStatus) {
             case TagStatus::Original:
             case TagStatus::Removed:
                 CPPUNIT_ASSERT_EQUAL("und"s, track->language());
@@ -204,7 +206,7 @@ void OverallTests::checkMkvTestfile4()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
     case TagStatus::Removed:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
@@ -227,8 +229,8 @@ void OverallTests::checkMkvTestfile5()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(46) + TimeSpan::fromMilliseconds(665), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(11_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1258329745:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -245,17 +247,17 @@ void OverallTests::checkMkvTestfile5()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::TextSubtitle, track->format().general);
             CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
             break;
-        default:
-            ;
+        default:;
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 8"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 8, secondary audio commentary track, misc subtitle tracks"s,
+            tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -275,8 +277,8 @@ void OverallTests::checkMkvTestfile6()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromMinutes(1) + TimeSpan::fromSeconds(27) + TimeSpan::fromMilliseconds(336), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 2422994868:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::MicrosoftMpeg4, track->format().general);
@@ -293,12 +295,13 @@ void OverallTests::checkMkvTestfile6()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 6"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 6, random length to code the size of Clusters and Blocks, no Cues for seeking"s,
+            tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -318,8 +321,8 @@ void OverallTests::checkMkvTestfile7()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(37) + TimeSpan::fromMilliseconds(43), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 568001708:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -337,12 +340,14 @@ void OverallTests::checkMkvTestfile7()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 7"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL(
+            "Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"s,
+            tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -351,8 +356,8 @@ void OverallTests::checkMkvTestfile7()
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    for(const auto &msg : m_diag) {
-        if(msg.level() != DiagLevel::Warning) {
+    for (const auto &msg : m_diag) {
+        if (msg.level() != DiagLevel::Warning) {
             continue;
         }
         CPPUNIT_ASSERT(startsWith(msg.context(), "parsing header of EBML element 0xEA \"cue codec state\" at"));
@@ -370,8 +375,8 @@ void OverallTests::checkMkvTestfile8()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(47) + TimeSpan::fromMilliseconds(341), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 568001708:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -389,12 +394,13 @@ void OverallTests::checkMkvTestfile8()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 8"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL("Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s"s, tags.front()->value(KnownField::Comment).toString());
+        CPPUNIT_ASSERT_EQUAL(
+            "Matroska Validation File 8, audio missing between timecodes 6.019s and 6.360s"s, tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
@@ -414,8 +420,8 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(27) + TimeSpan::fromMilliseconds(569), m_fileInfo.duration());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -436,8 +442,8 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
     }
     const auto chapters = m_fileInfo.chapters();
     CPPUNIT_ASSERT_EQUAL(2_st, chapters.size());
-    for(const auto &chapter : chapters) {
-        switch(chapter->id()) {
+    for (const auto &chapter : chapters) {
+        switch (chapter->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL("Kapitel 01"s, static_cast<const string &>(chapter->names().at(0)));
             CPPUNIT_ASSERT_EQUAL(0l, chapter->startTime().totalTicks());
@@ -453,7 +459,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(2_st, tags.size());
         CPPUNIT_ASSERT(tags[0]->target().isEmpty());
@@ -479,15 +485,15 @@ void OverallTests::checkMkvTestfileNestedTags()
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Matroska, m_fileInfo.containerFormat());
     const auto tags = m_fileInfo.tags();
     bool generalTagFound = false;
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
     case TagStatus::TestMetaDataPresent:
         CPPUNIT_ASSERT_EQUAL(5_st, tags.size());
-        for(const Tag *tag : tags) {
+        for (const Tag *tag : tags) {
             CPPUNIT_ASSERT(tag->type() == TagType::MatroskaTag);
             const auto *mkvTag = static_cast<const MatroskaTag *>(tag);
             const auto &target = mkvTag->target();
-            if(target.level() == 50 && target.tracks().empty()) {
+            if (target.level() == 50 && target.tracks().empty()) {
                 generalTagFound = true;
                 CPPUNIT_ASSERT_EQUAL("Vanilla Sky"s, tag->value(KnownField::Title).toString());
                 const auto &fields = mkvTag->fields();
@@ -508,8 +514,8 @@ void OverallTests::checkMkvTestfileNestedTags()
 
     // the file contains in fact the unknown element [44][B4]
     // TODO: find out what this element is about (its data is only the single byte 0x01)
-    for(const auto &msg : m_diag) {
-        if(msg.level() != DiagLevel::Warning) {
+    for (const auto &msg : m_diag) {
+        if (msg.level() != DiagLevel::Warning) {
             continue;
         }
         CPPUNIT_ASSERT(startsWith(msg.message(), "\"SimpleTag\"-element contains unknown element 0x44B4 at"));
@@ -561,17 +567,17 @@ void OverallTests::checkMkvConstraints()
     using namespace MkvTestFlags;
 
     CPPUNIT_ASSERT(m_fileInfo.container());
-    if(m_mode & PaddingConstraints) {
-        if(m_mode & ForceRewring) {
+    if (m_mode & PaddingConstraints) {
+        if (m_mode & ForceRewring) {
             CPPUNIT_ASSERT_EQUAL(4096_st, m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
         }
-        if(!(m_mode & RemoveTag) && (m_expectedTagPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
-            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineTagPosition(m_diag));
+        if (!(m_mode & RemoveTag) && (m_expectedTagPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
+            CPPUNIT_ASSERT_EQUAL(m_expectedTagPos, m_fileInfo.container()->determineTagPosition(m_diag));
         }
-        if((m_expectedIndexPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceIndexPos))) {
+        if ((m_expectedIndexPos != ElementPosition::Keep) && ((m_mode & ForceRewring) || (m_mode & ForceIndexPos))) {
             CPPUNIT_ASSERT_EQUAL(m_expectedIndexPos, m_fileInfo.container()->determineIndexPosition(m_diag));
         }
     }
@@ -587,7 +593,7 @@ void OverallTests::setMkvTestMetaData()
 
     // change the present tag
     const string fileName(m_fileInfo.fileName());
-    if(fileName == "test4.mkv") {
+    if (fileName == "test4.mkv") {
         // test4.mkv has no tag, so one must be created first
         container->createTag(TagTarget(50));
         // also change language, name, forced and default of track "3171450505" to German
@@ -598,7 +604,7 @@ void OverallTests::setMkvTestMetaData()
         track->setDefault(true);
         track->setEnabled(true);
         track->setForced(true);
-    } else if(fileName == "handbrake-chapters-2.mkv") {
+    } else if (fileName == "handbrake-chapters-2.mkv") {
         // remove 2nd tag
         m_fileInfo.removeTag(m_fileInfo.tags().at(1));
     }
@@ -635,18 +641,14 @@ void OverallTests::createMkvWithNestedTags()
     cerr << "\n\n- Create testfile \"" << m_nestedTagsMkvPath << "\" with mkvmerge" << endl;
     const string tagsMkvPath(testFilePath("mtx-test-data/mkv/tags.mkv"));
     const string tagsXmlPath(testFilePath("mkv/nested-tags.xml"));
-    const char *const mkvmergeArgs[] = {
-        "--ui-language en_US",
-        "--output", m_nestedTagsMkvPath.data(),
-        "--no-global-tags", "--language", "0:und", "--default-track", "0:yes", "--language", "1:und", "--default-track", "1:yes",
-        "(", tagsMkvPath.data(), ")",
-        "--global-tags", tagsXmlPath.data(), "--track-order", "0:0,0:1", nullptr
-    };
+    const char *const mkvmergeArgs[] = { "--ui-language en_US", "--output", m_nestedTagsMkvPath.data(), "--no-global-tags", "--language", "0:und",
+        "--default-track", "0:yes", "--language", "1:und", "--default-track", "1:yes", "(", tagsMkvPath.data(), ")", "--global-tags",
+        tagsXmlPath.data(), "--track-order", "0:0,0:1", nullptr };
     string mkvmergeOutput, mkvmergeErrors;
     int res = execHelperApp("/bin/mkvmerge", mkvmergeArgs, mkvmergeOutput, mkvmergeErrors);
     cout << mkvmergeOutput << endl;
     cerr << mkvmergeErrors << endl;
-    if(res) {
+    if (res) {
         cerr << "- failure (exit code " << res << "); unable to test nested tags" << endl;
         remove(m_nestedTagsMkvPath.data());
         m_nestedTagsMkvPath.clear();
@@ -672,7 +674,7 @@ void OverallTests::testMkvParsing()
     parseFile(TestUtilities::testFilePath("matroska_wave1/test8.mkv"), &OverallTests::checkMkvTestfile8);
     parseFile(TestUtilities::testFilePath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), &OverallTests::checkMkvTestfileHandbrakeChapters);
     createMkvWithNestedTags();
-    if(!m_nestedTagsMkvPath.empty()) {
+    if (!m_nestedTagsMkvPath.empty()) {
         parseFile(m_nestedTagsMkvPath, &OverallTests::checkMkvTestfileNestedTags);
     }
 }
@@ -691,18 +693,18 @@ void OverallTests::testMkvMakingWithDifferentSettings()
     m_fileInfo.setForceFullParse(true);
 
     // do the test under different conditions
-    for(m_mode = 0; m_mode != 0x100; ++m_mode) {
+    for (m_mode = 0; m_mode != 0x100; ++m_mode) {
         using namespace MkvTestFlags;
 
         // setup test conditions
         m_fileInfo.setForceRewrite(m_mode & ForceRewring);
-        if(m_mode & KeepTagPos) {
+        if (m_mode & KeepTagPos) {
             m_fileInfo.setTagPosition(ElementPosition::Keep);
         } else {
             m_fileInfo.setTagPosition(m_mode & TagsBeforeData ? ElementPosition::BeforeData : ElementPosition::AfterData);
         }
-        if(m_mode & KeepIndexPos) {
-            if(m_mode & IndexBeforeData) {
+        if (m_mode & KeepIndexPos) {
+            if (m_mode & IndexBeforeData) {
                 continue;
             }
             m_fileInfo.setIndexPosition(ElementPosition::Keep);
@@ -717,34 +719,34 @@ void OverallTests::testMkvMakingWithDifferentSettings()
 
         // print test conditions
         list<string> testConditions;
-        if(m_mode & ForceRewring) {
+        if (m_mode & ForceRewring) {
             testConditions.emplace_back("forcing rewrite");
         }
-        if(m_mode & KeepTagPos) {
-            if(m_mode & RemoveTag) {
+        if (m_mode & KeepTagPos) {
+            if (m_mode & RemoveTag) {
                 testConditions.emplace_back("removing tag");
             } else {
                 testConditions.emplace_back("keeping tag position");
             }
-        } else if(m_mode & TagsBeforeData) {
+        } else if (m_mode & TagsBeforeData) {
             testConditions.emplace_back("tags before data");
         } else {
             testConditions.emplace_back("tags after data");
         }
-        if(m_mode & KeepIndexPos) {
+        if (m_mode & KeepIndexPos) {
             testConditions.emplace_back("keeping index position");
-        } else if(m_mode & IndexBeforeData) {
+        } else if (m_mode & IndexBeforeData) {
             testConditions.emplace_back("index before data");
         } else {
             testConditions.emplace_back("index after data");
         }
-        if(m_mode & PaddingConstraints) {
+        if (m_mode & PaddingConstraints) {
             testConditions.emplace_back("padding constraints");
         }
-        if(m_mode & ForceTagPos) {
+        if (m_mode & ForceTagPos) {
             testConditions.emplace_back("forcing tag position");
         }
-        if(m_mode & ForceIndexPos) {
+        if (m_mode & ForceIndexPos) {
             testConditions.emplace_back("forcing index position");
         }
         cerr << endl << "Matroska maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
@@ -760,7 +762,8 @@ void OverallTests::testMkvMakingWithDifferentSettings()
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test6.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile6);
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test7.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile7);
         makeFile(TestUtilities::workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine, &OverallTests::checkMkvTestfileHandbrakeChapters);
+        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine,
+            &OverallTests::checkMkvTestfileHandbrakeChapters);
     }
 }
 
@@ -771,7 +774,7 @@ void OverallTests::testMkvMakingWithDifferentSettings()
 void OverallTests::testMkvMakingNestedTags()
 {
     createMkvWithNestedTags();
-    if(!m_nestedTagsMkvPath.empty()) {
+    if (!m_nestedTagsMkvPath.empty()) {
         cerr << endl << "Matroska maker - rewrite file with nested tags" << endl;
         m_fileInfo.setMinPadding(0);
         m_fileInfo.setMaxPadding(0);

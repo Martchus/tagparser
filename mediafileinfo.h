@@ -1,13 +1,13 @@
 #ifndef TAG_PARSER_MEDIAINFO_H
 #define TAG_PARSER_MEDIAINFO_H
 
-#include "./signature.h"
-#include "./basicfileinfo.h"
 #include "./abstractcontainer.h"
+#include "./basicfileinfo.h"
+#include "./signature.h"
 
-#include <vector>
-#include <unordered_set>
 #include <memory>
+#include <unordered_set>
+#include <vector>
 
 namespace TagParser {
 
@@ -32,8 +32,7 @@ DECLARE_ENUM_CLASS(TagType, unsigned int);
 /*!
  * \brief The TagUsage enum specifies the usage of a certain tag type.
  */
-enum class TagUsage
-{
+enum class TagUsage {
     Always, /**< a tag of the type is always used; a new tag is created if none exists yet */
     KeepExisting, /**< existing tags of the type are kept and updated but no new tag is created  */
     Never /**< tags of the type are never used; a possibly existing tag of the type is removed */
@@ -43,16 +42,14 @@ enum class TagUsage
  * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
  *        been parsed yet and if what the parsing result is.
  */
-enum class ParsingStatus : byte
-{
+enum class ParsingStatus : byte {
     NotParsedYet, /**< the part has not been parsed yet */
     Ok, /**< the part has been parsed and no critical errors occured */
     NotSupported, /**< tried to parse the part, but the format is not supported */
     CriticalFailure /**< tried to parse the part, but critical errors occured */
 };
 
-class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo
-{
+class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo {
 public:
     // constructor, destructor
     MediaFileInfo();
@@ -106,18 +103,19 @@ public:
     bool hasId3v2Tag() const;
     bool hasAnyTag() const;
     Id3v1Tag *id3v1Tag() const;
-    const std::vector<std::unique_ptr<Id3v2Tag> > &id3v2Tags() const;
+    const std::vector<std::unique_ptr<Id3v2Tag>> &id3v2Tags() const;
     void tags(std::vector<Tag *> &tags) const;
     std::vector<Tag *> tags() const;
     Mp4Tag *mp4Tag() const;
-    const std::vector<std::unique_ptr<MatroskaTag> > &matroskaTags() const;
+    const std::vector<std::unique_ptr<MatroskaTag>> &matroskaTags() const;
     VorbisComment *vorbisComment() const;
     bool areTagsSupported() const;
 
     // methods to create/remove tags
     bool createAppropriateTags(bool treatUnknownFilesAsMp3Files = false, TagUsage id3v1usage = TagUsage::KeepExisting,
-                               TagUsage id3v2usage = TagUsage::Always, bool id3InitOnCreate = false, bool id3TransferValuesOnRemoval = true, bool mergeMultipleSuccessiveId3v2Tags = true,
-                               bool keepExistingId3v2version = true, byte id3v2MajorVersion = 3, const std::vector<TagTarget> &requiredTargets = std::vector<TagTarget>());
+        TagUsage id3v2usage = TagUsage::Always, bool id3InitOnCreate = false, bool id3TransferValuesOnRemoval = true,
+        bool mergeMultipleSuccessiveId3v2Tags = true, bool keepExistingId3v2version = true, byte id3v2MajorVersion = 3,
+        const std::vector<TagTarget> &requiredTargets = std::vector<TagTarget>());
     bool removeId3v1Tag();
     Id3v1Tag *createId3v1Tag();
     bool removeId3v2Tag(Id3v2Tag *tag);
@@ -179,7 +177,7 @@ private:
     // fields related to the tag
     ParsingStatus m_tagsParsingStatus;
     std::unique_ptr<Id3v1Tag> m_id3v1Tag;
-    std::vector<std::unique_ptr<Id3v2Tag> > m_id3v2Tags;
+    std::vector<std::unique_ptr<Id3v2Tag>> m_id3v2Tags;
 
     // fields related to the chapters and the attachments
     ParsingStatus m_chaptersParsingStatus;
@@ -343,7 +341,7 @@ inline Id3v1Tag *MediaFileInfo::id3v1Tag() const
  *          pointers. The returned ID3v2 tags will be destroyed when the
  *          MediaFileInfo gets invalidated.
  */
-inline const std::vector<std::unique_ptr<Id3v2Tag> > &MediaFileInfo::id3v2Tags() const
+inline const std::vector<std::unique_ptr<Id3v2Tag>> &MediaFileInfo::id3v2Tags() const
 {
     return m_id3v2Tags;
 }
@@ -591,6 +589,6 @@ inline void MediaFileInfo::setForceIndexPosition(bool forceIndexPosition)
     m_forceIndexPosition = forceIndexPosition;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MEDIAINFO_H

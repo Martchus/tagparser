@@ -6,7 +6,7 @@ namespace TagParser {
 
 const char *diagLevelName(DiagLevel diagLevel)
 {
-    switch(diagLevel) {
+    switch (diagLevel) {
     case DiagLevel::Information:
         return "information";
     case DiagLevel::Warning:
@@ -40,5 +40,4 @@ DiagLevel Diagnostics::level() const
     return level;
 }
 
-}
-
+} // namespace TagParser

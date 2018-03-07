@@ -3,13 +3,11 @@
 
 #include "../tag.h"
 
-namespace TagParser
-{
+namespace TagParser {
 
 class Diagnostics;
 
-class TAG_PARSER_EXPORT Id3v1Tag : public Tag
-{
+class TAG_PARSER_EXPORT Id3v1Tag : public Tag {
 public:
     Id3v1Tag();
 
@@ -43,6 +41,6 @@ private:
     TagValue m_genre;
 };
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ID3V1TAG_H

@@ -1,11 +1,11 @@
-#include "./mp4track.h"
-#include "./mp4tag.h"
 #include "./mp4atom.h"
-#include "./mp4ids.h"
 #include "./mp4container.h"
+#include "./mp4ids.h"
+#include "./mp4tag.h"
+#include "./mp4track.h"
 
-#include "../mediafileinfo.h"
 #include "../exceptions.h"
+#include "../mediafileinfo.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
@@ -27,23 +27,26 @@ namespace TagParser {
 /*!
  * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset) :
-    GenericFileElement<Mp4Atom>(container, startOffset)
-{}
+Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset)
+    : GenericFileElement<Mp4Atom>(container, startOffset)
+{
+}
 
 /*!
  * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset, uint64 maxSize) :
-    GenericFileElement<Mp4Atom>(container, startOffset, maxSize)
-{}
+Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset, uint64 maxSize)
+    : GenericFileElement<Mp4Atom>(container, startOffset, maxSize)
+{
+}
 
 /*!
  * \brief Constructs a new sub level atom with the specified \a parent at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(Mp4Atom &parent, uint64 startOffset) :
-    GenericFileElement<Mp4Atom>(parent, startOffset)
-{}
+Mp4Atom::Mp4Atom(Mp4Atom &parent, uint64 startOffset)
+    : GenericFileElement<Mp4Atom>(parent, startOffset)
+{
+}
 
 /*!
  * \brief Returns the parsing context.
@@ -59,52 +62,54 @@ string Mp4Atom::parsingContext() const
 void Mp4Atom::internalParse(Diagnostics &diag)
 {
     static const string context("parsing MP4 atom");
-    if(maxTotalSize() < minimumElementSize()) {
-        diag.emplace_back(DiagLevel::Critical, argsToString("Atom is smaller than 8 byte and hence invalid. The remaining size within the parent atom is ", maxTotalSize(), '.'), context);
+    if (maxTotalSize() < minimumElementSize()) {
+        diag.emplace_back(DiagLevel::Critical,
+            argsToString("Atom is smaller than 8 byte and hence invalid. The remaining size within the parent atom is ", maxTotalSize(), '.'),
+            context);
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());
     m_dataSize = reader().readUInt32BE();
-    if(m_dataSize == 0) {
+    if (m_dataSize == 0) {
         // atom size extends to rest of the file/enclosing container
         m_dataSize = maxTotalSize();
     }
-    if(!m_dataSize) {
+    if (!m_dataSize) {
         diag.emplace_back(DiagLevel::Critical, "No data found (only null bytes).", context);
         throw NoDataFoundException();
     }
-    if(m_dataSize < 8 && m_dataSize != 1) {
+    if (m_dataSize < 8 && m_dataSize != 1) {
         diag.emplace_back(DiagLevel::Critical, "Atom is smaller than 8 byte and hence invalid.", context);
         throw TruncatedDataException();
     }
     m_id = reader().readUInt32BE();
     m_idLength = 4;
-    if(m_dataSize == 1) { // atom denotes 64-bit size
+    if (m_dataSize == 1) { // atom denotes 64-bit size
         m_dataSize = reader().readUInt64BE();
         m_sizeLength = 12; // 4 bytes indicate long size denotation + 8 bytes for actual size denotation
-        if(dataSize() < 16 && m_dataSize != 1) {
+        if (dataSize() < 16 && m_dataSize != 1) {
             diag.emplace_back(DiagLevel::Critical, "Atom denoting 64-bit size is smaller than 16 byte and hence invalid.", parsingContext());
             throw TruncatedDataException();
         }
     } else {
         m_sizeLength = 4;
     }
-    if(maxTotalSize() < m_dataSize) { // currently m_dataSize holds data size plus header size!
+    if (maxTotalSize() < m_dataSize) { // currently m_dataSize holds data size plus header size!
         diag.emplace_back(DiagLevel::Warning, "The atom seems to be truncated; unable to parse siblings of that ", parsingContext());
         m_dataSize = maxTotalSize(); // using max size instead
     }
     // currently m_dataSize holds data size plus header size!
     m_dataSize -= headerSize();
     Mp4Atom *child = nullptr;
-    if(uint64 firstChildOffset = this->firstChildOffset()) {
-        if(firstChildOffset + minimumElementSize() <= totalSize()) {
+    if (uint64 firstChildOffset = this->firstChildOffset()) {
+        if (firstChildOffset + minimumElementSize() <= totalSize()) {
             child = new Mp4Atom(static_cast<Mp4Atom &>(*this), startOffset() + firstChildOffset);
         }
     }
     m_firstChild.reset(child);
     Mp4Atom *sibling = nullptr;
-    if(totalSize() < maxTotalSize()) {
-        if(parent()) {
+    if (totalSize() < maxTotalSize()) {
+        if (parent()) {
             sibling = new Mp4Atom(*(parent()), startOffset() + totalSize());
         } else {
             sibling = new Mp4Atom(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
@@ -156,7 +161,7 @@ void Mp4Atom::seekBackAndWriteAtomSize64(std::ostream &stream, const ostream::po
  */
 void Mp4Atom::makeHeader(uint64 size, uint32 id, BinaryWriter &writer)
 {
-    if(size < numeric_limits<uint32>::max()) {
+    if (size < numeric_limits<uint32>::max()) {
         writer.writeUInt32BE(static_cast<uint32>(size));
         writer.writeUInt32BE(id);
     } else {
@@ -177,22 +182,41 @@ bool Mp4Atom::isParent() const
 {
     using namespace Mp4AtomIds;
     // some atom ids are known to be parents
-    switch(id()) {
-    case Movie: case Track: case Media: case MediaInformation: case DataInformation:
-    case SampleTable: case UserData: case Meta: case ItunesList: case MovieFragment:
-    case TrackFragment: case MovieExtends: case DataReference: case Mp4AtomIds::AvcConfiguration:
-    case FourccIds::Mpeg4Audio: case FourccIds::AmrNarrowband: case FourccIds::Amr:
-    case FourccIds::Drms: case FourccIds::Alac: case FourccIds::WindowsMediaAudio:
-    case FourccIds::Ac3: case FourccIds::EAc3: case FourccIds::DolbyMpl:
-    case FourccIds::Dts: case FourccIds::DtsH: case FourccIds::DtsE:
+    switch (id()) {
+    case Movie:
+    case Track:
+    case Media:
+    case MediaInformation:
+    case DataInformation:
+    case SampleTable:
+    case UserData:
+    case Meta:
+    case ItunesList:
+    case MovieFragment:
+    case TrackFragment:
+    case MovieExtends:
+    case DataReference:
+    case Mp4AtomIds::AvcConfiguration:
+    case FourccIds::Mpeg4Audio:
+    case FourccIds::AmrNarrowband:
+    case FourccIds::Amr:
+    case FourccIds::Drms:
+    case FourccIds::Alac:
+    case FourccIds::WindowsMediaAudio:
+    case FourccIds::Ac3:
+    case FourccIds::EAc3:
+    case FourccIds::DolbyMpl:
+    case FourccIds::Dts:
+    case FourccIds::DtsH:
+    case FourccIds::DtsE:
         return true;
     default:
-        if(parent()) {
+        if (parent()) {
             // some atom ids are known to contain parents
-            switch(parent()->id()) {
+            switch (parent()->id()) {
             case ItunesList:
                 return true;
-            default: ;
+            default:;
             }
         }
     }
@@ -208,8 +232,9 @@ bool Mp4Atom::isParent() const
 bool Mp4Atom::isPadding() const
 {
     using namespace Mp4AtomIds;
-    switch(id()) {
-    case Free: case Skip:
+    switch (id()) {
+    case Free:
+    case Skip:
         return true;
     default:
         return false;
@@ -228,18 +253,23 @@ uint64 Mp4Atom::firstChildOffset() const
 {
     using namespace Mp4AtomIds;
     using namespace FourccIds;
-    if(isParent()) {
-        switch(id()) {
-        case Meta: return headerSize() + 0x4u;
-        case DataReference: return headerSize() + 0x8u;
-        default: return headerSize();
+    if (isParent()) {
+        switch (id()) {
+        case Meta:
+            return headerSize() + 0x4u;
+        case DataReference:
+            return headerSize() + 0x8u;
+        default:
+            return headerSize();
         }
     } else {
-        switch(id()) {
-        case SampleDescription: return headerSize() + 0x08u;
-        default: return 0x00u;
+        switch (id()) {
+        case SampleDescription:
+            return headerSize() + 0x08u;
+        default:
+            return 0x00u;
         }
     }
 }
 
-}
+} // namespace TagParser

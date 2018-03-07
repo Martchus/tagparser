@@ -13,8 +13,7 @@ namespace TagParser {
 /*!
  * \brief Specifies the level of the diagnostic message.
  */
-enum class DiagLevel
-{
+enum class DiagLevel {
     None = 0, /**< indicates that no diagnostic messages are present; should not be used when constructing a diagnostic message */
     Debug = 1, /**< indicates a debbuging message */
     Information = 2, /**< indicates an informal message */
@@ -30,16 +29,15 @@ TAG_PARSER_EXPORT const char *diagLevelName(DiagLevel diagLevel);
 /*!
  * \brief Sets \a lhs to \a rhs if \a rhs is more critical than \a lhs and returns \a lhs.
  */
-inline DiagLevel& operator |=(DiagLevel &lhs, const DiagLevel &rhs)
+inline DiagLevel &operator|=(DiagLevel &lhs, const DiagLevel &rhs)
 {
-    if(lhs < rhs) {
+    if (lhs < rhs) {
         lhs = rhs;
     }
     return lhs;
 }
 
-class DiagMessage
-{
+class DiagMessage {
 public:
     DiagMessage(DiagLevel level, const std::string &message, const std::string &context);
     DiagMessage(DiagLevel level, std::string &&message, const std::string &context);
@@ -122,8 +120,7 @@ inline bool DiagMessage::operator==(const DiagMessage &other) const
     return m_level == other.m_level && m_message == other.m_message && m_context == other.m_context;
 }
 
-class TAG_PARSER_EXPORT Diagnostics : public std::vector<DiagMessage>
-{
+class TAG_PARSER_EXPORT Diagnostics : public std::vector<DiagMessage> {
 public:
     Diagnostics() = default;
     Diagnostics(std::initializer_list<DiagMessage> list);
@@ -137,8 +134,7 @@ inline Diagnostics::Diagnostics(std::initializer_list<DiagMessage> list)
 {
 }
 
-class DiagPtr
-{
+class DiagPtr {
 public:
     DiagPtr();
     DiagPtr(Diagnostics &diag);
@@ -169,6 +165,6 @@ inline const Diagnostics *DiagPtr::operator->() const
     return m_ptr;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAGPARSER_DIAGNOSTICS_H

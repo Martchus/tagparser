@@ -3,21 +3,20 @@
 
 #include "./diagnostics.h"
 
-#include <string>
-#include <iostream>
 #include <functional>
+#include <iostream>
 #include <memory>
+#include <string>
 
 namespace TagParser {
 
 class MediaFileInfo;
 
-class TAG_PARSER_EXPORT StreamDataBlock
-{
+class TAG_PARSER_EXPORT StreamDataBlock {
 public:
-    StreamDataBlock(const std::function<std::istream & ()> &stream,
-                    std::istream::off_type startOffset = 0, std::ios_base::seekdir startDir = std::ios_base::beg,
-                    std::istream::off_type endOffset = 0, std::ios_base::seekdir endDir = std::ios_base::end);
+    StreamDataBlock(const std::function<std::istream &()> &stream, std::istream::off_type startOffset = 0,
+        std::ios_base::seekdir startDir = std::ios_base::beg, std::istream::off_type endOffset = 0,
+        std::ios_base::seekdir endDir = std::ios_base::end);
 
     std::istream &stream() const;
     std::istream::pos_type startOffset() const;
@@ -31,7 +30,7 @@ public:
 protected:
     StreamDataBlock();
 
-    std::function<std::istream & ()> m_stream;
+    std::function<std::istream &()> m_stream;
     std::istream::pos_type m_startOffset;
     std::istream::pos_type m_endOffset;
     mutable std::unique_ptr<char[]> m_buffer;
@@ -87,8 +86,7 @@ inline void StreamDataBlock::discardBuffer()
     m_buffer.reset();
 }
 
-class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock
-{
+class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock {
 public:
     FileDataBlock(const std::string &path, Diagnostics &diag);
     const MediaFileInfo *fileInfo() const;
@@ -102,8 +100,7 @@ inline const MediaFileInfo *FileDataBlock::fileInfo() const
     return m_fileInfo.get();
 }
 
-class TAG_PARSER_EXPORT AbstractAttachment
-{
+class TAG_PARSER_EXPORT AbstractAttachment {
 public:
     const std::string &description() const;
     void setDescription(const std::string &description);
@@ -139,11 +136,12 @@ private:
 /*!
  * \brief Constructs a new attachment.
  */
-inline AbstractAttachment::AbstractAttachment() :
-    m_id(0),
-    m_isDataFromFile(false),
-    m_ignored(false)
-{}
+inline AbstractAttachment::AbstractAttachment()
+    : m_id(0)
+    , m_isDataFromFile(false)
+    , m_ignored(false)
+{
+}
 
 /*!
  * \brief Returns a description of the attachment.
@@ -270,6 +268,6 @@ inline bool AbstractAttachment::isEmpty() const
     return m_description.empty() && m_name.empty() && !m_mimeType.empty() && !m_data;
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_ABSTRACTATTACHMENT_H

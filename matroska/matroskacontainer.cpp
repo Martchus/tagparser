@@ -1,29 +1,29 @@
 #include "./matroskacontainer.h"
 #include "./ebmlid.h"
-#include "./matroskaid.h"
 #include "./matroskacues.h"
 #include "./matroskaeditionentry.h"
+#include "./matroskaid.h"
 #include "./matroskaseekinfo.h"
 
-#include "../mediafileinfo.h"
-#include "../exceptions.h"
 #include "../backuphelper.h"
+#include "../exceptions.h"
+#include "../mediafileinfo.h"
 
 #include "resources/config.h"
 
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/catchiofailure.h>
 
 #include <unistd.h>
 
+#include <chrono>
 #include <functional>
 #include <initializer_list>
-#include <unordered_set>
-#include <memory>
 #include <limits>
-#include <chrono>
+#include <memory>
 #include <random>
+#include <unordered_set>
 
 using namespace std;
 using namespace std::placeholders;
@@ -47,11 +47,11 @@ uint64 MatroskaContainer::m_maxFullParseSize = 0x3200000;
 /*!
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
-MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset) :
-    GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>(fileInfo, startOffset),
-    m_maxIdLength(4),
-    m_maxSizeLength(8),
-    m_segmentCount(0)
+MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset)
+    : GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>(fileInfo, startOffset)
+    , m_maxIdLength(4)
+    , m_maxSizeLength(8)
+    , m_segmentCount(0)
 {
     m_version = 1;
     m_readVersion = 1;
@@ -61,7 +61,8 @@ MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset
 }
 
 MatroskaContainer::~MatroskaContainer()
-{}
+{
+}
 
 void MatroskaContainer::reset()
 {
@@ -92,40 +93,45 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
 {
     static const string context("validating Matroska file index (cues)");
     bool cuesElementsFound = false;
-    if(m_firstElement) {
+    if (m_firstElement) {
         unordered_set<EbmlElement::IdentifierType> ids;
         bool cueTimeFound = false, cueTrackPositionsFound = false;
         unique_ptr<EbmlElement> clusterElement;
         uint64 pos, prevClusterSize = 0, currentOffset = 0;
         // iterate throught all segments
-        for(EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement; segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {
+        for (EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement;
+             segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {
             segmentElement->parse(diag);
             // iterate throught all child elements of the segment (only "Cues"- and "Cluster"-elements are relevant for this method)
-            for(EbmlElement *segmentChildElement = segmentElement->firstChild(); segmentChildElement; segmentChildElement = segmentChildElement->nextSibling()) {
+            for (EbmlElement *segmentChildElement = segmentElement->firstChild(); segmentChildElement;
+                 segmentChildElement = segmentChildElement->nextSibling()) {
                 segmentChildElement->parse(diag);
-                switch(segmentChildElement->id()) {
+                switch (segmentChildElement->id()) {
                 case EbmlIds::Void:
                 case EbmlIds::Crc32:
                     break;
                 case MatroskaIds::Cues:
                     cuesElementsFound = true;
                     // parse childs of "Cues"-element ("CuePoint"-elements)
-                    for(EbmlElement *cuePointElement = segmentChildElement->firstChild(); cuePointElement; cuePointElement = cuePointElement->nextSibling()) {
+                    for (EbmlElement *cuePointElement = segmentChildElement->firstChild(); cuePointElement;
+                         cuePointElement = cuePointElement->nextSibling()) {
                         cuePointElement->parse(diag);
                         cueTimeFound = cueTrackPositionsFound = false; // to validate quantity of these elements
-                        switch(cuePointElement->id()) {
+                        switch (cuePointElement->id()) {
                         case EbmlIds::Void:
                         case EbmlIds::Crc32:
                             break;
                         case MatroskaIds::CuePoint:
                             // parse childs of "CuePoint"-element
-                            for(EbmlElement *cuePointChildElement = cuePointElement->firstChild(); cuePointChildElement; cuePointChildElement = cuePointChildElement->nextSibling()) {
+                            for (EbmlElement *cuePointChildElement = cuePointElement->firstChild(); cuePointChildElement;
+                                 cuePointChildElement = cuePointChildElement->nextSibling()) {
                                 cuePointChildElement->parse(diag);
-                                switch(cuePointChildElement->id()) {
+                                switch (cuePointChildElement->id()) {
                                 case MatroskaIds::CueTime:
                                     // validate uniqueness
-                                    if(cueTimeFound) {
-                                        diag.emplace_back(DiagLevel::Warning, "\"CuePoint\"-element contains multiple \"CueTime\" elements.", context);
+                                    if (cueTimeFound) {
+                                        diag.emplace_back(
+                                            DiagLevel::Warning, "\"CuePoint\"-element contains multiple \"CueTime\" elements.", context);
                                     } else {
                                         cueTimeFound = true;
                                     }
@@ -134,9 +140,10 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                                     cueTrackPositionsFound = true;
                                     ids.clear();
                                     clusterElement.reset();
-                                    for(EbmlElement *subElement = cuePointChildElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+                                    for (EbmlElement *subElement = cuePointChildElement->firstChild(); subElement;
+                                         subElement = subElement->nextSibling()) {
                                         subElement->parse(diag);
-                                        switch(subElement->id()) {
+                                        switch (subElement->id()) {
                                         case MatroskaIds::CueTrack:
                                         case MatroskaIds::CueClusterPosition:
                                         case MatroskaIds::CueRelativePosition:
@@ -144,8 +151,10 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                                         case MatroskaIds::CueBlockNumber:
                                         case MatroskaIds::CueCodecState:
                                             // validate uniqueness
-                                            if(ids.count(subElement->id())) {
-                                                diag.emplace_back(DiagLevel::Warning, "\"CueTrackPositions\"-element contains multiple \"" % subElement->idToString() + "\" elements.", context);
+                                            if (ids.count(subElement->id())) {
+                                                diag.emplace_back(DiagLevel::Warning,
+                                                    "\"CueTrackPositions\"-element contains multiple \"" % subElement->idToString() + "\" elements.",
+                                                    context);
                                             } else {
                                                 ids.insert(subElement->id());
                                             }
@@ -155,22 +164,29 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                                         case MatroskaIds::CueReference:
                                             break;
                                         default:
-                                            diag.emplace_back(DiagLevel::Warning, "\"CueTrackPositions\"-element contains unknown element \"" % subElement->idToString() + "\".", context);
+                                            diag.emplace_back(DiagLevel::Warning,
+                                                "\"CueTrackPositions\"-element contains unknown element \"" % subElement->idToString() + "\".",
+                                                context);
                                         }
-                                        switch(subElement->id()) {
+                                        switch (subElement->id()) {
                                         case EbmlIds::Void:
                                         case EbmlIds::Crc32:
                                         case MatroskaIds::CueTrack:
                                             break;
                                         case MatroskaIds::CueClusterPosition:
                                             // validate "Cluster" position denoted by "CueClusterPosition"-element
-                                            clusterElement = make_unique<EbmlElement>(*this, segmentElement->dataOffset() + subElement->readUInteger() - currentOffset);
+                                            clusterElement = make_unique<EbmlElement>(
+                                                *this, segmentElement->dataOffset() + subElement->readUInteger() - currentOffset);
                                             try {
                                                 clusterElement->parse(diag);
-                                                if(clusterElement->id() != MatroskaIds::Cluster) {
-                                                    diag.emplace_back(DiagLevel::Critical, "\"CueClusterPosition\" element at " % numberToString(subElement->startOffset()) + " does not point to \"Cluster\"-element (points to " + numberToString(clusterElement->startOffset()) + ").", context);
+                                                if (clusterElement->id() != MatroskaIds::Cluster) {
+                                                    diag.emplace_back(DiagLevel::Critical,
+                                                        "\"CueClusterPosition\" element at " % numberToString(subElement->startOffset())
+                                                            + " does not point to \"Cluster\"-element (points to "
+                                                            + numberToString(clusterElement->startOffset()) + ").",
+                                                        context);
                                                 }
-                                            } catch(const Failure &) {
+                                            } catch (const Failure &) {
                                             }
                                             break;
                                         case MatroskaIds::CueRelativePosition:
@@ -185,30 +201,36 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                                             break;
                                         case MatroskaIds::CueReference:
                                             break;
-                                        default:
-                                            ;
+                                        default:;
                                         }
                                     }
                                     // validate existence of mandatory elements
-                                    if(!ids.count(MatroskaIds::CueTrack)) {
-                                        diag.emplace_back(DiagLevel::Warning, "\"CueTrackPositions\"-element does not contain mandatory element \"CueTrack\".", context);
+                                    if (!ids.count(MatroskaIds::CueTrack)) {
+                                        diag.emplace_back(DiagLevel::Warning,
+                                            "\"CueTrackPositions\"-element does not contain mandatory element \"CueTrack\".", context);
                                     }
-                                    if(!clusterElement) {
-                                        diag.emplace_back(DiagLevel::Warning, "\"CueTrackPositions\"-element does not contain mandatory element \"CueClusterPosition\".", context);
-                                    } else if(ids.count(MatroskaIds::CueRelativePosition)) {
+                                    if (!clusterElement) {
+                                        diag.emplace_back(DiagLevel::Warning,
+                                            "\"CueTrackPositions\"-element does not contain mandatory element \"CueClusterPosition\".", context);
+                                    } else if (ids.count(MatroskaIds::CueRelativePosition)) {
                                         // validate "Block" position denoted by "CueRelativePosition"-element
                                         EbmlElement referenceElement(*this, clusterElement->dataOffset() + pos);
                                         try {
                                             referenceElement.parse(diag);
-                                            switch(referenceElement.id()) {
+                                            switch (referenceElement.id()) {
                                             case MatroskaIds::SimpleBlock:
                                             case MatroskaIds::Block:
                                             case MatroskaIds::BlockGroup:
                                                 break;
                                             default:
-                                                diag.emplace_back(DiagLevel::Critical, "\"CueRelativePosition\" element does not point to \"Block\"-, \"BlockGroup\", or \"SimpleBlock\"-element (points to " % numberToString(referenceElement.startOffset()) + ").", context);
+                                                diag.emplace_back(DiagLevel::Critical,
+                                                    "\"CueRelativePosition\" element does not point to \"Block\"-, \"BlockGroup\", or "
+                                                    "\"SimpleBlock\"-element (points to "
+                                                            % numberToString(referenceElement.startOffset())
+                                                        + ").",
+                                                    context);
                                             }
-                                        } catch(const Failure &) {
+                                        } catch (const Failure &) {
                                         }
                                     }
                                     break;
@@ -216,57 +238,65 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                                 case EbmlIds::Void:
                                     break;
                                 default:
-                                    diag.emplace_back(DiagLevel::Warning, "\"CuePoint\"-element contains unknown element \"" % cuePointElement->idToString() + "\".", context);
+                                    diag.emplace_back(DiagLevel::Warning,
+                                        "\"CuePoint\"-element contains unknown element \"" % cuePointElement->idToString() + "\".", context);
                                 }
                             }
                             // validate existence of mandatory elements
-                            if(!cueTimeFound) {
-                                diag.emplace_back(DiagLevel::Warning, "\"CuePoint\"-element does not contain mandatory element \"CueTime\".", context);
+                            if (!cueTimeFound) {
+                                diag.emplace_back(
+                                    DiagLevel::Warning, "\"CuePoint\"-element does not contain mandatory element \"CueTime\".", context);
                             }
-                            if(!cueTrackPositionsFound) {
-                                diag.emplace_back(DiagLevel::Warning, "\"CuePoint\"-element does not contain mandatory element \"CueClusterPosition\".", context);
+                            if (!cueTrackPositionsFound) {
+                                diag.emplace_back(
+                                    DiagLevel::Warning, "\"CuePoint\"-element does not contain mandatory element \"CueClusterPosition\".", context);
                             }
                             break;
-                        default:
-                            ;
+                        default:;
                         }
                     }
                     break;
                 case MatroskaIds::Cluster:
                     // parse childs of "Cluster"-element
-                    for(EbmlElement *clusterElementChild = segmentChildElement->firstChild(); clusterElementChild; clusterElementChild = clusterElementChild->nextSibling()) {
+                    for (EbmlElement *clusterElementChild = segmentChildElement->firstChild(); clusterElementChild;
+                         clusterElementChild = clusterElementChild->nextSibling()) {
                         clusterElementChild->parse(diag);
-                        switch(clusterElementChild->id()) {
+                        switch (clusterElementChild->id()) {
                         case EbmlIds::Void:
                         case EbmlIds::Crc32:
                             break;
                         case MatroskaIds::Position:
                             // validate position
-                            if((pos = clusterElementChild->readUInteger()) > 0 && (segmentChildElement->startOffset() - segmentElement->dataOffset() + currentOffset) != pos) {
-                                diag.emplace_back(DiagLevel::Critical, argsToString("\"Position\"-element at ", clusterElementChild->startOffset(), " points to ", pos, " which is not the offset of the containing \"Cluster\"-element."), context);
+                            if ((pos = clusterElementChild->readUInteger()) > 0
+                                && (segmentChildElement->startOffset() - segmentElement->dataOffset() + currentOffset) != pos) {
+                                diag.emplace_back(DiagLevel::Critical,
+                                    argsToString("\"Position\"-element at ", clusterElementChild->startOffset(), " points to ", pos,
+                                        " which is not the offset of the containing \"Cluster\"-element."),
+                                    context);
                             }
                             break;
                         case MatroskaIds::PrevSize:
                             // validate prev size
-                            if((pos = clusterElementChild->readUInteger()) != prevClusterSize) {
-                                diag.emplace_back(DiagLevel::Critical, argsToString("\"PrevSize\"-element at ", clusterElementChild->startOffset(), " should be ", prevClusterSize, " but is ", pos, "."), context);
+                            if ((pos = clusterElementChild->readUInteger()) != prevClusterSize) {
+                                diag.emplace_back(DiagLevel::Critical,
+                                    argsToString("\"PrevSize\"-element at ", clusterElementChild->startOffset(), " should be ", prevClusterSize,
+                                        " but is ", pos, "."),
+                                    context);
                             }
                             break;
-                        default:
-                            ;
+                        default:;
                         }
                     }
                     prevClusterSize = segmentChildElement->totalSize();
                     break;
-                default:
-                    ;
+                default:;
                 }
             }
             currentOffset += segmentElement->totalSize();
         }
     }
     // add a warning when no index could be found
-    if(!cuesElementsFound) {
+    if (!cuesElementsFound) {
         diag.emplace_back(DiagLevel::Information, "No \"Cues\"-elements (index) found.", context);
     }
 }
@@ -274,7 +304,8 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
 /*!
  * \brief Returns an indication whether \a offset equals the start offset of \a element.
  */
-bool sameOffset(uint64 offset, const EbmlElement *element) {
+bool sameOffset(uint64 offset, const EbmlElement *element)
+{
     return element->startOffset() == offset;
 }
 
@@ -289,9 +320,9 @@ inline bool excludesOffset(const vector<EbmlElement *> &elements, uint64 offset)
 
 MatroskaChapter *MatroskaContainer::chapter(std::size_t index)
 {
-    for(const auto &entry : m_editionEntries) {
+    for (const auto &entry : m_editionEntries) {
         const auto &chapters = entry->chapters();
-        if(index < chapters.size()) {
+        if (index < chapters.size()) {
             return chapters[index].get();
         } else {
             index -= chapters.size();
@@ -303,7 +334,7 @@ MatroskaChapter *MatroskaContainer::chapter(std::size_t index)
 size_t MatroskaContainer::chapterCount() const
 {
     size_t count = 0;
-    for(const auto &entry : m_editionEntries) {
+    for (const auto &entry : m_editionEntries) {
         count += entry->chapters().size();
     }
     return count;
@@ -312,15 +343,16 @@ size_t MatroskaContainer::chapterCount() const
 MatroskaAttachment *MatroskaContainer::createAttachment()
 {
     // generate unique ID
-    static const auto randomEngine(default_random_engine(static_cast<default_random_engine::result_type>(chrono::system_clock::now().time_since_epoch().count())));
+    static const auto randomEngine(
+        default_random_engine(static_cast<default_random_engine::result_type>(chrono::system_clock::now().time_since_epoch().count())));
     uint64 attachmentId;
     auto dice(bind(uniform_int_distribution<decltype(attachmentId)>(), randomEngine));
     byte tries = 0;
 generateRandomId:
     attachmentId = dice();
-    if(tries < 0xFF) {
-        for(const auto &attachment : m_attachments) {
-            if(attachmentId == attachment->id()) {
+    if (tries < 0xFF) {
+        for (const auto &attachment : m_attachments) {
+            if (attachmentId == attachment->id()) {
                 ++tries;
                 goto generateRandomId;
             }
@@ -339,20 +371,20 @@ generateRandomId:
  */
 ElementPosition MatroskaContainer::determineElementPosition(uint64 elementId, Diagnostics &diag) const
 {
-    if(!m_firstElement || m_segmentCount != 1) {
+    if (!m_firstElement || m_segmentCount != 1) {
         return ElementPosition::Keep;
     }
     const auto *const segmentElement = m_firstElement->siblingByIdIncludingThis(MatroskaIds::Segment, diag);
-    if(!segmentElement) {
+    if (!segmentElement) {
         return ElementPosition::Keep;
     }
-    for(const EbmlElement *childElement = segmentElement->firstChild(); childElement; childElement = childElement->nextSibling()) {
-        if(childElement->id() == elementId) {
+    for (const EbmlElement *childElement = segmentElement->firstChild(); childElement; childElement = childElement->nextSibling()) {
+        if (childElement->id() == elementId) {
             return ElementPosition::BeforeData;
-        } else if(childElement->id() == MatroskaIds::Cluster) {
-            for(const auto &seekInfo : m_seekInfos) {
-                for(const auto &info : seekInfo->info()) {
-                    if(info.first == elementId) {
+        } else if (childElement->id() == MatroskaIds::Cluster) {
+            for (const auto &seekInfo : m_seekInfos) {
+                for (const auto &info : seekInfo->info()) {
+                    if (info.first == elementId) {
                         return ElementPosition::AfterData;
                     }
                 }
@@ -388,15 +420,15 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
     vector<MatroskaSeekInfo>::difference_type seekInfosIndex = 0;
 
     // loop through all top level elements
-    for(EbmlElement *topLevelElement = m_firstElement.get(); topLevelElement; topLevelElement = topLevelElement->nextSibling()) {
+    for (EbmlElement *topLevelElement = m_firstElement.get(); topLevelElement; topLevelElement = topLevelElement->nextSibling()) {
         try {
             topLevelElement->parse(diag);
-            switch(topLevelElement->id()) {
+            switch (topLevelElement->id()) {
             case EbmlIds::Header:
-                for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+                for (EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                     try {
                         subElement->parse(diag);
-                        switch(subElement->id()) {
+                        switch (subElement->id()) {
                         case EbmlIds::Version:
                             m_version = subElement->readUInteger();
                             break;
@@ -414,24 +446,26 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                             break;
                         case EbmlIds::MaxIdLength:
                             m_maxIdLength = subElement->readUInteger();
-                            if(m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
+                            if (m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
                                 diag.emplace_back(DiagLevel::Critical,
-                                                argsToString("Maximum EBML element ID length greather than ", EbmlElement::maximumIdLengthSupported(), " bytes is not supported."),
-                                                context);
+                                    argsToString("Maximum EBML element ID length greather than ", EbmlElement::maximumIdLengthSupported(),
+                                        " bytes is not supported."),
+                                    context);
                                 throw InvalidDataException();
                             }
                             break;
                         case EbmlIds::MaxSizeLength:
                             m_maxSizeLength = subElement->readUInteger();
-                            if(m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
+                            if (m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
                                 diag.emplace_back(DiagLevel::Critical,
-                                                argsToString("Maximum EBML element size length greather than ", EbmlElement::maximumSizeLengthSupported(), " bytes is not supported."),
-                                                context);
+                                    argsToString("Maximum EBML element size length greather than ", EbmlElement::maximumSizeLengthSupported(),
+                                        " bytes is not supported."),
+                                    context);
                                 throw InvalidDataException();
                             }
                             break;
                         }
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, "Unable to parse all childs of EBML header.", context);
                         break;
                     }
@@ -439,90 +473,95 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                 break;
             case MatroskaIds::Segment:
                 ++m_segmentCount;
-                for(EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+                for (EbmlElement *subElement = topLevelElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                     try {
                         subElement->parse(diag);
-                        switch(subElement->id()) {
+                        switch (subElement->id()) {
                         case MatroskaIds::SeekHead:
                             m_seekInfos.emplace_back(make_unique<MatroskaSeekInfo>());
                             m_seekInfos.back()->parse(subElement, diag);
                             break;
                         case MatroskaIds::Tracks:
-                            if(excludesOffset(m_tracksElements, subElement->startOffset())) {
+                            if (excludesOffset(m_tracksElements, subElement->startOffset())) {
                                 m_tracksElements.push_back(subElement);
                             }
                             break;
                         case MatroskaIds::SegmentInfo:
-                            if(excludesOffset(m_segmentInfoElements, subElement->startOffset())) {
+                            if (excludesOffset(m_segmentInfoElements, subElement->startOffset())) {
                                 m_segmentInfoElements.push_back(subElement);
                             }
                             break;
                         case MatroskaIds::Tags:
-                            if(excludesOffset(m_tagsElements, subElement->startOffset())) {
+                            if (excludesOffset(m_tagsElements, subElement->startOffset())) {
                                 m_tagsElements.push_back(subElement);
                             }
                             break;
                         case MatroskaIds::Chapters:
-                            if(excludesOffset(m_chaptersElements, subElement->startOffset())) {
+                            if (excludesOffset(m_chaptersElements, subElement->startOffset())) {
                                 m_chaptersElements.push_back(subElement);
                             }
                             break;
                         case MatroskaIds::Attachments:
-                            if(excludesOffset(m_attachmentsElements, subElement->startOffset())) {
+                            if (excludesOffset(m_attachmentsElements, subElement->startOffset())) {
                                 m_attachmentsElements.push_back(subElement);
                             }
                             break;
                         case MatroskaIds::Cluster:
                             // cluster reached
                             // stop here if all relevant information has been gathered
-                            for(auto i = m_seekInfos.cbegin() + seekInfosIndex, end = m_seekInfos.cend(); i != end; ++i, ++seekInfosIndex) {
-                                for(const auto &infoPair : (*i)->info()) {
+                            for (auto i = m_seekInfos.cbegin() + seekInfosIndex, end = m_seekInfos.cend(); i != end; ++i, ++seekInfosIndex) {
+                                for (const auto &infoPair : (*i)->info()) {
                                     uint64 offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
-                                    if(offset >= fileInfo().size()) {
-                                        diag.emplace_back(DiagLevel::Critical, argsToString("Offset (", offset, ") denoted by \"SeekHead\" element is invalid."), context);
+                                    if (offset >= fileInfo().size()) {
+                                        diag.emplace_back(DiagLevel::Critical,
+                                            argsToString("Offset (", offset, ") denoted by \"SeekHead\" element is invalid."), context);
                                     } else {
                                         auto element = make_unique<EbmlElement>(*this, offset);
                                         try {
                                             element->parse(diag);
-                                            if(element->id() != infoPair.first) {
-                                                diag.emplace_back(DiagLevel::Critical, argsToString("ID of element ", element->idToString(), " at ", offset, " does not match the ID denoted in the \"SeekHead\" element (0x", numberToString(infoPair.first, 16), ")."), context);
+                                            if (element->id() != infoPair.first) {
+                                                diag.emplace_back(DiagLevel::Critical,
+                                                    argsToString("ID of element ", element->idToString(), " at ", offset,
+                                                        " does not match the ID denoted in the \"SeekHead\" element (0x",
+                                                        numberToString(infoPair.first, 16), ")."),
+                                                    context);
                                             }
-                                            switch(element->id()) {
+                                            switch (element->id()) {
                                             case MatroskaIds::SegmentInfo:
-                                                if(excludesOffset(m_segmentInfoElements, offset)) {
+                                                if (excludesOffset(m_segmentInfoElements, offset)) {
                                                     m_additionalElements.emplace_back(move(element));
                                                     m_segmentInfoElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Tracks:
-                                                if(excludesOffset(m_tracksElements, offset)) {
+                                                if (excludesOffset(m_tracksElements, offset)) {
                                                     m_additionalElements.emplace_back(move(element));
                                                     m_tracksElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Tags:
-                                                if(excludesOffset(m_tagsElements, offset)) {
+                                                if (excludesOffset(m_tagsElements, offset)) {
                                                     m_additionalElements.emplace_back(move(element));
                                                     m_tagsElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Chapters:
-                                                if(excludesOffset(m_chaptersElements, offset)) {
+                                                if (excludesOffset(m_chaptersElements, offset)) {
                                                     m_additionalElements.emplace_back(move(element));
                                                     m_chaptersElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Attachments:
-                                                if(excludesOffset(m_attachmentsElements, offset)) {
+                                                if (excludesOffset(m_attachmentsElements, offset)) {
                                                     m_additionalElements.emplace_back(move(element));
                                                     m_attachmentsElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
-                                            default:
-                                                ;
+                                            default:;
                                             }
-                                        } catch(const Failure &) {
-                                            diag.emplace_back(DiagLevel::Critical, argsToString("Can not parse element at ", offset, " (denoted using \"SeekHead\" element)."), context);
+                                        } catch (const Failure &) {
+                                            diag.emplace_back(DiagLevel::Critical,
+                                                argsToString("Can not parse element at ", offset, " (denoted using \"SeekHead\" element)."), context);
                                         }
                                     }
                                 }
@@ -530,23 +569,24 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                             // not checking if m_tagsElements is empty avoids long parsing times when loading big files
                             // but also has the disadvantage that the parser relies on the presence of a SeekHead element
                             // (which is not mandatory) to detect tags at the end of the segment
-                            if(((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > m_maxFullParseSize) && !m_segmentInfoElements.empty()) {
+                            if (((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > m_maxFullParseSize)
+                                && !m_segmentInfoElements.empty()) {
                                 goto finish;
                             }
                             break;
                         }
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, "Unable to parse all childs of \"Segment\"-element.", context);
                         break;
                     }
                 }
                 currentOffset += topLevelElement->totalSize();
                 break;
-            default:
-                ;
+            default:;
             }
-        } catch(const Failure &) {
-            diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse top-level element at ", topLevelElement->startOffset(), '.'), context);
+        } catch (const Failure &) {
+            diag.emplace_back(
+                DiagLevel::Critical, argsToString("Unable to parse top-level element at ", topLevelElement->startOffset(), '.'), context);
             break;
         }
     }
@@ -555,7 +595,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
 finish:
     try {
         parseSegmentInfo(diag);
-    } catch(const Failure &) {
+    } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Unable to parse EBML (segment) \"Info\"-element.", context);
     }
 }
@@ -571,19 +611,19 @@ finish:
  */
 void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)
 {
-    if(m_segmentInfoElements.empty()) {
+    if (m_segmentInfoElements.empty()) {
         throw NoDataFoundException();
     }
     m_duration = TimeSpan();
-    for(EbmlElement *element : m_segmentInfoElements) {
+    for (EbmlElement *element : m_segmentInfoElements) {
         element->parse(diag);
         EbmlElement *subElement = element->firstChild();
         float64 rawDuration = 0.0;
         uint64 timeScale = 1000000;
         bool hasTitle = false;
-        while(subElement) {
+        while (subElement) {
             subElement->parse(diag);
-            switch(subElement->id()) {
+            switch (subElement->id()) {
             case MatroskaIds::Title:
                 m_titles.emplace_back(subElement->readString());
                 hasTitle = true;
@@ -599,10 +639,10 @@ void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)
         }
         // add empty string as title for segment if no
         // "Title"-element has been specified
-        if(!hasTitle) {
+        if (!hasTitle) {
             m_titles.emplace_back();
         }
-        if(rawDuration > 0.0) {
+        if (rawDuration > 0.0) {
             m_duration += TimeSpan::fromSeconds(rawDuration * timeScale / 1000000000);
         }
     }
@@ -615,10 +655,10 @@ void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)
  */
 void MatroskaContainer::readTrackStatisticsFromTags(Diagnostics &diag)
 {
-    if(tracks().empty() || tags().empty()) {
+    if (tracks().empty() || tags().empty()) {
         return;
     }
-    for(const auto &track : tracks()) {
+    for (const auto &track : tracks()) {
         track->readStatisticsFromTags(tags(), diag);
     }
 }
@@ -626,19 +666,19 @@ void MatroskaContainer::readTrackStatisticsFromTags(Diagnostics &diag)
 void MatroskaContainer::internalParseTags(Diagnostics &diag)
 {
     static const string context("parsing tags of Matroska container");
-    for(EbmlElement *element : m_tagsElements) {
+    for (EbmlElement *element : m_tagsElements) {
         try {
             element->parse(diag);
-            for(EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
+            for (EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 subElement->parse(diag);
-                switch(subElement->id()) {
+                switch (subElement->id()) {
                 case MatroskaIds::Tag:
                     m_tags.emplace_back(make_unique<MatroskaTag>());
                     try {
                         m_tags.back()->parse(*subElement, diag);
-                    } catch(const NoDataFoundException &) {
+                    } catch (const NoDataFoundException &) {
                         m_tags.pop_back();
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse tag ", m_tags.size(), '.'), context);
                     }
                     break;
@@ -649,7 +689,7 @@ void MatroskaContainer::internalParseTags(Diagnostics &diag)
                     diag.emplace_back(DiagLevel::Warning, "\"Tags\"-element contains unknown child. It will be ignored.", context);
                 }
             }
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Element structure seems to be invalid.", context);
             readTrackStatisticsFromTags(diag);
             throw;
@@ -661,19 +701,19 @@ void MatroskaContainer::internalParseTags(Diagnostics &diag)
 void MatroskaContainer::internalParseTracks(Diagnostics &diag)
 {
     static const string context("parsing tracks of Matroska container");
-    for(EbmlElement *element : m_tracksElements) {
+    for (EbmlElement *element : m_tracksElements) {
         try {
             element->parse(diag);
-            for(EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
+            for (EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 subElement->parse(diag);
-                switch(subElement->id()) {
+                switch (subElement->id()) {
                 case MatroskaIds::TrackEntry:
                     m_tracks.emplace_back(make_unique<MatroskaTrack>(*subElement));
                     try {
                         m_tracks.back()->parseHeader(diag);
-                    } catch(const NoDataFoundException &) {
+                    } catch (const NoDataFoundException &) {
                         m_tracks.pop_back();
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse track ", m_tracks.size(), '.'), context);
                     }
                     break;
@@ -681,10 +721,11 @@ void MatroskaContainer::internalParseTracks(Diagnostics &diag)
                 case EbmlIds::Void:
                     break;
                 default:
-                    diag.emplace_back(DiagLevel::Warning, "\"Tracks\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "\"Tracks\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Element structure seems to be invalid.", context);
             readTrackStatisticsFromTags(diag);
             throw;
@@ -696,19 +737,19 @@ void MatroskaContainer::internalParseTracks(Diagnostics &diag)
 void MatroskaContainer::internalParseChapters(Diagnostics &diag)
 {
     static const string context("parsing editions/chapters of Matroska container");
-    for(EbmlElement *element : m_chaptersElements) {
+    for (EbmlElement *element : m_chaptersElements) {
         try {
             element->parse(diag);
-            for(EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
+            for (EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 subElement->parse(diag);
-                switch(subElement->id()) {
+                switch (subElement->id()) {
                 case MatroskaIds::EditionEntry:
                     m_editionEntries.emplace_back(make_unique<MatroskaEditionEntry>(subElement));
                     try {
                         m_editionEntries.back()->parseNested(diag);
-                    } catch(const NoDataFoundException &) {
+                    } catch (const NoDataFoundException &) {
                         m_editionEntries.pop_back();
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse edition entry ", m_editionEntries.size(), '.'), context);
                     }
                     break;
@@ -716,10 +757,11 @@ void MatroskaContainer::internalParseChapters(Diagnostics &diag)
                 case EbmlIds::Void:
                     break;
                 default:
-                    diag.emplace_back(DiagLevel::Warning, "\"Chapters\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "\"Chapters\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Element structure seems to be invalid.", context);
             throw;
         }
@@ -729,19 +771,19 @@ void MatroskaContainer::internalParseChapters(Diagnostics &diag)
 void MatroskaContainer::internalParseAttachments(Diagnostics &diag)
 {
     static const string context("parsing attachments of Matroska container");
-    for(EbmlElement *element : m_attachmentsElements) {
+    for (EbmlElement *element : m_attachmentsElements) {
         try {
             element->parse(diag);
-            for(EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
+            for (EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 subElement->parse(diag);
-                switch(subElement->id()) {
+                switch (subElement->id()) {
                 case MatroskaIds::AttachedFile:
                     m_attachments.emplace_back(make_unique<MatroskaAttachment>());
                     try {
                         m_attachments.back()->parse(subElement, diag);
-                    } catch(const NoDataFoundException &) {
+                    } catch (const NoDataFoundException &) {
                         m_attachments.pop_back();
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse attached file ", m_attachments.size(), '.'), context);
                     }
                     break;
@@ -749,10 +791,11 @@ void MatroskaContainer::internalParseAttachments(Diagnostics &diag)
                 case EbmlIds::Void:
                     break;
                 default:
-                    diag.emplace_back(DiagLevel::Warning, "\"Attachments\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "\"Attachments\"-element contains unknown child element \"" % subElement->idToString() + "\". It will be ignored.", context);
                 }
             }
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Element structure seems to be invalid.", context);
             throw;
         }
@@ -760,22 +803,22 @@ void MatroskaContainer::internalParseAttachments(Diagnostics &diag)
 }
 
 /// \brief The private SegmentData struct is used in MatroskaContainer::internalMakeFile() to store segment specific data.
-struct SegmentData
-{
+struct SegmentData {
     /// \brief Constructs a new segment data object.
-    SegmentData() :
-        hasCrc32(false),
-        cuesElement(nullptr),
-        infoDataSize(0),
-        firstClusterElement(nullptr),
-        clusterEndOffset(0),
-        startOffset(0),
-        newPadding(0),
-        totalDataSize(0),
-        totalSize(0),
-        newDataOffset(0),
-        sizeDenotationLength(0)
-    {}
+    SegmentData()
+        : hasCrc32(false)
+        , cuesElement(nullptr)
+        , infoDataSize(0)
+        , firstClusterElement(nullptr)
+        , clusterEndOffset(0)
+        , startOffset(0)
+        , newPadding(0)
+        , totalDataSize(0)
+        , totalSize(0)
+        , newDataOffset(0)
+        , sizeDenotationLength(0)
+    {
+    }
 
     /// \brief whether CRC-32 checksum is present
     bool hasCrc32;
@@ -813,14 +856,14 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     progress.updateStep("Calculating element sizes ...");
 
     // basic validation of original file
-    if(!isHeaderParsed()) {
+    if (!isHeaderParsed()) {
         diag.emplace_back(DiagLevel::Critical, "The header has not been parsed yet.", context);
         throw InvalidDataException();
     }
 
     // define variables for parsing the elements of the original file
     EbmlElement *level0Element = firstElement();
-    if(!level0Element) {
+    if (!level0Element) {
         diag.emplace_back(DiagLevel::Critical, "No EBML elements could be found.", context);
         throw InvalidDataException();
     }
@@ -852,7 +895,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // current write offset (used to calculate positions)
     uint64 currentPosition = 0;
     // holds the offsets of all CRC-32 elements and the length of the enclosing block
-    vector<tuple<uint64, uint64> > crc32Offsets;
+    vector<tuple<uint64, uint64>> crc32Offsets;
     // size length used to make size denotations
     byte sizeLength;
     // sizes and offsets for cluster calculation
@@ -878,7 +921,8 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // -> sub element ID sizes
     uint64 ebmlHeaderDataSize = 2 * 7;
     // -> content and size denotation length of numeric sub elements
-    for(auto headerValue : initializer_list<uint64>{m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion}) {
+    for (auto headerValue :
+        initializer_list<uint64>{ m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion }) {
         ebmlHeaderDataSize += sizeLength = EbmlElement::calculateUIntegerLength(headerValue);
         ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(sizeLength);
     }
@@ -889,58 +933,61 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
     try {
         // calculate size of "Tags"-element
-        for(auto &tag : tags()) {
+        for (auto &tag : tags()) {
             try {
                 tagMaker.emplace_back(tag->prepareMaking(diag));
-                if(tagMaker.back().requiredSize() > 3) {
+                if (tagMaker.back().requiredSize() > 3) {
                     // a tag of 3 bytes size is empty and can be skipped
                     tagElementsSize += tagMaker.back().requiredSize();
                 }
-            } catch(const Failure &) {
+            } catch (const Failure &) {
             }
         }
         tagsSize = tagElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(tagElementsSize) + tagElementsSize : 0;
 
         // calculate size of "Attachments"-element
-        for(auto &attachment : m_attachments) {
-            if(!attachment->isIgnored()) {
+        for (auto &attachment : m_attachments) {
+            if (!attachment->isIgnored()) {
                 try {
                     attachmentMaker.emplace_back(attachment->prepareMaking(diag));
-                    if(attachmentMaker.back().requiredSize() > 3) {
+                    if (attachmentMaker.back().requiredSize() > 3) {
                         // an attachment of 3 bytes size is empty and can be skipped
                         attachedFileElementsSize += attachmentMaker.back().requiredSize();
                     }
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                 }
             }
         }
-        attachmentsSize = attachedFileElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(attachedFileElementsSize) + attachedFileElementsSize : 0;
+        attachmentsSize
+            = attachedFileElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(attachedFileElementsSize) + attachedFileElementsSize : 0;
 
         // calculate size of "Tracks"-element
-        for(auto &track : tracks()) {
+        for (auto &track : tracks()) {
             try {
                 trackHeaderMaker.emplace_back(track->prepareMakingHeader(diag));
-                if(trackHeaderMaker.back().requiredSize() > 3) {
+                if (trackHeaderMaker.back().requiredSize() > 3) {
                     // a track header of 3 bytes size is empty and can be skipped
                     trackHeaderElementsSize += trackHeaderMaker.back().requiredSize();
                 }
-            } catch(const Failure &) {
+            } catch (const Failure &) {
             }
         }
-        trackHeaderSize = trackHeaderElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(trackHeaderElementsSize) + trackHeaderElementsSize : 0;
+        trackHeaderSize
+            = trackHeaderElementsSize ? 4 + EbmlElement::calculateSizeDenotationLength(trackHeaderElementsSize) + trackHeaderElementsSize : 0;
 
         // inspect layout of original file
         //  - number of segments
         //  - position of tags relative to the media data
         try {
-            for(bool firstClusterFound = false, firstTagFound = false; level0Element; level0Element = level0Element->nextSibling()) {
+            for (bool firstClusterFound = false, firstTagFound = false; level0Element; level0Element = level0Element->nextSibling()) {
                 level0Element->parse(diag);
-                switch(level0Element->id()) {
+                switch (level0Element->id()) {
                 case MatroskaIds::Segment:
                     ++lastSegmentIndex;
-                    for(level1Element = level0Element->firstChild(); level1Element && !firstClusterFound && !firstTagFound; level1Element = level1Element->nextSibling()) {
+                    for (level1Element = level0Element->firstChild(); level1Element && !firstClusterFound && !firstTagFound;
+                         level1Element = level1Element->nextSibling()) {
                         level1Element->parse(diag);
-                        switch(level1Element->id()) {
+                        switch (level1Element->id()) {
                         case MatroskaIds::Tags:
                         case MatroskaIds::Attachments:
                             firstTagFound = true;
@@ -949,9 +996,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                             firstClusterFound = true;
                         }
                     }
-                    if(firstTagFound) {
+                    if (firstTagFound) {
                         currentTagPos = ElementPosition::BeforeData;
-                    } else if(firstClusterFound) {
+                    } else if (firstClusterFound) {
                         currentTagPos = ElementPosition::AfterData;
                     }
                 }
@@ -961,19 +1008,20 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
             segmentData.resize(lastSegmentIndex + 1);
 
             // now the current tag/cue position might be known
-            if(newTagPos == ElementPosition::Keep) {
-                if((newTagPos = currentTagPos) == ElementPosition::Keep) {
+            if (newTagPos == ElementPosition::Keep) {
+                if ((newTagPos = currentTagPos) == ElementPosition::Keep) {
                     newTagPos = ElementPosition::BeforeData;
                 }
             }
 
-        } catch(const Failure &) {
-            diag.emplace_back(DiagLevel::Critical, "Unable to parse content in top-level element at " % numberToString(level0Element->startOffset()) + " of original file.", context);
+        } catch (const Failure &) {
+            diag.emplace_back(DiagLevel::Critical,
+                "Unable to parse content in top-level element at " % numberToString(level0Element->startOffset()) + " of original file.", context);
             throw;
         }
 
         progress.nextStepOrStop("Calculating offsets of elements before cluster ...");
-calculateSegmentData:
+    calculateSegmentData:
         // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
         // -> current "pretent" write offset
         uint64 currentOffset = ebmlHeaderSize;
@@ -983,10 +1031,10 @@ calculateSegmentData:
         unsigned int index;
 
         // if rewriting is required always use the preferred tag/cue position
-        if(rewriteRequired) {
+        if (rewriteRequired) {
             newTagPos = fileInfo().tagPosition();
-            if(newTagPos == ElementPosition::Keep) {
-                if((newTagPos = currentTagPos) == ElementPosition::Keep) {
+            if (newTagPos == ElementPosition::Keep) {
+                if ((newTagPos = currentTagPos) == ElementPosition::Keep) {
                     newTagPos = ElementPosition::BeforeData;
                 }
             }
@@ -994,8 +1042,9 @@ calculateSegmentData:
         }
 
         // calculate sizes and other information required to make segments
-        for(level0Element = firstElement(), currentPosition = newPadding = segmentIndex = 0; level0Element; level0Element = level0Element->nextSibling()) {
-            switch(level0Element->id()) {
+        for (level0Element = firstElement(), currentPosition = newPadding = segmentIndex = 0; level0Element;
+             level0Element = level0Element->nextSibling()) {
+            switch (level0Element->id()) {
             case EbmlIds::Header:
                 // header size has already been calculated
                 break;
@@ -1010,22 +1059,23 @@ calculateSegmentData:
                 SegmentData &segment = segmentData[segmentIndex];
 
                 // parse original "Cues"-element (if present)
-                if(!segment.cuesElement && (segment.cuesElement = level0Element->childById(MatroskaIds::Cues, diag))) {
+                if (!segment.cuesElement && (segment.cuesElement = level0Element->childById(MatroskaIds::Cues, diag))) {
                     segment.cuesUpdater.parse(segment.cuesElement, diag);
                 }
 
                 // get first "Cluster"-element
-                if(!segment.firstClusterElement) {
+                if (!segment.firstClusterElement) {
                     segment.firstClusterElement = level0Element->childById(MatroskaIds::Cluster, diag);
                 }
 
                 // determine current/new cue position
-                if(segment.cuesElement && segment.firstClusterElement) {
-                    currentCuesPos = segment.cuesElement->startOffset() < segment.firstClusterElement->startOffset() ? ElementPosition::BeforeData : ElementPosition::AfterData;
-                    if(newCuesPos == ElementPosition::Keep) {
+                if (segment.cuesElement && segment.firstClusterElement) {
+                    currentCuesPos = segment.cuesElement->startOffset() < segment.firstClusterElement->startOffset() ? ElementPosition::BeforeData
+                                                                                                                     : ElementPosition::AfterData;
+                    if (newCuesPos == ElementPosition::Keep) {
                         newCuesPos = currentCuesPos;
                     }
-                } else if(newCuesPos == ElementPosition::Keep) {
+                } else if (newCuesPos == ElementPosition::Keep) {
                     newCuesPos = ElementPosition::BeforeData;
                 }
 
@@ -1036,7 +1086,7 @@ calculateSegmentData:
                 segment.hasCrc32 = level0Element->firstChild() && level0Element->firstChild()->id() == EbmlIds::Crc32;
 
                 // precalculate the size of the segment
-calculateSegmentSize:
+            calculateSegmentSize:
 
                 // pretent writing "CRC-32"-element (which either present and 6 byte long or omitted)
                 segment.totalDataSize = segment.hasCrc32 ? 6 : 0;
@@ -1045,25 +1095,26 @@ calculateSegmentSize:
                 segment.totalDataSize += segment.seekInfo.actualSize();
 
                 // pretend writing "SegmentInfo"-element
-                for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo, diag), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag), ++index) {
+                for (level1Element = level0Element->childById(MatroskaIds::SegmentInfo, diag), index = 0; level1Element;
+                     level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag), ++index) {
                     // update offset in "SeekHead"-element
-                    if(segment.seekInfo.push(index, MatroskaIds::SegmentInfo, currentPosition + segment.totalDataSize)) {
+                    if (segment.seekInfo.push(index, MatroskaIds::SegmentInfo, currentPosition + segment.totalDataSize)) {
                         goto calculateSegmentSize;
                     } else {
                         // add size of "SegmentInfo"-element
                         // -> size of "MuxingApp"- and "WritingApp"-element
                         segment.infoDataSize = 2 * appInfoElementTotalSize;
                         // -> add size of "Title"-element
-                        if(segmentIndex < m_titles.size()) {
+                        if (segmentIndex < m_titles.size()) {
                             const auto &title = m_titles[segmentIndex];
-                            if(!title.empty()) {
+                            if (!title.empty()) {
                                 segment.infoDataSize += 2 + EbmlElement::calculateSizeDenotationLength(title.size()) + title.size();
                             }
                         }
                         // -> add size of other childs
-                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                        for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                             level2Element->parse(diag);
-                            switch(level2Element->id()) {
+                            switch (level2Element->id()) {
                             case EbmlIds::Void: // skipped
                             case EbmlIds::Crc32: // skipped
                             case MatroskaIds::Title: // calculated separately
@@ -1081,9 +1132,9 @@ calculateSegmentSize:
                 }
 
                 // pretend writing "Tracks"-element
-                if(trackHeaderSize) {
+                if (trackHeaderSize) {
                     // update offsets in "SeekHead"-element
-                    if(segment.seekInfo.push(0, MatroskaIds::Tracks, currentPosition + segment.totalDataSize)) {
+                    if (segment.seekInfo.push(0, MatroskaIds::Tracks, currentPosition + segment.totalDataSize)) {
                         goto calculateSegmentSize;
                     } else {
                         // add size of "Tracks"-element
@@ -1092,9 +1143,10 @@ calculateSegmentSize:
                 }
 
                 // pretend writing "Chapters"-element
-                for(level1Element = level0Element->childById(MatroskaIds::Chapters, diag), index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag), ++index) {
+                for (level1Element = level0Element->childById(MatroskaIds::Chapters, diag), index = 0; level1Element;
+                     level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag), ++index) {
                     // update offset in "SeekHead"-element
-                    if(segment.seekInfo.push(index, MatroskaIds::Chapters, currentPosition + segment.totalDataSize)) {
+                    if (segment.seekInfo.push(index, MatroskaIds::Chapters, currentPosition + segment.totalDataSize)) {
                         goto calculateSegmentSize;
                     } else {
                         // add size of element
@@ -1106,11 +1158,11 @@ calculateSegmentSize:
                 // "Tags"- and "Attachments"-element are written in either the first or the last segment
                 // and either before "Cues"- and "Cluster"-elements or after these elements
                 // depending on the desired tag position (at the front/at the end)
-                if(newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
+                if (newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
                     // pretend writing "Tags"-element
-                    if(tagsSize) {
+                    if (tagsSize) {
                         // update offsets in "SeekHead"-element
-                        if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
+                        if (segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
                             goto calculateSegmentSize;
                         } else {
                             // add size of "Tags"-element
@@ -1118,9 +1170,9 @@ calculateSegmentSize:
                         }
                     }
                     // pretend writing "Attachments"-element
-                    if(attachmentsSize) {
+                    if (attachmentsSize) {
                         // update offsets in "SeekHead"-element
-                        if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                        if (segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
                             goto calculateSegmentSize;
                         } else {
                             // add size of "Attachments"-element
@@ -1132,14 +1184,14 @@ calculateSegmentSize:
                 offset = segment.totalDataSize; // save current offset (offset before "Cues"-element)
 
                 // pretend writing "Cues"-element
-                if(newCuesPos == ElementPosition::BeforeData && segment.cuesElement) {
+                if (newCuesPos == ElementPosition::BeforeData && segment.cuesElement) {
                     // update offset of "Cues"-element in "SeekHead"-element
-                    if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                    if (segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
                         goto calculateSegmentSize;
                     } else {
                         // add size of "Cues"-element
                         progress.updateStep("Calculating cluster offsets and index size ...");
-addCuesElementSize:
+                    addCuesElementSize:
                         segment.totalDataSize += segment.cuesUpdater.totalSize();
                     }
                 } else {
@@ -1147,49 +1199,53 @@ addCuesElementSize:
                 }
 
                 // decided whether it is necessary to rewrite the entire file (if not already rewriting)
-                if(!rewriteRequired) {
+                if (!rewriteRequired) {
                     // find first "Cluster"-element
-                    if((level1Element = segment.firstClusterElement)) {
+                    if ((level1Element = segment.firstClusterElement)) {
                         // just before the first "Cluster"-element
                         // -> calculate total offset (excluding size denotation and incomplete index)
                         totalOffset = currentOffset + 4 + segment.totalDataSize;
 
-                        if(totalOffset <= segment.firstClusterElement->startOffset()) {
+                        if (totalOffset <= segment.firstClusterElement->startOffset()) {
                             // the padding might be big enough, but
                             // - the segment might become bigger (subsequent tags and attachments)
                             // - the header size hasn't been taken into account yet
                             // - seek information for first cluster and subsequent tags and attachments hasn't been taken into account
 
                             // assume the size denotation length doesn't change -> use length from original file
-                            if(level0Element->headerSize() <= 4 || level0Element->headerSize() > 12) {
+                            if (level0Element->headerSize() <= 4 || level0Element->headerSize() > 12) {
                                 // validate original header size
                                 diag.emplace_back(DiagLevel::Critical, "Header size of \"Segment\"-element from original file is invalid.", context);
                                 throw InvalidDataException();
                             }
                             segment.sizeDenotationLength = static_cast<byte>(level0Element->headerSize() - 4u);
 
-nonRewriteCalculations:
+                        nonRewriteCalculations:
                             // pretend writing "Cluster"-elements assuming there is no rewrite required
                             // -> update offset in "SeakHead"-element
-                            if(segment.seekInfo.push(0, MatroskaIds::Cluster, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)) {
+                            if (segment.seekInfo.push(
+                                    0, MatroskaIds::Cluster, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)) {
                                 goto calculateSegmentSize;
                             }
                             // -> update offset of "Cluster"-element in "Cues"-element and get end offset of last "Cluster"-element
                             bool cuesInvalidated = false;
-                            for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++index) {
+                            for (index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++index) {
                                 clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
                                 segment.clusterEndOffset = level1Element->endOffset();
-                                if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize) && newCuesPos == ElementPosition::BeforeData) {
+                                if (segment.cuesElement
+                                    && segment.cuesUpdater.updateOffsets(
+                                           clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)
+                                    && newCuesPos == ElementPosition::BeforeData) {
                                     cuesInvalidated = true;
                                 }
                                 // check whether aborted (because this loop might take some seconds to process)
                                 progress.stopIfAborted();
                                 // update the progress percentage (using offset / file size should be accurate enough)
-                                if(index % 50 == 0) {
+                                if (index % 50 == 0) {
                                     progress.updateStepPercentage(static_cast<byte>(level1Element->dataOffset() * 100 / fileInfo().size()));
                                 }
                             }
-                            if(cuesInvalidated) {
+                            if (cuesInvalidated) {
                                 segment.totalDataSize = offset;
                                 goto addCuesElementSize;
                             }
@@ -1197,9 +1253,9 @@ nonRewriteCalculations:
 
                             // pretend writing "Cues"-element
                             progress.updateStep("Calculating offsets of elements after cluster ...");
-                            if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                            if (newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
                                 // update offset of "Cues"-element in "SeekHead"-element
-                                if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                                if (segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
                                     goto calculateSegmentSize;
                                 } else {
                                     // add size of "Cues"-element
@@ -1207,11 +1263,11 @@ nonRewriteCalculations:
                                 }
                             }
 
-                            if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                            if (newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
                                 // pretend writing "Tags"-element
-                                if(tagsSize) {
+                                if (tagsSize) {
                                     // update offsets in "SeekHead"-element
-                                    if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
+                                    if (segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
                                         goto calculateSegmentSize;
                                     } else {
                                         // add size of "Tags"-element
@@ -1219,9 +1275,9 @@ nonRewriteCalculations:
                                     }
                                 }
                                 // pretend writing "Attachments"-element
-                                if(attachmentsSize) {
+                                if (attachmentsSize) {
                                     // update offsets in "SeekHead"-element
-                                    if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                                    if (segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
                                         goto calculateSegmentSize;
                                     } else {
                                         // add size of "Attachments"-element
@@ -1232,7 +1288,7 @@ nonRewriteCalculations:
 
                             // calculate total offset again (taking everything into account)
                             // -> check whether assumed size denotation was correct
-                            if(segment.sizeDenotationLength != (sizeLength = EbmlElement::calculateSizeDenotationLength(segment.totalDataSize))) {
+                            if (segment.sizeDenotationLength != (sizeLength = EbmlElement::calculateSizeDenotationLength(segment.totalDataSize))) {
                                 // assumption was wrong -> recalculate with new length
                                 segment.sizeDenotationLength = sizeLength;
                                 level1Element = segment.firstClusterElement;
@@ -1241,12 +1297,12 @@ nonRewriteCalculations:
 
                             totalOffset = currentOffset + 4 + sizeLength + offset;
                             // offset does not include size of "Cues"-element
-                            if(newCuesPos == ElementPosition::BeforeData) {
+                            if (newCuesPos == ElementPosition::BeforeData) {
                                 totalOffset += segment.cuesUpdater.totalSize();
                             }
-                            if(totalOffset <= segment.firstClusterElement->startOffset()) {
+                            if (totalOffset <= segment.firstClusterElement->startOffset()) {
                                 // calculate new padding
-                                if(segment.newPadding != 1) {
+                                if (segment.newPadding != 1) {
                                     // "Void"-element is at least 2 byte long -> can't add 1 byte padding
                                     newPadding += (segment.newPadding = segment.firstClusterElement->startOffset() - totalOffset);
                                 } else {
@@ -1262,12 +1318,16 @@ nonRewriteCalculations:
                         diag.emplace_back(DiagLevel::Warning, argsToString("There are no clusters in segment ", segmentIndex, "."), context);
                     }
 
-                    if(rewriteRequired) {
-                        if(newTagPos != ElementPosition::AfterData && (!fileInfo().forceTagPosition() || (fileInfo().tagPosition() == ElementPosition::Keep && currentTagPos == ElementPosition::Keep))) {
+                    if (rewriteRequired) {
+                        if (newTagPos != ElementPosition::AfterData
+                            && (!fileInfo().forceTagPosition()
+                                   || (fileInfo().tagPosition() == ElementPosition::Keep && currentTagPos == ElementPosition::Keep))) {
                             // rewriting might be avoided by writing the tags at the end
                             newTagPos = ElementPosition::AfterData;
                             rewriteRequired = false;
-                        } else if(newCuesPos != ElementPosition::AfterData && (!fileInfo().forceIndexPosition() || (fileInfo().indexPosition() == ElementPosition::Keep && currentCuesPos == ElementPosition::Keep))) {
+                        } else if (newCuesPos != ElementPosition::AfterData
+                            && (!fileInfo().forceIndexPosition()
+                                   || (fileInfo().indexPosition() == ElementPosition::Keep && currentCuesPos == ElementPosition::Keep))) {
                             // rewriting might be avoided by writing the cues at the end
                             newCuesPos = ElementPosition::AfterData;
                             rewriteRequired = false;
@@ -1279,7 +1339,7 @@ nonRewriteCalculations:
                     // if rewrite is required, pretend writing the remaining elements to compute total segment size
 
                     // pretend writing "Void"-element (only if there is at least one "Cluster"-element in the segment)
-                    if(!segmentIndex && rewriteRequired && (level1Element = level0Element->childById(MatroskaIds::Cluster, diag))) {
+                    if (!segmentIndex && rewriteRequired && (level1Element = level0Element->childById(MatroskaIds::Cluster, diag))) {
                         // simply use the preferred padding
                         segment.totalDataSize += (segment.newPadding = newPadding = fileInfo().preferredPadding());
                     }
@@ -1287,23 +1347,26 @@ nonRewriteCalculations:
                     // pretend writing "Cluster"-element
                     segment.clusterSizes.clear();
                     bool cuesInvalidated = false;
-                    for(index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++index) {
+                    for (index = 0; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++index) {
                         // update offset of "Cluster"-element in "Cues"-element
                         clusterReadOffset = level1Element->startOffset() - level0Element->dataOffset() + readOffset;
-                        if(segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, currentPosition + segment.totalDataSize) && newCuesPos == ElementPosition::BeforeData) {
+                        if (segment.cuesElement && segment.cuesUpdater.updateOffsets(clusterReadOffset, currentPosition + segment.totalDataSize)
+                            && newCuesPos == ElementPosition::BeforeData) {
                             cuesInvalidated = true;
                         } else {
-                            if(index == 0 && segment.seekInfo.push(index, MatroskaIds::Cluster, currentPosition + segment.totalDataSize)) {
+                            if (index == 0 && segment.seekInfo.push(index, MatroskaIds::Cluster, currentPosition + segment.totalDataSize)) {
                                 goto calculateSegmentSize;
                             } else {
                                 // add size of "Cluster"-element
                                 clusterSize = clusterReadSize = 0;
-                                for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                                for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                                     level2Element->parse(diag);
-                                    if(segment.cuesElement && segment.cuesUpdater.updateRelativeOffsets(clusterReadOffset, clusterReadSize, clusterSize) && newCuesPos == ElementPosition::BeforeData) {
+                                    if (segment.cuesElement
+                                        && segment.cuesUpdater.updateRelativeOffsets(clusterReadOffset, clusterReadSize, clusterSize)
+                                        && newCuesPos == ElementPosition::BeforeData) {
                                         cuesInvalidated = true;
                                     }
-                                    switch(level2Element->id()) {
+                                    switch (level2Element->id()) {
                                     case EbmlIds::Void:
                                     case EbmlIds::Crc32:
                                         break;
@@ -1317,19 +1380,18 @@ nonRewriteCalculations:
                                 }
                                 segment.clusterSizes.push_back(clusterSize);
                                 segment.totalDataSize += 4 + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
-
                             }
                         }
                         // check whether aborted (because this loop might take some seconds to process)
                         progress.stopIfAborted();
                         // update the progress percentage (using offset / file size should be accurate enough)
-                        if((index % 50 == 0) && fileInfo().size()) {
+                        if ((index % 50 == 0) && fileInfo().size()) {
                             progress.updateStepPercentage(static_cast<byte>(level1Element->dataOffset() * 100 / fileInfo().size()));
                         }
                         // TODO: reduce code duplication for aborting and progress updates
                     }
                     // check whether the total size of the "Cues"-element has been invalidated and recompute cluster if required
-                    if(cuesInvalidated) {
+                    if (cuesInvalidated) {
                         // reset element size to previously saved offset of "Cues"-element
                         segment.totalDataSize = offset;
                         goto addCuesElementSize;
@@ -1337,9 +1399,9 @@ nonRewriteCalculations:
 
                     // pretend writing "Cues"-element
                     progress.updateStep("Calculating offsets of elements after cluster ...");
-                    if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                    if (newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
                         // update offset of "Cues"-element in "SeekHead"-element
-                        if(segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
+                        if (segment.seekInfo.push(0, MatroskaIds::Cues, currentPosition + segment.totalDataSize)) {
                             goto calculateSegmentSize;
                         } else {
                             // add size of "Cues"-element
@@ -1350,11 +1412,11 @@ nonRewriteCalculations:
                     // "Tags"- and "Attachments"-element are written in either the first or the last segment
                     // and either before "Cues"- and "Cluster"-elements or after these elements
                     // depending on the desired tag position (at the front/at the end)
-                    if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                    if (newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
                         // pretend writing "Tags"-element
-                        if(tagsSize) {
+                        if (tagsSize) {
                             // update offsets in "SeekHead"-element
-                            if(segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
+                            if (segment.seekInfo.push(0, MatroskaIds::Tags, currentPosition + segment.totalDataSize)) {
                                 goto calculateSegmentSize;
                             } else {
                                 // add size of "Tags"-element
@@ -1362,9 +1424,9 @@ nonRewriteCalculations:
                             }
                         }
                         // pretend writing "Attachments"-element
-                        if(attachmentsSize) {
+                        if (attachmentsSize) {
                             // update offsets in "SeekHead"-element
-                            if(segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
+                            if (segment.seekInfo.push(0, MatroskaIds::Attachments, currentPosition + segment.totalDataSize)) {
                                 goto calculateSegmentSize;
                             } else {
                                 // add size of "Attachments"-element
@@ -1386,27 +1448,29 @@ nonRewriteCalculations:
                 readOffset += level0Element->totalSize();
 
                 break;
-
-            } default:
+            }
+            default:
                 // just copy any unknown top-level elements
-                diag.emplace_back(DiagLevel::Warning, "The top-level element \"" % level0Element->idToString() + "\" of the original file is unknown and will just be copied.", context);
+                diag.emplace_back(DiagLevel::Warning,
+                    "The top-level element \"" % level0Element->idToString() + "\" of the original file is unknown and will just be copied.",
+                    context);
                 currentOffset += level0Element->totalSize();
                 readOffset += level0Element->totalSize();
             }
         }
 
-        if(!rewriteRequired) {
+        if (!rewriteRequired) {
             // check whether the new padding is ok according to specifications
-            if((rewriteRequired = (newPadding > fileInfo().maxPadding() || newPadding < fileInfo().minPadding()))) {
+            if ((rewriteRequired = (newPadding > fileInfo().maxPadding() || newPadding < fileInfo().minPadding()))) {
                 // need to recalculate segment data for rewrite
                 goto calculateSegmentData;
             }
         }
 
-    } catch(const Failure &) {
+    } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Parsing the original file failed.", context);
         throw;
-    } catch(...) {
+    } catch (...) {
         const char *what = catchIoFailure();
         diag.emplace_back(DiagLevel::Critical, "An IO error occured when parsing the original file.", context);
         throwIoFailure(what);
@@ -1423,14 +1487,14 @@ nonRewriteCalculations:
     BinaryWriter outputWriter(&outputStream);
     char buff[8]; // buffer used to make size denotations
 
-    if(rewriteRequired) {
-        if(fileInfo().saveFilePath().empty()) {
+    if (rewriteRequired) {
+        if (fileInfo().saveFilePath().empty()) {
             // move current file to temp dir and reopen it as backupStream, recreate original file
             try {
                 BackupHelper::createBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
                 outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch(...) {
+            } catch (...) {
                 const char *what = catchIoFailure();
                 diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
                 throwIoFailure(what);
@@ -1442,7 +1506,7 @@ nonRewriteCalculations:
                 backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
                 fileInfo().close();
                 outputStream.open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch(...) {
+            } catch (...) {
                 const char *what = catchIoFailure();
                 diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
                 throwIoFailure(what);
@@ -1456,7 +1520,7 @@ nonRewriteCalculations:
 
     } else { // !rewriteRequired
         // buffer currently assigned attachments
-        for(auto &maker : attachmentMaker) {
+        for (auto &maker : attachmentMaker) {
             maker.bufferCurrentAttachments(diag);
         }
 
@@ -1464,7 +1528,7 @@ nonRewriteCalculations:
         try {
             fileInfo().close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
-        } catch(...) {
+        } catch (...) {
             const char *what = catchIoFailure();
             diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
             throwIoFailure(what);
@@ -1487,10 +1551,10 @@ nonRewriteCalculations:
         EbmlElement::makeSimpleElement(outputStream, EbmlIds::DocTypeReadVersion, m_doctypeReadVersion);
 
         // iterates through all level 0 elements of the original file
-        for(level0Element = firstElement(), segmentIndex = 0, currentPosition = 0; level0Element; level0Element = level0Element->nextSibling()) {
+        for (level0Element = firstElement(), segmentIndex = 0, currentPosition = 0; level0Element; level0Element = level0Element->nextSibling()) {
 
             // write all level 0 elements of the original file
-            switch(level0Element->id()) {
+            switch (level0Element->id()) {
             case EbmlIds::Header:
                 // header has already been written -> skip it here
                 break;
@@ -1512,7 +1576,7 @@ nonRewriteCalculations:
                 segment.newDataOffset = offset = outputStream.tellp(); // store segment data offset here
 
                 // write CRC-32 element ...
-                if(segment.hasCrc32) {
+                if (segment.hasCrc32) {
                     // ... if the original element had a CRC-32 element
                     *buff = EbmlIds::Crc32;
                     *(buff + 1) = 0x84; // length denotation: 4 byte
@@ -1525,14 +1589,15 @@ nonRewriteCalculations:
                 segment.seekInfo.make(outputStream, diag);
 
                 // write "SegmentInfo"-element
-                for(level1Element = level0Element->childById(MatroskaIds::SegmentInfo, diag); level1Element; level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag)) {
+                for (level1Element = level0Element->childById(MatroskaIds::SegmentInfo, diag); level1Element;
+                     level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag)) {
                     // -> write ID and size
                     outputWriter.writeUInt32BE(MatroskaIds::SegmentInfo);
                     sizeLength = EbmlElement::makeSizeDenotation(segment.infoDataSize, buff);
                     outputStream.write(buff, sizeLength);
                     // -> write childs
-                    for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
-                        switch(level2Element->id()) {
+                    for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                        switch (level2Element->id()) {
                         case EbmlIds::Void: // skipped
                         case EbmlIds::Crc32: // skipped
                         case MatroskaIds::Title: // written separately
@@ -1545,9 +1610,9 @@ nonRewriteCalculations:
                         }
                     }
                     // -> write "Title"-element
-                    if(segmentIndex < m_titles.size()) {
+                    if (segmentIndex < m_titles.size()) {
                         const auto &title = m_titles[segmentIndex];
-                        if(!title.empty()) {
+                        if (!title.empty()) {
                             EbmlElement::makeSimpleElement(outputStream, MatroskaIds::Title, title);
                         }
                     }
@@ -1557,52 +1622,53 @@ nonRewriteCalculations:
                 }
 
                 // write "Tracks"-element
-                if(trackHeaderElementsSize) {
+                if (trackHeaderElementsSize) {
                     outputWriter.writeUInt32BE(MatroskaIds::Tracks);
                     sizeLength = EbmlElement::makeSizeDenotation(trackHeaderElementsSize, buff);
                     outputStream.write(buff, sizeLength);
-                    for(auto &maker : trackHeaderMaker) {
+                    for (auto &maker : trackHeaderMaker) {
                         maker.make(outputStream);
                     }
                 }
 
                 // write "Chapters"-element
-                for(level1Element = level0Element->childById(MatroskaIds::Chapters, diag); level1Element; level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag)) {
+                for (level1Element = level0Element->childById(MatroskaIds::Chapters, diag); level1Element;
+                     level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag)) {
                     level1Element->copyBuffer(outputStream);
                     level1Element->discardBuffer();
                 }
 
-                if(newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
+                if (newTagPos == ElementPosition::BeforeData && segmentIndex == 0) {
                     // write "Tags"-element
-                    if(tagsSize) {
+                    if (tagsSize) {
                         outputWriter.writeUInt32BE(MatroskaIds::Tags);
                         sizeLength = EbmlElement::makeSizeDenotation(tagElementsSize, buff);
                         outputStream.write(buff, sizeLength);
-                        for(auto &maker : tagMaker) {
+                        for (auto &maker : tagMaker) {
                             maker.make(outputStream);
                         }
                     }
                     // write "Attachments"-element
-                    if(attachmentsSize) {
+                    if (attachmentsSize) {
                         outputWriter.writeUInt32BE(MatroskaIds::Attachments);
                         sizeLength = EbmlElement::makeSizeDenotation(attachedFileElementsSize, buff);
                         outputStream.write(buff, sizeLength);
-                        for(auto &maker : attachmentMaker) {
+                        for (auto &maker : attachmentMaker) {
                             maker.make(outputStream, diag);
                         }
                     }
                 }
 
                 // write "Cues"-element
-                if(newCuesPos == ElementPosition::BeforeData && segment.cuesElement) {
+                if (newCuesPos == ElementPosition::BeforeData && segment.cuesElement) {
                     segment.cuesUpdater.make(outputStream, diag);
                 }
 
                 // write padding / "Void"-element
-                if(segment.newPadding) {
+                if (segment.newPadding) {
                     // calculate length
                     uint64 voidLength;
-                    if(segment.newPadding < 64) {
+                    if (segment.newPadding < 64) {
                         sizeLength = 1;
                         *buff = static_cast<char>(voidLength = segment.newPadding - 2) | 0x80;
                     } else {
@@ -1613,20 +1679,21 @@ nonRewriteCalculations:
                     outputWriter.writeByte(EbmlIds::Void);
                     outputStream.write(buff, sizeLength);
                     // write zeroes
-                    for(; voidLength; --voidLength) {
+                    for (; voidLength; --voidLength) {
                         outputStream.put(0);
                     }
                 }
 
                 // write media data / "Cluster"-elements
                 level1Element = level0Element->childById(MatroskaIds::Cluster, diag);
-                if(rewriteRequired) {
+                if (rewriteRequired) {
                     // update status, check whether the operation has been aborted
-                    progress.nextStepOrStop("Writing cluster ...", static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
+                    progress.nextStepOrStop(
+                        "Writing cluster ...", static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
                     // write "Cluster"-element
                     auto clusterSizesIterator = segment.clusterSizes.cbegin();
                     unsigned int index = 0;
-                    for(;level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++clusterSizesIterator, ++index) {
+                    for (; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++clusterSizesIterator, ++index) {
                         // calculate position of cluster in segment
                         clusterSize = currentPosition + (static_cast<uint64>(outputStream.tellp()) - offset);
                         // write header; checking whether clusterSizesIterator is valid shouldn't be necessary
@@ -1634,8 +1701,8 @@ nonRewriteCalculations:
                         sizeLength = EbmlElement::makeSizeDenotation(*clusterSizesIterator, buff);
                         outputStream.write(buff, sizeLength);
                         // write childs
-                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
-                            switch(level2Element->id()) {
+                        for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                            switch (level2Element->id()) {
                             case EbmlIds::Void:
                             case EbmlIds::Crc32:
                                 break;
@@ -1648,21 +1715,24 @@ nonRewriteCalculations:
                         }
                         // update percentage, check whether the operation has been aborted
                         progress.stopIfAborted();
-                        if(index % 50 == 0) {
-                            progress.updateStepPercentage(static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
+                        if (index % 50 == 0) {
+                            progress.updateStepPercentage(
+                                static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
                         }
                     }
                 } else {
                     // can't just skip existing "Cluster"-elements: "Position"-elements must be updated
-                    progress.nextStepOrStop("Updateing cluster ...", static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
-                    for(; level1Element; level1Element = level1Element->nextSibling()) {
-                        for(level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
-                            switch(level2Element->id()) {
+                    progress.nextStepOrStop("Updateing cluster ...",
+                        static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
+                    for (; level1Element; level1Element = level1Element->nextSibling()) {
+                        for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
+                            switch (level2Element->id()) {
                             case MatroskaIds::Position:
                                 // calculate new position
-                                sizeLength = EbmlElement::makeUInteger(level1Element->startOffset() - segmentData.front().newDataOffset, buff, level2Element->dataSize());
+                                sizeLength = EbmlElement::makeUInteger(
+                                    level1Element->startOffset() - segmentData.front().newDataOffset, buff, level2Element->dataSize());
                                 // new position can only applied if it doesn't need more bytes than the previous position
-                                if(level2Element->dataSize() < sizeLength) {
+                                if (level2Element->dataSize() < sizeLength) {
                                     // can't update position -> void position elements ("Position"-elements seem a bit useless anyways)
                                     outputStream.seekp(level2Element->startOffset());
                                     outputStream.put(static_cast<char>(EbmlIds::Void));
@@ -1672,8 +1742,7 @@ nonRewriteCalculations:
                                     outputStream.write(buff, sizeLength);
                                 }
                                 break;
-                            default:
-                                ;
+                            default:;
                             }
                         }
                     }
@@ -1684,26 +1753,26 @@ nonRewriteCalculations:
                 progress.updateStep("Writing segment tail ...");
 
                 // write "Cues"-element
-                if(newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
+                if (newCuesPos == ElementPosition::AfterData && segment.cuesElement) {
                     segment.cuesUpdater.make(outputStream, diag);
                 }
 
-                if(newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
+                if (newTagPos == ElementPosition::AfterData && segmentIndex == lastSegmentIndex) {
                     // write "Tags"-element
-                    if(tagsSize) {
+                    if (tagsSize) {
                         outputWriter.writeUInt32BE(MatroskaIds::Tags);
                         sizeLength = EbmlElement::makeSizeDenotation(tagElementsSize, buff);
                         outputStream.write(buff, sizeLength);
-                        for(auto &maker : tagMaker) {
+                        for (auto &maker : tagMaker) {
                             maker.make(outputStream);
                         }
                     }
                     // write "Attachments"-element
-                    if(attachmentsSize) {
+                    if (attachmentsSize) {
                         outputWriter.writeUInt32BE(MatroskaIds::Attachments);
                         sizeLength = EbmlElement::makeSizeDenotation(attachedFileElementsSize, buff);
                         outputStream.write(buff, sizeLength);
-                        for(auto &maker : attachmentMaker) {
+                        for (auto &maker : attachmentMaker) {
                             maker.make(outputStream, diag);
                         }
                     }
@@ -1716,8 +1785,8 @@ nonRewriteCalculations:
                 currentPosition += segment.totalSize;
 
                 break;
-
-           } default:
+            }
+            default:
                 // just copy any unknown top-level elements
                 level0Element->copyEntirely(outputStream, diag, nullptr);
                 currentPosition += level0Element->totalSize();
@@ -1726,12 +1795,12 @@ nonRewriteCalculations:
 
         // reparse what is written so far
         progress.updateStep("Reparsing output file ...");
-        if(rewriteRequired) {
+        if (rewriteRequired) {
             // report new size
             fileInfo().reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
 
             // "save as path" is now the regular path
-            if(!fileInfo().saveFilePath().empty()) {
+            if (!fileInfo().saveFilePath().empty()) {
                 fileInfo().reportPathChanged(fileInfo().saveFilePath());
                 fileInfo().setSaveFilePath(string());
             }
@@ -1742,12 +1811,12 @@ nonRewriteCalculations:
             setStream(outputStream);
         } else {
             const auto newSize = static_cast<uint64>(outputStream.tellp());
-            if(newSize < fileInfo().size()) {
+            if (newSize < fileInfo().size()) {
                 // file is smaller after the modification -> truncate
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if(truncate(fileInfo().path().c_str(), static_cast<iostream::off_type>(newSize)) == 0) {
+                if (truncate(fileInfo().path().c_str(), static_cast<iostream::off_type>(newSize)) == 0) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
                     diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
@@ -1762,15 +1831,15 @@ nonRewriteCalculations:
         reset();
         try {
             parseHeader(diag);
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Unable to reparse the header of the new file.", context);
             throw;
         }
 
         // update CRC-32 checksums
-        if(!crc32Offsets.empty()) {
+        if (!crc32Offsets.empty()) {
             progress.updateStep("Updating CRC-32 checksums ...");
-            for(const auto &crc32Offset : crc32Offsets) {
+            for (const auto &crc32Offset : crc32Offsets) {
                 outputStream.seekg(get<0>(crc32Offset) + 6);
                 outputStream.seekp(get<0>(crc32Offset) + 2);
                 writer().writeUInt32LE(reader().readCrc32(get<1>(crc32Offset) - 6));
@@ -1781,9 +1850,9 @@ nonRewriteCalculations:
         outputStream.flush();
 
         // handle errors (which might have been occured after renaming/creating backup file)
-    } catch(...) {
+    } catch (...) {
         BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, diag, context);
     }
 }
 
-}
+} // namespace TagParser

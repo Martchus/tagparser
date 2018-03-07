@@ -1,14 +1,14 @@
 #ifndef TAG_PARSER_TAG_H
 #define TAG_PARSER_TAG_H
 
-#include "./tagvalue.h"
 #include "./tagtarget.h"
+#include "./tagvalue.h"
 
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 
-#include <type_traits>
 #include <string>
+#include <type_traits>
 
 namespace TagParser {
 
@@ -17,8 +17,7 @@ namespace TagParser {
  *
  * \sa Tag::type()
  */
-enum class TagType : unsigned int
-{
+enum class TagType : unsigned int {
     Unspecified = 0x00, /**< The tag type is unspecified. */
     Id3v1Tag = 0x01, /**< The tag is a Media::Id3v1Tag. */
     Id3v2Tag = 0x02, /**< The tag is a Media::Id3v2Tag. */
@@ -38,8 +37,7 @@ enum class TagType : unsigned int
  *
  * \sa Tag::type()
  */
-enum class KnownField : unsigned int
-{
+enum class KnownField : unsigned int {
     Invalid = static_cast<unsigned int>(-1), /**< invalid field name, do not map this value when subclassing Tag */
     Title = 0, /**< title */
     Album, /**< album/collection */
@@ -94,8 +92,7 @@ constexpr KnownField nextKnownField(KnownField field)
     return field == lastKnownField ? KnownField::Invalid : static_cast<KnownField>(static_cast<int>(field) + 1);
 }
 
-class TAG_PARSER_EXPORT Tag
-{
+class TAG_PARSER_EXPORT Tag {
 public:
     virtual ~Tag();
 
@@ -126,13 +123,13 @@ public:
     virtual bool supportsMimeType(KnownField field) const;
     virtual unsigned int insertValues(const Tag &from, bool overwrite);
     virtual void ensureTextValuesAreProperlyEncoded() = 0;
-//    Tag *parent() const;
-//    bool setParent(Tag *tag);
-//    Tag *nestedTag(size_t index) const;
-//    size_t nestedTagCount() const;
-//    const std::vector<Tag *> nestedTags() const;
-//    virtual bool supportsNestedTags() const;
-//    virtual bool supportsChild(Tag *child);
+    //    Tag *parent() const;
+    //    bool setParent(Tag *tag);
+    //    Tag *nestedTag(size_t index) const;
+    //    size_t nestedTagCount() const;
+    //    const std::vector<Tag *> nestedTags() const;
+    //    virtual bool supportsNestedTags() const;
+    //    virtual bool supportsChild(Tag *child);
 
 protected:
     Tag();
@@ -140,8 +137,8 @@ protected:
     std::string m_version;
     uint32 m_size;
     TagTarget m_target;
-//    Tag *m_parent;
-//    std::vector<Tag *> m_nestedTags;
+    //    Tag *m_parent;
+    //    std::vector<Tag *> m_nestedTags;
 };
 
 /*!
@@ -312,7 +309,7 @@ inline std::string Tag::targetString() const
  */
 inline TagDataType Tag::proposedDataType(KnownField field) const
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Bpm:
     case KnownField::Bps:
     case KnownField::Rating:
@@ -342,7 +339,7 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
  * The default implementation returns false for all fields. This might be overwritten
  * when subclassing.
  */
-inline bool Tag::supportsDescription(KnownField ) const
+inline bool Tag::supportsDescription(KnownField) const
 {
     return false;
 }
@@ -356,7 +353,7 @@ inline bool Tag::supportsDescription(KnownField ) const
  * The default implementation returns false for all fields. This might be overwritten
  * when subclassing.
  */
-inline bool Tag::supportsMimeType(KnownField ) const
+inline bool Tag::supportsMimeType(KnownField) const
 {
     return false;
 }
@@ -413,6 +410,6 @@ inline bool Tag::supportsMimeType(KnownField ) const
 //    return 0;
 //}
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_TAG_H

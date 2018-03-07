@@ -10,8 +10,7 @@ class MatroskaContainer;
 class MatroskaTrack;
 class MatroskaTag;
 
-class TAG_PARSER_EXPORT MatroskaTrackHeaderMaker
-{
+class TAG_PARSER_EXPORT MatroskaTrackHeaderMaker {
     friend class MatroskaTrack;
 
 public:
@@ -44,8 +43,7 @@ inline uint64 MatroskaTrackHeaderMaker::requiredSize() const
     return m_requiredSize;
 }
 
-class TAG_PARSER_EXPORT MatroskaTrack : public AbstractTrack
-{
+class TAG_PARSER_EXPORT MatroskaTrack : public AbstractTrack {
     friend class MatroskaContainer;
     friend class MatroskaTrackHeaderMaker;
 
@@ -56,7 +54,7 @@ public:
     TrackType type() const override;
 
     static MediaFormat codecIdToMediaFormat(const std::string &codecId);
-    void readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags, Diagnostics &diag);
+    void readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag>> &tags, Diagnostics &diag);
     MatroskaTrackHeaderMaker prepareMakingHeader(Diagnostics &diag) const;
     void makeHeader(std::ostream &stream, Diagnostics &diag) const;
 
@@ -64,8 +62,9 @@ protected:
     void internalParseHeader(Diagnostics &diag) override;
 
 private:
-    template<typename PropertyType, typename ConversionFunction>
-    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &integer, const ConversionFunction &conversionFunction, Diagnostics &diag);
+    template <typename PropertyType, typename ConversionFunction>
+    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &integer,
+        const ConversionFunction &conversionFunction, Diagnostics &diag);
 
     EbmlElement *m_trackElement;
 };
@@ -101,6 +100,6 @@ inline void MatroskaTrack::makeHeader(std::ostream &stream, Diagnostics &diag) c
     prepareMakingHeader(diag).make(stream);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKATRACK_H

@@ -3,27 +3,28 @@
 
 #include "./ebmlelement.h"
 
-#include <unordered_map>
 #include <ostream>
+#include <unordered_map>
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT MatroskaOffsetStates
-{
+class TAG_PARSER_EXPORT MatroskaOffsetStates {
 public:
     MatroskaOffsetStates(uint64 initialValue);
     uint64 currentValue() const;
     void update(uint64 newValue);
     uint64 initialValue() const;
+
 private:
     uint64 m_initialValue;
     uint64 m_currentValue;
 };
 
-inline MatroskaOffsetStates::MatroskaOffsetStates(uint64 initialValue) :
-    m_initialValue(initialValue),
-    m_currentValue(initialValue)
-{}
+inline MatroskaOffsetStates::MatroskaOffsetStates(uint64 initialValue)
+    : m_initialValue(initialValue)
+    , m_currentValue(initialValue)
+{
+}
 
 inline uint64 MatroskaOffsetStates::currentValue() const
 {
@@ -40,27 +41,27 @@ inline uint64 MatroskaOffsetStates::initialValue() const
     return m_initialValue;
 }
 
-class TAG_PARSER_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates
-{
+class TAG_PARSER_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates {
 public:
     MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue);
     uint64 referenceOffset() const;
+
 private:
     uint64 m_referenceOffset;
 };
 
-inline MatroskaReferenceOffsetPair::MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue) :
-    MatroskaOffsetStates(initialValue),
-    m_referenceOffset(referenceOffset)
-{}
+inline MatroskaReferenceOffsetPair::MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue)
+    : MatroskaOffsetStates(initialValue)
+    , m_referenceOffset(referenceOffset)
+{
+}
 
 inline uint64 MatroskaReferenceOffsetPair::referenceOffset() const
 {
     return m_referenceOffset;
 }
 
-class TAG_PARSER_EXPORT MatroskaCuePositionUpdater
-{
+class TAG_PARSER_EXPORT MatroskaCuePositionUpdater {
 public:
     MatroskaCuePositionUpdater();
 
@@ -87,9 +88,10 @@ private:
  *
  * The parse() method should be called to do further initialization.
  */
-inline MatroskaCuePositionUpdater::MatroskaCuePositionUpdater() :
-    m_cuesElement(nullptr)
-{}
+inline MatroskaCuePositionUpdater::MatroskaCuePositionUpdater()
+    : m_cuesElement(nullptr)
+{
+}
 
 /*!
  * \brief Returns the "Cues"-element specified when calling the parse() method.
@@ -111,6 +113,6 @@ inline void MatroskaCuePositionUpdater::clear()
     m_sizes.clear();
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKACUES_H

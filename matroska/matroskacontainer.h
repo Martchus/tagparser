@@ -2,10 +2,10 @@
 #define TAG_PARSER_MATROSKACONTAINER_H
 
 #include "./ebmlelement.h"
+#include "./matroskaattachment.h"
+#include "./matroskachapter.h"
 #include "./matroskatag.h"
 #include "./matroskatrack.h"
-#include "./matroskachapter.h"
-#include "./matroskaattachment.h"
 
 #include "../genericcontainer.h"
 
@@ -22,8 +22,7 @@ class MatroskaEditionEntry;
 
 class MediaFileInfo;
 
-class TAG_PARSER_EXPORT MatroskaContainer : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>
-{
+class TAG_PARSER_EXPORT MatroskaContainer : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement> {
 public:
     MatroskaContainer(MediaFileInfo &stream, uint64 startOffset);
     ~MatroskaContainer() override;
@@ -31,11 +30,11 @@ public:
     void validateIndex(Diagnostics &diag);
     uint64 maxIdLength() const;
     uint64 maxSizeLength() const;
-    const std::vector<std::unique_ptr<MatroskaSeekInfo> > &seekInfos() const;
+    const std::vector<std::unique_ptr<MatroskaSeekInfo>> &seekInfos() const;
 
     static uint64 maxFullParseSize();
     void setMaxFullParseSize(uint64 maxFullParseSize);
-    const std::vector<std::unique_ptr<MatroskaEditionEntry> > &editionEntires() const;
+    const std::vector<std::unique_ptr<MatroskaEditionEntry>> &editionEntires() const;
     MatroskaChapter *chapter(std::size_t index) override;
     std::size_t chapterCount() const override;
     MatroskaAttachment *createAttachment() override;
@@ -70,9 +69,9 @@ private:
     std::vector<EbmlElement *> m_tagsElements;
     std::vector<EbmlElement *> m_chaptersElements;
     std::vector<EbmlElement *> m_attachmentsElements;
-    std::vector<std::unique_ptr<MatroskaSeekInfo> > m_seekInfos;
-    std::vector<std::unique_ptr<MatroskaEditionEntry> > m_editionEntries;
-    std::vector<std::unique_ptr<MatroskaAttachment> > m_attachments;
+    std::vector<std::unique_ptr<MatroskaSeekInfo>> m_seekInfos;
+    std::vector<std::unique_ptr<MatroskaEditionEntry>> m_editionEntries;
+    std::vector<std::unique_ptr<MatroskaAttachment>> m_attachments;
     std::size_t m_segmentCount;
     static uint64 m_maxFullParseSize;
 };
@@ -96,7 +95,7 @@ inline uint64 MatroskaContainer::maxSizeLength() const
 /*!
  * \brief Returns seek information read from "SeekHead"-elements when parsing segment info.
  */
-inline const std::vector<std::unique_ptr<MatroskaSeekInfo> > &MatroskaContainer::seekInfos() const
+inline const std::vector<std::unique_ptr<MatroskaSeekInfo>> &MatroskaContainer::seekInfos() const
 {
     return m_seekInfos;
 }
@@ -131,7 +130,7 @@ inline void MatroskaContainer::setMaxFullParseSize(uint64 maxFullParseSize)
 /*!
  * \brief Returns the edition entries.
  */
-inline const std::vector<std::unique_ptr<MatroskaEditionEntry> > &MatroskaContainer::editionEntires() const
+inline const std::vector<std::unique_ptr<MatroskaEditionEntry>> &MatroskaContainer::editionEntires() const
 {
     return m_editionEntries;
 }
@@ -156,6 +155,6 @@ inline std::size_t MatroskaContainer::segmentCount() const
     return m_segmentInfoElements.size();
 }
 
-}
+} // namespace TagParser
 
 #endif // MATROSKACONTAINER_H

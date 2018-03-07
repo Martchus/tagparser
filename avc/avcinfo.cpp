@@ -6,8 +6,8 @@
 #include <c++utilities/io/bitreader.h>
 #include <c++utilities/io/catchiofailure.h>
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 using namespace std;
 using namespace IoUtilities;
@@ -25,11 +25,11 @@ namespace TagParser {
 void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 {
     // read (and check) size
-    if(maxSize < 2) {
+    if (maxSize < 2) {
         throw TruncatedDataException();
     }
     maxSize -= 2;
-    if((size = reader.readUInt16BE()) > maxSize) {
+    if ((size = reader.readUInt16BE()) > maxSize) {
         throw TruncatedDataException();
     }
 
@@ -41,7 +41,7 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
     try {
         // read general values
         bitReader.skipBits(3);
-        if(bitReader.readBits<byte>(5) != 7) {
+        if (bitReader.readBits<byte>(5) != 7) {
             throw InvalidDataException();
         }
         profileIndication = bitReader.readBits<byte>(8);
@@ -50,21 +50,28 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
         id = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
 
         // read chroma profile specific values
-        switch(profileIndication) {
-        case 44: case 83: case 86: case 100: case 110:
-        case 118: case 122: case 128: case 244:
+        switch (profileIndication) {
+        case 44:
+        case 83:
+        case 86:
+        case 100:
+        case 110:
+        case 118:
+        case 122:
+        case 128:
+        case 244:
             // high-level profile
-            if((chromaFormatIndication = bitReader.readUnsignedExpGolombCodedBits<ugolomb>()) == 3) {
+            if ((chromaFormatIndication = bitReader.readUnsignedExpGolombCodedBits<ugolomb>()) == 3) {
                 bitReader.skipBits(1); // separate color plane flag
             }
             bitReader.readUnsignedExpGolombCodedBits<byte>(); // bit depth luma minus8
             bitReader.readUnsignedExpGolombCodedBits<byte>(); // bit depth chroma minus8
             bitReader.skipBits(1); // qpprime y zero transform bypass flag
-            if(bitReader.readBit()) { // sequence scaling matrix present flag
-                for(byte i = 0; i < 8; ++i) {
+            if (bitReader.readBit()) { // sequence scaling matrix present flag
+                for (byte i = 0; i < 8; ++i) {
                     // TODO: store values
-                    if(bitReader.readBit()) { // sequence scaling list present
-                        if(i < 6) {
+                    if (bitReader.readBit()) { // sequence scaling list present
+                        if (i < 6) {
                             bitReader.skipBits(16); // scalingList4x4[i]
                         } else {
                             bitReader.skipBits(64); // scalingList8x8[i - 6]
@@ -79,7 +86,7 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 
         // read misc values
         log2MaxFrameNum = bitReader.readUnsignedExpGolombCodedBits<ugolomb>() + 4;
-        switch(pictureOrderCountType = bitReader.readUnsignedExpGolombCodedBits<ugolomb>()) {
+        switch (pictureOrderCountType = bitReader.readUnsignedExpGolombCodedBits<ugolomb>()) {
         case 0:
             log2MaxPictureOrderCountLsb = bitReader.readUnsignedExpGolombCodedBits<ugolomb>() + 4;
             break;
@@ -88,7 +95,7 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
             offsetForNonRefPic = bitReader.readSignedExpGolombCodedBits<sgolomb>();
             offsetForTopToBottomField = bitReader.readSignedExpGolombCodedBits<sgolomb>();
             numRefFramesInPicOrderCntCycle = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
-            for(byte i = 0; i < numRefFramesInPicOrderCntCycle; ++i) {
+            for (byte i = 0; i < numRefFramesInPicOrderCntCycle; ++i) {
                 bitReader.readUnsignedExpGolombCodedBits<ugolomb>(); // offset for ref frames
             }
             break;
@@ -104,13 +111,13 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
         Size mbSize;
         mbSize.setWidth(bitReader.readUnsignedExpGolombCodedBits<uint32>() + 1);
         mbSize.setHeight(bitReader.readUnsignedExpGolombCodedBits<uint32>() + 1);
-        if(!(frameMbsOnly = bitReader.readBit())) { // frame mbs only flag
+        if (!(frameMbsOnly = bitReader.readBit())) { // frame mbs only flag
             bitReader.readBit(); // mb adaptive frame field flag
         }
         bitReader.skipBits(1); // distinct 8x8 inference flag
 
         // read cropping values
-        if(bitReader.readBit()) { // frame cropping flag
+        if (bitReader.readBit()) { // frame cropping flag
             cropping.setLeft(bitReader.readUnsignedExpGolombCodedBits<uint32>());
             cropping.setRight(bitReader.readUnsignedExpGolombCodedBits<uint32>());
             cropping.setTop(bitReader.readUnsignedExpGolombCodedBits<uint32>());
@@ -118,10 +125,10 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
         }
 
         // calculate actual picture size
-        if(!cropping.isNull()) {
+        if (!cropping.isNull()) {
             // determine cropping scale
             ugolomb croppingScaleX, croppingScaleY;
-            switch(chromaFormatIndication) {
+            switch (chromaFormatIndication) {
             case 1: // 4:2:0
                 croppingScaleX = 2;
                 croppingScaleY = frameMbsOnly ? 2 : 4;
@@ -143,10 +150,10 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
         }
 
         // read VUI (video usability information)
-        if((vuiPresent = bitReader.readBit())) {
-            if((bitReader.readBit())) { // PAR present flag
+        if ((vuiPresent = bitReader.readBit())) {
+            if ((bitReader.readBit())) { // PAR present flag
                 pixelAspectRatio = AspectRatio(bitReader.readBits<byte>(8));
-                if(pixelAspectRatio.isExtended()) {
+                if (pixelAspectRatio.isExtended()) {
                     // read extended SAR
                     pixelAspectRatio.numerator = bitReader.readBits<uint16>(16);
                     pixelAspectRatio.denominator = bitReader.readBits<uint16>(16);
@@ -154,22 +161,22 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
             }
 
             // read/skip misc values
-            if(bitReader.readBit()) { // overscan info present
+            if (bitReader.readBit()) { // overscan info present
                 bitReader.skipBits(1); // overscan appropriate
             }
-            if(bitReader.readBit()) { // video signal type present
+            if (bitReader.readBit()) { // video signal type present
                 bitReader.skipBits(4); // video format and video full range
-                if(bitReader.readBit()) { // color description present
+                if (bitReader.readBit()) { // color description present
                     bitReader.skipBits(24); // color primaries, transfer characteristics, matrix coefficients
                 }
             }
-            if(bitReader.readBit()) { // chroma loc info present
+            if (bitReader.readBit()) { // chroma loc info present
                 bitReader.readUnsignedExpGolombCodedBits<byte>(); // chroma sample loc type top field
                 bitReader.readUnsignedExpGolombCodedBits<byte>(); // chroma sample loc type bottom field
             }
 
             // read timing info
-            if((timingInfo.isPresent = bitReader.readBit())) {
+            if ((timingInfo.isPresent = bitReader.readBit())) {
                 timingInfo.unitsInTick = bitReader.readBits<uint32>(32);
                 timingInfo.timeScale = bitReader.readBits<uint32>(32);
                 timingInfo.fixedFrameRate = bitReader.readBit();
@@ -177,22 +184,22 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 
             // skip hrd parameters
             hrdParametersPresent = 0;
-            if(bitReader.readBit()) { // nal hrd parameters present
+            if (bitReader.readBit()) { // nal hrd parameters present
                 nalHrdParameters.parse(bitReader);
                 hrdParametersPresent = 1;
             }
-            if(bitReader.readBit()) { // vcl hrd parameters present
+            if (bitReader.readBit()) { // vcl hrd parameters present
                 vclHrdParameters.parse(bitReader);
                 hrdParametersPresent = 1;
             }
-            if(hrdParametersPresent) {
+            if (hrdParametersPresent) {
                 bitReader.skipBits(1); // low delay hrd flag
             }
 
             pictureStructPresent = bitReader.readBit();
 
             // TODO: investigate error (truncated data) when parsing mtx-test-data/mkv/attachment-without-fileuid.mkv
-            if(bitReader.readBit()) { // bitstream restriction flag
+            if (bitReader.readBit()) { // bitstream restriction flag
                 bitReader.skipBits(1); // motion vectors over pic boundries flag
                 bitReader.readUnsignedExpGolombCodedBits<byte>(); // max bytes per pic denom
                 bitReader.readUnsignedExpGolombCodedBits<byte>(); // max bytes per mb denom
@@ -203,7 +210,7 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
             }
         }
 
-    } catch(...) {
+    } catch (...) {
         catchIoFailure();
         throw TruncatedDataException();
     }
@@ -220,11 +227,11 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 void PpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 {
     // read (and check) size
-    if(maxSize < 2) {
+    if (maxSize < 2) {
         throw TruncatedDataException();
     }
     maxSize -= 2;
-    if((size = reader.readUInt16BE()) > maxSize) {
+    if ((size = reader.readUInt16BE()) > maxSize) {
         throw TruncatedDataException();
     }
 
@@ -236,14 +243,14 @@ void PpsInfo::parse(BinaryReader &reader, uint32 maxSize)
     try {
         // read general values
         bitReader.skipBits(1); // zero bit
-        if(bitReader.readBits<byte>(5) != 8) { // nal unit type
+        if (bitReader.readBits<byte>(5) != 8) { // nal unit type
             throw InvalidDataException();
         }
         id = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
         spsId = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
         bitReader.skipBits(1); // entropy coding mode flag
         picOrderPresent = bitReader.readBit();
-    } catch(...) {
+    } catch (...) {
         catchIoFailure();
         throw TruncatedDataException();
     }
@@ -263,7 +270,7 @@ void HrdParameters::parse(IoUtilities::BitReader &reader)
     cpbCount = reader.readUnsignedExpGolombCodedBits<ugolomb>() + 1;
     bitRateScale = reader.readBits<byte>(4);
     cpbSizeScale = reader.readBits<byte>(4);
-    for(ugolomb i = 0; i < cpbCount; ++i) {
+    for (ugolomb i = 0; i < cpbCount; ++i) {
         // just skip those values
         reader.readUnsignedExpGolombCodedBits<byte>(); // bit rate value minus 1
         reader.readUnsignedExpGolombCodedBits<byte>(); // cpb size value minus 1
@@ -292,4 +299,4 @@ void HrdParameters::parse(IoUtilities::BitReader &reader)
  * \remarks currently not useful, might be removed
  */
 
-}
+} // namespace TagParser

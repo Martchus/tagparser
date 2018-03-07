@@ -14,13 +14,15 @@ namespace TagParser {
  * \brief Constructs a new exception.
  */
 Failure::Failure() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 Failure::~Failure() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -40,13 +42,15 @@ const char *Failure::what() const USE_NOTHROW
  * \brief Constructs a new exception.
  */
 NoDataFoundException::NoDataFoundException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 NoDataFoundException::~NoDataFoundException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -66,13 +70,15 @@ const char *NoDataFoundException::what() const USE_NOTHROW
  * \brief Constructs a new exception.
  */
 InvalidDataException::InvalidDataException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 InvalidDataException::~InvalidDataException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -92,13 +98,15 @@ const char *InvalidDataException::what() const USE_NOTHROW
  * \brief Constructs a new exception.
  */
 TruncatedDataException::TruncatedDataException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 TruncatedDataException::~TruncatedDataException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -118,13 +126,15 @@ const char *TruncatedDataException::what() const USE_NOTHROW
  * \brief Constructs a new exception.
  */
 OperationAbortedException::OperationAbortedException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 OperationAbortedException::~OperationAbortedException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -144,13 +154,15 @@ const char *OperationAbortedException::what() const USE_NOTHROW
  * \brief Constructs a new exception.
  */
 VersionNotSupportedException::VersionNotSupportedException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 VersionNotSupportedException::~VersionNotSupportedException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -170,13 +182,15 @@ const char *VersionNotSupportedException::what() const USE_NOTHROW
  * \brief Constructs a new exception.
  */
 NotImplementedException::NotImplementedException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Destroys the exception.
  */
 NotImplementedException::~NotImplementedException() USE_NOTHROW
-{}
+{
+}
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
@@ -186,4 +200,4 @@ const char *NotImplementedException::what() const USE_NOTHROW
     return "the operation has not been implemented yet";
 }
 
-}
+} // namespace TagParser

@@ -3,8 +3,8 @@
 
 #include "./global.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/types.h>
 
 #include <string>
 
@@ -13,8 +13,7 @@ namespace TagParser {
 /*!
  * \brief The Margin class defines the four margins of a rectangle.
  */
-class TAG_PARSER_EXPORT Margin
-{
+class TAG_PARSER_EXPORT Margin {
 public:
     constexpr Margin(uint32 top = 0, uint32 left = 0, uint32 bottom = 0, uint32 right = 0);
     constexpr uint32 top() const;
@@ -38,12 +37,13 @@ private:
 /*!
  * \brief Constructs a Margin.
  */
-constexpr Margin::Margin(uint32 top, uint32 left, uint32 bottom, uint32 right) :
-    m_top(top),
-    m_left(left),
-    m_bottom(bottom),
-    m_right(right)
-{}
+constexpr Margin::Margin(uint32 top, uint32 left, uint32 bottom, uint32 right)
+    : m_top(top)
+    , m_left(left)
+    , m_bottom(bottom)
+    , m_right(right)
+{
+}
 
 /*!
  * \brief Returns the top margin.
@@ -125,6 +125,6 @@ inline std::string Margin::toString() const
     return ConversionUtilities::argsToString("top: ", m_top, "; left: ", m_left, "; bottom: ", m_bottom, "; right: ", m_right);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MARGIN_H

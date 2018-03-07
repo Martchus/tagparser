@@ -8,8 +8,7 @@ namespace TagParser {
 class EbmlElement;
 class MatroskaAttachment;
 
-class TAG_PARSER_EXPORT MatroskaAttachmentMaker
-{
+class TAG_PARSER_EXPORT MatroskaAttachmentMaker {
     friend class MatroskaAttachment;
 
 public:
@@ -42,8 +41,7 @@ inline uint64 MatroskaAttachmentMaker::requiredSize() const
     return m_totalSize;
 }
 
-class TAG_PARSER_EXPORT MatroskaAttachment : public AbstractAttachment
-{
+class TAG_PARSER_EXPORT MatroskaAttachment : public AbstractAttachment {
 public:
     MatroskaAttachment();
 
@@ -55,15 +53,15 @@ public:
 
 private:
     EbmlElement *m_attachedFileElement;
-
 };
 
 /*!
  * \brief Constructs a new Matroska attachment.
  */
-inline MatroskaAttachment::MatroskaAttachment() :
-    m_attachedFileElement(nullptr)
-{}
+inline MatroskaAttachment::MatroskaAttachment()
+    : m_attachedFileElement(nullptr)
+{
+}
 
 /*!
  * \brief Returns the "AttachedFile"-element which has been specified when the parse() method has been called.
@@ -88,6 +86,6 @@ inline MatroskaAttachmentMaker MatroskaAttachment::prepareMaking(Diagnostics &di
     return MatroskaAttachmentMaker(*this, diag);
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKAATTACHMENT_H

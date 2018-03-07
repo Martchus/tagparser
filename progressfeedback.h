@@ -6,14 +6,12 @@
 #include <c++utilities/conversion/types.h>
 
 #include <atomic>
-#include <string>
 #include <functional>
+#include <string>
 
 namespace TagParser {
 
-template<typename ActualProgressFeedback>
-class BasicProgressFeedback
-{
+template <typename ActualProgressFeedback> class BasicProgressFeedback {
 public:
     using Callback = std::function<void(ActualProgressFeedback &feedback)>;
 
@@ -37,7 +35,7 @@ private:
     byte m_overallPercentage;
 };
 
-template<typename ActualProgressFeedback>
+template <typename ActualProgressFeedback>
 inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback)
     : m_callback(callback)
     , m_percentageOnlyCallback(percentageOnlyCallback)
@@ -46,7 +44,7 @@ inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(cons
 {
 }
 
-template<typename ActualProgressFeedback>
+template <typename ActualProgressFeedback>
 inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback)
     : m_callback(callback)
     , m_percentageOnlyCallback(percentageOnlyCallback)
@@ -55,25 +53,22 @@ inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(Call
 {
 }
 
-template<typename ActualProgressFeedback>
-inline const std::string &BasicProgressFeedback<ActualProgressFeedback>::step() const
+template <typename ActualProgressFeedback> inline const std::string &BasicProgressFeedback<ActualProgressFeedback>::step() const
 {
     return m_step;
 }
 
-template<typename ActualProgressFeedback>
-inline byte BasicProgressFeedback<ActualProgressFeedback>::stepPercentage() const
+template <typename ActualProgressFeedback> inline byte BasicProgressFeedback<ActualProgressFeedback>::stepPercentage() const
 {
     return m_stepPercentage;
 }
 
-template<typename ActualProgressFeedback>
-inline byte BasicProgressFeedback<ActualProgressFeedback>::overallPercentage() const
+template <typename ActualProgressFeedback> inline byte BasicProgressFeedback<ActualProgressFeedback>::overallPercentage() const
 {
     return m_overallPercentage;
 }
 
-template<typename ActualProgressFeedback>
+template <typename ActualProgressFeedback>
 inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(const std::string &step, byte stepPercentage)
 {
     m_step = step;
@@ -83,7 +78,7 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(const std:
     }
 }
 
-template<typename ActualProgressFeedback>
+template <typename ActualProgressFeedback>
 inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(std::string &&step, byte stepPercentage)
 {
     m_step = step;
@@ -93,8 +88,7 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(std::strin
     }
 }
 
-template<typename ActualProgressFeedback>
-inline void BasicProgressFeedback<ActualProgressFeedback>::updateStepPercentage(byte stepPercentage)
+template <typename ActualProgressFeedback> inline void BasicProgressFeedback<ActualProgressFeedback>::updateStepPercentage(byte stepPercentage)
 {
     m_stepPercentage = stepPercentage;
     if (m_percentageOnlyCallback) {
@@ -104,14 +98,13 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateStepPercentage(
     }
 }
 
-template<typename ActualProgressFeedback>
+template <typename ActualProgressFeedback>
 inline void BasicProgressFeedback<ActualProgressFeedback>::updateStepPercentageFromFraction(double stepPercentage)
 {
     updateStepPercentage(static_cast<byte>(stepPercentage * 100.0));
 }
 
-template<typename ActualProgressFeedback>
-inline void BasicProgressFeedback<ActualProgressFeedback>::updateOverallPercentage(byte overallPercentage)
+template <typename ActualProgressFeedback> inline void BasicProgressFeedback<ActualProgressFeedback>::updateOverallPercentage(byte overallPercentage)
 {
     m_overallPercentage = overallPercentage;
     if (m_percentageOnlyCallback) {
@@ -121,8 +114,7 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateOverallPercenta
     }
 }
 
-class ProgressFeedback : public BasicProgressFeedback<ProgressFeedback>
-{
+class ProgressFeedback : public BasicProgressFeedback<ProgressFeedback> {
     ProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
     ProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
 };
@@ -137,8 +129,7 @@ inline ProgressFeedback::ProgressFeedback(Callback &&callback, Callback &&percen
 {
 }
 
-class AbortableProgressFeedback : public BasicProgressFeedback<AbortableProgressFeedback>
-{
+class AbortableProgressFeedback : public BasicProgressFeedback<AbortableProgressFeedback> {
 public:
     AbortableProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
     AbortableProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
@@ -198,6 +189,6 @@ inline void AbortableProgressFeedback::nextStepOrStop(std::string &&status, byte
     updateStep(status, percentage);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAGPARSER_PROGRESS_FEEDBACK_H

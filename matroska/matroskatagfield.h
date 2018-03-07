@@ -12,9 +12,7 @@ class Diagnostics;
 /*!
  * \brief Defines traits for the TagField implementation of the MatroskaTagField class.
  */
-template <>
-class TAG_PARSER_EXPORT TagFieldTraits<MatroskaTagField>
-{
+template <> class TAG_PARSER_EXPORT TagFieldTraits<MatroskaTagField> {
 public:
     typedef std::string IdentifierType;
     typedef std::string TypeInfoType;
@@ -29,8 +27,7 @@ inline bool TagFieldTraits<MatroskaTagField>::supportsNestedFields()
     return true;
 }
 
-class TAG_PARSER_EXPORT MatroskaTagFieldMaker
-{
+class TAG_PARSER_EXPORT MatroskaTagFieldMaker {
     friend class MatroskaTagField;
 
 public:
@@ -65,10 +62,7 @@ inline uint64 MatroskaTagFieldMaker::requiredSize() const
     return m_totalSize;
 }
 
-
-
-class TAG_PARSER_EXPORT MatroskaTagField : public TagField<MatroskaTagField>
-{
+class TAG_PARSER_EXPORT MatroskaTagField : public TagField<MatroskaTagField> {
     friend class TagField<MatroskaTagField>;
 
 public:
@@ -126,8 +120,9 @@ inline std::string MatroskaTagField::fieldIdToString(const std::string &id)
  * \brief Ensures the field is cleared.
  */
 inline void MatroskaTagField::cleared()
-{}
-
+{
 }
+
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKATAGFIELD_H

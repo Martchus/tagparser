@@ -3,11 +3,9 @@
 
 #include "../abstracttrack.h"
 
-namespace TagParser
-{
+namespace TagParser {
 
-class TAG_PARSER_EXPORT WaveFormatHeader
-{
+class TAG_PARSER_EXPORT WaveFormatHeader {
 public:
     WaveFormatHeader();
 
@@ -31,8 +29,7 @@ inline uint32 WaveFormatHeader::bitrate() const
     return bitsPerSample * sampleRate * channelCount;
 }
 
-class TAG_PARSER_EXPORT WaveAudioStream : public AbstractTrack
-{
+class TAG_PARSER_EXPORT WaveAudioStream : public AbstractTrack {
 public:
     WaveAudioStream(std::iostream &stream, uint64 startOffset);
     ~WaveAudioStream() override;
@@ -48,6 +45,6 @@ private:
     uint64 m_dataOffset;
 };
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_WAVEAUDIOSTREAM_H

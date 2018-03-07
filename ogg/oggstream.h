@@ -10,8 +10,7 @@ namespace TagParser {
 class OggContainer;
 class OggIterator;
 
-class TAG_PARSER_EXPORT OggStream : public AbstractTrack
-{
+class TAG_PARSER_EXPORT OggStream : public AbstractTrack {
     friend class OggContainer;
 
 public:
@@ -42,6 +41,6 @@ inline TrackType OggStream::type() const
     return TrackType::OggStream;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_OGGSTREAM_H

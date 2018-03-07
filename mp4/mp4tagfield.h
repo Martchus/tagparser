@@ -3,21 +3,19 @@
 
 #include "../generictagfield.h"
 
-#include <c++utilities/io/binarywriter.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/io/binarywriter.h>
 
-#include <vector>
 #include <sstream>
+#include <vector>
 
-namespace TagParser
-{
+namespace TagParser {
 
 /*!
  * \brief Encapsulates the most common data type IDs of MP4 tag fields.
  */
 namespace RawDataType {
-enum KnownValue : uint32
-{
+enum KnownValue : uint32 {
     Reserved = 0, /**< reserved for use where no type needs to be indicated */
     Utf8 = 1, /**< without any count or NULL terminator */
     Utf16 = 2, /**< also known as UTF-16BE */
@@ -53,9 +51,7 @@ class Diagnostics;
 /*!
  * \brief Defines traits for the TagField implementation of the Mp4TagField class.
  */
-template <>
-class TAG_PARSER_EXPORT TagFieldTraits<Mp4TagField>
-{
+template <> class TAG_PARSER_EXPORT TagFieldTraits<Mp4TagField> {
 public:
     typedef uint32 IdentifierType;
     typedef uint32 TypeInfoType;
@@ -63,8 +59,7 @@ public:
 
 class Mp4Atom;
 
-class TAG_PARSER_EXPORT Mp4TagFieldMaker
-{
+class TAG_PARSER_EXPORT Mp4TagFieldMaker {
     friend class Mp4TagField;
 
 public:
@@ -96,11 +91,10 @@ inline const Mp4TagField &Mp4TagFieldMaker::field() const
  */
 inline uint64 Mp4TagFieldMaker::requiredSize() const
 {
-   return m_totalSize;
+    return m_totalSize;
 }
 
-class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField>
-{
+class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField> {
     friend class TagField<Mp4TagField>;
 
 public:
@@ -218,7 +212,7 @@ inline bool Mp4TagField::supportsNestedFields() const
 inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
 {
     const auto latin1 = ConversionUtilities::convertUtf8ToLatin1(idString, idStringSize != std::string::npos ? idStringSize : std::strlen(idString));
-    switch(latin1.second) {
+    switch (latin1.second) {
     case 4:
         return ConversionUtilities::BE::toUInt32(latin1.first.get());
     default:
@@ -237,6 +231,6 @@ inline std::string Mp4TagField::fieldIdToString(Mp4TagField::IdentifierType id)
     return std::string(utf8.first.get(), utf8.second);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP4TAGATOM_H

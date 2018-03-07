@@ -1,11 +1,11 @@
 #include "./matroskaseekinfo.h"
 #include "./matroskaid.h"
 
-#include "../exceptions.h"
 #include "../diagnostics.h"
+#include "../exceptions.h"
 
-#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 
 #include <string>
 
@@ -24,8 +24,8 @@ namespace TagParser {
  */
 void MatroskaSeekInfo::shift(uint64 start, int64 amount)
 {
-    for(auto &info : m_info) {
-        if(get<1>(info) >= start) {
+    for (auto &info : m_info) {
+        if (get<1>(info) >= start) {
             get<1>(info) += amount;
         }
     }
@@ -44,24 +44,26 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
     m_info.clear();
     EbmlElement *seekElement = seekHeadElement->firstChild();
     EbmlElement *seekElementChild, *seekIdElement, *seekPositionElement;
-    while(seekElement) {
+    while (seekElement) {
         seekElement->parse(diag);
-        switch(seekElement->id()) {
+        switch (seekElement->id()) {
         case MatroskaIds::Seek:
             seekElementChild = seekElement->firstChild();
             seekIdElement = seekPositionElement = nullptr;
-            while(seekElementChild) {
+            while (seekElementChild) {
                 seekElementChild->parse(diag);
-                switch(seekElementChild->id()) {
+                switch (seekElementChild->id()) {
                 case MatroskaIds::SeekID:
-                    if(seekIdElement) {
-                        diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element contains multiple \"SeekID\"-elements. Surplus elements will be ignored.", context);
+                    if (seekIdElement) {
+                        diag.emplace_back(DiagLevel::Warning,
+                            "The \"Seek\"-element contains multiple \"SeekID\"-elements. Surplus elements will be ignored.", context);
                     }
                     seekIdElement = seekElementChild;
                     break;
                 case MatroskaIds::SeekPosition:
-                    if(seekPositionElement) {
-                        diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element contains multiple \"SeekPosition\"-elements. Surplus elements will be ignored.", context);
+                    if (seekPositionElement) {
+                        diag.emplace_back(DiagLevel::Warning,
+                            "The \"Seek\"-element contains multiple \"SeekPosition\"-elements. Surplus elements will be ignored.", context);
                     }
                     seekPositionElement = seekElementChild;
                     break;
@@ -69,13 +71,14 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
                 case EbmlIds::Void:
                     break;
                 default:
-                    diag.emplace_back(DiagLevel::Warning, "The element \""
-                                    % seekElementChild->idToString()
-                                    + "\" within the \"Seek\" element is not a \"SeekID\"-element nor a \"SeekPosition\"-element and will be ignored.", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "The element \"" % seekElementChild->idToString()
+                            + "\" within the \"Seek\" element is not a \"SeekID\"-element nor a \"SeekPosition\"-element and will be ignored.",
+                        context);
                 }
                 seekElementChild = seekElementChild->nextSibling();
             }
-            if(seekIdElement && seekPositionElement) {
+            if (seekIdElement && seekPositionElement) {
                 m_info.emplace_back(seekIdElement->readUInteger(), seekPositionElement->readUInteger());
             } else {
                 diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element does not contain a \"SeekID\"- and a \"SeekPosition\"-element.", context);
@@ -85,11 +88,12 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
         case EbmlIds::Void:
             break;
         default:
-            diag.emplace_back(DiagLevel::Warning, "The element " % seekElement->idToString() + " is not a seek element and will be ignored.", context);
+            diag.emplace_back(
+                DiagLevel::Warning, "The element " % seekElement->idToString() + " is not a seek element and will be ignored.", context);
         }
         seekElement = seekElement->nextSibling();
     }
-    if(m_info.empty()) {
+    if (m_info.empty()) {
         diag.emplace_back(DiagLevel::Warning, "No seek information found.", context);
     }
 }
@@ -108,7 +112,7 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
     char buff2[2];
     byte sizeLength0, sizeLength1;
     // calculate size
-    for(const auto &info : m_info) {
+    for (const auto &info : m_info) {
         // "Seek" element + "SeekID" element + "SeekPosition" element
         totalSize += 2 + 1 + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2 + 1 + EbmlElement::calculateUIntegerLength(get<1>(info)));
     }
@@ -118,7 +122,7 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
     sizeLength0 = EbmlElement::makeSizeDenotation(totalSize, buff0);
     stream.write(buff0, sizeLength0);
     // write entries
-    for(const auto &info : m_info) {
+    for (const auto &info : m_info) {
         // make values
         sizeLength0 = EbmlElement::makeId(get<0>(info), buff0);
         sizeLength1 = EbmlElement::makeUInteger(get<1>(info), buff1);
@@ -166,7 +170,7 @@ uint64 MatroskaSeekInfo::maxSize() const
 uint64 MatroskaSeekInfo::actualSize() const
 {
     uint64 totalSize = 0;
-    for(const auto &info : m_info) {
+    for (const auto &info : m_info) {
         // "Seek" element + "SeekID" element + "SeekPosition" element
         totalSize += 2 + 1 + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2 + 1 + EbmlElement::calculateUIntegerLength(get<1>(info)));
     }
@@ -184,9 +188,9 @@ uint64 MatroskaSeekInfo::actualSize() const
 bool MatroskaSeekInfo::push(unsigned int index, EbmlElement::IdentifierType id, uint64 offset)
 {
     unsigned int currentIndex = 0;
-    for(auto &entry : info()) {
-        if(get<0>(entry) == id) {
-            if(index == currentIndex) {
+    for (auto &entry : info()) {
+        if (get<0>(entry) == id) {
+            if (index == currentIndex) {
                 bool sizeUpdated = EbmlElement::calculateUIntegerLength(get<1>(entry)) != EbmlElement::calculateUIntegerLength(offset);
                 get<1>(entry) = offset;
                 return sizeUpdated;
@@ -212,9 +216,9 @@ void MatroskaSeekInfo::clear()
  */
 std::pair<EbmlElement::IdentifierType, uint64> *MatroskaSeekInfo::findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, uint64 offset)
 {
-    for(auto &seekInfo : seekInfos) {
-        for(auto &entry : seekInfo.info()) {
-            if(get<1>(entry) == offset) {
+    for (auto &seekInfo : seekInfos) {
+        for (auto &entry : seekInfo.info()) {
+            if (get<1>(entry) == offset) {
                 return &entry;
             }
         }
@@ -226,18 +230,20 @@ std::pair<EbmlElement::IdentifierType, uint64> *MatroskaSeekInfo::findSeekInfo(s
  * \brief Sets the offset of all entires in \a newSeekInfos to \a newOffset where the corresponding entry in \a oldSeekInfos has the offset \a oldOffset.
  * \returns Returns an indication whether the update altered the offset length.
  */
-bool MatroskaSeekInfo::updateSeekInfo(const std::vector<MatroskaSeekInfo> &oldSeekInfos, std::vector<MatroskaSeekInfo> &newSeekInfos, uint64 oldOffset, uint64 newOffset)
+bool MatroskaSeekInfo::updateSeekInfo(
+    const std::vector<MatroskaSeekInfo> &oldSeekInfos, std::vector<MatroskaSeekInfo> &newSeekInfos, uint64 oldOffset, uint64 newOffset)
 {
     bool updated = false;
     auto oldIterator0 = oldSeekInfos.cbegin(), oldEnd0 = oldSeekInfos.cend();
     auto newIterator0 = newSeekInfos.begin(), newEnd0 = newSeekInfos.end();
-    for(; oldIterator0 != oldEnd0 && newIterator0 != newEnd0; ++oldIterator0, ++newIterator0) {
+    for (; oldIterator0 != oldEnd0 && newIterator0 != newEnd0; ++oldIterator0, ++newIterator0) {
         auto oldIterator1 = oldIterator0->info().cbegin(), oldEnd1 = oldIterator0->info().cend();
         auto newIterator1 = newIterator0->info().begin(), newEnd1 = newIterator0->info().end();
-        for(; oldIterator1 != oldEnd1 && newIterator1 != newEnd1; ++oldIterator1, ++newIterator1) {
-            if(get<1>(*oldIterator1) == oldOffset) {
-                if(get<1>(*newIterator1) != newOffset) {
-                    updated = updated || (EbmlElement::calculateUIntegerLength(newOffset) != EbmlElement::calculateUIntegerLength(get<1>(*newIterator1)));
+        for (; oldIterator1 != oldEnd1 && newIterator1 != newEnd1; ++oldIterator1, ++newIterator1) {
+            if (get<1>(*oldIterator1) == oldOffset) {
+                if (get<1>(*newIterator1) != newOffset) {
+                    updated
+                        = updated || (EbmlElement::calculateUIntegerLength(newOffset) != EbmlElement::calculateUIntegerLength(get<1>(*newIterator1)));
                     get<1>(*newIterator1) = newOffset;
                 }
             }
@@ -252,13 +258,13 @@ bool MatroskaSeekInfo::updateSeekInfo(const std::vector<MatroskaSeekInfo> &oldSe
  */
 bool MatroskaSeekInfo::updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfos, uint64 oldOffset, uint64 newOffset)
 {
-    if(oldOffset == newOffset) {
+    if (oldOffset == newOffset) {
         return false;
     }
     bool updated = false;
-    for(auto &seekInfo : newSeekInfos) {
-        for(auto &info : seekInfo.info()) {
-            if(get<1>(info) == oldOffset) {
+    for (auto &seekInfo : newSeekInfos) {
+        for (auto &info : seekInfo.info()) {
+            if (get<1>(info) == oldOffset) {
                 get<1>(info) = newOffset;
                 updated = true;
             }
@@ -267,4 +273,4 @@ bool MatroskaSeekInfo::updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfo
     return updated;
 }
 
-}
+} // namespace TagParser

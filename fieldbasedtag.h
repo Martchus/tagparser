@@ -3,8 +3,8 @@
 
 #include "./tag.h"
 
-#include <map>
 #include <functional>
+#include <map>
 
 namespace TagParser {
 
@@ -14,9 +14,8 @@ namespace TagParser {
  *
  * A template specialization for each FieldMapBasedTag subclass must be provided.
  */
-template<typename ImplementationType>
-class FieldMapBasedTagTraits
-{};
+template <typename ImplementationType> class FieldMapBasedTagTraits {
+};
 
 /*!
  * \class Media::FieldMapBasedTag
@@ -29,9 +28,7 @@ class FieldMapBasedTagTraits
  * \remarks This template class is intended to be subclassed using
  *          with the "Curiously recurring template pattern".
  */
-template <class ImplementationType>
-class FieldMapBasedTag : public Tag
-{
+template <class ImplementationType> class FieldMapBasedTag : public Tag {
     friend class FieldMapBasedTagTraits<ImplementationType>;
 
 public:
@@ -96,24 +93,21 @@ private:
 /*!
  * \brief Constructs a new FieldMapBasedTag.
  */
-template <class ImplementationType>
-FieldMapBasedTag<ImplementationType>::FieldMapBasedTag()
-{}
+template <class ImplementationType> FieldMapBasedTag<ImplementationType>::FieldMapBasedTag()
+{
+}
 
-template <class ImplementationType>
-TagType FieldMapBasedTag<ImplementationType>::type() const
+template <class ImplementationType> TagType FieldMapBasedTag<ImplementationType>::type() const
 {
     return ImplementationType::tagType;
 }
 
-template <class ImplementationType>
-const char *FieldMapBasedTag<ImplementationType>::typeName() const
+template <class ImplementationType> const char *FieldMapBasedTag<ImplementationType>::typeName() const
 {
     return ImplementationType::tagName;
 }
 
-template<class ImplementationType>
-TagTextEncoding FieldMapBasedTag<ImplementationType>::proposedTextEncoding() const
+template <class ImplementationType> TagTextEncoding FieldMapBasedTag<ImplementationType>::proposedTextEncoding() const
 {
     return ImplementationType::defaultTextEncoding;
 }
@@ -122,8 +116,7 @@ TagTextEncoding FieldMapBasedTag<ImplementationType>::proposedTextEncoding() con
  * \brief Default implementation for value().
  * \remarks Shadow in subclass to provide custom implementation.
  */
-template<class ImplementationType>
-const TagValue &FieldMapBasedTag<ImplementationType>::internallyGetValue(const IdentifierType &id) const
+template <class ImplementationType> const TagValue &FieldMapBasedTag<ImplementationType>::internallyGetValue(const IdentifierType &id) const
 {
     auto i = m_fields.find(id);
     return i != m_fields.end() ? i->second.value() : TagValue::empty();
@@ -133,14 +126,12 @@ const TagValue &FieldMapBasedTag<ImplementationType>::internallyGetValue(const I
  * \brief Returns the value of the field with the specified \a id.
  * \sa Tag::value()
  */
-template <class ImplementationType>
-inline const TagValue &FieldMapBasedTag<ImplementationType>::value(const IdentifierType &id) const
+template <class ImplementationType> inline const TagValue &FieldMapBasedTag<ImplementationType>::value(const IdentifierType &id) const
 {
     return static_cast<const ImplementationType *>(this)->internallyGetValue(id);
 }
 
-template <class ImplementationType>
-inline const TagValue &FieldMapBasedTag<ImplementationType>::value(KnownField field) const
+template <class ImplementationType> inline const TagValue &FieldMapBasedTag<ImplementationType>::value(KnownField field) const
 {
     return value(fieldId(field));
 }
@@ -149,27 +140,24 @@ inline const TagValue &FieldMapBasedTag<ImplementationType>::value(KnownField fi
  * \brief Returns the values of the field with the specified \a id.
  * \sa Tag::values()
  */
-template <class ImplementationType>
-inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(const IdentifierType &id) const
+template <class ImplementationType> inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(const IdentifierType &id) const
 {
     auto range = m_fields.equal_range(id);
     std::vector<const TagValue *> values;
-    for(auto i = range.first; i != range.second; ++i) {
-        if(!i->second.value().isEmpty()) {
+    for (auto i = range.first; i != range.second; ++i) {
+        if (!i->second.value().isEmpty()) {
             values.push_back(&i->second.value());
         }
     }
     return values;
 }
 
-template <class ImplementationType>
-inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(KnownField field) const
+template <class ImplementationType> inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(KnownField field) const
 {
     return values(fieldId(field));
 }
 
-template <class ImplementationType>
-inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, const TagValue &value)
+template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, const TagValue &value)
 {
     return setValue(fieldId(field), value);
 }
@@ -178,13 +166,12 @@ inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, con
  * \brief Default implementation for setValue().
  * \remarks Shadow in subclass to provide custom implementation.
  */
-template<class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::internallySetValue(const IdentifierType &id, const TagValue &value)
+template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::internallySetValue(const IdentifierType &id, const TagValue &value)
 {
     auto i = m_fields.find(id);
-    if(i != m_fields.end()) { // field already exists -> set its value
+    if (i != m_fields.end()) { // field already exists -> set its value
         i->second.setValue(value);
-    } else if(!value.isEmpty())  { // field doesn't exist -> create new one if value is not null
+    } else if (!value.isEmpty()) { // field doesn't exist -> create new one if value is not null
         m_fields.insert(std::make_pair(id, FieldType(id, value)));
     } else { // otherwise return false
         return false;
@@ -196,8 +183,7 @@ bool FieldMapBasedTag<ImplementationType>::internallySetValue(const IdentifierTy
  * \brief Assigns the given \a value to the field with the specified \a id.
  * \sa Tag::setValue()
  */
-template <class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::setValue(const IdentifierType &id, const TagParser::TagValue &value)
+template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::setValue(const IdentifierType &id, const TagParser::TagValue &value)
 {
     return static_cast<ImplementationType *>(this)->internallySetValue(id, value);
 }
@@ -214,19 +200,19 @@ bool FieldMapBasedTag<ImplementationType>::setValues(const IdentifierType &id, c
     auto valuesIterator = values.cbegin();
     auto range = m_fields.equal_range(id);
     // iterate through all specified and all existing values
-    for(; valuesIterator != values.cend() && range.first != range.second; ++valuesIterator) {
+    for (; valuesIterator != values.cend() && range.first != range.second; ++valuesIterator) {
         // replace existing value with non-empty specified value
-        if(!valuesIterator->isEmpty()) {
+        if (!valuesIterator->isEmpty()) {
             range.first->second.setValue(*valuesIterator);
             ++range.first;
         }
     }
     // add remaining specified values (there are more specified values than existing ones)
-    for(; valuesIterator != values.cend(); ++valuesIterator) {
+    for (; valuesIterator != values.cend(); ++valuesIterator) {
         m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
     }
     // remove remaining existing values (there are more existing values than specified ones)
-    for(; range.first != range.second; ++range.first) {
+    for (; range.first != range.second; ++range.first) {
         range.first->second.setValue(TagValue());
     }
     return true;
@@ -238,14 +224,12 @@ bool FieldMapBasedTag<ImplementationType>::setValues(const IdentifierType &id, c
  *          method will replace all currently assigned values with the specified \a values.
  * \sa Tag::setValues()
  */
-template <class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::setValues(KnownField field, const std::vector<TagValue> &values)
+template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::setValues(KnownField field, const std::vector<TagValue> &values)
 {
     return setValues(fieldId(field), values);
 }
 
-template <class ImplementationType>
-inline bool FieldMapBasedTag<ImplementationType>::hasField(KnownField field) const
+template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::hasField(KnownField field) const
 {
     return hasField(fieldId(field));
 }
@@ -254,11 +238,10 @@ inline bool FieldMapBasedTag<ImplementationType>::hasField(KnownField field) con
  * \brief Default implementation for hasField().
  * \remarks Shadow in subclass to provide custom implementation.
  */
-template<class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::internallyHasField(const IdentifierType &id) const
+template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::internallyHasField(const IdentifierType &id) const
 {
     for (auto range = m_fields.equal_range(id); range.first != range.second; ++range.first) {
-        if(!range.first->second.value().isEmpty()) {
+        if (!range.first->second.value().isEmpty()) {
             return true;
         }
     }
@@ -268,14 +251,12 @@ bool FieldMapBasedTag<ImplementationType>::internallyHasField(const IdentifierTy
 /*!
  * \brief Returns an indication whether the field with the specified \a id is present.
  */
-template <class ImplementationType>
-inline bool FieldMapBasedTag<ImplementationType>::hasField(const IdentifierType &id) const
+template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::hasField(const IdentifierType &id) const
 {
     return static_cast<const ImplementationType *>(this)->internallyHasField(id);
 }
 
-template <class ImplementationType>
-inline void FieldMapBasedTag<ImplementationType>::removeAllFields()
+template <class ImplementationType> inline void FieldMapBasedTag<ImplementationType>::removeAllFields()
 {
     m_fields.clear();
 }
@@ -292,18 +273,16 @@ inline auto FieldMapBasedTag<ImplementationType>::fields() const -> const std::m
 /*!
  * \brief Returns the fields of the tag by providing direct access to the field map of the tag.
  */
-template <class ImplementationType>
-inline auto FieldMapBasedTag<ImplementationType>::fields() -> std::multimap<IdentifierType, FieldType, Compare> &
+template <class ImplementationType> inline auto FieldMapBasedTag<ImplementationType>::fields() -> std::multimap<IdentifierType, FieldType, Compare> &
 {
     return m_fields;
 }
 
-template <class ImplementationType>
-unsigned int FieldMapBasedTag<ImplementationType>::fieldCount() const
+template <class ImplementationType> unsigned int FieldMapBasedTag<ImplementationType>::fieldCount() const
 {
     unsigned int count = 0;
-    for(const auto &field : m_fields) {
-        if(!field.second.value().isEmpty()) {
+    for (const auto &field : m_fields) {
+        if (!field.second.value().isEmpty()) {
             ++count;
         }
     }
@@ -314,7 +293,7 @@ unsigned int FieldMapBasedTag<ImplementationType>::fieldCount() const
  * \brief Returns the field ID for the specified \a value.
  * \remarks Must be implemented in internallyGetFieldId() when creating subclass.
  */
-template<class ImplementationType>
+template <class ImplementationType>
 inline typename FieldMapBasedTag<ImplementationType>::IdentifierType FieldMapBasedTag<ImplementationType>::fieldId(KnownField value) const
 {
     return static_cast<const ImplementationType *>(this)->internallyGetFieldId(value);
@@ -324,14 +303,12 @@ inline typename FieldMapBasedTag<ImplementationType>::IdentifierType FieldMapBas
  * \brief Returns the KnownField for the specified \a id.
  * \remarks Must be implemented in internallyGetKnownField() when creating subclass.
  */
-template<class ImplementationType>
-inline KnownField FieldMapBasedTag<ImplementationType>::knownField(const IdentifierType &id) const
+template <class ImplementationType> inline KnownField FieldMapBasedTag<ImplementationType>::knownField(const IdentifierType &id) const
 {
     return static_cast<FieldMapBasedTag<ImplementationType> *>(this)->internallyGetKnownField(id);
 }
 
-template <class ImplementationType>
-inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field) const
+template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field) const
 {
     static IdentifierType def;
     return fieldId(field) != def;
@@ -341,7 +318,7 @@ inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field
  * \brief Default implementation for proposedDataType().
  * \remarks Shadow in subclass to provide custom implementation.
  */
-template<class ImplementationType>
+template <class ImplementationType>
 inline TagDataType FieldMapBasedTag<ImplementationType>::internallyGetProposedDataType(const IdentifierType &id) const
 {
     return Tag::proposedDataType(knownField(id));
@@ -350,8 +327,7 @@ inline TagDataType FieldMapBasedTag<ImplementationType>::internallyGetProposedDa
 /*!
  * \brief Returns the proposed data type for the field with the specified \a id.
  */
-template <class ImplementationType>
-inline TagDataType FieldMapBasedTag<ImplementationType>::proposedDataType(const IdentifierType &id) const
+template <class ImplementationType> inline TagDataType FieldMapBasedTag<ImplementationType>::proposedDataType(const IdentifierType &id) const
 {
     return static_cast<ImplementationType *>(this)->determineProposedDataType(id);
 }
@@ -366,19 +342,18 @@ template <class ImplementationType>
 int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite)
 {
     int fieldsInserted = 0;
-    for(const auto &pair : from.fields()) {
+    for (const auto &pair : from.fields()) {
         const FieldType &fromField = pair.second;
-        if(fromField.value().isEmpty()) {
+        if (fromField.value().isEmpty()) {
             continue;
         }
         bool fieldInserted = false;
         auto range = fields().equal_range(fromField.id());
-        for(auto i = range.first; i != range.second; ++i) {
+        for (auto i = range.first; i != range.second; ++i) {
             FieldType &ownField = i->second;
-            if((fromField.isTypeInfoAssigned() && ownField.isTypeInfoAssigned()
-                    && fromField.typeInfo() == ownField.typeInfo())
-                    || (!fromField.isTypeInfoAssigned() && ! ownField.isTypeInfoAssigned())) {
-                if(overwrite || ownField.value().isEmpty()) {
+            if ((fromField.isTypeInfoAssigned() && ownField.isTypeInfoAssigned() && fromField.typeInfo() == ownField.typeInfo())
+                || (!fromField.isTypeInfoAssigned() && !ownField.isTypeInfoAssigned())) {
+                if (overwrite || ownField.value().isEmpty()) {
                     ownField = fromField;
                     ++fieldsInserted;
                 }
@@ -386,7 +361,7 @@ int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<Im
                 continue;
             }
         }
-        if(!fieldInserted) {
+        if (!fieldInserted) {
             fields().insert(std::make_pair(fromField.id(), fromField));
             ++fieldsInserted;
         }
@@ -394,10 +369,9 @@ int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<Im
     return fieldsInserted;
 }
 
-template <class ImplementationType>
-unsigned int FieldMapBasedTag<ImplementationType>::insertValues(const Tag &from, bool overwrite)
+template <class ImplementationType> unsigned int FieldMapBasedTag<ImplementationType>::insertValues(const Tag &from, bool overwrite)
 {
-    if(type() == from.type()) {
+    if (type() == from.type()) {
         // the tags are of the same type, we can insert the fields directly
         return insertFields(static_cast<const FieldMapBasedTag<ImplementationType> &>(from), overwrite);
     } else {
@@ -405,14 +379,13 @@ unsigned int FieldMapBasedTag<ImplementationType>::insertValues(const Tag &from,
     }
 }
 
-template <class ImplementationType>
-void FieldMapBasedTag<ImplementationType>::ensureTextValuesAreProperlyEncoded()
+template <class ImplementationType> void FieldMapBasedTag<ImplementationType>::ensureTextValuesAreProperlyEncoded()
 {
-    for(auto &field : fields()) {
+    for (auto &field : fields()) {
         field.second.value().convertDataEncodingForTag(this);
     }
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_FIELDBASEDTAG_H

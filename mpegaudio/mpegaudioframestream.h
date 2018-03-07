@@ -7,11 +7,9 @@
 
 #include <list>
 
-namespace TagParser
-{
+namespace TagParser {
 
-class TAG_PARSER_EXPORT MpegAudioFrameStream : public AbstractTrack
-{
+class TAG_PARSER_EXPORT MpegAudioFrameStream : public AbstractTrack {
 public:
     MpegAudioFrameStream(std::iostream &stream, uint64 startOffset);
     ~MpegAudioFrameStream() override;
@@ -30,20 +28,21 @@ private:
 /*!
  * \brief Constructs a new track for the \a stream at the specified \a startOffset.
  */
-inline MpegAudioFrameStream::MpegAudioFrameStream(std::iostream &stream, uint64 startOffset) :
-    AbstractTrack(stream, startOffset)
+inline MpegAudioFrameStream::MpegAudioFrameStream(std::iostream &stream, uint64 startOffset)
+    : AbstractTrack(stream, startOffset)
 {
     m_mediaType = MediaType::Audio;
 }
 
 inline MpegAudioFrameStream::~MpegAudioFrameStream()
-{}
+{
+}
 
 inline TrackType MpegAudioFrameStream::type() const
 {
     return TrackType::MpegAudioFrameStream;
 }
 
-}
+} // namespace TagParser
 
 #endif // MPEGAUDIOFRAMESTREAM_H

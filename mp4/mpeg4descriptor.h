@@ -13,9 +13,7 @@ class Mpeg4Descriptor;
 /*!
  * \brief Defines traits for the GenericFileElement implementation Mpeg4Descriptor.
  */
-template <>
-class TAG_PARSER_EXPORT FileElementTraits<Mpeg4Descriptor>
-{
+template <> class TAG_PARSER_EXPORT FileElementTraits<Mpeg4Descriptor> {
 public:
     typedef Mp4Container ContainerType;
     typedef byte IdentifierType;
@@ -30,8 +28,7 @@ public:
     }
 };
 
-class TAG_PARSER_EXPORT Mpeg4Descriptor : public GenericFileElement<Mpeg4Descriptor>
-{
+class TAG_PARSER_EXPORT Mpeg4Descriptor : public GenericFileElement<Mpeg4Descriptor> {
     friend class GenericFileElement<Mpeg4Descriptor>;
 
 public:
@@ -79,6 +76,6 @@ inline uint64 Mpeg4Descriptor::firstChildOffset() const
     return firstChild() ? firstChild()->startOffset() - startOffset() : 0;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MPEG4DESCRIPTOR_H

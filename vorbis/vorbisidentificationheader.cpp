@@ -25,7 +25,7 @@ void VorbisIdentificationHeader::parseHeader(OggIterator &iterator)
 {
     char buff[30 - 7];
     iterator.read(buff, 7);
-    if((BE::toUInt64(buff) & 0xffffffffffffff00u) != 0x01766F7262697300u) {
+    if ((BE::toUInt64(buff) & 0xffffffffffffff00u) != 0x01766F7262697300u) {
         throw InvalidDataException(); // not Vorbis identification header
     }
     iterator.read(buff, sizeof(buff));
@@ -39,4 +39,4 @@ void VorbisIdentificationHeader::parseHeader(OggIterator &iterator)
     m_framingFlag = static_cast<byte>(*(buff + 22));
 }
 
-}
+} // namespace TagParser

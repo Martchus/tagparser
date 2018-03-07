@@ -5,7 +5,6 @@ using namespace std;
 namespace TagParser {
 
 namespace MatroskaTagIds {
-
 }
 
-} // namespace Media
+} // namespace TagParser

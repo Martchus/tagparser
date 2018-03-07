@@ -1,7 +1,7 @@
 #include "./helper.h"
 
-#include "../mediafileinfo.h"
 #include "../abstracttrack.h"
+#include "../mediafileinfo.h"
 #include "../tag.h"
 
 #include <c++utilities/io/catchiofailure.h>
@@ -114,7 +114,7 @@ void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
     try {
         file.parseTracks(diag);
         CPPUNIT_FAIL("expected std::ios_base::failure because file has been closed");
-    } catch(...) {
+    } catch (...) {
         catchIoFailure();
     }
     CPPUNIT_ASSERT(file.areTagsSupported());
@@ -128,11 +128,9 @@ void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.attachmentsParsingStatus());
     CPPUNIT_ASSERT_EQUAL(0_st, file.trackCount());
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, file.containerFormat());
-    CPPUNIT_ASSERT_EQUAL(Diagnostics({
-                                              DiagMessage(DiagLevel::Information,
-                                              "Parsing attachments is not implemented for the container format of the file.",
-                                              "parsing attachments")
-                                          }), diag);
+    CPPUNIT_ASSERT_EQUAL(Diagnostics({ DiagMessage(DiagLevel::Information,
+                             "Parsing attachments is not implemented for the container format of the file.", "parsing attachments") }),
+        diag);
     CPPUNIT_ASSERT_EQUAL(DiagLevel::Information, diag.level());
 
     // create/remove tag
@@ -194,7 +192,7 @@ void MediaFileInfoTests::testFullParseAndFurtherProperties()
 
     // track info / available languages
     file.tracks().back()->setLanguage("eng");
-    CPPUNIT_ASSERT_EQUAL(unordered_set<string>({"eng"}), file.availableLanguages());
+    CPPUNIT_ASSERT_EQUAL(unordered_set<string>({ "eng" }), file.availableLanguages());
     CPPUNIT_ASSERT_EQUAL(unordered_set<string>({}), file.availableLanguages(MediaType::Text));
     CPPUNIT_ASSERT_EQUAL("ID: 2422994868, type: Video"s, file.tracks()[0]->label());
     CPPUNIT_ASSERT_EQUAL("ID: 3653291187, type: Audio, language: \"eng\""s, file.tracks()[1]->label());

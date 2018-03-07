@@ -16,7 +16,7 @@ namespace TagParser {
  */
 const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
 {
-    switch(tagTargetLevel) {
+    switch (tagTargetLevel) {
     case TagTargetLevel::Shot:
         return "shot";
     case TagTargetLevel::Subtrack:
@@ -60,17 +60,17 @@ const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
 string TagTarget::toString(TagTargetLevel tagTargetLevel) const
 {
     string levelString;
-    if(level()) {
+    if (level()) {
         levelString += "level ";
         levelString += numberToString(level());
     }
     const char *defaultLevelName;
-    if(!levelName().empty() || *(defaultLevelName = tagTargetLevelName(tagTargetLevel))) {
-        if(!levelString.empty()) {
+    if (!levelName().empty() || *(defaultLevelName = tagTargetLevelName(tagTargetLevel))) {
+        if (!levelString.empty()) {
             levelString += ' ';
         }
         levelString += '\'';
-        if(!levelName().empty()) {
+        if (!levelName().empty()) {
             levelString += levelName();
         } else {
             levelString += defaultLevelName;
@@ -78,24 +78,24 @@ string TagTarget::toString(TagTargetLevel tagTargetLevel) const
         levelString += '\'';
     }
     list<string> parts;
-    if(levelString.empty()) {
+    if (levelString.empty()) {
         parts.emplace_back("undefined target");
     } else {
         parts.emplace_back(move(levelString));
     }
-    for(auto v : tracks()) {
+    for (auto v : tracks()) {
         parts.emplace_back("track " + numberToString(v));
     }
-    for(auto v : chapters()) {
+    for (auto v : chapters()) {
         parts.emplace_back("chapter " + numberToString(v));
     }
-    for(auto v : editions()) {
+    for (auto v : editions()) {
         parts.emplace_back("edition " + numberToString(v));
     }
-    for(auto v : attachments()) {
+    for (auto v : attachments()) {
         parts.emplace_back("attachment  " + numberToString(v));
     }
     return joinStrings(parts, ", ");
 }
 
-}
+} // namespace TagParser

@@ -2,8 +2,8 @@
 #include "./mp4container.h"
 #include "./mp4ids.h"
 
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/binaryreader.h>
 
 using namespace std;
@@ -20,16 +20,18 @@ namespace TagParser {
  * \brief Constructs a new top level descriptor with the specified \a container at the specified \a startOffset
  *        and with the specified \a maxSize.
  */
-Mpeg4Descriptor::Mpeg4Descriptor(ContainerType &container, uint64 startOffset, uint64 maxSize) :
-    GenericFileElement<Mpeg4Descriptor>(container, startOffset, maxSize)
-{}
+Mpeg4Descriptor::Mpeg4Descriptor(ContainerType &container, uint64 startOffset, uint64 maxSize)
+    : GenericFileElement<Mpeg4Descriptor>(container, startOffset, maxSize)
+{
+}
 
 /*!
  * \brief Constructs a new sub level descriptor with the specified \a parent at the specified \a startOffset.
  */
-Mpeg4Descriptor::Mpeg4Descriptor(Mpeg4Descriptor &parent, uint64 startOffset) :
-    GenericFileElement<Mpeg4Descriptor>(parent, startOffset)
-{}
+Mpeg4Descriptor::Mpeg4Descriptor(Mpeg4Descriptor &parent, uint64 startOffset)
+    : GenericFileElement<Mpeg4Descriptor>(parent, startOffset)
+{
+}
 
 /*!
  * \brief Returns the parsing context.
@@ -53,8 +55,11 @@ std::string Mpeg4Descriptor::idToString() const
  */
 void Mpeg4Descriptor::internalParse(Diagnostics &diag)
 {
-    if(maxTotalSize() < minimumElementSize()) {
-        diag.emplace_back(DiagLevel::Critical, "Descriptor is smaller than 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize()) + '.', "parsing MPEG-4 descriptor");
+    if (maxTotalSize() < minimumElementSize()) {
+        diag.emplace_back(DiagLevel::Critical,
+            "Descriptor is smaller than 2 byte and hence invalid. The maximum size within the encloding element is " % numberToString(maxTotalSize())
+                + '.',
+            "parsing MPEG-4 descriptor");
         throw TruncatedDataException();
     }
     stream().seekg(startOffset());
@@ -64,19 +69,19 @@ void Mpeg4Descriptor::internalParse(Diagnostics &diag)
     // read data size
     byte tmp = reader().readByte();
     m_dataSize = tmp & 0x7F;
-    while(tmp & 0x80) {
+    while (tmp & 0x80) {
         m_dataSize = (m_dataSize << 7) | ((tmp = reader().readByte()) & 0x7F);
         ++m_sizeLength;
     }
     // check whether the denoted data size exceeds the available data size
-    if(maxTotalSize() < totalSize()) {
+    if (maxTotalSize() < totalSize()) {
         diag.emplace_back(DiagLevel::Warning, "The descriptor seems to be truncated; unable to parse siblings of that ", parsingContext());
         m_dataSize = maxTotalSize(); // using max size instead
     }
     m_firstChild.reset();
     Mpeg4Descriptor *sibling = nullptr;
-    if(totalSize() < maxTotalSize()) {
-        if(parent()) {
+    if (totalSize() < maxTotalSize()) {
+        if (parent()) {
             sibling = new Mpeg4Descriptor(*(parent()), startOffset() + totalSize());
         } else {
             sibling = new Mpeg4Descriptor(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
@@ -85,4 +90,4 @@ void Mpeg4Descriptor::internalParse(Diagnostics &diag)
     m_nextSibling.reset(sibling);
 }
 
-}
+} // namespace TagParser

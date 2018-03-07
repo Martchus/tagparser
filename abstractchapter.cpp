@@ -15,19 +15,21 @@ namespace TagParser {
 /*!
  * \brief Constructs a new chapter.
  */
-AbstractChapter::AbstractChapter() :
-    m_id(0),
-    m_startTime(-1),
-    m_endTime(-1),
-    m_hidden(false),
-    m_enabled(true)
-{}
+AbstractChapter::AbstractChapter()
+    : m_id(0)
+    , m_startTime(-1)
+    , m_endTime(-1)
+    , m_hidden(false)
+    , m_enabled(true)
+{
+}
 
 /*!
  * \brief Destroys the chapter.
  */
 AbstractChapter::~AbstractChapter()
-{}
+{
+}
 
 /*!
  * \brief Returns a label for the chapter.
@@ -36,10 +38,10 @@ string AbstractChapter::label() const
 {
     stringstream ss;
     ss << "ID: " << id();
-    if(!names().empty()) {
+    if (!names().empty()) {
         ss << ", name: \"" << names().front() << "\"";
     }
-    if(!startTime().isNegative()) {
+    if (!startTime().isNegative()) {
         ss << ", start: " << startTime().toString(TimeSpanOutputFormat::WithMeasures);
     }
     return ss.str();
@@ -80,7 +82,7 @@ void AbstractChapter::parseNested(Diagnostics &diag)
 {
     clear();
     internalParse(diag);
-    for(size_t i = 0, count = nestedChapterCount(); i < count; ++i) {
+    for (size_t i = 0, count = nestedChapterCount(); i < count; ++i) {
         nestedChapter(i)->parseNested(diag);
     }
 }
@@ -95,5 +97,4 @@ void AbstractChapter::parseNested(Diagnostics &diag)
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 
-} // namespace Media
-
+} // namespace TagParser

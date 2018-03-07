@@ -34,10 +34,7 @@ enum SeekHeadIds {
 /*!
  * \brief Encapsulates all ID values in the Seek master.
  */
-enum SeekIds {
-    SeekID = 0x53AB,
-    SeekPosition = 0x53AC
-};
+enum SeekIds { SeekID = 0x53AB, SeekPosition = 0x53AC };
 
 /*!
  * \brief Encapsulates all ID values in the SegmentInfo master.
@@ -62,11 +59,7 @@ enum SegmentInfoIds {
 /*!
  * \brief Encapsulates all ID values in the ChapterTranslate master.
  */
-enum ChapterTranslateIds {
-    ChapterTranslateEditionUID = 0x69fc,
-    ChapterTranslateCodec = 0x69bf,
-    ChapterTranslateID = 0x69a5
-};
+enum ChapterTranslateIds { ChapterTranslateEditionUID = 0x69fc, ChapterTranslateCodec = 0x69bf, ChapterTranslateID = 0x69a5 };
 
 /*!
  * \brief Encapsulates all ID values in the Tracks master.
@@ -108,7 +101,7 @@ enum TrackEntryIds {
     SeekPreRoll = 0x56bb,
     TrackTranslate = 0x6624,
     TrackAudio = 0xE1,
-    TrackVideo = 0xE0,    
+    TrackVideo = 0xE0,
     TrackOperation = 0xe2,
     TrickTrackUID = 0xc0,
     TrickTrackSegmentUID = 0xc1,
@@ -121,11 +114,7 @@ enum TrackEntryIds {
 /*!
  * \brief Encapsulates all ID values in the TrackTranslate master.
  */
-enum TrackTranslateIds {
-    TrackTranslateEditionUID = 0x66fc,
-    TrackTranslateCodec = 0x66bf,
-    TrackTranslateTrackID = 0x66a5
-};
+enum TrackTranslateIds { TrackTranslateEditionUID = 0x66fc, TrackTranslateCodec = 0x66bf, TrackTranslateTrackID = 0x66a5 };
 
 /*!
  * \brief Encapsulates all ID values in the TrackVideo master.
@@ -153,50 +142,32 @@ enum TrackVideoIds {
 /*!
  * \brief Encapsulates all ID values in the TrackAudio master.
  */
-enum TrackAudioIds {
-    SamplingFrequency = 0xB5,
-    OutputSamplingFrequency = 0x78B5,
-    Channels = 0x9F,
-    ChannelsPositions = 0x7D7B,
-    BitDepth = 0x6264
-};
+enum TrackAudioIds { SamplingFrequency = 0xB5, OutputSamplingFrequency = 0x78B5, Channels = 0x9F, ChannelsPositions = 0x7D7B, BitDepth = 0x6264 };
 
 /*!
  * \brief Encapsulates all ID values in the TrackOperation master.
  */
-enum TrackOperationIds {
-    TrackCombinePlanes = 0xe3,
-    TrackJoinBlocks = 0xe9
-};
+enum TrackOperationIds { TrackCombinePlanes = 0xe3, TrackJoinBlocks = 0xe9 };
 
 /*!
  * \brief Encapsulates all ID values in the TrackCombinePlanes master.
  */
-enum TrackCombinePlanesIds {
-    TrackPlane = 0xe4
-};
+enum TrackCombinePlanesIds { TrackPlane = 0xe4 };
 
 /*!
  * \brief Encapsulates all ID values in the TrackPlane master.
  */
-enum TrackPlaneIds {
-    TrackPlaneUID = 0xe5,
-    TrackPlaneType = 0xe6
-};
+enum TrackPlaneIds { TrackPlaneUID = 0xe5, TrackPlaneType = 0xe6 };
 
 /*!
  * \brief Encapsulates all ID values in the TrackJoinBlocks master.
  */
-enum TrackJoinBlocksIds {
-    TrackJoinUID = 0xed
-};
+enum TrackJoinBlocksIds { TrackJoinUID = 0xed };
 
 /*!
  * \brief Encapsulates all ID values in the ContentEncodings master.
  */
-enum ContentEncodingsIds {
-    ContentEncoding = 0x6240
-};
+enum ContentEncodingsIds { ContentEncoding = 0x6240 };
 
 /*!
  * \brief Encapsulates all ID values in the ContentEncoding master.
@@ -212,10 +183,7 @@ enum ContentEncodingIds {
 /*!
  * \brief Encapsulates all ID values in the ContentCompression master.
  */
-enum ContentCompressionIds {
-    ContentCompAlgo = 0x4254,
-    ContentCompSettings = 0x4255
-};
+enum ContentCompressionIds { ContentCompAlgo = 0x4254, ContentCompSettings = 0x4255 };
 
 /*!
  * \brief Encapsulates all ID values in the ContentEncryption master.
@@ -270,17 +238,12 @@ enum TargetsIds {
 /*!
  * \brief Encapsulates all ID values in the Cues master.
  */
-enum CuesIds {
-    CuePoint = 0xbb
-};
+enum CuesIds { CuePoint = 0xbb };
 
 /*!
  * \brief Encapsulates all ID values in the CuePoint master.
  */
-enum CuePointIds {
-    CueTime = 0xb3,
-    CueTrackPositions = 0xb7
-};
+enum CuePointIds { CueTime = 0xb3, CueTrackPositions = 0xb7 };
 
 /*!
  * \brief Encapsulates all ID values in the CueTrackPositions master.
@@ -298,19 +261,12 @@ enum CueTrackPositionsIds {
 /*!
  * \brief Encapsulates all ID values in the CueReference master.
  */
-enum CueReferenceIds {
-    CueRefTime = 0x96,
-    CueRefCluster = 0x97,
-    CueRefNumber = 0x535f,
-    CueRefCodecState = 0xeb
-};
+enum CueReferenceIds { CueRefTime = 0x96, CueRefCluster = 0x97, CueRefNumber = 0x535f, CueRefCodecState = 0xeb };
 
 /*!
  * \brief Encapsulates all ID values in the Attachments master.
  */
-enum AttachmentsIds {
-    AttachedFile = 0x61a7
-};
+enum AttachmentsIds { AttachedFile = 0x61a7 };
 
 /*!
  * \brief Encapsulates all ID values in the AttachedFile master.
@@ -329,9 +285,7 @@ enum AttachedFileIds {
 /*!
  * \brief Encapsulates all ID values in the Chapters master.
  */
-enum ChaptersIds {
-    EditionEntry = 0x45b9
-};
+enum ChaptersIds { EditionEntry = 0x45b9 };
 
 /*!
  * \brief Encapsulates all ID values in the EditionEntry master.
@@ -365,35 +319,22 @@ enum ChapterAtomIds {
 /*!
  * \brief Encapsulates all ID values in the ChapterTrack master.
  */
-enum ChapterTrackIds {
-    ChapterTrackNumber = 0x89
-};
+enum ChapterTrackIds { ChapterTrackNumber = 0x89 };
 
 /*!
  * \brief Encapsulates all ID values in the ChapterDisplay master.
  */
-enum ChapterDisplayIds {
-    ChapString = 0x85,
-    ChapLanguage = 0x437c,
-    ChapCountry = 0x437e
-};
+enum ChapterDisplayIds { ChapString = 0x85, ChapLanguage = 0x437c, ChapCountry = 0x437e };
 
 /*!
  * \brief Encapsulates all ID values in the ChapProcess master.
  */
-enum ChapProcessIds {
-    ChapProcessCodecID = 0x6955,
-    ChapProcessPrivate = 0x450d,
-    ChapProcessCommand = 0x6911
-};
+enum ChapProcessIds { ChapProcessCodecID = 0x6955, ChapProcessPrivate = 0x450d, ChapProcessCommand = 0x6911 };
 
 /*!
  * \brief Encapsulates all ID values in the ChapProcessCommand master.
  */
-enum ChapProcessCommandIds {
-    ChapProcessTime = 0x6922,
-    ChapProcessData = 0x6933
-};
+enum ChapProcessCommandIds { ChapProcessTime = 0x6922, ChapProcessData = 0x6933 };
 
 /*!
  * \brief Encapsulates all ID values in the Cluster master.
@@ -411,9 +352,7 @@ enum ClusterIds {
 /*!
  * \brief Encapsulates all ID values in the SilentTracks master.
  */
-enum SilentTracksIds {
-    SilentTrackNumber = 0x58d7
-};
+enum SilentTracksIds { SilentTrackNumber = 0x58d7 };
 
 /*!
  * \brief Encapsulates all ID values in the BlockGroup master.
@@ -435,58 +374,33 @@ enum BlockGroupIds {
 /*!
  * \brief Encapsulates all ID values in the BlockAdditions master.
  */
-enum BlockAdditionsIds {
-    BlockMore = 0xa6
-};
+enum BlockAdditionsIds { BlockMore = 0xa6 };
 
 /*!
  * \brief Encapsulates all ID values in the BlockMore master.
  */
-enum BlockMoreIds {
-    BlockAddID = 0xee,
-    BlockAdditional = 0x45
-};
+enum BlockMoreIds { BlockAddID = 0xee, BlockAdditional = 0x45 };
 
 /*!
  * \brief Encapsulates all ID values in the Slices master.
  */
-enum SlicesIds {
-    TimeSlice = 0xe8
-};
+enum SlicesIds { TimeSlice = 0xe8 };
 
 /*!
  * \brief Encapsulates all ID values in the TimeSlice master.
  */
-enum TimeSliceIds {
-    LaceNumber = 0xcc,
-    FrameNumber = 0xcd,
-    BlockAdditionID = 0xcb,
-    Delay = 0xce,
-    SliceDuration = 0xcf
-};
+enum TimeSliceIds { LaceNumber = 0xcc, FrameNumber = 0xcd, BlockAdditionID = 0xcb, Delay = 0xce, SliceDuration = 0xcf };
 
 /*!
  * \brief Encapsulates all ID values in the ReferenceFrame master.
  */
-enum ReferenceFrameIds {
-    ReferenceOffset = 0xc9,
-    ReferenceTimeCode = 0xca
-};
+enum ReferenceFrameIds { ReferenceOffset = 0xc9, ReferenceTimeCode = 0xca };
 
-}
+} // namespace MatroskaIds
 
 namespace MatroskaTrackType {
 
-enum KnownValues {
-    Video = 0x1,
-    Audio = 0x2,
-    Complex = 0x3,
-    Logo = 0x10,
-    Subtitle = 0x11,
-    Buttons = 0x12,
-    Control = 0x20
-};
-
+enum KnownValues { Video = 0x1, Audio = 0x2, Complex = 0x3, Logo = 0x10, Subtitle = 0x11, Buttons = 0x12, Control = 0x20 };
 }
 
 enum class MatroskaElementLevel : byte {
@@ -504,22 +418,19 @@ enum class MatroskaElementLevel : byte {
 constexpr bool operator>(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
 {
     return static_cast<byte>(lhs) < static_cast<byte>(MatroskaElementLevel::Global)
-            && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
-            && static_cast<byte>(lhs) > static_cast<byte>(rhs);
+        && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global) && static_cast<byte>(lhs) > static_cast<byte>(rhs);
 }
 
 constexpr bool operator>(byte lhs, MatroskaElementLevel rhs)
 {
-    return lhs < static_cast<byte>(MatroskaElementLevel::Global)
-            && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
-            && static_cast<byte>(lhs) > static_cast<byte>(rhs);
+    return lhs < static_cast<byte>(MatroskaElementLevel::Global) && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
+        && static_cast<byte>(lhs) > static_cast<byte>(rhs);
 }
 
 constexpr bool operator<(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
 {
     return static_cast<byte>(lhs) < static_cast<byte>(MatroskaElementLevel::Global)
-            && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
-            && static_cast<byte>(lhs) < static_cast<byte>(rhs);
+        && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global) && static_cast<byte>(lhs) < static_cast<byte>(rhs);
 }
 
 constexpr bool operator>=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
@@ -535,6 +446,6 @@ constexpr bool operator<=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
 TAG_PARSER_EXPORT const char *matroskaIdName(uint32 matroskaId);
 TAG_PARSER_EXPORT MatroskaElementLevel matroskaIdLevel(uint32 matroskaId);
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKAIDS_H

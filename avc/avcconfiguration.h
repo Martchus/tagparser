@@ -9,8 +9,7 @@ namespace TagParser {
 
 class MediaFormat;
 
-struct TAG_PARSER_EXPORT AvcConfiguration
-{
+struct TAG_PARSER_EXPORT AvcConfiguration {
     AvcConfiguration();
     byte profileIndication;
     byte profileCompat;
@@ -25,13 +24,14 @@ struct TAG_PARSER_EXPORT AvcConfiguration
 /*!
  * \brief Constructs an empty AVC configuration.
  */
-inline AvcConfiguration::AvcConfiguration() :
-    profileIndication(0),
-    profileCompat(0),
-    levelIndication(0),
-    naluSizeLength(0)
-{}
-
+inline AvcConfiguration::AvcConfiguration()
+    : profileIndication(0)
+    , profileCompat(0)
+    , levelIndication(0)
+    , naluSizeLength(0)
+{
 }
+
+} // namespace TagParser
 
 #endif // TAG_PARSER_AVCCONFIGURATION_H

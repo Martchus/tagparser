@@ -5,36 +5,26 @@
 
 #include <c++utilities/conversion/types.h>
 
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
 
 namespace TagParser {
 
 /*!
  * \brief The TagTargetLevel enum specifies tag target levels.
  */
-enum class TagTargetLevel : unsigned char
-{
-    Unspecified,
-    Shot,
-    Subtrack,
-    Track,
-    Part,
-    Album,
-    Edition,
-    Collection
-};
+enum class TagTargetLevel : unsigned char { Unspecified, Shot, Subtrack, Track, Part, Album, Edition, Collection };
 
 TAG_PARSER_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
 
-class TAG_PARSER_EXPORT TagTarget
-{
+class TAG_PARSER_EXPORT TagTarget {
 public:
     typedef uint64 IdType;
     typedef std::vector<IdType> IdContainerType;
 
-    TagTarget(uint64 level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(), IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());
+    TagTarget(uint64 level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
+        IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());
 
     uint64 level() const;
     void setLevel(uint64 level);
@@ -52,7 +42,7 @@ public:
     void clear();
     std::string toString(const std::function<TagTargetLevel(uint64)> &tagTargetMapping) const;
     std::string toString(TagTargetLevel tagTargetLevel) const;
-    bool operator ==(const TagTarget &other) const;
+    bool operator==(const TagTarget &other) const;
 
 private:
     uint64 m_level;
@@ -67,13 +57,14 @@ private:
  * \brief Constructs a new TagTarget with the specified \a level, \a track, \a chapter,
  *        \a edition and \a attachment.
  */
-inline TagTarget::TagTarget(uint64 level, IdContainerType tracks, IdContainerType chapters, IdContainerType editions, IdContainerType attachments) :
-    m_level(level),
-    m_tracks(tracks),
-    m_chapters(chapters),
-    m_editions(editions),
-    m_attachments(attachments)
-{}
+inline TagTarget::TagTarget(uint64 level, IdContainerType tracks, IdContainerType chapters, IdContainerType editions, IdContainerType attachments)
+    : m_level(level)
+    , m_tracks(tracks)
+    , m_chapters(chapters)
+    , m_editions(editions)
+    , m_attachments(attachments)
+{
+}
 
 /*!
  * \brief Returns the level.
@@ -176,12 +167,7 @@ inline TagTarget::IdContainerType &TagTarget::attachments()
  */
 inline bool TagTarget::isEmpty() const
 {
-    return m_level == 0
-            && m_levelName.empty()
-            && m_tracks.empty()
-            && m_chapters.empty()
-            && m_editions.empty()
-            && m_attachments.empty();
+    return m_level == 0 && m_levelName.empty() && m_tracks.empty() && m_chapters.empty() && m_editions.empty() && m_attachments.empty();
 }
 
 /*!
@@ -201,13 +187,10 @@ inline void TagTarget::clear()
  * \brief Returns whether the tag targets are equal.
  * \remarks Targets where only the level name differs are considered equal though.
  */
-inline bool TagTarget::operator ==(const TagTarget &other) const
+inline bool TagTarget::operator==(const TagTarget &other) const
 {
-    return level() == other.level()
-            && m_tracks == other.m_tracks
-            && m_chapters == other.m_chapters
-            && m_editions == other.m_editions
-            && m_attachments == other.m_attachments;
+    return level() == other.level() && m_tracks == other.m_tracks && m_chapters == other.m_chapters && m_editions == other.m_editions
+        && m_attachments == other.m_attachments;
 }
 
 /*!
@@ -220,6 +203,6 @@ inline std::string TagTarget::toString(const std::function<TagTargetLevel(uint64
     return toString(tagTargetMapping ? tagTargetMapping(this->level()) : TagTargetLevel::Unspecified);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_TAGTARGET_H

@@ -3,20 +3,20 @@
 
 #include "./helper.h"
 
-#include "../mediafileinfo.h"
-#include "../tagvalue.h"
 #include "../diagnostics.h"
+#include "../mediafileinfo.h"
 #include "../progressfeedback.h"
+#include "../tagvalue.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/tests/testutils.h>
 using namespace TestUtilities;
 
-#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
-#include <string>
 #include <queue>
+#include <string>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -27,16 +27,10 @@ using namespace TagParser;
 
 using namespace CPPUNIT_NS;
 
-enum class TagStatus
-{
-    Original,
-    TestMetaDataPresent,
-    Removed
-};
+enum class TagStatus { Original, TestMetaDataPresent, Removed };
 
 namespace SimpleTestFlags {
-enum TestFlag
-{
+enum TestFlag {
     RemoveTag = 0x1,
 };
 }
@@ -45,8 +39,7 @@ enum TestFlag
  * \brief The OverallTests class tests reading and writing tags and parsing technical information
  *        for all supported container/tag formats.
  */
-class OverallTests : public TestFixture
-{
+class OverallTests : public TestFixture {
     CPPUNIT_TEST_SUITE(OverallTests);
     CPPUNIT_TEST(testMp4Parsing);
     CPPUNIT_TEST(testMp3Parsing);
@@ -70,8 +63,8 @@ public:
     void tearDown();
 
 private:
-    void parseFile(const string &path, void (OverallTests::* checkRoutine)(void));
-    void makeFile(const string &path, void (OverallTests::* modifyRoutine)(void), void (OverallTests::* checkRoutine)(void));
+    void parseFile(const string &path, void (OverallTests::*checkRoutine)(void));
+    void makeFile(const string &path, void (OverallTests::*modifyRoutine)(void), void (OverallTests::*checkRoutine)(void));
 
     void checkMkvTestfile1();
     void checkMkvTestfile2();

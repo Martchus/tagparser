@@ -2,8 +2,8 @@
 
 #include "../exceptions.h"
 
-#include <c++utilities/io/binaryreader.h>
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/io/binaryreader.h>
 
 using namespace std;
 using namespace IoUtilities;
@@ -27,13 +27,13 @@ void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
     // prepare reading
     stream.seekg(startOffset);
     BinaryReader reader(&stream);
-    if(maxSize < 27) {
+    if (maxSize < 27) {
         throw TruncatedDataException();
     } else {
         maxSize -= 27;
     }
     // read header values
-    if(reader.readUInt32LE() != 0x5367674f) {
+    if (reader.readUInt32LE() != 0x5367674f) {
         throw InvalidDataException();
     }
     m_startOffset = startOffset;
@@ -45,24 +45,24 @@ void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
     m_checksum = reader.readUInt32LE();
     m_segmentCount = reader.readByte();
     m_segmentSizes.clear();
-    if(m_segmentCount > 0) {
-        if(maxSize < m_segmentCount) {
+    if (m_segmentCount > 0) {
+        if (maxSize < m_segmentCount) {
             throw TruncatedDataException();
         } else {
             maxSize -= m_segmentCount;
         }
         // read segment size tabe
         m_segmentSizes.push_back(0);
-        for(byte i = 0; i < m_segmentCount;) {
+        for (byte i = 0; i < m_segmentCount;) {
             byte entry = reader.readByte();
             maxSize -= entry;
             m_segmentSizes.back() += entry;
-            if(++i < m_segmentCount && entry < 0xff) {
+            if (++i < m_segmentCount && entry < 0xff) {
                 m_segmentSizes.push_back(0);
             }
         }
         // check whether the maximum size is exceeded
-        if(maxSize < 0) {
+        if (maxSize < 0) {
             throw TruncatedDataException();
         }
     }
@@ -77,12 +77,14 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
     stream.seekg(startOffset);
     uint32 crc = 0x0;
     byte value, segmentTableSize = 0, segmentTableIndex = 0;
-    for(uint32 i = 0, segmentLength = 27; i != segmentLength; ++i) {
-        switch(i) {
+    for (uint32 i = 0, segmentLength = 27; i != segmentLength; ++i) {
+        switch (i) {
         case 22:
             // bytes 22, 23, 24, 25 hold denoted checksum and must be set to zero
             stream.seekg(4, ios_base::cur);
-        case 23: case 24: case 25:
+        case 23:
+        case 24:
+        case 25:
             value = 0;
             break;
         case 26:
@@ -91,7 +93,7 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
             break;
         default:
             value = stream.get();
-            if(i > 26 && segmentTableIndex < segmentTableSize) {
+            if (i > 26 && segmentTableIndex < segmentTableSize) {
                 // bytes 27 to (27 + segment size count) hold page size
                 segmentLength += value;
                 ++segmentTableIndex;
@@ -121,7 +123,7 @@ void OggPage::updateChecksum(iostream &stream, uint64 startOffset)
 uint32 OggPage::makeSegmentSizeDenotation(ostream &stream, uint32 size)
 {
     uint32 bytesWritten = 1;
-    while(size >= 0xff) {
+    while (size >= 0xff) {
         stream.put(0xff);
         size -= 0xff;
         ++bytesWritten;
@@ -130,4 +132,4 @@ uint32 OggPage::makeSegmentSizeDenotation(ostream &stream, uint32 size)
     return bytesWritten;
 }
 
-}
+} // namespace TagParser

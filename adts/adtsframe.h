@@ -11,8 +11,7 @@ class BinaryReader;
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT AdtsFrame
-{
+class TAG_PARSER_EXPORT AdtsFrame {
 public:
     AdtsFrame();
 
@@ -39,9 +38,10 @@ private:
 /*!
  * \brief Constructs a new frame.
  */
-inline AdtsFrame::AdtsFrame() :
-    m_header1(0)
-{}
+inline AdtsFrame::AdtsFrame()
+    : m_header1(0)
+{
+}
 
 /*!
  * \brief Returns an indication whether the frame is valid.
@@ -145,7 +145,6 @@ inline uint16 AdtsFrame::crc() const
     return m_header2 & 0xFFFFu;
 }
 
-
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_ADTSFRAME_H

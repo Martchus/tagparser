@@ -4,4 +4,4 @@ using namespace std;
 
 namespace TagParser {
 
-} // namespace Media
+} // namespace TagParser

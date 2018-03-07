@@ -9,8 +9,7 @@ namespace TagParser {
 
 class OggIterator;
 
-class TAG_PARSER_EXPORT VorbisIdentificationHeader
-{
+class TAG_PARSER_EXPORT VorbisIdentificationHeader {
 public:
     VorbisIdentificationHeader();
 
@@ -39,16 +38,17 @@ private:
 /*!
  * \brief Constructs a new Vorbis identification header.
  */
-inline VorbisIdentificationHeader::VorbisIdentificationHeader() :
-    m_version(0),
-    m_channels(0),
-    m_sampleRate(0),
-    m_maxBitrate(0),
-    m_nominalBitrate(0),
-    m_minBitrate(0),
-    m_blockSize(0),
-    m_framingFlag(0)
-{}
+inline VorbisIdentificationHeader::VorbisIdentificationHeader()
+    : m_version(0)
+    , m_channels(0)
+    , m_sampleRate(0)
+    , m_maxBitrate(0)
+    , m_nominalBitrate(0)
+    , m_minBitrate(0)
+    , m_blockSize(0)
+    , m_framingFlag(0)
+{
+}
 
 inline uint32 VorbisIdentificationHeader::version() const
 {
@@ -90,6 +90,6 @@ inline byte VorbisIdentificationHeader::framingFlag() const
     return m_framingFlag;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_VORBISIDENTIFICATIONHEADER_H

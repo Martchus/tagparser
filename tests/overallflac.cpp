@@ -1,7 +1,7 @@
 #include "./overall.h"
 
-#include "../tag.h"
 #include "../abstracttrack.h"
+#include "../tag.h"
 
 /*!
  * \brief Checks "flac/test.flac" (converted from "mtx-test-data/alac/othertest-itunes.m4a" via ffmpeg).
@@ -12,7 +12,7 @@ void OverallTests::checkFlacTestfile1()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Flac);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
+    for (const auto &track : tracks) {
         CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
         CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Flac);
         CPPUNIT_ASSERT(track->channelCount() == 2);
@@ -21,7 +21,7 @@ void OverallTests::checkFlacTestfile1()
         CPPUNIT_ASSERT(track->duration().minutes() == 4);
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         // ffmpeg is able to set some tags from the original file (mtx-test-data/alac/othertest-itunes.m4a)
         CPPUNIT_ASSERT(tags.size() == 1);
@@ -56,7 +56,7 @@ void OverallTests::checkFlacTestfile2()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
+    for (const auto &track : tracks) {
         CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
         CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Flac);
         CPPUNIT_ASSERT(track->channelCount() == 2);
@@ -65,7 +65,7 @@ void OverallTests::checkFlacTestfile2()
         CPPUNIT_ASSERT(track->duration().minutes() == 4);
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(tags.size() == 1);
         break;
@@ -77,10 +77,10 @@ void OverallTests::checkFlacTestfile2()
     }
 
     // check for unexpected critical notifications or warnings
-    if(m_tagStatus == TagStatus::Removed) {
+    if (m_tagStatus == TagStatus::Removed) {
         bool gotMessageAboutMissingVorbisComment = false;
-        for(const auto &msg : m_diag) {
-            if(msg.level() == DiagLevel::Critical) {
+        for (const auto &msg : m_diag) {
+            if (msg.level() == DiagLevel::Critical) {
                 CPPUNIT_ASSERT_EQUAL("OGG page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment."s, msg.message());
                 gotMessageAboutMissingVorbisComment = true;
                 continue;
@@ -116,14 +116,14 @@ void OverallTests::testFlacMaking()
     m_fileInfo.setForceFullParse(true);
 
     // do the test under different conditions
-    for(m_mode = 0; m_mode != 0x2; ++m_mode) {
+    for (m_mode = 0; m_mode != 0x2; ++m_mode) {
         using namespace SimpleTestFlags;
 
         // TODO: setup test conditions
 
         // print test conditions
         list<string> testConditions;
-        if(m_mode & RemoveTag) {
+        if (m_mode & RemoveTag) {
             testConditions.emplace_back("removing tag");
         } else {
             testConditions.emplace_back("modifying tag");

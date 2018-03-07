@@ -5,10 +5,10 @@ namespace TestUtilities {
 /*!
  * \brief Prints a TagTextEncoding to enable CPPUNIT_ASSERT_EQUAL for tag values.
  */
-std::ostream &operator <<(std::ostream &os, const TagParser::TagTextEncoding &encoding)
+std::ostream &operator<<(std::ostream &os, const TagParser::TagTextEncoding &encoding)
 {
     using namespace TagParser;
-    switch(encoding) {
+    switch (encoding) {
     case TagTextEncoding::Unspecified:
         return os << "unspecified";
     case TagTextEncoding::Latin1:
@@ -23,4 +23,4 @@ std::ostream &operator <<(std::ostream &os, const TagParser::TagTextEncoding &en
     return os;
 }
 
-}
+} // namespace TestUtilities

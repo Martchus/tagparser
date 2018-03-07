@@ -2,13 +2,12 @@
 #include "./overall.h"
 
 #include "../abstracttrack.h"
+#include "../mp4/mp4container.h"
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4tag.h"
-#include "../mp4/mp4container.h"
 
 namespace Mp4TestFlags {
-enum TestFlag
-{
+enum TestFlag {
     ForceRewring = 0x1,
     KeepTagPos = 0x2,
     TagsBeforeData = 0x10,
@@ -26,8 +25,8 @@ void OverallTests::checkMp4Testfile1()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
@@ -40,13 +39,14 @@ void OverallTests::checkMp4Testfile1()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Danse Macabre, Op.40"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL("Saint-Saëns"s, tags.front()->value(KnownField::Artist).toString());
         CPPUNIT_ASSERT_EQUAL("Classical"s, tags.front()->value(KnownField::Genre).toString());
-        CPPUNIT_ASSERT_EQUAL("qaac 1.32, CoreAudioToolbox 7.9.7.3, AAC-LC Encoder, TVBR q63, Quality 96"s, tags.front()->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL(
+            "qaac 1.32, CoreAudioToolbox 7.9.7.3, AAC-LC Encoder, TVBR q63, Quality 96"s, tags.front()->value(KnownField::Encoder).toString());
         CPPUNIT_ASSERT_EQUAL(10, tags.front()->value(KnownField::TrackPosition).toPositionInSet().position());
         break;
     case TagStatus::TestMetaDataPresent:
@@ -66,8 +66,8 @@ void OverallTests::checkMp4Testfile2()
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(5_st, tracks.size());
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -109,7 +109,7 @@ void OverallTests::checkMp4Testfile2()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
@@ -131,8 +131,8 @@ void OverallTests::checkMp4Testfile3()
     CPPUNIT_ASSERT(m_fileInfo.container() && m_fileInfo.container()->documentType() == "dash");
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
             CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
@@ -147,7 +147,7 @@ void OverallTests::checkMp4Testfile3()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
@@ -158,11 +158,11 @@ void OverallTests::checkMp4Testfile3()
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    for(const auto &msg : m_diag) {
-        if(msg.level() != DiagLevel::Warning) {
+    for (const auto &msg : m_diag) {
+        if (msg.level() != DiagLevel::Warning) {
             continue;
         }
-        if(m_mode & Mp4TestFlags::TagsBeforeData) {
+        if (m_mode & Mp4TestFlags::TagsBeforeData) {
             CPPUNIT_FAIL("No warnings expected when putting tags before data.");
         } else {
             CPPUNIT_ASSERT_EQUAL("Sorry, but putting index/tags at the end is not possible when dealing with DASH files."s, msg.message());
@@ -180,8 +180,8 @@ void OverallTests::checkMp4Testfile4()
     CPPUNIT_ASSERT(m_fileInfo.container() && m_fileInfo.container()->documentType() == "M4A ");
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Alac, track->format().general);
@@ -194,7 +194,7 @@ void OverallTests::checkMp4Testfile4()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Sad Song");
@@ -227,8 +227,8 @@ void OverallTests::checkMp4Testfile5()
     CPPUNIT_ASSERT(m_fileInfo.container() && m_fileInfo.container()->documentType() == "mp42");
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT(tracks.size() == 1);
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
@@ -248,7 +248,7 @@ void OverallTests::checkMp4Testfile5()
         }
     }
     const auto tags = m_fileInfo.tags();
-    switch(m_tagStatus) {
+    switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
         break;
@@ -268,14 +268,14 @@ void OverallTests::checkMp4Testfile6()
 {
     CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
     const auto tracks = m_fileInfo.tracks();
-    if(m_mode & Mp4TestFlags::RemoveTagOrTrack) {
+    if (m_mode & Mp4TestFlags::RemoveTagOrTrack) {
         CPPUNIT_ASSERT_EQUAL(4_st, tracks.size());
     } else {
         CPPUNIT_ASSERT_EQUAL(6_st, tracks.size());
     }
     bool track2Present = false, track5Present = false;
-    for(const auto &track : tracks) {
-        switch(track->id()) {
+    for (const auto &track : tracks) {
+        switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
@@ -327,7 +327,7 @@ void OverallTests::checkMp4Testfile6()
             CPPUNIT_FAIL("unknown track ID");
         }
     }
-    if(m_mode & Mp4TestFlags::RemoveTagOrTrack) {
+    if (m_mode & Mp4TestFlags::RemoveTagOrTrack) {
         CPPUNIT_ASSERT(!track2Present);
         CPPUNIT_ASSERT(!track5Present);
     } else {
@@ -370,17 +370,18 @@ void OverallTests::checkMp4Constraints()
     using namespace Mp4TestFlags;
 
     CPPUNIT_ASSERT(m_fileInfo.container());
-    if(m_mode & PaddingConstraints) {
-        if(m_mode & ForceRewring) {
+    if (m_mode & PaddingConstraints) {
+        if (m_mode & ForceRewring) {
             CPPUNIT_ASSERT_EQUAL(4096_st, m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
         }
-        if(!(m_mode & RemoveTagOrTrack) && (m_fileInfo.container()->documentType() != "dash") && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
+        if (!(m_mode & RemoveTagOrTrack) && (m_fileInfo.container()->documentType() != "dash")
+            && ((m_mode & ForceRewring) || (m_mode & ForceTagPos))) {
             const ElementPosition currentTagPos = m_fileInfo.container()->determineTagPosition(m_diag);
-            if(currentTagPos == ElementPosition::Keep) {
-                CPPUNIT_ASSERT_EQUAL(m_expectedTagPos,  m_fileInfo.container()->determineIndexPosition(m_diag));
+            if (currentTagPos == ElementPosition::Keep) {
+                CPPUNIT_ASSERT_EQUAL(m_expectedTagPos, m_fileInfo.container()->determineIndexPosition(m_diag));
             }
         }
     }
@@ -461,13 +462,13 @@ void OverallTests::testMp4Making()
     m_fileInfo.setForceFullParse(true);
 
     // do the test under different conditions
-    for(m_mode = 0; m_mode != 0x20; ++m_mode) {
+    for (m_mode = 0; m_mode != 0x20; ++m_mode) {
         using namespace Mp4TestFlags;
 
         // setup test conditions
 
         m_fileInfo.setForceRewrite(m_mode & ForceRewring);
-        if(m_mode & KeepTagPos) {
+        if (m_mode & KeepTagPos) {
             m_fileInfo.setTagPosition(ElementPosition::Keep);
         } else {
             m_fileInfo.setTagPosition(m_mode & TagsBeforeData ? ElementPosition::BeforeData : ElementPosition::AfterData);
@@ -481,24 +482,24 @@ void OverallTests::testMp4Making()
 
         // print test conditions
         list<string> testConditions;
-        if(m_mode & ForceRewring) {
+        if (m_mode & ForceRewring) {
             testConditions.emplace_back("forcing rewrite");
         }
-        if(m_mode & KeepTagPos) {
-            if(m_mode & RemoveTagOrTrack) {
+        if (m_mode & KeepTagPos) {
+            if (m_mode & RemoveTagOrTrack) {
                 testConditions.emplace_back("removing tag");
             } else {
                 testConditions.emplace_back("keeping tag position");
             }
-        } else if(m_mode & TagsBeforeData) {
+        } else if (m_mode & TagsBeforeData) {
             testConditions.emplace_back("tags before data");
         } else {
             testConditions.emplace_back("tags after data");
         }
-        if(m_mode & PaddingConstraints) {
+        if (m_mode & PaddingConstraints) {
             testConditions.emplace_back("padding constraints");
         }
-        if(m_mode & ForceTagPos) {
+        if (m_mode & ForceTagPos) {
             testConditions.emplace_back("forcing tag position");
         }
         cerr << endl << "MP4 maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
@@ -509,7 +510,8 @@ void OverallTests::testMp4Making()
         void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeAllTags : &OverallTests::setMp4TestMetaData;
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile1);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile2);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile3);
+        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), modifyRoutine,
+            &OverallTests::checkMp4Testfile3);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/alac/othertest-itunes.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile4);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
         // -> add/remove tracks

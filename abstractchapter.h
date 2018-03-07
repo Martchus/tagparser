@@ -12,8 +12,7 @@ namespace TagParser {
 
 class Diagnostics;
 
-class TAG_PARSER_EXPORT AbstractChapter
-{
+class TAG_PARSER_EXPORT AbstractChapter {
 public:
     virtual ~AbstractChapter();
 
@@ -104,7 +103,7 @@ inline bool AbstractChapter::isEnabled() const
 /*!
  * \brief Returns the nested chapter with the specified \a index.
  */
-inline AbstractChapter *AbstractChapter::nestedChapter(std::size_t )
+inline AbstractChapter *AbstractChapter::nestedChapter(std::size_t)
 {
     return nullptr;
 }
@@ -112,7 +111,7 @@ inline AbstractChapter *AbstractChapter::nestedChapter(std::size_t )
 /*!
  * \brief Returns the nested chapter with the specified \a index.
  */
-inline const AbstractChapter *AbstractChapter::nestedChapter(std::size_t ) const
+inline const AbstractChapter *AbstractChapter::nestedChapter(std::size_t) const
 {
     return nullptr;
 }
@@ -125,6 +124,6 @@ inline std::size_t AbstractChapter::nestedChapterCount() const
     return 0;
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_ABSTRACTCHAPTER_H

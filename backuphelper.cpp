@@ -1,21 +1,21 @@
 #include "./backuphelper.h"
-#include "./mediafileinfo.h"
 #include "./diagnostics.h"
+#include "./mediafileinfo.h"
 
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/catchiofailure.h>
 
 #ifdef PLATFORM_WINDOWS
-# include <windows.h>
+#include <windows.h>
 #else
-# include <sys/stat.h>
+#include <sys/stat.h>
 #endif
 
-#include <string>
-#include <fstream>
 #include <cstdio>
+#include <fstream>
 #include <stdexcept>
+#include <string>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -65,10 +65,11 @@ string &backupDirectory()
  * \throws Throws std::ios_base::failure on failure.
  * \todo Implement callback for progress updates (copy).
  */
-void restoreOriginalFileFromBackupFile(const std::string &originalPath, const std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
+void restoreOriginalFileFromBackupFile(
+    const std::string &originalPath, const std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {
     // ensure the orignal stream is closed
-    if(originalStream.is_open()) {
+    if (originalStream.is_open()) {
         originalStream.close();
     }
     // check wether backup file actually exists and close the backup stream afterwards
@@ -76,14 +77,14 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
     backupStream.close();
     backupStream.clear();
     backupStream.open(backupPath, ios_base::in | ios_base::binary);
-    if(backupStream.is_open()) {
+    if (backupStream.is_open()) {
         backupStream.close();
     } else {
         throwIoFailure("Backup/temporary file has not been created.");
     }
     // remove original file and restore backup
     std::remove(originalPath.c_str());
-    if(std::rename(backupPath.c_str(), originalPath.c_str())) {
+    if (std::rename(backupPath.c_str(), originalPath.c_str())) {
         // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
         try {
             // need to open all streams again
@@ -93,7 +94,7 @@ void restoreOriginalFileFromBackupFile(const std::string &originalPath, const st
             originalStream.open(originalPath, ios_base::out | ios_base::binary);
             originalStream << backupStream.rdbuf();
             // TODO: callback for progress updates
-        } catch(...) {
+        } catch (...) {
             catchIoFailure();
             throwIoFailure(("Unable to restore original file from backup file \"" % backupPath + "\" after failure.").data());
         }
@@ -139,56 +140,55 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
     const auto originalDir(backupDirRelative ? BasicFileInfo::containingDirectory(originalPath) : string());
 
     // determine the backup path
-    for(unsigned int i = 0; ; ++i) {
-        if(backupDir.empty()) {
-            if(i) {
+    for (unsigned int i = 0;; ++i) {
+        if (backupDir.empty()) {
+            if (i) {
                 backupPath = originalPath % '.' % i + ".bak";
             } else {
                 backupPath = originalPath + ".bak";
             }
         } else {
             const auto fileName(BasicFileInfo::fileName(originalPath, i));
-            if(i) {
+            if (i) {
                 const auto ext(BasicFileInfo::extension(originalPath));
-                if(backupDirRelative) {
+                if (backupDirRelative) {
                     backupPath = originalDir % '/' % backupDir % '/' % fileName % '.' % i + ext;
                 } else {
                     backupPath = backupDir % '/' % fileName % '.' % i + ext;
                 }
             } else {
-                if(backupDirRelative) {
+                if (backupDirRelative) {
                     backupPath = originalDir % '/' % backupDir % '/' + fileName;
                 } else {
                     backupPath = backupDir % '/' + fileName;
                 }
             }
-
         }
 
-        // test whether the backup path is still unused; otherwise continue loop
+            // test whether the backup path is still unused; otherwise continue loop
 #ifdef PLATFORM_WINDOWS
-        if(GetFileAttributes(backupPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
+        if (GetFileAttributes(backupPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
 #else
         struct stat backupStat;
-        if(stat(backupPath.c_str(), &backupStat)) {
+        if (stat(backupPath.c_str(), &backupStat)) {
 #endif
             break;
         }
     }
 
     // ensure original file is closed
-    if(originalStream.is_open()) {
+    if (originalStream.is_open()) {
         originalStream.close();
     }
 
     // rename original file
-    if(std::rename(originalPath.c_str(), backupPath.c_str())) {
+    if (std::rename(originalPath.c_str(), backupPath.c_str())) {
         // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
         try {
             backupStream.exceptions(ios_base::failbit | ios_base::badbit);
             originalStream.exceptions(ios_base::failbit | ios_base::badbit);
             // ensure backupStream is opened as write-only
-            if(backupStream.is_open()) {
+            if (backupStream.is_open()) {
                 backupStream.close();
             }
             backupStream.open(backupPath, ios_base::out | ios_base::binary);
@@ -198,7 +198,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
             backupStream << originalStream.rdbuf();
             // streams are closed in the next try-block
             // TODO: callback for progress updates
-        } catch(...) {
+        } catch (...) {
             catchIoFailure();
             throwIoFailure("Unable to rename original file before rewriting it.");
         }
@@ -207,21 +207,21 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
     // manage streams
     try {
         // ensure there is no file associated with the originalStream object
-        if(originalStream.is_open()) {
+        if (originalStream.is_open()) {
             originalStream.close();
         }
         // ensure there is no file associated with the backupStream object
-        if(backupStream.is_open()) {
+        if (backupStream.is_open()) {
             backupStream.close();
         }
         // open backup stream
         backupStream.exceptions(ios_base::failbit | ios_base::badbit);
         backupStream.open(backupPath, ios_base::in | ios_base::binary);
-    } catch(...) {
+    } catch (...) {
         catchIoFailure();
         // can't open the new file
         // -> try to re-rename backup file in the error case to restore previous state
-        if(std::rename(backupPath.c_str(), originalPath.c_str())) {
+        if (std::rename(backupPath.c_str(), originalPath.c_str())) {
             throwIoFailure(("Unable to restore original file from backup file \"" % backupPath + "\" after failure.").data());
         } else {
             throwIoFailure("Unable to open backup file.");
@@ -247,24 +247,25 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
  *                     no backup file has been created.
  * \param context      Specifies the context used to add notifications.
  */
-void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, NativeFileStream &outputStream, NativeFileStream &backupStream, Diagnostics &diag, const std::string &context)
+void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, NativeFileStream &outputStream,
+    NativeFileStream &backupStream, Diagnostics &diag, const std::string &context)
 {
     // reset the associated container in any case
-    if(fileInfo.container()) {
+    if (fileInfo.container()) {
         fileInfo.container()->reset();
     }
 
     // re-throw the current exception
     try {
         throw;
-    } catch(const OperationAbortedException &) {
-        if(!backupPath.empty()) {
+    } catch (const OperationAbortedException &) {
+        if (!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
             diag.emplace_back(DiagLevel::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
-            } catch(...) {
+            } catch (...) {
                 diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
@@ -272,14 +273,14 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
         }
         throw;
 
-    } catch(const Failure &) {
-        if(!backupPath.empty()) {
+    } catch (const Failure &) {
+        if (!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
             diag.emplace_back(DiagLevel::Critical, "Rewriting the file to apply changed tag information failed.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
-            } catch(...) {
+            } catch (...) {
                 diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
@@ -287,15 +288,15 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
         }
         throw;
 
-    } catch(...) {
+    } catch (...) {
         const char *what = catchIoFailure();
-        if(!backupPath.empty()) {
+        if (!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
             diag.emplace_back(DiagLevel::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
-            } catch(...) {
+            } catch (...) {
                 diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
@@ -305,6 +306,6 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
     }
 }
 
-}
+} // namespace BackupHelper
 
-}
+} // namespace TagParser

@@ -23,8 +23,8 @@ void OverallTests::setUp()
 
 void OverallTests::tearDown()
 {
-    for(const string &file : {m_nestedTagsMkvPath, m_rawFlacPath, m_flacInOggPath}) {
-        if(!file.empty()) {
+    for (const string &file : { m_nestedTagsMkvPath, m_rawFlacPath, m_flacInOggPath }) {
+        if (!file.empty()) {
             remove(file.data());
         }
     }
@@ -33,7 +33,7 @@ void OverallTests::tearDown()
 /*!
  * \brief Parses the specified file and tests the results using the specified check routine.
  */
-void OverallTests::parseFile(const string &path, void (OverallTests::* checkRoutine)(void))
+void OverallTests::parseFile(const string &path, void (OverallTests::*checkRoutine)(void))
 {
     // print current file
     cerr << "- testing " << path << endl;
@@ -62,14 +62,14 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     m_fileInfo.parseEverything(m_diag);
 
     // determine expected tag and index position
-    switch(m_fileInfo.containerFormat()) {
+    switch (m_fileInfo.containerFormat()) {
     case ContainerFormat::Mp4:
         CPPUNIT_ASSERT(m_fileInfo.container());
-        if(m_fileInfo.tagPosition() != ElementPosition::Keep) {
+        if (m_fileInfo.tagPosition() != ElementPosition::Keep) {
             m_expectedTagPos = m_fileInfo.tagPosition();
         } else {
             m_expectedTagPos = m_fileInfo.container()->determineTagPosition(m_diag);
-            if(m_expectedTagPos == ElementPosition::Keep) {
+            if (m_expectedTagPos == ElementPosition::Keep) {
                 // if there is no tag present, the resulting tag position should equal the
                 // current index position
                 m_expectedTagPos = m_fileInfo.container()->determineIndexPosition(m_diag);
@@ -79,7 +79,7 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     case ContainerFormat::Matroska:
         CPPUNIT_ASSERT(m_fileInfo.container());
         // since a tag is always created, it can always be expected at the specified position
-        if(m_fileInfo.tagPosition() != ElementPosition::Keep) {
+        if (m_fileInfo.tagPosition() != ElementPosition::Keep) {
             m_expectedTagPos = m_fileInfo.tagPosition();
         } else {
             m_expectedTagPos = m_fileInfo.container()->determineTagPosition(m_diag);
@@ -87,12 +87,11 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
         // an index is only present if the file had one before, hence specifying the index position
         // might not have an effect
         m_expectedIndexPos = m_fileInfo.container()->determineIndexPosition(m_diag);
-        if(m_fileInfo.indexPosition() != ElementPosition::Keep && m_expectedIndexPos != ElementPosition::Keep) {
+        if (m_fileInfo.indexPosition() != ElementPosition::Keep && m_expectedIndexPos != ElementPosition::Keep) {
             m_expectedIndexPos = m_fileInfo.indexPosition();
         }
         break;
-    default:
-        ;
+    default:;
     }
 
     // invoke testroutine to do and apply changes
@@ -104,7 +103,7 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     m_fileInfo.parseEverything(m_diag);
     (this->*checkRoutine)();
     // invoke suitable testroutine to check padding constraints
-    switch(m_fileInfo.containerFormat()) {
+    switch (m_fileInfo.containerFormat()) {
     case ContainerFormat::Matroska:
         checkMkvConstraints();
         break;
@@ -115,8 +114,7 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     case ContainerFormat::Adts:
         checkMp3PaddingConstraints();
         break;
-    default:
-        ;
+    default:;
     }
 
     // close and remove file and backup files

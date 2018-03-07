@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
-#include <memory>
 
 namespace TagParser {
 
@@ -20,9 +19,7 @@ namespace TagParser {
  * \tparam TrackType Specifies the class which is used to deal with the track of the file.
  * \tparam ElementType Specifies the class which is used to deal with the elements the file consists of.
  */
-template <class FileInfoType, class TagType, class TrackType, class ElementType>
-class TAG_PARSER_EXPORT GenericContainer : public AbstractContainer
-{
+template <class FileInfoType, class TagType, class TrackType, class ElementType> class TAG_PARSER_EXPORT GenericContainer : public AbstractContainer {
     friend FileInfoType;
 
 public:
@@ -32,17 +29,17 @@ public:
     void validateElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
     FileInfoType &fileInfo() const;
     ElementType *firstElement() const;
-    const std::vector<std::unique_ptr<ElementType> > &additionalElements() const;
-    std::vector<std::unique_ptr<ElementType> > &additionalElements();
+    const std::vector<std::unique_ptr<ElementType>> &additionalElements() const;
+    std::vector<std::unique_ptr<ElementType>> &additionalElements();
     TagType *tag(std::size_t index) override;
     std::size_t tagCount() const override;
     TrackType *track(std::size_t index) override;
     TrackType *trackById(uint64 id);
     std::size_t trackCount() const override;
-    const std::vector<std::unique_ptr<TagType> > &tags() const;
-    std::vector<std::unique_ptr<TagType> > &tags();
-    const std::vector<std::unique_ptr<TrackType> > &tracks() const;
-    std::vector<std::unique_ptr<TrackType> > &tracks();
+    const std::vector<std::unique_ptr<TagType>> &tags() const;
+    std::vector<std::unique_ptr<TagType>> &tags();
+    const std::vector<std::unique_ptr<TrackType>> &tracks() const;
+    std::vector<std::unique_ptr<TrackType>> &tracks();
 
     TagType *createTag(const TagTarget &target = TagTarget()) override;
     bool removeTag(Tag *tag) override;
@@ -59,9 +56,9 @@ public:
 
 protected:
     std::unique_ptr<ElementType> m_firstElement;
-    std::vector<std::unique_ptr<ElementType> > m_additionalElements;
-    std::vector<std::unique_ptr<TagType> > m_tags;
-    std::vector<std::unique_ptr<TrackType> > m_tracks;
+    std::vector<std::unique_ptr<ElementType>> m_additionalElements;
+    std::vector<std::unique_ptr<TagType>> m_tags;
+    std::vector<std::unique_ptr<TrackType>> m_tracks;
 
 private:
     FileInfoType *m_fileInfo;
@@ -71,10 +68,11 @@ private:
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-GenericContainer<FileInfoType, TagType, TrackType, ElementType>::GenericContainer(FileInfoType &fileInfo, uint64 startOffset) :
-    AbstractContainer(fileInfo.stream(), startOffset),
-    m_fileInfo(&fileInfo)
-{}
+GenericContainer<FileInfoType, TagType, TrackType, ElementType>::GenericContainer(FileInfoType &fileInfo, uint64 startOffset)
+    : AbstractContainer(fileInfo.stream(), startOffset)
+    , m_fileInfo(&fileInfo)
+{
+}
 
 /*!
  * \brief Destroys the container.
@@ -84,7 +82,8 @@ GenericContainer<FileInfoType, TagType, TrackType, ElementType>::GenericContaine
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 GenericContainer<FileInfoType, TagType, TrackType, ElementType>::~GenericContainer()
-{}
+{
+}
 
 /*!
  * \brief Parses all elements the file consists of.
@@ -100,7 +99,7 @@ template <class FileInfoType, class TagType, class TrackType, class ElementType>
 inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(Diagnostics &diag, uint64 *paddingSize)
 {
     parseHeader(diag);
-    if(m_firstElement) {
+    if (m_firstElement) {
         m_firstElement->validateSubsequentElementStructure(diag, paddingSize);
     }
 }
@@ -142,7 +141,7 @@ inline ElementType *GenericContainer<FileInfoType, TagType, TrackType, ElementTy
  * tree within the file.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline const std::vector<std::unique_ptr<ElementType> > &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::additionalElements() const
+inline const std::vector<std::unique_ptr<ElementType>> &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::additionalElements() const
 {
     return m_additionalElements;
 }
@@ -155,7 +154,7 @@ inline const std::vector<std::unique_ptr<ElementType> > &GenericContainer<FileIn
  * tree within the file.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline std::vector<std::unique_ptr<ElementType> > &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::additionalElements()
+inline std::vector<std::unique_ptr<ElementType>> &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::additionalElements()
 {
     return m_additionalElements;
 }
@@ -178,11 +177,11 @@ inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType
     return m_tracks[index].get();
 }
 
-template<class FileInfoType, class TagType, class TrackType, class ElementType>
+template <class FileInfoType, class TagType, class TrackType, class ElementType>
 inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::trackById(uint64 id)
 {
     for (auto &track : m_tracks) {
-        if(track->id() == id) {
+        if (track->id() == id) {
             return track.get();
         }
     }
@@ -205,7 +204,7 @@ inline std::size_t GenericContainer<FileInfoType, TagType, TrackType, ElementTyp
  * \sa areTagsParsed()
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline const std::vector<std::unique_ptr<TagType> > &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tags() const
+inline const std::vector<std::unique_ptr<TagType>> &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tags() const
 {
     return m_tags;
 }
@@ -220,7 +219,7 @@ inline const std::vector<std::unique_ptr<TagType> > &GenericContainer<FileInfoTy
  * \sa areTagsParsed()
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline std::vector<std::unique_ptr<TagType> > &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tags()
+inline std::vector<std::unique_ptr<TagType>> &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tags()
 {
     return m_tags;
 }
@@ -235,7 +234,7 @@ inline std::vector<std::unique_ptr<TagType> > &GenericContainer<FileInfoType, Ta
  * \sa areTracksParsed()
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline const std::vector<std::unique_ptr<TrackType> > &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tracks() const
+inline const std::vector<std::unique_ptr<TrackType>> &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tracks() const
 {
     return m_tracks;
 }
@@ -250,7 +249,7 @@ inline const std::vector<std::unique_ptr<TrackType> > &GenericContainer<FileInfo
  * \sa areTracksParsed()
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline std::vector<std::unique_ptr<TrackType> > &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tracks()
+inline std::vector<std::unique_ptr<TrackType>> &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::tracks()
 {
     return m_tracks;
 }
@@ -259,10 +258,10 @@ template <class FileInfoType, class TagType, class TrackType, class ElementType>
 TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::createTag(const TagTarget &target)
 {
     // check whether a tag matching the specified target is already assigned
-    if(!m_tags.empty()) {
-        if(!target.isEmpty() && m_tags.front()->supportsTarget()) {
-            for(auto &tag : m_tags) {
-                if(tag->target() == target) {
+    if (!m_tags.empty()) {
+        if (!target.isEmpty() && m_tags.front()->supportsTarget()) {
+            for (auto &tag : m_tags) {
+                if (tag->target() == target) {
                     return tag.get();
                 }
             }
@@ -281,10 +280,10 @@ TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::create
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeTag(Tag *tag)
 {
-    if(auto size = m_tags.size()) {
-        m_tags.erase(std::remove_if(m_tags.begin(), m_tags.end(), [tag] (const std::unique_ptr<TagType> &existingTag) -> bool {
-            return static_cast<Tag *>(existingTag.get()) == tag;
-        }), m_tags.end());
+    if (auto size = m_tags.size()) {
+        m_tags.erase(std::remove_if(m_tags.begin(), m_tags.end(),
+                         [tag](const std::unique_ptr<TagType> &existingTag) -> bool { return static_cast<Tag *>(existingTag.get()) == tag; }),
+            m_tags.end());
         return size != m_tags.size();
     }
     return false;
@@ -315,12 +314,12 @@ inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::rem
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::addTrack(TrackType *track)
 {
-    if(areTracksParsed() && supportsTrackModifications()) {
+    if (areTracksParsed() && supportsTrackModifications()) {
         // ensure ID is unique
         auto id = track->id();
-        ensureIdIsUnique:
-        for(const auto &track : m_tracks) {
-            if(track->id() == id) {
+    ensureIdIsUnique:
+        for (const auto &track : m_tracks) {
+            if (track->id() == id) {
                 ++id;
                 goto ensureIdIsUnique;
             }
@@ -337,18 +336,18 @@ template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeTrack(AbstractTrack *track)
 {
     bool removed = false;
-    if(areTracksParsed() && supportsTrackModifications() && !m_tracks.empty()) {
-        for(auto i = m_tracks.end() - 1, begin = m_tracks.begin(); ; --i) {
-            if(static_cast<AbstractTrack *>(i->get()) == track) {
+    if (areTracksParsed() && supportsTrackModifications() && !m_tracks.empty()) {
+        for (auto i = m_tracks.end() - 1, begin = m_tracks.begin();; --i) {
+            if (static_cast<AbstractTrack *>(i->get()) == track) {
                 i->release();
                 m_tracks.erase(i);
                 removed = true;
             }
-            if(i == begin) {
+            if (i == begin) {
                 break;
             }
         }
-        if(removed) {
+        if (removed) {
             m_tracksAltered = true;
         }
     }
@@ -358,7 +357,7 @@ bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeTrac
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeAllTracks()
 {
-    if(areTracksParsed() && supportsTrackModifications() && m_tracks.size()) {
+    if (areTracksParsed() && supportsTrackModifications() && m_tracks.size()) {
         m_tracks.clear();
         m_tracksAltered = true;
     }
@@ -374,6 +373,6 @@ void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::reset()
     m_tags.clear();
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_GENERICCONTAINER_H

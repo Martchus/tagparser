@@ -1,11 +1,11 @@
 #include "./id3v2tag.h"
 #include "./id3v2frameids.h"
 
-#include "../exceptions.h"
 #include "../diagnostics.h"
+#include "../exceptions.h"
 
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 
 using namespace std;
 using namespace IoUtilities;
@@ -21,59 +21,101 @@ namespace TagParser {
 Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
 {
     using namespace Id3v2FrameIds;
-    if(m_majorVersion >= 3) {
-        switch(field) {
-        case KnownField::Album: return lAlbum;
-        case KnownField::Artist: return lArtist;
-        case KnownField::Comment: return lComment;
-        case KnownField::Year: return lYear;
-        case KnownField::RecordDate: return lRecordDate;
-        case KnownField::Title: return lTitle;
-        case KnownField::Genre: return lGenre;
-        case KnownField::TrackPosition: return lTrackPosition;
-        case KnownField::DiskPosition: return lDiskPosition;
-        case KnownField::Encoder: return lEncoder;
-        case KnownField::Bpm: return lBpm;
-        case KnownField::Cover: return lCover;
-        case KnownField::Lyricist: return lWriter;
-        case KnownField::Length: return lLength;
-        case KnownField::Language: return lLanguage;
-        case KnownField::EncoderSettings: return lEncoderSettings;
-        case KnownField::Lyrics: return lUnsynchronizedLyrics;
-        case KnownField::SynchronizedLyrics: return lSynchronizedLyrics;
-        case KnownField::Grouping: return lGrouping;
-        case KnownField::RecordLabel: return lRecordLabel;
-        case KnownField::Composer: return lComposer;
-        case KnownField::Rating: return lRating;
-        default:
-            ;
+    if (m_majorVersion >= 3) {
+        switch (field) {
+        case KnownField::Album:
+            return lAlbum;
+        case KnownField::Artist:
+            return lArtist;
+        case KnownField::Comment:
+            return lComment;
+        case KnownField::Year:
+            return lYear;
+        case KnownField::RecordDate:
+            return lRecordDate;
+        case KnownField::Title:
+            return lTitle;
+        case KnownField::Genre:
+            return lGenre;
+        case KnownField::TrackPosition:
+            return lTrackPosition;
+        case KnownField::DiskPosition:
+            return lDiskPosition;
+        case KnownField::Encoder:
+            return lEncoder;
+        case KnownField::Bpm:
+            return lBpm;
+        case KnownField::Cover:
+            return lCover;
+        case KnownField::Lyricist:
+            return lWriter;
+        case KnownField::Length:
+            return lLength;
+        case KnownField::Language:
+            return lLanguage;
+        case KnownField::EncoderSettings:
+            return lEncoderSettings;
+        case KnownField::Lyrics:
+            return lUnsynchronizedLyrics;
+        case KnownField::SynchronizedLyrics:
+            return lSynchronizedLyrics;
+        case KnownField::Grouping:
+            return lGrouping;
+        case KnownField::RecordLabel:
+            return lRecordLabel;
+        case KnownField::Composer:
+            return lComposer;
+        case KnownField::Rating:
+            return lRating;
+        default:;
         }
     } else {
-        switch(field) {
-        case KnownField::Album: return sAlbum;
-        case KnownField::Artist: return sArtist;
-        case KnownField::Comment: return sComment;
-        case KnownField::Year: return sYear;
-        case KnownField::RecordDate: return sRecordDate;
-        case KnownField::Title: return sTitle;
-        case KnownField::Genre: return sGenre;
-        case KnownField::TrackPosition: return sTrackPosition;
-        case KnownField::DiskPosition: return lDiskPosition;
-        case KnownField::Encoder: return sEncoder;
-        case KnownField::Bpm: return sBpm;
-        case KnownField::Cover: return sCover;
-        case KnownField::Lyricist: return sWriter;
-        case KnownField::Length: return sLength;
-        case KnownField::Language: return sLanguage;
-        case KnownField::EncoderSettings: return sEncoderSettings;
-        case KnownField::Lyrics: return sUnsynchronizedLyrics;
-        case KnownField::SynchronizedLyrics: return sSynchronizedLyrics;
-        case KnownField::Grouping: return sGrouping;
-        case KnownField::RecordLabel: return sRecordLabel;
-        case KnownField::Composer: return sComposer;
-        case KnownField::Rating: return sRating;
-        default:
-            ;
+        switch (field) {
+        case KnownField::Album:
+            return sAlbum;
+        case KnownField::Artist:
+            return sArtist;
+        case KnownField::Comment:
+            return sComment;
+        case KnownField::Year:
+            return sYear;
+        case KnownField::RecordDate:
+            return sRecordDate;
+        case KnownField::Title:
+            return sTitle;
+        case KnownField::Genre:
+            return sGenre;
+        case KnownField::TrackPosition:
+            return sTrackPosition;
+        case KnownField::DiskPosition:
+            return lDiskPosition;
+        case KnownField::Encoder:
+            return sEncoder;
+        case KnownField::Bpm:
+            return sBpm;
+        case KnownField::Cover:
+            return sCover;
+        case KnownField::Lyricist:
+            return sWriter;
+        case KnownField::Length:
+            return sLength;
+        case KnownField::Language:
+            return sLanguage;
+        case KnownField::EncoderSettings:
+            return sEncoderSettings;
+        case KnownField::Lyrics:
+            return sUnsynchronizedLyrics;
+        case KnownField::SynchronizedLyrics:
+            return sSynchronizedLyrics;
+        case KnownField::Grouping:
+            return sGrouping;
+        case KnownField::RecordLabel:
+            return sRecordLabel;
+        case KnownField::Composer:
+            return sComposer;
+        case KnownField::Rating:
+            return sRating;
+        default:;
         }
     }
     return 0;
@@ -82,65 +124,109 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
 KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace Id3v2FrameIds;
-    switch(id) {
-    case lAlbum: return KnownField::Album;
-    case lArtist: return KnownField::Artist;
-    case lComment: return KnownField::Comment;
-    case lYear: return KnownField::Year;
-    case lRecordDate: return KnownField::RecordDate;
-    case lTitle: return KnownField::Title;
-    case lGenre: return KnownField::Genre;
-    case lTrackPosition: return KnownField::TrackPosition;
-    case lDiskPosition: return KnownField::DiskPosition;
-    case lEncoder: return KnownField::Encoder;
-    case lBpm: return KnownField::Bpm;
-    case lCover: return KnownField::Cover;
-    case lWriter: return KnownField::Lyricist;
-    case lLanguage: return KnownField::Language;
-    case lLength: return KnownField::Length;
-    case lEncoderSettings: return KnownField::EncoderSettings;
-    case lUnsynchronizedLyrics: return KnownField::Lyrics;
-    case lSynchronizedLyrics: return KnownField::SynchronizedLyrics;
-    case lGrouping: return KnownField::Grouping;
-    case lRecordLabel: return KnownField::RecordLabel;
-    case sAlbum: return KnownField::Album;
-    case sArtist: return KnownField::Artist;
-    case sComment: return KnownField::Comment;
-    case sYear: return KnownField::Year;
-    case sRecordDate: return KnownField::RecordDate;
-    case sTitle: return KnownField::Title;
-    case sGenre: return KnownField::Genre;
-    case sTrackPosition: return KnownField::TrackPosition;
-    case sEncoder: return KnownField::Encoder;
-    case sBpm: return KnownField::Bpm;
-    case sCover: return KnownField::Cover;
-    case sWriter: return KnownField::Lyricist;
-    case sLanguage: return KnownField::Language;
-    case sLength: return KnownField::Length;
-    case sEncoderSettings: return KnownField::EncoderSettings;
-    case sUnsynchronizedLyrics: return KnownField::Lyrics;
-    case sSynchronizedLyrics: return KnownField::SynchronizedLyrics;
-    case sGrouping: return KnownField::Grouping;
-    case sRecordLabel: return KnownField::RecordLabel;
-    default: return KnownField::Invalid;
+    switch (id) {
+    case lAlbum:
+        return KnownField::Album;
+    case lArtist:
+        return KnownField::Artist;
+    case lComment:
+        return KnownField::Comment;
+    case lYear:
+        return KnownField::Year;
+    case lRecordDate:
+        return KnownField::RecordDate;
+    case lTitle:
+        return KnownField::Title;
+    case lGenre:
+        return KnownField::Genre;
+    case lTrackPosition:
+        return KnownField::TrackPosition;
+    case lDiskPosition:
+        return KnownField::DiskPosition;
+    case lEncoder:
+        return KnownField::Encoder;
+    case lBpm:
+        return KnownField::Bpm;
+    case lCover:
+        return KnownField::Cover;
+    case lWriter:
+        return KnownField::Lyricist;
+    case lLanguage:
+        return KnownField::Language;
+    case lLength:
+        return KnownField::Length;
+    case lEncoderSettings:
+        return KnownField::EncoderSettings;
+    case lUnsynchronizedLyrics:
+        return KnownField::Lyrics;
+    case lSynchronizedLyrics:
+        return KnownField::SynchronizedLyrics;
+    case lGrouping:
+        return KnownField::Grouping;
+    case lRecordLabel:
+        return KnownField::RecordLabel;
+    case sAlbum:
+        return KnownField::Album;
+    case sArtist:
+        return KnownField::Artist;
+    case sComment:
+        return KnownField::Comment;
+    case sYear:
+        return KnownField::Year;
+    case sRecordDate:
+        return KnownField::RecordDate;
+    case sTitle:
+        return KnownField::Title;
+    case sGenre:
+        return KnownField::Genre;
+    case sTrackPosition:
+        return KnownField::TrackPosition;
+    case sEncoder:
+        return KnownField::Encoder;
+    case sBpm:
+        return KnownField::Bpm;
+    case sCover:
+        return KnownField::Cover;
+    case sWriter:
+        return KnownField::Lyricist;
+    case sLanguage:
+        return KnownField::Language;
+    case sLength:
+        return KnownField::Length;
+    case sEncoderSettings:
+        return KnownField::EncoderSettings;
+    case sUnsynchronizedLyrics:
+        return KnownField::Lyrics;
+    case sSynchronizedLyrics:
+        return KnownField::SynchronizedLyrics;
+    case sGrouping:
+        return KnownField::Grouping;
+    case sRecordLabel:
+        return KnownField::RecordLabel;
+    default:
+        return KnownField::Invalid;
     }
 }
 
 TagDataType Id3v2Tag::internallyGetProposedDataType(const uint32 &id) const
 {
     using namespace Id3v2FrameIds;
-    switch(id) {
-    case lLength: case sLength:
+    switch (id) {
+    case lLength:
+    case sLength:
         return TagDataType::TimeSpan;
-    case lBpm: case sBpm:
+    case lBpm:
+    case sBpm:
         return TagDataType::Integer;
-    case lTrackPosition: case sTrackPosition:
+    case lTrackPosition:
+    case sTrackPosition:
     case lDiskPosition:
         return TagDataType::PositionInSet;
-    case lCover: case sCover:
+    case lCover:
+    case sCover:
         return TagDataType::Picture;
     default:
-        if(Id3v2FrameIds::isTextFrame(id)) {
+        if (Id3v2FrameIds::isTextFrame(id)) {
             return TagDataType::Text;
         } else {
             return TagDataType::Undefined;
@@ -163,13 +249,13 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     uint64 startOffset = stream.tellg();
 
     // check whether the header is truncated
-    if(maximalSize && maximalSize < 10) {
+    if (maximalSize && maximalSize < 10) {
         diag.emplace_back(DiagLevel::Critical, "ID3v2 header is truncated (at least 10 bytes expected).", context);
         throw TruncatedDataException();
     }
 
     // read signature: ID3
-    if(reader.readUInt24BE() != 0x494433u) {
+    if (reader.readUInt24BE() != 0x494433u) {
         diag.emplace_back(DiagLevel::Critical, "Signature is invalid.", context);
         throw InvalidDataException();
     }
@@ -180,25 +266,25 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     m_flags = reader.readByte();
     m_sizeExcludingHeader = reader.readSynchsafeUInt32BE();
     m_size = 10 + m_sizeExcludingHeader;
-    if(m_sizeExcludingHeader == 0) {
+    if (m_sizeExcludingHeader == 0) {
         diag.emplace_back(DiagLevel::Warning, "ID3v2 tag seems to be empty.", context);
         return;
     }
 
     // check if the version
-    if(!isVersionSupported()) {
+    if (!isVersionSupported()) {
         diag.emplace_back(DiagLevel::Critical, "The ID3v2 tag couldn't be parsed, because its version is not supported.", context);
         throw VersionNotSupportedException();
     }
 
     // read extended header (if present)
-    if(hasExtendedHeader()) {
-        if(maximalSize && maximalSize < 14) {
+    if (hasExtendedHeader()) {
+        if (maximalSize && maximalSize < 14) {
             diag.emplace_back(DiagLevel::Critical, "Extended header denoted but not present.", context);
             throw TruncatedDataException();
         }
         m_extendedHeaderSize = reader.readSynchsafeUInt32BE();
-        if(m_extendedHeaderSize < 6 || m_extendedHeaderSize > m_sizeExcludingHeader || (maximalSize && maximalSize < (10 + m_extendedHeaderSize))) {
+        if (m_extendedHeaderSize < 6 || m_extendedHeaderSize > m_sizeExcludingHeader || (maximalSize && maximalSize < (10 + m_extendedHeaderSize))) {
             diag.emplace_back(DiagLevel::Critical, "Extended header is invalid/truncated.", context);
             throw TruncatedDataException();
         }
@@ -207,7 +293,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
 
     // how many bytes remain for frames and padding?
     uint32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
-    if(maximalSize && bytesRemaining > maximalSize) {
+    if (maximalSize && bytesRemaining > maximalSize) {
         bytesRemaining = maximalSize;
         diag.emplace_back(DiagLevel::Critical, "Frames are truncated.", context);
     }
@@ -215,29 +301,29 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     // read frames
     auto pos = stream.tellg();
     Id3v2Frame frame;
-    while(bytesRemaining) {
+    while (bytesRemaining) {
         // seek to next frame
         stream.seekg(pos);
         // parse frame
         try {
             frame.parse(reader, majorVersion, bytesRemaining, diag);
-            if(frame.id()) {
+            if (frame.id()) {
                 // add frame if parsing was successfull
-                if(Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
+                if (Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
                     diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
                 }
                 fields().insert(make_pair(frame.id(), frame));
             }
-        } catch(const NoDataFoundException &) {
-            if(frame.hasPaddingReached()) {
+        } catch (const NoDataFoundException &) {
+            if (frame.hasPaddingReached()) {
                 m_paddingSize = startOffset + m_size - pos;
                 break;
             }
-        } catch(const Failure &) {
+        } catch (const Failure &) {
         }
 
         // calculate next frame offset
-        if(frame.totalSize() <= bytesRemaining) {
+        if (frame.totalSize() <= bytesRemaining) {
             pos += frame.totalSize();
             bytesRemaining -= frame.totalSize();
         } else {
@@ -247,13 +333,13 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     }
 
     // check for extended header
-    if(!hasFooter()) {
+    if (!hasFooter()) {
         return;
     }
-    if(maximalSize && m_size + 10 < maximalSize) {
+    if (maximalSize && m_size + 10 < maximalSize) {
         // the footer does not provide additional information, just check the signature
         stream.seekg(startOffset + (m_size += 10));
-        if(reader.readUInt24LE() != 0x494433u) {
+        if (reader.readUInt24LE() != 0x494433u) {
             diag.emplace_back(DiagLevel::Critical, "Footer signature is invalid.", context);
         }
         // skip remaining footer
@@ -314,40 +400,40 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
  */
 bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
 {
-    if(lhs == rhs) {
+    if (lhs == rhs) {
         return false;
     }
     const bool lhsLong = Id3v2FrameIds::isLongId(lhs);
     const bool rhsLong = Id3v2FrameIds::isLongId(rhs);
-    if(((lhsLong && !rhsLong) && (lhs == Id3v2FrameIds::convertToLongId(rhs)))
-            || ((!lhsLong && rhsLong) && (Id3v2FrameIds::convertToLongId(lhs) == rhs))) {
+    if (((lhsLong && !rhsLong) && (lhs == Id3v2FrameIds::convertToLongId(rhs)))
+        || ((!lhsLong && rhsLong) && (Id3v2FrameIds::convertToLongId(lhs) == rhs))) {
         return false;
     }
 
-    if(lhs == Id3v2FrameIds::lUniqueFileId || lhs == Id3v2FrameIds::sUniqueFileId) {
+    if (lhs == Id3v2FrameIds::lUniqueFileId || lhs == Id3v2FrameIds::sUniqueFileId) {
         return true;
     }
-    if(rhs == Id3v2FrameIds::lUniqueFileId || rhs == Id3v2FrameIds::sUniqueFileId) {
+    if (rhs == Id3v2FrameIds::lUniqueFileId || rhs == Id3v2FrameIds::sUniqueFileId) {
         return false;
     }
-    if(lhs == Id3v2FrameIds::lTitle || lhs == Id3v2FrameIds::sTitle) {
+    if (lhs == Id3v2FrameIds::lTitle || lhs == Id3v2FrameIds::sTitle) {
         return true;
     }
-    if(rhs == Id3v2FrameIds::lTitle || rhs == Id3v2FrameIds::sTitle) {
+    if (rhs == Id3v2FrameIds::lTitle || rhs == Id3v2FrameIds::sTitle) {
         return false;
     }
     bool lhstextfield = Id3v2FrameIds::isTextFrame(lhs);
     bool rhstextfield = Id3v2FrameIds::isTextFrame(rhs);
-    if(lhstextfield && !rhstextfield) {
+    if (lhstextfield && !rhstextfield) {
         return true;
     }
-    if(!lhstextfield && rhstextfield) {
+    if (!lhstextfield && rhstextfield) {
         return false;
     }
-    if(lhs == Id3v2FrameIds::lCover || lhs == Id3v2FrameIds::sCover) {
+    if (lhs == Id3v2FrameIds::lCover || lhs == Id3v2FrameIds::sCover) {
         return false;
     }
-    if(rhs == Id3v2FrameIds::lCover || rhs == Id3v2FrameIds::sCover) {
+    if (rhs == Id3v2FrameIds::lCover || rhs == Id3v2FrameIds::sCover) {
         return true;
     }
     return lhs < rhs;
@@ -364,26 +450,26 @@ bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
  * \brief Prepares making the specified \a tag.
  * \sa See Id3v2Tag::prepareMaking() for more information.
  */
-Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag) :
-    m_tag(tag),
-    m_framesSize(0)
+Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag)
+    : m_tag(tag)
+    , m_framesSize(0)
 {
     static const string context("making ID3v2 tag");
 
     // check if version is supported
     // (the version could have been changed using setVersion())
-    if(!tag.isVersionSupported()) {
+    if (!tag.isVersionSupported()) {
         diag.emplace_back(DiagLevel::Critical, "The ID3v2 tag version isn't supported.", context);
         throw VersionNotSupportedException();
     }
 
     // prepare frames
     m_maker.reserve(tag.fields().size());
-    for(auto &pair : tag.fields()) {
+    for (auto &pair : tag.fields()) {
         try {
             m_maker.emplace_back(pair.second.prepareMaking(tag.majorVersion(), diag));
             m_framesSize += m_maker.back().requiredSize();
-        } catch(const Failure &) {
+        } catch (const Failure &) {
         }
     }
 
@@ -415,14 +501,14 @@ void Id3v2TagMaker::make(std::ostream &stream, uint32 padding, Diagnostics &diag
     writer.writeSynchsafeUInt32BE(m_framesSize + padding);
 
     // write frames
-    for(auto &maker : m_maker) {
+    for (auto &maker : m_maker) {
         maker.make(writer);
     }
 
     // write padding
-    for(; padding; --padding) {
+    for (; padding; --padding) {
         stream.put(0);
     }
 }
 
-}
+} // namespace TagParser

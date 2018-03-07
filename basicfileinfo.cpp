@@ -20,10 +20,10 @@ namespace TagParser {
  *
  * \param path Specifies the absolute or relative path of the file.
  */
-BasicFileInfo::BasicFileInfo(const std::string &path) :
-    m_path(path),
-    m_size(0),
-    m_readOnly(false)
+BasicFileInfo::BasicFileInfo(const std::string &path)
+    : m_path(path)
+    , m_size(0)
+    , m_readOnly(false)
 {
     m_file.exceptions(ios_base::failbit | ios_base::badbit);
 }
@@ -45,7 +45,7 @@ BasicFileInfo::~BasicFileInfo()
  */
 void BasicFileInfo::open(bool readOnly)
 {
-    if(!isOpen()) {
+    if (!isOpen()) {
         reopen(readOnly);
     }
 }
@@ -70,7 +70,7 @@ void BasicFileInfo::reopen(bool readOnly)
  */
 void BasicFileInfo::close()
 {
-    if(isOpen()) {
+    if (isOpen()) {
         m_file.close();
     }
     m_file.clear();
@@ -93,7 +93,7 @@ void BasicFileInfo::invalidate()
  */
 void BasicFileInfo::setPath(const string &path)
 {
-    if(path != m_path) {
+    if (path != m_path) {
         invalidated();
         m_path = path;
     }
@@ -111,11 +111,11 @@ string BasicFileInfo::fileName(const string &path, bool cutExtension)
     size_t lastBackSlash = path.rfind('\\');
     size_t lastPoint = cutExtension ? path.rfind('.') : string::npos;
     size_t lastSeparator;
-    if(lastSlash == string::npos && lastBackSlash == string::npos) {
+    if (lastSlash == string::npos && lastBackSlash == string::npos) {
         return (lastPoint == string::npos) ? path : path.substr(0, lastPoint);
-    } else if(lastSlash == string::npos) {
+    } else if (lastSlash == string::npos) {
         lastSeparator = lastBackSlash;
-    } else if(lastBackSlash == string::npos) {
+    } else if (lastBackSlash == string::npos) {
         lastSeparator = lastSlash;
     } else {
         lastSeparator = lastSlash > lastBackSlash ? lastSlash : lastBackSlash;
@@ -141,7 +141,7 @@ string BasicFileInfo::fileName(bool cutExtension) const
 string BasicFileInfo::extension(const string &path)
 {
     size_t lastPoint = path.rfind('.');
-    if(lastPoint == string::npos) {
+    if (lastPoint == string::npos) {
         return string();
     } else {
         return path.substr(lastPoint);
@@ -181,16 +181,16 @@ string BasicFileInfo::containingDirectory(const string &path)
     size_t lastSlash = path.rfind('/');
     size_t lastBackSlash = path.rfind('\\');
     size_t lastSeparator;
-    if(lastSlash == string::npos && lastBackSlash == string::npos) {
+    if (lastSlash == string::npos && lastBackSlash == string::npos) {
         return string();
-    } else if(lastSlash == string::npos) {
+    } else if (lastSlash == string::npos) {
         lastSeparator = lastBackSlash;
-    } else if(lastBackSlash == string::npos) {
+    } else if (lastBackSlash == string::npos) {
         lastSeparator = lastSlash;
     } else {
         lastSeparator = lastSlash > lastBackSlash ? lastSlash : lastBackSlash;
     }
-    if(lastSeparator > 0) {
+    if (lastSeparator > 0) {
         return path.substr(0, lastSeparator);
     } else {
         return string();
@@ -221,4 +221,4 @@ void BasicFileInfo::invalidated()
     close();
 }
 
-}
+} // namespace TagParser

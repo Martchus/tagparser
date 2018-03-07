@@ -11,8 +11,7 @@ class BinaryReader;
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT BitmapInfoHeader
-{
+class TAG_PARSER_EXPORT BitmapInfoHeader {
 public:
     BitmapInfoHeader();
 
@@ -31,6 +30,6 @@ public:
     uint32 clrImportant;
 };
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_BITMAPINFOHEADER_H

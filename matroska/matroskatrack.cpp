@@ -1,5 +1,5 @@
-#include "./ebmlelement.h"
 #include "./matroskatrack.h"
+#include "./ebmlelement.h"
 #include "./matroskacontainer.h"
 #include "./matroskaid.h"
 #include "./matroskatag.h"
@@ -13,8 +13,8 @@
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4track.h"
 
-#include "../mediaformat.h"
 #include "../exceptions.h"
+#include "../mediaformat.h"
 
 #include <c++utilities/conversion/stringconversion.h>
 
@@ -34,16 +34,18 @@ namespace TagParser {
  * Each track element (ID: MatroskaId::TrackEntry) holds header information
  * for one track in the Matroska file.
  */
-MatroskaTrack::MatroskaTrack(EbmlElement &trackElement) :
-    AbstractTrack(trackElement.stream(), trackElement.startOffset()),
-    m_trackElement(&trackElement)
-{}
+MatroskaTrack::MatroskaTrack(EbmlElement &trackElement)
+    : AbstractTrack(trackElement.stream(), trackElement.startOffset())
+    , m_trackElement(&trackElement)
+{
+}
 
 /*!
  * \brief Destroys the track.
  */
 MatroskaTrack::~MatroskaTrack()
-{}
+{
+}
 
 TrackType MatroskaTrack::type() const
 {
@@ -55,148 +57,148 @@ TrackType MatroskaTrack::type() const
  */
 MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
 {
-    auto parts = splitString<vector<string> >(codecId, "/", EmptyPartsTreat::Keep, 3);
+    auto parts = splitString<vector<string>>(codecId, "/", EmptyPartsTreat::Keep, 3);
     parts.resize(3);
     const auto &part1 = parts[0], &part2 = parts[1], &part3 = parts[2];
     MediaFormat fmt;
-    if(part1 == "V_MS" && part2 == "VFW" && part3 == "FOURCC") {
+    if (part1 == "V_MS" && part2 == "VFW" && part3 == "FOURCC") {
         fmt.general = GeneralMediaFormat::MicrosoftVideoCodecManager;
-    } else if(part1 == "V_UNCOMPRESSED") {
+    } else if (part1 == "V_UNCOMPRESSED") {
         fmt.general = GeneralMediaFormat::UncompressedVideoFrames;
-    } else if(part1 == "V_MPEG4") {
+    } else if (part1 == "V_MPEG4") {
         fmt.general = GeneralMediaFormat::Mpeg4Video;
-        if(part2 == "ISO") {
-            if(part3 == "SP") {
+        if (part2 == "ISO") {
+            if (part3 == "SP") {
                 fmt.sub = SubFormats::Mpeg4SimpleProfile1;
-            } else if(part3 == "ASP") {
+            } else if (part3 == "ASP") {
                 fmt.sub = SubFormats::Mpeg4AdvancedSimpleProfile1;
-            } else if(part3 == "AVC") {
+            } else if (part3 == "AVC") {
                 fmt.general = GeneralMediaFormat::Avc;
             }
-        } else if(part2 == "MS" && part3 == "V3") {
+        } else if (part2 == "MS" && part3 == "V3") {
             fmt.sub = SubFormats::Mpeg4SimpleProfile1;
         }
-    } else if(part1 == "V_MPEG1") {
+    } else if (part1 == "V_MPEG1") {
         fmt.general = GeneralMediaFormat::Mpeg1Video;
-    } else if(part1 == "V_MPEG2") {
+    } else if (part1 == "V_MPEG2") {
         fmt.general = GeneralMediaFormat::Mpeg2Video;
-    } else if(part1 == "V_REAL") {
+    } else if (part1 == "V_REAL") {
         fmt.general = GeneralMediaFormat::RealVideo;
-    } else if(part1 == "V_QUICKTIME") {
+    } else if (part1 == "V_QUICKTIME") {
         fmt.general = GeneralMediaFormat::QuicktimeVideo;
-    } else if(part1 == "V_THEORA") {
+    } else if (part1 == "V_THEORA") {
         fmt.general = GeneralMediaFormat::Theora;
-    } else if(part1 == "V_PRORES") {
+    } else if (part1 == "V_PRORES") {
         fmt.general = GeneralMediaFormat::ProRes;
-    } else if(part1 == "V_VP8") {
+    } else if (part1 == "V_VP8") {
         fmt.general = GeneralMediaFormat::Vp8;
-    } else if(part1 == "V_VP9") {
+    } else if (part1 == "V_VP9") {
         fmt.general = GeneralMediaFormat::Vp9;
-    } else if(part1 == "A_MPEG") {
+    } else if (part1 == "A_MPEG") {
         fmt.general = GeneralMediaFormat::Mpeg1Audio;
-        if(part2 == "L1") {
+        if (part2 == "L1") {
             fmt.sub = SubFormats::Mpeg1Layer1;
-        } else if(part2 == "L2") {
+        } else if (part2 == "L2") {
             fmt.sub = SubFormats::Mpeg1Layer2;
-        } else if(part2 == "L3") {
+        } else if (part2 == "L3") {
             fmt.sub = SubFormats::Mpeg1Layer3;
         }
-    } else if(part1 == "V_MPEGH" && part2 == "ISO" && part3 == "HEVC") {
+    } else if (part1 == "V_MPEGH" && part2 == "ISO" && part3 == "HEVC") {
         fmt.general = GeneralMediaFormat::Hevc;
-    } else if(part1 == "A_PCM") {
+    } else if (part1 == "A_PCM") {
         fmt.general = GeneralMediaFormat::Pcm;
-        if(part2 == "INT") {
-            if(part3 == "BIG") {
+        if (part2 == "INT") {
+            if (part3 == "BIG") {
                 fmt.sub = SubFormats::PcmIntBe;
-            } else if(part3 == "LIT") {
+            } else if (part3 == "LIT") {
                 fmt.sub = SubFormats::PcmIntLe;
             }
         } else if (part2 == "FLOAT" && part3 == "IEEE") {
             fmt.sub = SubFormats::PcmFloatIeee;
         }
-    } else if(part1 == "A_MPC") {
+    } else if (part1 == "A_MPC") {
         fmt.general = GeneralMediaFormat::Mpc;
-    } else if(part1 == "A_AC3") {
+    } else if (part1 == "A_AC3") {
         fmt.general = GeneralMediaFormat::Ac3;
-    } else if(part1 == "A_ALAC") {
+    } else if (part1 == "A_ALAC") {
         fmt.general = GeneralMediaFormat::Alac;
-    } else if(part1 == "A_DTS") {
+    } else if (part1 == "A_DTS") {
         fmt.general = GeneralMediaFormat::Dts;
-        if(part2 == "EXPRESS") {
+        if (part2 == "EXPRESS") {
             fmt.sub = SubFormats::DtsExpress;
-        } else if(part2 == "LOSSLESS") {
+        } else if (part2 == "LOSSLESS") {
             fmt.sub = SubFormats::DtsLossless;
         }
-    } else if(part1 == "A_VORBIS") {
+    } else if (part1 == "A_VORBIS") {
         fmt.general = GeneralMediaFormat::Vorbis;
-    } else if(part1 == "A_FLAC") {
+    } else if (part1 == "A_FLAC") {
         fmt.general = GeneralMediaFormat::Flac;
-    } else if(part1 == "A_OPUS") {
+    } else if (part1 == "A_OPUS") {
         fmt.general = GeneralMediaFormat::Opus;
-    } else if(part1 == "A_REAL") {
+    } else if (part1 == "A_REAL") {
         fmt.general = GeneralMediaFormat::RealAudio;
-    } else if(part1 == "A_MS" && part2 == "ACM") {
+    } else if (part1 == "A_MS" && part2 == "ACM") {
         fmt.general = GeneralMediaFormat::MicrosoftAudioCodecManager;
-    } else if(part1 == "A_AAC") {
+    } else if (part1 == "A_AAC") {
         fmt.general = GeneralMediaFormat::Aac;
-        if(part2 == "MPEG2") {
-            if(part3 == "MAIN") {
+        if (part2 == "MPEG2") {
+            if (part3 == "MAIN") {
                 fmt.sub = SubFormats::AacMpeg2MainProfile;
-            } else if(part3 == "LC") {
+            } else if (part3 == "LC") {
                 fmt.sub = SubFormats::AacMpeg2LowComplexityProfile;
-            } else if(part3 == "SBR") {
+            } else if (part3 == "SBR") {
                 fmt.sub = SubFormats::AacMpeg2LowComplexityProfile;
                 fmt.extension = ExtensionFormats::SpectralBandReplication;
-            } else if(part3 == "SSR") {
+            } else if (part3 == "SSR") {
                 fmt.sub = SubFormats::AacMpeg2ScalableSamplingRateProfile;
             }
-        } else if(part2 == "MPEG4") {
-            if(part3 == "MAIN") {
+        } else if (part2 == "MPEG4") {
+            if (part3 == "MAIN") {
                 fmt.sub = SubFormats::AacMpeg4MainProfile;
-            } else if(part3 == "LC") {
+            } else if (part3 == "LC") {
                 fmt.sub = SubFormats::AacMpeg4LowComplexityProfile;
-            } else if(part3 == "SBR") {
+            } else if (part3 == "SBR") {
                 fmt.sub = SubFormats::AacMpeg4LowComplexityProfile;
                 fmt.extension = ExtensionFormats::SpectralBandReplication;
-            } else if(part3 == "SSR") {
+            } else if (part3 == "SSR") {
                 fmt.sub = SubFormats::AacMpeg4ScalableSamplingRateProfile;
-            } else if(part3 == "LTP") {
+            } else if (part3 == "LTP") {
                 fmt.sub = SubFormats::AacMpeg4LongTermPrediction;
             }
         }
-    } else if(part1 == "A_QUICKTIME") {
+    } else if (part1 == "A_QUICKTIME") {
         fmt.general = GeneralMediaFormat::QuicktimeAudio;
-    } else if(part1 == "A_TTA1") {
+    } else if (part1 == "A_TTA1") {
         fmt.general = GeneralMediaFormat::Tta;
-    } else if(part1 == "A_WAVPACK4") {
+    } else if (part1 == "A_WAVPACK4") {
         fmt.general = GeneralMediaFormat::WavPack;
-    } else if(part1 == "S_TEXT") {
+    } else if (part1 == "S_TEXT") {
         fmt.general = GeneralMediaFormat::TextSubtitle;
-        if(part2 == "UTF8") {
+        if (part2 == "UTF8") {
             fmt.sub = SubFormats::PlainUtf8Subtitle;
-        } else if(part2 == "SSA") {
+        } else if (part2 == "SSA") {
             fmt.sub = SubFormats::SubStationAlpha;
-        } else if(part2 == "ASS") {
+        } else if (part2 == "ASS") {
             fmt.sub = SubFormats::AdvancedSubStationAlpha;
-        } else if(part2 == "USF") {
+        } else if (part2 == "USF") {
             fmt.sub = SubFormats::UniversalSubtitleFormat;
-        } else if(part2 == "WEBVTT") {
+        } else if (part2 == "WEBVTT") {
             fmt.sub = SubFormats::WebVideoTextTracksFormat;
         }
-    } else if(part1 == "S_IMAGE") {
+    } else if (part1 == "S_IMAGE") {
         fmt.general = GeneralMediaFormat::ImageSubtitle;
-        if(part2 == "BMP") {
+        if (part2 == "BMP") {
             fmt.sub = SubFormats::ImgSubBmp;
         }
-    } else if(part1 == "S_VOBSUB") {
+    } else if (part1 == "S_VOBSUB") {
         fmt.general = GeneralMediaFormat::VobSub;
-    } else if(part1 == "S_KATE") {
+    } else if (part1 == "S_KATE") {
         fmt.general = GeneralMediaFormat::OggKate;
-    } else if(part1 == "B_VOBBTN") {
+    } else if (part1 == "B_VOBBTN") {
         fmt.general = GeneralMediaFormat::VobBtn;
-    } else if(part1 == "S_DVBSUB") {
+    } else if (part1 == "S_DVBSUB") {
         fmt.general = GeneralMediaFormat::DvbSub;
-    } else if(part1 == "V_MSWMV") {
+    } else if (part1 == "V_MSWMV") {
         fmt.general = GeneralMediaFormat::Vc1;
     }
     return fmt;
@@ -204,18 +206,19 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
 
 /// \cond
 
-template<typename PropertyType, typename ConversionFunction>
-void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &property, const ConversionFunction &conversionFunction, Diagnostics &diag)
+template <typename PropertyType, typename ConversionFunction>
+void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &property,
+    const ConversionFunction &conversionFunction, Diagnostics &diag)
 {
     const TagValue &value = tag->value(fieldId);
-    if(!value.isEmpty()) {
+    if (!value.isEmpty()) {
         try {
             property = conversionFunction(value);
-        } catch(const ConversionException &) {
+        } catch (const ConversionException &) {
             string message;
             try {
                 message = argsToString("Ignoring invalid value \"", value.toString(TagTextEncoding::Utf8), "\" of \"", fieldId, '\"', '.');
-            } catch(const ConversionException &) {
+            } catch (const ConversionException &) {
                 message = argsToString("Ignoring invalid value of \"", fieldId, '\"', '.');
             }
             diag.emplace_back(DiagLevel::Warning, message, argsToString("reading track statatistic from \"", tag->toString(), '\"'));
@@ -223,25 +226,22 @@ void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag
     }
 }
 
-template<typename NumberType, Traits::EnableIf<std::is_integral<NumberType>>...>
-NumberType tagValueToNumber(const TagValue &tagValue)
+template <typename NumberType, Traits::EnableIf<std::is_integral<NumberType>>...> NumberType tagValueToNumber(const TagValue &tagValue)
 {
     // optimization for Latin1/UTF-8 strings
-    if(tagValue.type() == TagDataType::Text) {
-        switch(tagValue.dataEncoding()) {
+    if (tagValue.type() == TagDataType::Text) {
+        switch (tagValue.dataEncoding()) {
         case TagTextEncoding::Latin1:
         case TagTextEncoding::Utf8:
             return bufferToNumber<NumberType>(tagValue.dataPointer(), tagValue.dataSize());
-        default:
-            ;
+        default:;
         }
     }
     // generic conversion
     return stringToNumber<NumberType>(tagValue.toString(TagTextEncoding::Utf8));
 }
 
-template<typename NumberType, Traits::EnableIf<std::is_floating_point<NumberType>>...>
-NumberType tagValueToBitrate(const TagValue &tagValue)
+template <typename NumberType, Traits::EnableIf<std::is_floating_point<NumberType>>...> NumberType tagValueToBitrate(const TagValue &tagValue)
 {
     return stringToNumber<NumberType>(tagValue.toString(TagTextEncoding::Utf8)) / 1000;
 }
@@ -257,13 +257,13 @@ NumberType tagValueToBitrate(const TagValue &tagValue)
  * \sa https://github.com/mbunkus/mkvtoolnix/wiki/Automatic-tag-generation for list of track-specific
  *     tag fields written by mkvmerge
  */
-void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag> > &tags, Diagnostics &diag)
+void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag>> &tags, Diagnostics &diag)
 {
     using namespace std::placeholders;
     using namespace MatroskaTagIds::TrackSpecific;
-    for(const auto &tag : tags) {
+    for (const auto &tag : tags) {
         const TagTarget &target = tag->target();
-        if(find(target.tracks().cbegin(), target.tracks().cend(), id()) == target.tracks().cend()) {
+        if (find(target.tracks().cbegin(), target.tracks().cend(), id()) == target.tracks().cend()) {
             continue;
         }
         assignPropertyFromTagValue(tag, numberOfBytes(), m_size, &tagValueToNumber<uint64>, diag);
@@ -271,7 +271,7 @@ void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<Mat
         assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::duration(), m_duration, bind(&TagValue::toTimeSpan, _1), diag);
         assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::bitrate(), m_bitrate, &tagValueToBitrate<double>, diag);
         assignPropertyFromTagValue(tag, writingDate(), m_modificationTime, bind(&TagValue::toDateTime, _1), diag);
-        if(m_creationTime.isNull()) {
+        if (m_creationTime.isNull()) {
             m_creationTime = m_modificationTime;
         }
     }
@@ -282,22 +282,23 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
     static const string context("parsing header of Matroska track");
     try {
         m_trackElement->parse(diag);
-    } catch(const Failure &) {
+    } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Unable to parse track element.", context);
         throw;
     }
     // read information about the track from the childs of the track entry element
-    for(EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
+    for (EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement;
+         trackInfoElement = trackInfoElement->nextSibling()) {
         try {
             trackInfoElement->parse(diag);
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Unable to parse track information element.", context);
             break;
         }
         uint32 defaultDuration = 0;
-        switch(trackInfoElement->id()) {
+        switch (trackInfoElement->id()) {
         case MatroskaIds::TrackType:
-            switch(trackInfoElement->readUInteger()) {
+            switch (trackInfoElement->readUInteger()) {
             case MatroskaTrackType::Video:
                 m_mediaType = MediaType::Video;
                 break;
@@ -318,14 +319,14 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
             }
             break;
         case MatroskaIds::TrackVideo:
-            for(subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+            for (subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
                     subElement->parse(diag);
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Critical, "Unable to parse video track element.", context);
                     break;
                 }
-                switch(subElement->id()) {
+                switch (subElement->id()) {
                 case MatroskaIds::DisplayWidth:
                     m_displaySize.setWidth(subElement->readUInteger());
                     break;
@@ -359,20 +360,19 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
                 case MatroskaIds::ColorSpace:
                     m_colorSpace = subElement->readUInteger();
                     break;
-                default:
-                    ;
+                default:;
                 }
             }
             break;
         case MatroskaIds::TrackAudio:
-            for(subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
+            for (subElement = trackInfoElement->firstChild(); subElement; subElement = subElement->nextSibling()) {
                 try {
                     subElement->parse(diag);
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Critical, "Unable to parse audio track element.", context);
                     break;
                 }
-                switch(subElement->id()) {
+                switch (subElement->id()) {
                 case MatroskaIds::BitDepth:
                     m_bitsPerSample = subElement->readUInteger();
                     break;
@@ -380,17 +380,16 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
                     m_channelCount = subElement->readUInteger();
                     break;
                 case MatroskaIds::SamplingFrequency:
-                    if(!m_samplingFrequency) {
+                    if (!m_samplingFrequency) {
                         m_samplingFrequency = subElement->readFloat();
                     }
                     break;
                 case MatroskaIds::OutputSamplingFrequency:
-                    if(!m_extensionSamplingFrequency) {
+                    if (!m_extensionSamplingFrequency) {
                         m_extensionSamplingFrequency = subElement->readFloat();
                     }
                     break;
-                default:
-                    ;
+                default:;
                 }
             }
             break;
@@ -429,27 +428,25 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         case MatroskaIds::DefaultDuration:
             defaultDuration = trackInfoElement->readUInteger();
             break;
-        default:
-            ;
+        default:;
         }
-        switch(m_mediaType) {
+        switch (m_mediaType) {
         case MediaType::Video:
-            if(!m_fps && defaultDuration) {
+            if (!m_fps && defaultDuration) {
                 m_fps = 1000000000.0 / defaultDuration;
             }
             break;
-        default:
-            ;
+        default:;
         }
     }
 
     // read further information from the CodecPrivate element for some codecs
-    switch(m_format.general) {
-    EbmlElement *codecPrivateElement;
+    switch (m_format.general) {
+        EbmlElement *codecPrivateElement;
     case GeneralMediaFormat::MicrosoftVideoCodecManager:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
+        if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse bitmap info header to determine actual format
-            if(codecPrivateElement->dataSize() >= 0x28) {
+            if (codecPrivateElement->dataSize() >= 0x28) {
                 m_istream->seekg(codecPrivateElement->dataOffset());
                 BitmapInfoHeader bitmapInfoHeader;
                 bitmapInfoHeader.parse(reader());
@@ -464,9 +461,9 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         }
         break;
     case GeneralMediaFormat::MicrosoftAudioCodecManager:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
+        if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse WAVE header to determine actual format
-            if(codecPrivateElement->dataSize() >= 16) {
+            if (codecPrivateElement->dataSize() >= 16) {
                 m_istream->seekg(codecPrivateElement->dataOffset());
                 WaveFormatHeader waveFormatHeader;
                 waveFormatHeader.parse(reader());
@@ -477,19 +474,21 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         }
         break;
     case GeneralMediaFormat::Aac:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
-            auto audioSpecificConfig = Mp4Track::parseAudioSpecificConfig(*m_istream, codecPrivateElement->dataOffset(), codecPrivateElement->dataSize(), diag);
-            m_format += Mpeg4AudioObjectIds::idToMediaFormat(audioSpecificConfig->audioObjectType, audioSpecificConfig->sbrPresent, audioSpecificConfig->psPresent);
-            if(audioSpecificConfig->sampleFrequencyIndex == 0xF) {
+        if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
+            auto audioSpecificConfig
+                = Mp4Track::parseAudioSpecificConfig(*m_istream, codecPrivateElement->dataOffset(), codecPrivateElement->dataSize(), diag);
+            m_format += Mpeg4AudioObjectIds::idToMediaFormat(
+                audioSpecificConfig->audioObjectType, audioSpecificConfig->sbrPresent, audioSpecificConfig->psPresent);
+            if (audioSpecificConfig->sampleFrequencyIndex == 0xF) {
                 //m_samplingFrequency = audioSpecificConfig->sampleFrequency;
-            } else if(audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+            } else if (audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
                 //m_samplingFrequency = mpeg4SamplingFrequencyTable[audioSpecificConfig->sampleFrequencyIndex];
             } else {
                 diag.emplace_back(DiagLevel::Warning, "Audio specific config has invalid sample frequency index.", context);
             }
-            if(audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
+            if (audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
                 //m_extensionSamplingFrequency = audioSpecificConfig->extensionSampleFrequency;
-            } else if(audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+            } else if (audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
                 //m_extensionSamplingFrequency = mpeg4SamplingFrequencyTable[audioSpecificConfig->extensionSampleFrequencyIndex];
             } else {
                 diag.emplace_back(DiagLevel::Warning, "Audio specific config has invalid extension sample frequency index.", context);
@@ -499,26 +498,25 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         }
         break;
     case GeneralMediaFormat::Avc:
-        if((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
+        if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             auto avcConfig = make_unique<TagParser::AvcConfiguration>();
             try {
                 m_istream->seekg(codecPrivateElement->dataOffset());
                 avcConfig->parse(m_reader, codecPrivateElement->dataSize());
                 Mp4Track::addInfo(*avcConfig, *this);
-            } catch(const TruncatedDataException &) {
+            } catch (const TruncatedDataException &) {
                 diag.emplace_back(DiagLevel::Critical, "AVC configuration is truncated.", context);
-            } catch(const Failure &) {
+            } catch (const Failure &) {
                 diag.emplace_back(DiagLevel::Critical, "AVC configuration is invalid.", context);
             }
         }
         break;
-    default:
-        ;
+    default:;
     }
 
     // parse format name for unknown formats
-    if(m_format.general == GeneralMediaFormat::Unknown && m_formatName.empty()) {
-        if(startsWith<string>(m_formatId, "V_") || startsWith<string>(m_formatId, "A_") || startsWith<string>(m_formatId, "S_")) {
+    if (m_format.general == GeneralMediaFormat::Unknown && m_formatName.empty()) {
+        if (startsWith<string>(m_formatId, "V_") || startsWith<string>(m_formatId, "A_") || startsWith<string>(m_formatId, "S_")) {
             m_formatName = m_formatId.substr(2);
         } else {
             m_formatName = m_formatId;
@@ -527,15 +525,15 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
     }
 
     // use pixel size as display size if display size not specified
-    if(!m_displaySize.width()) {
+    if (!m_displaySize.width()) {
         m_displaySize.setWidth(m_pixelSize.width());
     }
-    if(!m_displaySize.height()) {
+    if (!m_displaySize.height()) {
         m_displaySize.setHeight(m_pixelSize.height());
     }
 
     // set English if no language has been specified (it is default value of MatroskaIds::TrackLanguage)
-    if(m_language.empty()) {
+    if (m_language.empty()) {
         m_language = "eng";
     }
 }
@@ -551,9 +549,9 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
  * \brief Prepares making the header for the specified \a track.
  * \sa See MatroskaTrack::prepareMakingHeader() for more information.
  */
-MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag) :
-    m_track(track),
-    m_dataSize(0)
+MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag)
+    : m_track(track)
+    , m_dataSize(0)
 {
     VAR_UNUSED(diag);
 
@@ -563,16 +561,16 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
     m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isEnabled());
     m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isDefault());
     m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.isForced());
-    if(!m_track.name().empty()) {
+    if (!m_track.name().empty()) {
         m_dataSize += 2 + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
     }
-    if(!m_track.language().empty()) {
+    if (!m_track.language().empty()) {
         m_dataSize += 3 + EbmlElement::calculateSizeDenotationLength(m_track.language().size()) + m_track.language().size();
     }
 
     // calculate size for other elements
-    for(EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
-        switch(trackInfoElement->id()) {
+    for (EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
+        switch (trackInfoElement->id()) {
         case MatroskaIds::TrackNumber:
         case MatroskaIds::TrackUID:
         case MatroskaIds::TrackName:
@@ -612,16 +610,16 @@ void MatroskaTrackHeaderMaker::make(ostream &stream) const
     EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagEnabled, m_track.isEnabled());
     EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagDefault, m_track.isDefault());
     EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackFlagForced, m_track.isForced());
-    if(!m_track.name().empty()) {
+    if (!m_track.name().empty()) {
         EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackName, m_track.name());
     }
-    if(!m_track.language().empty()) {
+    if (!m_track.language().empty()) {
         EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguage, m_track.language());
     }
 
     // make other elements
-    for(EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
-        switch(trackInfoElement->id()) {
+    for (EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
+        switch (trackInfoElement->id()) {
         case MatroskaIds::TrackNumber:
         case MatroskaIds::TrackUID:
         case MatroskaIds::TrackName:
@@ -637,4 +635,4 @@ void MatroskaTrackHeaderMaker::make(ostream &stream) const
     }
 }
 
-}
+} // namespace TagParser

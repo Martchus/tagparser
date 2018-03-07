@@ -4,12 +4,12 @@
 #include "./id3/id3genres.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
-#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/conversion/conversionexception.h>
+#include <c++utilities/conversion/stringconversion.h>
 
 #include <algorithm>
-#include <utility>
 #include <cstring>
+#include <utility>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -28,18 +28,18 @@ namespace TagParser {
  * \brief Constructs a new TagValue holding a copy of the given TagValue instance.
  * \param other Specifies another TagValue instance.
  */
-TagValue::TagValue(const TagValue &other) :
-    m_size(other.m_size),
-    m_type(other.m_type),
-    m_desc(other.m_desc),
-    m_mimeType(other.m_mimeType),
-    m_lng(other.m_lng),
-    m_labeledAsReadonly(other.m_labeledAsReadonly),
-    m_encoding(other.m_encoding),
-    m_descEncoding(other.m_descEncoding)
+TagValue::TagValue(const TagValue &other)
+    : m_size(other.m_size)
+    , m_type(other.m_type)
+    , m_desc(other.m_desc)
+    , m_mimeType(other.m_mimeType)
+    , m_lng(other.m_lng)
+    , m_labeledAsReadonly(other.m_labeledAsReadonly)
+    , m_encoding(other.m_encoding)
+    , m_descEncoding(other.m_descEncoding)
 {
-    if(!other.isEmpty()) {
-        m_ptr = make_unique<char []>(m_size);
+    if (!other.isEmpty()) {
+        m_ptr = make_unique<char[]>(m_size);
         std::copy(other.m_ptr.get(), other.m_ptr.get() + other.m_size, m_ptr.get());
     }
 }
@@ -49,7 +49,7 @@ TagValue::TagValue(const TagValue &other) :
  */
 TagValue &TagValue::operator=(const TagValue &other)
 {
-    if(this != &other) {
+    if (this != &other) {
         m_size = other.m_size;
         m_type = other.m_type;
         m_desc = other.m_desc;
@@ -58,7 +58,7 @@ TagValue &TagValue::operator=(const TagValue &other)
         m_labeledAsReadonly = other.m_labeledAsReadonly;
         m_encoding = other.m_encoding;
         m_descEncoding = other.m_descEncoding;
-        if(other.isEmpty()) {
+        if (other.isEmpty()) {
             m_ptr.reset();
         } else {
             m_ptr = make_unique<char[]>(m_size);
@@ -78,14 +78,14 @@ TagValue &TagValue::operator=(const TagValue &other)
  */
 bool TagValue::operator==(const TagValue &other) const
 {
-    if(m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding)
-            || m_mimeType != other.m_mimeType || m_lng != other.m_lng || m_labeledAsReadonly != other.m_labeledAsReadonly) {
+    if (m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding) || m_mimeType != other.m_mimeType
+        || m_lng != other.m_lng || m_labeledAsReadonly != other.m_labeledAsReadonly) {
         return false;
     }
-    if(m_type == other.m_type) {
-        switch(m_type) {
+    if (m_type == other.m_type) {
+        switch (m_type) {
         case TagDataType::Text:
-            if(m_size != other.m_size && m_encoding != other.m_encoding) {
+            if (m_size != other.m_size && m_encoding != other.m_encoding) {
                 // don't consider differently encoded text values equal
                 return false;
             }
@@ -103,7 +103,7 @@ bool TagValue::operator==(const TagValue &other) const
         case TagDataType::Picture:
         case TagDataType::Binary:
         case TagDataType::Undefined:
-            if(m_size != other.m_size) {
+            if (m_size != other.m_size) {
                 return false;
             }
             return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
@@ -116,7 +116,7 @@ bool TagValue::operator==(const TagValue &other) const
             // try to convert both values to string
             // if the string representations are equal, both values can also be considered equal
             return toString() == other.toString(m_encoding);
-        } catch(const ConversionException &) {
+        } catch (const ConversionException &) {
             return false;
         }
     }
@@ -126,7 +126,8 @@ bool TagValue::operator==(const TagValue &other) const
  * \brief Destroys the TagValue.
  */
 TagValue::~TagValue()
-{}
+{
+}
 
 /*!
  * \brief Wipes assigned meta data.
@@ -163,10 +164,10 @@ void TagValue::clearDataAndMetadata()
  */
 int32 TagValue::toInteger() const
 {
-    if(!isEmpty()) {
-        switch(m_type) {
+    if (!isEmpty()) {
+        switch (m_type) {
         case TagDataType::Text:
-            switch(m_encoding) {
+            switch (m_encoding) {
             case TagTextEncoding::Unspecified:
             case TagTextEncoding::Latin1:
             case TagTextEncoding::Utf8:
@@ -180,7 +181,7 @@ int32 TagValue::toInteger() const
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
         case TagDataType::StandardGenreIndex:
-            if(m_size == sizeof(int32)) {
+            if (m_size == sizeof(int32)) {
                 return *reinterpret_cast<int32 *>(m_ptr.get());
             } else {
                 throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
@@ -199,25 +200,26 @@ int32 TagValue::toInteger() const
  */
 int TagValue::toStandardGenreIndex() const
 {
-    if(!isEmpty()) {
+    if (!isEmpty()) {
         int index = 0;
-        switch(m_type) {
+        switch (m_type) {
         case TagDataType::Text: {
             const string s(toString());
             try {
                 index = toInteger();
             } catch (const ConversionException &) {
                 TagTextEncoding encoding = TagTextEncoding::Utf8;
-                if(m_encoding == TagTextEncoding::Latin1) {
+                if (m_encoding == TagTextEncoding::Latin1) {
                     // no need to convert Latin-1 to UTF-8 (makes no difference in case of genre strings)
                     encoding = TagTextEncoding::Unspecified;
                 }
                 index = Id3Genres::indexFromString(toString(encoding));
             }
             break;
-        } case TagDataType::StandardGenreIndex:
+        }
+        case TagDataType::StandardGenreIndex:
         case TagDataType::Integer:
-            if(m_size == sizeof(int32)) {
+            if (m_size == sizeof(int32)) {
                 index = static_cast<int>(*reinterpret_cast<int32 *>(m_ptr.get()));
             } else {
                 throw ConversionException("The assigned data is of unappropriate size.");
@@ -226,7 +228,7 @@ int TagValue::toStandardGenreIndex() const
         default:
             throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
         }
-        if(Id3Genres::isIndexSupported(index)) {
+        if (Id3Genres::isIndexSupported(index)) {
             return index;
         } else {
             throw ConversionException("The assigned number is not a valid standard genre index.");
@@ -242,10 +244,10 @@ int TagValue::toStandardGenreIndex() const
  */
 PositionInSet TagValue::toPositionInSet() const
 {
-    if(!isEmpty()) {
-        switch(m_type) {
+    if (!isEmpty()) {
+        switch (m_type) {
         case TagDataType::Text:
-            switch(m_encoding) {
+            switch (m_encoding) {
             case TagTextEncoding::Unspecified:
             case TagTextEncoding::Latin1:
             case TagTextEncoding::Utf8:
@@ -258,7 +260,7 @@ PositionInSet TagValue::toPositionInSet() const
             }
         case TagDataType::Integer:
         case TagDataType::PositionInSet:
-            switch(m_size) {
+            switch (m_size) {
             case sizeof(int32):
                 return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())));
             case 2 * sizeof(int32):
@@ -280,13 +282,13 @@ PositionInSet TagValue::toPositionInSet() const
  */
 TimeSpan TagValue::toTimeSpan() const
 {
-    if(!isEmpty()) {
-        switch(m_type) {
+    if (!isEmpty()) {
+        switch (m_type) {
         case TagDataType::Text:
             return TimeSpan::fromString(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
         case TagDataType::TimeSpan:
-            switch(m_size) {
+            switch (m_size) {
             case sizeof(int32):
                 return TimeSpan(*(reinterpret_cast<int32 *>(m_ptr.get())));
             case sizeof(int64):
@@ -308,15 +310,15 @@ TimeSpan TagValue::toTimeSpan() const
  */
 DateTime TagValue::toDateTime() const
 {
-    if(!isEmpty()) {
-        switch(m_type) {
+    if (!isEmpty()) {
+        switch (m_type) {
         case TagDataType::Text:
             return DateTime::fromString(string(m_ptr.get(), m_size));
         case TagDataType::Integer:
         case TagDataType::DateTime:
-            if(m_size == sizeof(int32)) {
+            if (m_size == sizeof(int32)) {
                 return DateTime(*(reinterpret_cast<int32 *>(m_ptr.get())));
-            } else if(m_size == sizeof(int64)) {
+            } else if (m_size == sizeof(int64)) {
                 return DateTime(*(reinterpret_cast<int64 *>(m_ptr.get())));
             } else {
                 throw ConversionException("The assigned data is of unappropriate size.");
@@ -333,7 +335,7 @@ DateTime TagValue::toDateTime() const
  */
 pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
 {
-    switch(tagTextEncoding) {
+    switch (tagTextEncoding) {
     case TagTextEncoding::Latin1:
         return make_pair("ISO-8859-1", 1.0f);
     case TagTextEncoding::Utf8:
@@ -358,13 +360,13 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
  */
 void TagValue::convertDataEncoding(TagTextEncoding encoding)
 {
-    if(m_encoding != encoding) {
-        if(type() == TagDataType::Text) {
+    if (m_encoding != encoding) {
+        if (type() == TagDataType::Text) {
             StringData encodedData;
-            switch(encoding) {
+            switch (encoding) {
             case TagTextEncoding::Utf8:
                 // use pre-defined methods when encoding to UTF-8
-                switch(dataEncoding()) {
+                switch (dataEncoding()) {
                 case TagTextEncoding::Latin1:
                     encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
                     break;
@@ -374,19 +376,19 @@ void TagValue::convertDataEncoding(TagTextEncoding encoding)
                 case TagTextEncoding::Utf16BigEndian:
                     encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
                     break;
-                default:
-                    ;
+                default:;
                 }
                 break;
             default: {
                 // otherwise, determine input and output parameter to use general covertString method
                 const auto inputParameter = encodingParameter(dataEncoding());
                 const auto outputParameter = encodingParameter(encoding);
-                encodedData = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
+                encodedData
+                    = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
             }
             }
             // can't just move the encoded data because it needs to be deleted with free
-            m_ptr = make_unique<char []>(m_size = encodedData.second);
+            m_ptr = make_unique<char[]>(m_size = encodedData.second);
             copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
         }
         m_encoding = encoding;
@@ -399,7 +401,7 @@ void TagValue::convertDataEncoding(TagTextEncoding encoding)
  */
 void TagValue::convertDataEncodingForTag(const Tag *tag)
 {
-    if(type() == TagDataType::Text && !tag->canEncodingBeUsed(dataEncoding())) {
+    if (type() == TagDataType::Text && !tag->canEncodingBeUsed(dataEncoding())) {
         convertDataEncoding(tag->proposedTextEncoding());
     }
 }
@@ -415,17 +417,17 @@ void TagValue::convertDataEncodingForTag(const Tag *tag)
  */
 void TagValue::toString(string &result, TagTextEncoding encoding) const
 {
-    if(!isEmpty()) {
-        switch(m_type) {
+    if (!isEmpty()) {
+        switch (m_type) {
         case TagDataType::Text:
-            if(encoding == TagTextEncoding::Unspecified || dataEncoding() == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
+            if (encoding == TagTextEncoding::Unspecified || dataEncoding() == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
                 result.assign(m_ptr.get(), m_size);
             } else {
                 StringData encodedData;
-                switch(encoding) {
+                switch (encoding) {
                 case TagTextEncoding::Utf8:
                     // use pre-defined methods when encoding to UTF-8
-                    switch(dataEncoding()) {
+                    switch (dataEncoding()) {
                     case TagTextEncoding::Latin1:
                         encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
                         break;
@@ -435,15 +437,15 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
                     case TagTextEncoding::Utf16BigEndian:
                         encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
                         break;
-                    default:
-                        ;
+                    default:;
                     }
                     break;
                 default: {
                     // otherwise, determine input and output parameter to use general covertString method
                     const auto inputParameter = encodingParameter(dataEncoding());
                     const auto outputParameter = encodingParameter(encoding);
-                    encodedData = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
+                    encodedData = convertString(
+                        inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
                 }
                 }
                 result.assign(encodedData.first.get(), encodedData.second);
@@ -456,7 +458,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
             result = toPositionInSet().toString();
             break;
         case TagDataType::StandardGenreIndex:
-            if(const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+            if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
                 result.assign(genreName);
                 break;
             } else {
@@ -471,10 +473,9 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         default:
             throw ConversionException("Can not convert binary data/picture to string.");
         }
-        if(encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
-            auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian
-                    ? convertUtf8ToUtf16LE(result.data(), result.size())
-                    : convertUtf8ToUtf16BE(result.data(), result.size());
+        if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
+            auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(result.data(), result.size())
+                                                                              : convertUtf8ToUtf16BE(result.data(), result.size());
             result.assign(encodedData.first.get(), encodedData.second);
         }
     } else {
@@ -491,18 +492,18 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
  */
 void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
 {
-    if(!isEmpty()) {
+    if (!isEmpty()) {
         string regularStrRes;
-        switch(m_type) {
+        switch (m_type) {
         case TagDataType::Text:
-            if(encoding == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
+            if (encoding == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
                 result.assign(reinterpret_cast<const char16_t *>(m_ptr.get()), m_size / sizeof(char16_t));
             } else {
                 StringData encodedData;
-                switch(encoding) {
+                switch (encoding) {
                 case TagTextEncoding::Utf8:
                     // use pre-defined methods when encoding to UTF-8
-                    switch(dataEncoding()) {
+                    switch (dataEncoding()) {
                     case TagTextEncoding::Latin1:
                         encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
                         break;
@@ -512,15 +513,15 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
                     case TagTextEncoding::Utf16BigEndian:
                         encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
                         break;
-                    default:
-                        ;
+                    default:;
                     }
                     break;
                 default: {
                     // otherwise, determine input and output parameter to use general covertString method
                     const auto inputParameter = encodingParameter(dataEncoding());
                     const auto outputParameter = encodingParameter(encoding);
-                    encodedData = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
+                    encodedData = convertString(
+                        inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
                 }
                 }
                 result.assign(reinterpret_cast<const char16_t *>(encodedData.first.get()), encodedData.second / sizeof(char16_t));
@@ -533,7 +534,7 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
             regularStrRes = toPositionInSet().toString();
             break;
         case TagDataType::StandardGenreIndex:
-            if(const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+            if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
                 regularStrRes.assign(genreName);
                 break;
             } else {
@@ -545,10 +546,9 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         default:
             throw ConversionException("Can not convert binary data/picture to string.");
         }
-        if(encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
-            auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian
-                    ? convertUtf8ToUtf16LE(regularStrRes.data(), result.size())
-                    : convertUtf8ToUtf16BE(regularStrRes.data(), result.size());
+        if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
+            auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(regularStrRes.data(), result.size())
+                                                                              : convertUtf8ToUtf16BE(regularStrRes.data(), result.size());
             result.assign(reinterpret_cast<const char16_t *>(encodedData.first.get()), encodedData.second / sizeof(const char16_t));
         }
     } else {
@@ -572,21 +572,21 @@ void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncodin
     m_encoding = convertTo == TagTextEncoding::Unspecified ? textEncoding : convertTo;
 
     stripBom(text, textSize, textEncoding);
-    if(!textSize) {
+    if (!textSize) {
         m_size = 0;
         m_ptr.reset();
         return;
     }
 
-    if(convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
-        m_ptr = make_unique<char []>(m_size = textSize);
+    if (convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
+        m_ptr = make_unique<char[]>(m_size = textSize);
         copy(text, text + textSize, m_ptr.get());
     } else {
         StringData encodedData;
-        switch(textEncoding) {
+        switch (textEncoding) {
         case TagTextEncoding::Utf8:
             // use pre-defined methods when encoding to UTF-8
-            switch(convertTo) {
+            switch (convertTo) {
             case TagTextEncoding::Latin1:
                 encodedData = convertUtf8ToLatin1(text, textSize);
                 break;
@@ -596,8 +596,7 @@ void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncodin
             case TagTextEncoding::Utf16BigEndian:
                 encodedData = convertUtf8ToUtf16BE(text, textSize);
                 break;
-            default:
-                ;
+            default:;
             }
             break;
         default: {
@@ -608,7 +607,7 @@ void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncodin
         }
         }
         // can't just move the encoded data because it needs to be deleted with free
-        m_ptr = make_unique<char []>(m_size = encodedData.second);
+        m_ptr = make_unique<char[]>(m_size = encodedData.second);
         copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
     }
 }
@@ -620,7 +619,7 @@ void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncodin
 void TagValue::assignInteger(int value)
 {
     m_size = sizeof(value);
-    m_ptr = make_unique<char []>(m_size);
+    m_ptr = make_unique<char[]>(m_size);
     std::copy(reinterpret_cast<const char *>(&value), reinterpret_cast<const char *>(&value) + m_size, m_ptr.get());
     m_type = TagDataType::Integer;
     m_encoding = TagTextEncoding::Latin1;
@@ -647,13 +646,13 @@ void TagValue::assignStandardGenreIndex(int index)
  */
 void TagValue::assignData(const char *data, size_t length, TagDataType type, TagTextEncoding encoding)
 {
-    if(type == TagDataType::Text) {
+    if (type == TagDataType::Text) {
         stripBom(data, length, encoding);
     }
-    if(length > m_size) {
+    if (length > m_size) {
         m_ptr = make_unique<char[]>(length);
     }
-    if(length) {
+    if (length) {
         std::copy(data, data + length, m_ptr.get());
     } else {
         m_ptr.reset();
@@ -688,27 +687,26 @@ void TagValue::assignData(unique_ptr<char[]> &&data, size_t length, TagDataType 
  */
 void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encoding)
 {
-    switch(encoding) {
+    switch (encoding) {
     case TagTextEncoding::Utf8:
-        if((length >= 3) && (ConversionUtilities::BE::toUInt24(text) == 0x00EFBBBF)) {
+        if ((length >= 3) && (ConversionUtilities::BE::toUInt24(text) == 0x00EFBBBF)) {
             text += 3;
             length -= 3;
         }
         break;
     case TagTextEncoding::Utf16LittleEndian:
-        if((length >= 2) && (ConversionUtilities::LE::toUInt16(text) == 0xFEFF)) {
+        if ((length >= 2) && (ConversionUtilities::LE::toUInt16(text) == 0xFEFF)) {
             text += 2;
             length -= 2;
         }
         break;
     case TagTextEncoding::Utf16BigEndian:
-        if((length >= 2) && (ConversionUtilities::BE::toUInt16(text) == 0xFEFF)) {
+        if ((length >= 2) && (ConversionUtilities::BE::toUInt16(text) == 0xFEFF)) {
             text += 2;
             length -= 2;
         }
         break;
-    default:
-        ;
+    default:;
     }
 }
 
@@ -718,16 +716,16 @@ void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encod
  */
 void TagValue::ensureHostByteOrder(u16string &u16str, TagTextEncoding currentEncoding)
 {
-    if(currentEncoding !=
-        #if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
-            TagTextEncoding::Utf16LittleEndian
-        #elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
-            TagTextEncoding::Utf16BigEndian
-        #else
-        # error "Host byte order not supported"
-        #endif
-            ) {
-        for(auto &c : u16str) {
+    if (currentEncoding !=
+#if defined(CONVERSION_UTILITIES_BYTE_ORDER_LITTLE_ENDIAN)
+        TagTextEncoding::Utf16LittleEndian
+#elif defined(CONVERSION_UTILITIES_BYTE_ORDER_BIG_ENDIAN)
+        TagTextEncoding::Utf16BigEndian
+#else
+#error "Host byte order not supported"
+#endif
+    ) {
+        for (auto &c : u16str) {
             c = swapOrder(static_cast<uint16>(c));
         }
     }
@@ -742,4 +740,4 @@ const TagValue &TagValue::empty()
     return emptyTagValue;
 }
 
-}
+} // namespace TagParser

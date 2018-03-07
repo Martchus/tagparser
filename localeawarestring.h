@@ -11,8 +11,7 @@ namespace TagParser {
 /*!
  * \brief The LocaleAwareString class is a standard string with locale information (languages, countries).
  */
-class TAG_PARSER_EXPORT LocaleAwareString : public std::string
-{
+class TAG_PARSER_EXPORT LocaleAwareString : public std::string {
 public:
     LocaleAwareString(const std::string &value = std::string());
     LocaleAwareString(std::string &&value);
@@ -31,22 +30,25 @@ private:
 /*!
  * \brief Constructs a new LocaleAwareString from the specified standard string.
  */
-inline LocaleAwareString::LocaleAwareString(const std::string &value) :
-    std::string(value)
-{}
+inline LocaleAwareString::LocaleAwareString(const std::string &value)
+    : std::string(value)
+{
+}
 
 /*!
  * \brief Constructs a new LocaleAwareString from the specified standard string.
  */
-inline LocaleAwareString::LocaleAwareString(std::string &&value) :
-    std::string(value)
-{}
+inline LocaleAwareString::LocaleAwareString(std::string &&value)
+    : std::string(value)
+{
+}
 
 /*!
  * \brief Destroys the instance.
  */
 inline LocaleAwareString::~LocaleAwareString()
-{}
+{
+}
 
 /*!
  * \brief Returns associated languages.
@@ -80,6 +82,6 @@ inline std::vector<std::string> &LocaleAwareString::countries()
     return m_countries;
 }
 
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_LOCALEAWARESTRING_H

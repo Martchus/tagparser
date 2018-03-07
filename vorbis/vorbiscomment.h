@@ -16,16 +16,13 @@ class Diagnostics;
 /*!
  * \brief Defines traits for the TagField implementation of the VorbisComment class.
  */
-template <>
-class TAG_PARSER_EXPORT FieldMapBasedTagTraits<VorbisComment>
-{
+template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<VorbisComment> {
 public:
     typedef VorbisCommentField FieldType;
     typedef CaseInsensitiveStringComparer Compare;
 };
 
-class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment>
-{
+class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment> {
     friend class FieldMapBasedTag<VorbisComment>;
 
 public:
@@ -53,8 +50,7 @@ protected:
     KnownField internallyGetKnownField(const IdentifierType &id) const;
 
 private:
-    template<class StreamType>
-    void internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);
+    template <class StreamType> void internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);
 
 private:
     TagValue m_vendor;
@@ -64,7 +60,8 @@ private:
  * \brief Constructs a new Vorbis comment.
  */
 inline VorbisComment::VorbisComment()
-{}
+{
+}
 
 inline bool VorbisComment::canEncodingBeUsed(TagTextEncoding encoding) const
 {
@@ -89,6 +86,6 @@ inline void VorbisComment::setVendor(const TagValue &vendor)
     m_vendor = vendor;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_VORBISCOMMENT_H

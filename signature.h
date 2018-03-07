@@ -14,8 +14,7 @@ DECLARE_ENUM_CLASS(TagTargetLevel, byte);
  *
  * Raw streams like ADTS or raw FLAC count as container format in this context.
  */
-enum class ContainerFormat
-{
+enum class ContainerFormat {
     Unknown, /**< unknown container format */
     Ac3Frames, /**< raw AC-3/Dolby Digital frames */
     Adts, /**< Audio Data Transport Stream */
@@ -67,12 +66,13 @@ enum class ContainerFormat
 
 TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);
 TAG_PARSER_EXPORT const char *containerFormatName(ContainerFormat containerFormat);
-TAG_PARSER_EXPORT const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
+TAG_PARSER_EXPORT const char *containerFormatAbbreviation(
+    ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
 TAG_PARSER_EXPORT const char *containerFormatSubversion(ContainerFormat containerFormat);
 TAG_PARSER_EXPORT const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
 TAG_PARSER_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue);
 TAG_PARSER_EXPORT uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_SIGNATURE_H

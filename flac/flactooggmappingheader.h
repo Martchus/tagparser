@@ -7,8 +7,7 @@ namespace TagParser {
 
 class OggIterator;
 
-class TAG_PARSER_EXPORT FlacToOggMappingHeader
-{
+class TAG_PARSER_EXPORT FlacToOggMappingHeader {
 public:
     FlacToOggMappingHeader();
 
@@ -29,11 +28,12 @@ private:
 /*!
  * \brief Constructs a new FLAC identification header.
  */
-inline FlacToOggMappingHeader::FlacToOggMappingHeader() :
-    m_majorVersion(0),
-    m_minorVersion(0),
-    m_headerCount(0)
-{}
+inline FlacToOggMappingHeader::FlacToOggMappingHeader()
+    : m_majorVersion(0)
+    , m_minorVersion(0)
+    , m_headerCount(0)
+{
+}
 
 /*!
  * \brief Returns the major version for the mapping (which should be 1 currently).
@@ -67,6 +67,6 @@ inline const FlacMetaDataBlockStreamInfo &FlacToOggMappingHeader::streamInfo() c
     return m_streamInfo;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_FLACIDENTIFICATIONHEADER_H

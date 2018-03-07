@@ -1,11 +1,11 @@
 #include "../caseinsensitivecomparer.h"
 
-#include <c++utilities/tests/testutils.h>
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/catchiofailure.h>
+#include <c++utilities/tests/testutils.h>
 
-#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include <openssl/sha.h>
 
@@ -22,20 +22,19 @@ using namespace CPPUNIT_NS;
 /*!
  * \brief The Sha256Checksum struct holds the "hex string representation" of a SHA-256 checksum.
  */
-struct Sha256Checksum
-{
+struct Sha256Checksum {
     char checksum[65];
-    bool operator ==(const Sha256Checksum &other) const;
+    bool operator==(const Sha256Checksum &other) const;
 };
 
 /*!
  * \brief Returns whether the current instance equals \a other ignoring the case.
  */
-bool Sha256Checksum::operator ==(const Sha256Checksum &other) const
+bool Sha256Checksum::operator==(const Sha256Checksum &other) const
 {
-    for(const char *i1 = checksum, *i2 = other.checksum, *end = checksum + sizeof(checksum); i1 != end; ++i1, ++i2) {
-        if(CaseInsensitiveCharComparer::toLower(static_cast<unsigned char>(*i1))
-                != CaseInsensitiveCharComparer::toLower(static_cast<unsigned char>(*i2))) {
+    for (const char *i1 = checksum, *i2 = other.checksum, *end = checksum + sizeof(checksum); i1 != end; ++i1, ++i2) {
+        if (CaseInsensitiveCharComparer::toLower(static_cast<unsigned char>(*i1))
+            != CaseInsensitiveCharComparer::toLower(static_cast<unsigned char>(*i2))) {
             return false;
         }
     }
@@ -51,34 +50,33 @@ ostream &operator<<(ostream &os, const Sha256Checksum &checksum)
 /*!
  * \brief The TestFile struct holds the path (relative to testfile dir) and checksum of a test file.
  */
-struct TestFile
-{
+struct TestFile {
     const char *path;
     Sha256Checksum expectedSha256sum;
     Sha256Checksum computeSha256Sum() const;
     void verifyChecksum() const;
 } const testFiles[] = {
-    {"matroska_wave1/logo3_256x256.png", {"810b9172607e281d9a3969018c7d6521de240cc3688fecf598444e666aa6b4dc"}},
-    {"matroska_wave1/test1.mkv", {"0996a309ff2095910b9d30d5253b044d637154297ddf7d0bda7f3adedf5addc1"}},
-    {"matroska_wave1/test2.mkv", {"5b53d306e56f9bda6e80c3fbd9f3ccd20cc885770449d1fc0b5bec35c71d61e2"}},
-    {"matroska_wave1/test3.mkv", {"1722b0d93a6ef1a14dd513bd031cd5901c233b45aa3e3c87be0b0d7348d7d1b5"}},
-    {"matroska_wave1/test4.mkv", {"43df750a2a01a37949791b717051b41522081a266b71d113be4b713063843699"}},
-    {"matroska_wave1/test5.mkv", {"92acdc33bb0b5d7a4d9b0d6ca792230a78c786a30179dc9999cee41c28642842"}},
-    {"matroska_wave1/test6.mkv", {"7cad84b434116e023d340dd584ac833b93f03fb1bd7ea2727fa45de50af0abb9"}},
-    {"matroska_wave1/test7.mkv", {"95b21c92ad5a4fe00914ff5009e2a64f12fd4c5fb9cb1c3c888ab50bf0ffe483"}},
-    {"matroska_wave1/test8.mkv", {"9dddcd1550b814dae44d62e2b9f27c0eca31d5e190df2220cbf7492e3d6c63da"}},
-    {"mtx-test-data/mkv/handbrake-chapters-2.mkv", {"eccc55f3b59a77086b3ffb914525d312c7886eae34e3933352dea2f6f6a1974c"}},
-    {"mtx-test-data/mkv/tags.mkv", {"4330019afc3d846600c1ded38158fcac081297f4e56c749251c236f4871e0287"}},
-    {"mkv/nested-tags.xml", {"85cfcc94920f114e52fd1aa3df24706cd2710626e065a2c8c55dd209ec8dc8ce"}},
-    {"mp4/test1.m4a", {"4f16e0a22525bd13ba859431406d7f5991e0b4f155c51e10e5f32b0c97034b36"}},
-    {"mtx-test-data/aac/he-aacv2-ps.m4a", {"be54be0ae45b0184583ced8a84a881a1652a449feb7f6a917e11f60efabb68ac"}},
-    {"mtx-test-data/alac/othertest-itunes.m4a", {"5e9c64cde00902211533fbe38aaa67ef5f79a945e1d717951b78b4bbf9ff84e8"}},
-    {"mtx-test-data/mp3/id3-tag-and-xing-header.mp3", {"4a9187b05dc74d32e5a3de53494fde9db8c6c25d46082f86de6f424ad28daacf"}},
-    {"mtx-test-data/mp4/10-DanseMacabreOp.40.m4a", {"30c915d5656de049d66fd70b0966a33faf038af42365a2bb973e5c2fc0ba2038"}},
-    {"mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4", {"fbf929bf8300fc6e53c5c5b7fde4ed2a427fef2d4fd093511c672083039abbf1"}},
-    {"mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4", {"864891f4510f3fa9c49c19e671171cec08ceb331362cf7161419b957be090d47"}},
-    {"mtx-test-data/ogg/qt4dance_medium.ogg", {"0b5429da9713be171c6ae0da69621261e8d5ddc9db3da872e5ade1a1c883decd"}},
-    {"mtx-test-data/opus/v-opus.ogg", {"e12adece4dbcccf2471b61c3ebd7c6576dee351d85809ab6f01d6f324d65b417"}},
+    { "matroska_wave1/logo3_256x256.png", { "810b9172607e281d9a3969018c7d6521de240cc3688fecf598444e666aa6b4dc" } },
+    { "matroska_wave1/test1.mkv", { "0996a309ff2095910b9d30d5253b044d637154297ddf7d0bda7f3adedf5addc1" } },
+    { "matroska_wave1/test2.mkv", { "5b53d306e56f9bda6e80c3fbd9f3ccd20cc885770449d1fc0b5bec35c71d61e2" } },
+    { "matroska_wave1/test3.mkv", { "1722b0d93a6ef1a14dd513bd031cd5901c233b45aa3e3c87be0b0d7348d7d1b5" } },
+    { "matroska_wave1/test4.mkv", { "43df750a2a01a37949791b717051b41522081a266b71d113be4b713063843699" } },
+    { "matroska_wave1/test5.mkv", { "92acdc33bb0b5d7a4d9b0d6ca792230a78c786a30179dc9999cee41c28642842" } },
+    { "matroska_wave1/test6.mkv", { "7cad84b434116e023d340dd584ac833b93f03fb1bd7ea2727fa45de50af0abb9" } },
+    { "matroska_wave1/test7.mkv", { "95b21c92ad5a4fe00914ff5009e2a64f12fd4c5fb9cb1c3c888ab50bf0ffe483" } },
+    { "matroska_wave1/test8.mkv", { "9dddcd1550b814dae44d62e2b9f27c0eca31d5e190df2220cbf7492e3d6c63da" } },
+    { "mtx-test-data/mkv/handbrake-chapters-2.mkv", { "eccc55f3b59a77086b3ffb914525d312c7886eae34e3933352dea2f6f6a1974c" } },
+    { "mtx-test-data/mkv/tags.mkv", { "4330019afc3d846600c1ded38158fcac081297f4e56c749251c236f4871e0287" } },
+    { "mkv/nested-tags.xml", { "85cfcc94920f114e52fd1aa3df24706cd2710626e065a2c8c55dd209ec8dc8ce" } },
+    { "mp4/test1.m4a", { "4f16e0a22525bd13ba859431406d7f5991e0b4f155c51e10e5f32b0c97034b36" } },
+    { "mtx-test-data/aac/he-aacv2-ps.m4a", { "be54be0ae45b0184583ced8a84a881a1652a449feb7f6a917e11f60efabb68ac" } },
+    { "mtx-test-data/alac/othertest-itunes.m4a", { "5e9c64cde00902211533fbe38aaa67ef5f79a945e1d717951b78b4bbf9ff84e8" } },
+    { "mtx-test-data/mp3/id3-tag-and-xing-header.mp3", { "4a9187b05dc74d32e5a3de53494fde9db8c6c25d46082f86de6f424ad28daacf" } },
+    { "mtx-test-data/mp4/10-DanseMacabreOp.40.m4a", { "30c915d5656de049d66fd70b0966a33faf038af42365a2bb973e5c2fc0ba2038" } },
+    { "mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4", { "fbf929bf8300fc6e53c5c5b7fde4ed2a427fef2d4fd093511c672083039abbf1" } },
+    { "mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4", { "864891f4510f3fa9c49c19e671171cec08ceb331362cf7161419b957be090d47" } },
+    { "mtx-test-data/ogg/qt4dance_medium.ogg", { "0b5429da9713be171c6ae0da69621261e8d5ddc9db3da872e5ade1a1c883decd" } },
+    { "mtx-test-data/opus/v-opus.ogg", { "e12adece4dbcccf2471b61c3ebd7c6576dee351d85809ab6f01d6f324d65b417" } },
 };
 
 /*!
@@ -98,13 +96,13 @@ Sha256Checksum TestFile::computeSha256Sum() const
 
         char readBuffer[4096];
         try {
-            for(;;) {
+            for (;;) {
                 file.read(readBuffer, sizeof(readBuffer));
                 SHA256_Update(&sha256, readBuffer, static_cast<size_t>(file.gcount()));
             }
-        } catch(...) {
+        } catch (...) {
             catchIoFailure();
-            if(file.eof() && !file.bad()) {
+            if (file.eof() && !file.bad()) {
                 SHA256_Update(&sha256, readBuffer, static_cast<size_t>(file.gcount()));
             } else {
                 throw;
@@ -119,7 +117,7 @@ Sha256Checksum TestFile::computeSha256Sum() const
     // convert to "hex string"
     Sha256Checksum hexString;
     char *hexStringIterator = hexString.checksum;
-    for(unsigned char hashNumber : hash) {
+    for (unsigned char hashNumber : hash) {
         const string digits = numberToString(hashNumber, 16);
         *(hexStringIterator++) = digits.size() < 2 ? '0' : digits.front();
         *(hexStringIterator++) = digits.back();
@@ -133,31 +131,27 @@ Sha256Checksum TestFile::computeSha256Sum() const
  */
 void TestFile::verifyChecksum() const
 {
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(argsToString("integrity of testfile \"", path, '\"'),
-                                 expectedSha256sum,
-                                 computeSha256Sum());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(argsToString("integrity of testfile \"", path, '\"'), expectedSha256sum, computeSha256Sum());
 }
 
 /*!
  * \brief The TestFileCheck class verifies integrity of all testfiles used in the testsuite of
  *        tagparser or tageditor.
  */
-class TestFileCheck : public TestFixture
-{
+class TestFileCheck : public TestFixture {
     CPPUNIT_TEST_SUITE(TestFileCheck);
     CPPUNIT_TEST(verifyChecksums);
     CPPUNIT_TEST_SUITE_END();
 
 private:
     void verifyChecksums();
-
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFileCheck);
 
 void TestFileCheck::verifyChecksums()
 {
-    for(const TestFile &testFile : testFiles) {
+    for (const TestFile &testFile : testFiles) {
         testFile.verifyChecksum();
     }
 }

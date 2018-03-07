@@ -22,21 +22,23 @@ struct TAG_PARSER_EXPORT AspectRatio {
 /*!
  * \brief Constructs an invalid aspect ratio.
  */
-constexpr AspectRatio::AspectRatio() :
-    type(0),
-    numerator(0),
-    denominator(0)
-{}
+constexpr AspectRatio::AspectRatio()
+    : type(0)
+    , numerator(0)
+    , denominator(0)
+{
+}
 
 /*!
  * \brief Constructs a aspect ratio with the specified \a numerator and \a denominator.
  * \remarks Allows defining a custom aspect ratio, hence counts as "extended" (see isExtended()).
  */
-constexpr AspectRatio::AspectRatio(uint16 numerator, uint16 denominator) :
-    type(0xFF),
-    numerator(numerator),
-    denominator(denominator)
-{}
+constexpr AspectRatio::AspectRatio(uint16 numerator, uint16 denominator)
+    : type(0xFF)
+    , numerator(numerator)
+    , denominator(denominator)
+{
+}
 
 /*!
  * \brief Returns an indication whether the aspect ratio is present and valid.
@@ -54,6 +56,6 @@ constexpr bool AspectRatio::isExtended() const
     return type == 0xFF;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ASPECTRATIO_H

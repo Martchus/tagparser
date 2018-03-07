@@ -13,8 +13,7 @@ namespace EbmlIds {
 /*!
  * \brief Encapsulates all EBML header ID values.
  */
-enum EbmlHeaderIds
-{
+enum EbmlHeaderIds {
     Header = 0x1A45DFA3,
     Version = 0x4286,
     ReadVersion = 0x42F7,
@@ -28,43 +27,25 @@ enum EbmlHeaderIds
 /*!
  * \brief Encapsulates all global EBML ID values.
  */
-enum GlobalIds
-{
-    Void = 0xEC,
-    Crc32 = 0xBF,
-    SignatureSlot = 0x1b538667
-};
+enum GlobalIds { Void = 0xEC, Crc32 = 0xBF, SignatureSlot = 0x1b538667 };
 
 /*!
  * \brief Encapsulates IDs in the SignatureSlot master.
  */
-enum SignatureSlotIds
-{
-    SignatureAlgo = 0x7e8a,
-    SignatureHash = 0x7e9a,
-    SignaturePublicKey = 0x7ea5,
-    Signature = 0x7eb5,
-    SignatureElements = 0x7e5b
-};
+enum SignatureSlotIds { SignatureAlgo = 0x7e8a, SignatureHash = 0x7e9a, SignaturePublicKey = 0x7ea5, Signature = 0x7eb5, SignatureElements = 0x7e5b };
 
 /*!
  * \brief Encapsulates IDs in the SignatureElements master.
  */
-enum SignatureElementsSlotIds
-{
-    SignatureElementList = 0x7e7b
-};
+enum SignatureElementsSlotIds { SignatureElementList = 0x7e7b };
 
 /*!
  * \brief Encapsulates IDs in the SignatureElementList master.
  */
-enum SignatureElementListSlotIds
-{
-    SignedElement = 0x6532
-};
+enum SignatureElementListSlotIds { SignedElement = 0x6532 };
 
-}
+} // namespace EbmlIds
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_EBMLID_H

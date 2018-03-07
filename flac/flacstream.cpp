@@ -30,11 +30,11 @@ namespace TagParser {
  *
  * The stream of the \a mediaFileInfo instance is used as input stream.
  */
-FlacStream::FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset) :
-    AbstractTrack(mediaFileInfo.stream(), startOffset),
-    m_mediaFileInfo(mediaFileInfo),
-    m_paddingSize(0),
-    m_streamOffset(0)
+FlacStream::FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset)
+    : AbstractTrack(mediaFileInfo.stream(), startOffset)
+    , m_mediaFileInfo(mediaFileInfo)
+    , m_paddingSize(0)
+    , m_streamOffset(0)
 {
     m_mediaType = MediaType::Audio;
 }
@@ -45,7 +45,7 @@ FlacStream::FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset) :
  */
 VorbisComment *FlacStream::createVorbisComment()
 {
-    if(!m_vorbisComment) {
+    if (!m_vorbisComment) {
         m_vorbisComment = make_unique<VorbisComment>();
     }
     return m_vorbisComment.get();
@@ -57,7 +57,7 @@ VorbisComment *FlacStream::createVorbisComment()
  */
 bool FlacStream::removeVorbisComment()
 {
-    if(!m_vorbisComment) {
+    if (!m_vorbisComment) {
         return false;
     }
     m_vorbisComment.reset();
@@ -67,7 +67,7 @@ bool FlacStream::removeVorbisComment()
 void FlacStream::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing raw FLAC header");
-    if(!m_istream) {
+    if (!m_istream) {
         throw NoDataFoundException();
     }
 
@@ -75,14 +75,14 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
     char buffer[0x22];
 
     // check signature
-    if(m_reader.readUInt32BE() != 0x664C6143) {
+    if (m_reader.readUInt32BE() != 0x664C6143) {
         diag.emplace_back(DiagLevel::Critical, "Signature (fLaC) not found.", context);
         throw InvalidDataException();
     }
     m_format = GeneralMediaFormat::Flac;
 
     // parse meta data blocks
-    for(FlacMetaDataBlockHeader header; !header.isLast(); ) {
+    for (FlacMetaDataBlockHeader header; !header.isLast();) {
         // parse block header
         m_istream->read(buffer, 4);
         header.parseHeader(buffer);
@@ -91,9 +91,9 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
         const auto startOffset = m_istream->tellg();
 
         // parse relevant meta data
-        switch(static_cast<FlacMetaDataBlockType>(header.type())) {
+        switch (static_cast<FlacMetaDataBlockType>(header.type())) {
         case FlacMetaDataBlockType::StreamInfo:
-            if(header.dataSize() >= 0x22) {
+            if (header.dataSize() >= 0x22) {
                 m_istream->read(buffer, 0x22);
                 FlacMetaDataBlockStreamInfo streamInfo;
                 streamInfo.parse(buffer);
@@ -110,12 +110,12 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
         case FlacMetaDataBlockType::VorbisComment:
             // parse Vorbis comment
             // if more than one comment exist, simply thread those comments as one
-            if(!m_vorbisComment) {
+            if (!m_vorbisComment) {
                 m_vorbisComment = make_unique<VorbisComment>();
             }
             try {
                 m_vorbisComment->parse(*m_istream, header.dataSize(), VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
-            } catch(const Failure &) {
+            } catch (const Failure &) {
                 // error is logged via notifications, just continue with the next metadata block
             }
             break;
@@ -129,11 +129,11 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
                 picture.parse(*m_istream, header.dataSize());
                 coverField.setTypeInfo(picture.pictureType());
 
-                if(coverField.value().isEmpty()) {
+                if (coverField.value().isEmpty()) {
                     diag.emplace_back(DiagLevel::Warning, "\"METADATA_BLOCK_PICTURE\" contains no picture.", context);
                 } else {
                     // add the cover to the Vorbis comment
-                    if(!m_vorbisComment) {
+                    if (!m_vorbisComment) {
                         // create one if none exists yet
                         m_vorbisComment = make_unique<VorbisComment>();
                         m_vorbisComment->setVendor(TagValue(APP_NAME " v" APP_VERSION, TagTextEncoding::Utf8));
@@ -141,7 +141,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
                     m_vorbisComment->fields().insert(make_pair(coverField.id(), move(coverField)));
                 }
 
-            } catch(const TruncatedDataException &) {
+            } catch (const TruncatedDataException &) {
                 diag.emplace_back(DiagLevel::Critical, "\"METADATA_BLOCK_PICTURE\" is truncated and will be ignored.", context);
             }
             break;
@@ -150,8 +150,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
             m_paddingSize += 4 + header.dataSize();
             break;
 
-        default:
-            ;
+        default:;
         }
 
         // seek to next block
@@ -187,13 +186,13 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     uint32 lastStartOffset = 0;
 
     // write meta data blocks which don't need to be adjusted
-    for(FlacMetaDataBlockHeader header; !header.isLast(); ) {
+    for (FlacMetaDataBlockHeader header; !header.isLast();) {
         // parse block header
         m_istream->read(copy.buffer(), 4);
         header.parseHeader(copy.buffer());
 
         // parse relevant meta data
-        switch(static_cast<FlacMetaDataBlockType>(header.type())) {
+        switch (static_cast<FlacMetaDataBlockType>(header.type())) {
         case FlacMetaDataBlockType::VorbisComment:
         case FlacMetaDataBlockType::Picture:
         case FlacMetaDataBlockType::Padding:
@@ -207,7 +206,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     }
 
     // write Vorbis comment
-    if(!m_vorbisComment) {
+    if (!m_vorbisComment) {
         return lastStartOffset;
     }
     // leave 4 bytes space for the "METADATA_BLOCK_HEADER"
@@ -231,12 +230,12 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     outputStream.seekp(endOffset);
 
     // write cover fields separately as "METADATA_BLOCK_PICTURE"
-    if(header.isLast()) {
+    if (header.isLast()) {
         return lastStartOffset;
     }
     header.setType(FlacMetaDataBlockType::Picture);
     const auto coverFields = m_vorbisComment->fields().equal_range(coverId);
-    for(auto i = coverFields.first; i != coverFields.second; ) {
+    for (auto i = coverFields.first; i != coverFields.second;) {
         lastStartOffset = outputStream.tellp();
         FlacMetaDataBlockPicture pictureBlock(i->second.value());
         pictureBlock.setPictureType(i->second.typeInfo());
@@ -263,9 +262,9 @@ void FlacStream::makePadding(ostream &stream, uint32 size, bool isLast, Diagnost
     header.makeHeader(stream);
 
     // write zeroes
-    for(; size; --size) {
+    for (; size; --size) {
         stream.put(0);
     }
 }
 
-}
+} // namespace TagParser

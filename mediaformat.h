@@ -10,8 +10,7 @@ namespace TagParser {
 /*!
  * \brief The MediaType enum specifies the type of media data (audio, video, text, ...).
  */
-enum class MediaType
-{
+enum class MediaType {
     Unknown, /**< the type is unknown */
     Audio, /**< audio/sound */
     Video, /**< video */
@@ -26,8 +25,7 @@ extern const char *TAG_PARSER_EXPORT mediaTypeName(MediaType mediaType);
 /*!
  * \brief The GeneralMediaFormat enum specifies the general format of media data (PCM, MPEG-4, PNG, ...).
  */
-enum class GeneralMediaFormat
-{
+enum class GeneralMediaFormat {
     Unknown, /**< the format is unknown */
     Aac, /**< Advanced Video Coding */
     Ac3, /**< Dolby Digital */
@@ -107,15 +105,9 @@ enum class GeneralMediaFormat
  */
 namespace SubFormats {
 
-enum : unsigned char {
-    None
-};
+enum : unsigned char { None };
 
-enum Mpeg1AudioLayer : unsigned char {
-    Mpeg1Layer1 = 1,
-    Mpeg1Layer2,
-    Mpeg1Layer3
-};
+enum Mpeg1AudioLayer : unsigned char { Mpeg1Layer1 = 1, Mpeg1Layer2, Mpeg1Layer3 };
 
 enum AacProfile : unsigned char {
     AacMpeg2MainProfile = 1,
@@ -227,11 +219,7 @@ enum DtsSpecifier : unsigned char {
     DtsHdMasterAudio,
 };
 
-enum PcmVersion : unsigned char {
-    PcmIntBe = 1,
-    PcmIntLe,
-    PcmFloatIeee
-};
+enum PcmVersion : unsigned char { PcmIntBe = 1, PcmIntLe, PcmFloatIeee };
 
 enum TextSubtitle : unsigned char {
     PlainUtf8Subtitle = 1,
@@ -241,24 +229,18 @@ enum TextSubtitle : unsigned char {
     WebVideoTextTracksFormat
 };
 
-enum ImageSubtitle : unsigned char {
-    ImgSubBmp = 1
-};
+enum ImageSubtitle : unsigned char { ImgSubBmp = 1 };
 
-}
+} // namespace SubFormats
 
 /*!
  * \brief Encapsulates extension formats.
  */
 namespace ExtensionFormats {
-enum AudioFormatExtensions : unsigned char {
-    SpectralBandReplication = 1,
-    ParametricStereo = 2
-};
+enum AudioFormatExtensions : unsigned char { SpectralBandReplication = 1, ParametricStereo = 2 };
 }
 
-class TAG_PARSER_EXPORT MediaFormat
-{
+class TAG_PARSER_EXPORT MediaFormat {
 public:
     MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0, unsigned char extension = 0);
 
@@ -279,23 +261,24 @@ public:
 /*!
  * \brief Constructs a new media format.
  */
-inline MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub, unsigned char extension) :
-    general(general),
-    sub(sub),
-    extension(extension)
-{}
+inline MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub, unsigned char extension)
+    : general(general)
+    , sub(sub)
+    , extension(extension)
+{
+}
 
 /*!
  * \brief "Adds" information from another instance to the object.
  */
 inline MediaFormat &MediaFormat::operator+=(const MediaFormat &other)
 {
-    if(other) {
+    if (other) {
         general = other.general;
-        if(other.sub) {
+        if (other.sub) {
             sub = other.sub;
         }
-        if(other.extension) {
+        if (other.extension) {
             extension = other.extension;
         }
     }
@@ -326,7 +309,6 @@ inline MediaFormat::operator bool() const
     return general != GeneralMediaFormat::Unknown;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MEDIAFORMAT_H
-

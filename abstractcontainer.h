@@ -4,17 +4,17 @@
 #include "./exceptions.h"
 #include "./tagtarget.h"
 
+#include <c++utilities/chrono/datetime.h>
+#include <c++utilities/chrono/timespan.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/chrono/timespan.h>
-#include <c++utilities/chrono/datetime.h>
 
 #include <iostream>
 
 namespace IoUtilities {
 class BinaryReader;
 class BinaryWriter;
-}
+} // namespace IoUtilities
 
 namespace TagParser {
 
@@ -25,15 +25,13 @@ class AbstractAttachment;
 class Diagnostics;
 class AbortableProgressFeedback;
 
-enum class ElementPosition
-{
+enum class ElementPosition {
     BeforeData, /**< the element is positioned before the actual data */
     AfterData, /**< the element is positioned after the actual data */
     Keep /**< the element is placed where it was before */
 };
 
-class TAG_PARSER_EXPORT AbstractContainer
-{
+class TAG_PARSER_EXPORT AbstractContainer {
 public:
     virtual ~AbstractContainer();
 
@@ -93,7 +91,7 @@ public:
 
     virtual void reset();
 
-protected:    
+protected:
     AbstractContainer(std::iostream &stream, uint64 startOffset);
 
     virtual void internalParseHeader(Diagnostics &diag);
@@ -254,7 +252,6 @@ inline uint64 AbstractContainer::doctypeReadVersion() const
     return m_doctypeReadVersion;
 }
 
-
 /*!
  * \brief Returns the title(s) of the file.
  * \remarks
@@ -310,6 +307,6 @@ inline uint32 AbstractContainer::timeScale() const
     return m_timeScale;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ABSTRACTCONTAINER_H

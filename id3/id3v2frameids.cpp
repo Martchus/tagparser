@@ -2,8 +2,7 @@
 
 #include "../exceptions.h"
 
-namespace TagParser
-{
+namespace TagParser {
 
 /*!
  * \brief Encapsulates the most common ID3v2 frame IDs and related functions.
@@ -15,8 +14,7 @@ namespace TagParser
  * these IDs the functions convertToShortId() and convertToLongId() can be
  * used.
  */
-namespace Id3v2FrameIds
-{
+namespace Id3v2FrameIds {
 
 /*!
  * \brief Converts the specified long frame ID to the equivalent short frame ID.
@@ -24,27 +22,47 @@ namespace Id3v2FrameIds
  */
 uint32 convertToShortId(uint32 id)
 {
-    switch(id) {
-    case lAlbum: return sAlbum;
-    case lArtist: return sArtist;
-    case lComment: return sComment;
-    case lYear: return sYear;
-    case lRecordDate: return sRecordDate;
-    case lTitle: return sTitle;
-    case lGenre: return sGenre;
-    case lTrackPosition: return sTrackPosition;
-    case lEncoder: return sEncoder;
-    case lBpm: return sBpm;
-    case lCover: return sCover;
-    case lWriter: return sWriter;
-    case lLength: return sLength;
-    case lLanguage: return sLanguage;
-    case lEncoderSettings: return sEncoderSettings;
-    case lUnsynchronizedLyrics: return sUnsynchronizedLyrics;
-    case lGrouping: return sGrouping;
-    case lRecordLabel: return sRecordLabel;
-    case lUserDefinedText: return sUserDefinedText;
-    default: return 0;
+    switch (id) {
+    case lAlbum:
+        return sAlbum;
+    case lArtist:
+        return sArtist;
+    case lComment:
+        return sComment;
+    case lYear:
+        return sYear;
+    case lRecordDate:
+        return sRecordDate;
+    case lTitle:
+        return sTitle;
+    case lGenre:
+        return sGenre;
+    case lTrackPosition:
+        return sTrackPosition;
+    case lEncoder:
+        return sEncoder;
+    case lBpm:
+        return sBpm;
+    case lCover:
+        return sCover;
+    case lWriter:
+        return sWriter;
+    case lLength:
+        return sLength;
+    case lLanguage:
+        return sLanguage;
+    case lEncoderSettings:
+        return sEncoderSettings;
+    case lUnsynchronizedLyrics:
+        return sUnsynchronizedLyrics;
+    case lGrouping:
+        return sGrouping;
+    case lRecordLabel:
+        return sRecordLabel;
+    case lUserDefinedText:
+        return sUserDefinedText;
+    default:
+        return 0;
     }
 }
 
@@ -54,30 +72,50 @@ uint32 convertToShortId(uint32 id)
  */
 uint32 convertToLongId(uint32 id)
 {
-    switch(id) {
-    case sAlbum: return lAlbum;
-    case sArtist: return lArtist;
-    case sComment: return lComment;
-    case sYear: return lYear;
-    case sRecordDate: return lRecordDate;
-    case sTitle: return lTitle;
-    case sGenre: return lGenre;
-    case sTrackPosition: return lTrackPosition;
-    case sEncoder: return lEncoder;
-    case sBpm: return lBpm;
-    case sCover: return lCover;
-    case sWriter: return lWriter;
-    case sLength: return lLength;
-    case sLanguage: return lLanguage;
-    case sEncoderSettings: return lEncoderSettings;
-    case sUnsynchronizedLyrics: return lUnsynchronizedLyrics;
-    case sGrouping: return lGrouping;
-    case sRecordLabel: return lRecordLabel;
-    case sUserDefinedText: return lUserDefinedText;
-    default: return 0;
+    switch (id) {
+    case sAlbum:
+        return lAlbum;
+    case sArtist:
+        return lArtist;
+    case sComment:
+        return lComment;
+    case sYear:
+        return lYear;
+    case sRecordDate:
+        return lRecordDate;
+    case sTitle:
+        return lTitle;
+    case sGenre:
+        return lGenre;
+    case sTrackPosition:
+        return lTrackPosition;
+    case sEncoder:
+        return lEncoder;
+    case sBpm:
+        return lBpm;
+    case sCover:
+        return lCover;
+    case sWriter:
+        return lWriter;
+    case sLength:
+        return lLength;
+    case sLanguage:
+        return lLanguage;
+    case sEncoderSettings:
+        return lEncoderSettings;
+    case sUnsynchronizedLyrics:
+        return lUnsynchronizedLyrics;
+    case sGrouping:
+        return lGrouping;
+    case sRecordLabel:
+        return lRecordLabel;
+    case sUserDefinedText:
+        return lUserDefinedText;
+    default:
+        return 0;
     }
 }
 
-}
+} // namespace Id3v2FrameIds
 
-}
+} // namespace TagParser

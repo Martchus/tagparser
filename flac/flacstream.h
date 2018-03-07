@@ -11,8 +11,7 @@ namespace TagParser {
 class MediaFileInfo;
 class VorbisComment;
 
-class TAG_PARSER_EXPORT FlacStream : public AbstractTrack
-{
+class TAG_PARSER_EXPORT FlacStream : public AbstractTrack {
 public:
     FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset);
     ~FlacStream() override;
@@ -38,7 +37,8 @@ private:
 };
 
 inline FlacStream::~FlacStream()
-{}
+{
+}
 
 inline TrackType FlacStream::type() const
 {
@@ -70,6 +70,6 @@ inline uint32 FlacStream::streamOffset() const
     return m_streamOffset;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_FLACSTREAM_H

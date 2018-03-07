@@ -3,8 +3,8 @@
 
 #include "../ogg/oggiterator.h"
 
-#include "../exceptions.h"
 #include "../diagnostics.h"
+#include "../exceptions.h"
 
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
@@ -26,7 +26,7 @@ namespace TagParser {
 
 const TagValue &VorbisComment::value(KnownField field) const
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Vendor:
         return vendor();
     default:
@@ -36,7 +36,7 @@ const TagValue &VorbisComment::value(KnownField field) const
 
 bool VorbisComment::setValue(KnownField field, const TagValue &value)
 {
-    switch(field) {
+    switch (field) {
     case KnownField::Vendor:
         setVendor(value);
         return true;
@@ -48,54 +48,60 @@ bool VorbisComment::setValue(KnownField field, const TagValue &value)
 VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField field) const
 {
     using namespace VorbisCommentIds;
-    switch(field) {
-    case KnownField::Album: return album();
-    case KnownField::Artist: return artist();
-    case KnownField::Comment: return comment();
-    case KnownField::Cover: return cover();
-    case KnownField::Year: return date();
-    case KnownField::Title: return title();
-    case KnownField::Genre: return genre();
-    case KnownField::TrackPosition: return trackNumber();
-    case KnownField::DiskPosition: return diskNumber();
-    case KnownField::PartNumber: return partNumber();
-    case KnownField::Composer: return composer();
-    case KnownField::Encoder: return encoder();
-    case KnownField::EncoderSettings: return encoderSettings();
-    case KnownField::Description: return description();
-    case KnownField::RecordLabel: return label();
-    case KnownField::Performers: return performer();
-    case KnownField::Language: return language();
-    case KnownField::Lyricist: return lyricist();
-    default: return string();
+    switch (field) {
+    case KnownField::Album:
+        return album();
+    case KnownField::Artist:
+        return artist();
+    case KnownField::Comment:
+        return comment();
+    case KnownField::Cover:
+        return cover();
+    case KnownField::Year:
+        return date();
+    case KnownField::Title:
+        return title();
+    case KnownField::Genre:
+        return genre();
+    case KnownField::TrackPosition:
+        return trackNumber();
+    case KnownField::DiskPosition:
+        return diskNumber();
+    case KnownField::PartNumber:
+        return partNumber();
+    case KnownField::Composer:
+        return composer();
+    case KnownField::Encoder:
+        return encoder();
+    case KnownField::EncoderSettings:
+        return encoderSettings();
+    case KnownField::Description:
+        return description();
+    case KnownField::RecordLabel:
+        return label();
+    case KnownField::Performers:
+        return performer();
+    case KnownField::Language:
+        return language();
+    case KnownField::Lyricist:
+        return lyricist();
+    default:
+        return string();
     }
 }
 
 KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace VorbisCommentIds;
-    static const map<string, KnownField> fieldMap({
-        {album(), KnownField::Album},
-        {artist(), KnownField::Artist},
-        {comment(), KnownField::Comment},
-        {cover(), KnownField::Cover},
-        {date(), KnownField::Year},
-        {title(), KnownField::Title},
-        {genre(), KnownField::Genre},
-        {trackNumber(), KnownField::TrackPosition},
-        {diskNumber(), KnownField::DiskPosition},
-        {partNumber(), KnownField::PartNumber},
-        {composer(), KnownField::Composer},
-        {encoder(), KnownField::Encoder},
-        {encoderSettings(), KnownField::EncoderSettings},
-        {description(), KnownField::Description},
-        {label(), KnownField::RecordLabel},
-        {performer(), KnownField::Performers},
-        {lyricist(), KnownField::Lyricist}
-    });
+    static const map<string, KnownField> fieldMap({ { album(), KnownField::Album }, { artist(), KnownField::Artist },
+        { comment(), KnownField::Comment }, { cover(), KnownField::Cover }, { date(), KnownField::Year }, { title(), KnownField::Title },
+        { genre(), KnownField::Genre }, { trackNumber(), KnownField::TrackPosition }, { diskNumber(), KnownField::DiskPosition },
+        { partNumber(), KnownField::PartNumber }, { composer(), KnownField::Composer }, { encoder(), KnownField::Encoder },
+        { encoderSettings(), KnownField::EncoderSettings }, { description(), KnownField::Description }, { label(), KnownField::RecordLabel },
+        { performer(), KnownField::Performers }, { lyricist(), KnownField::Lyricist } });
     try {
         return fieldMap.at(id);
-    } catch(out_of_range &) {
+    } catch (out_of_range &) {
         return KnownField::Invalid;
     }
 }
@@ -103,8 +109,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
 /*!
  * \brief Internal implementation for parsing.
  */
-template<class StreamType>
-void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
+template <class StreamType> void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
 {
     // prepare parsing
     static const string context("parsing Vorbis comment");
@@ -113,19 +118,19 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
         // read signature: 0x3 + "vorbis"
         char sig[8];
         bool skipSignature = flags & VorbisCommentFlags::NoSignature;
-        if(!skipSignature) {
+        if (!skipSignature) {
             CHECK_MAX_SIZE(7);
             stream.read(sig, 7);
             skipSignature = (ConversionUtilities::BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
         }
-        if(skipSignature) {
+        if (skipSignature) {
             // read vendor (length prefixed string)
             {
                 CHECK_MAX_SIZE(4);
                 stream.read(sig, 4);
                 const auto vendorSize = LE::toUInt32(sig);
-                if(vendorSize <= maxSize) {
-                    auto buff = make_unique<char []>(vendorSize);
+                if (vendorSize <= maxSize) {
+                    auto buff = make_unique<char[]>(vendorSize);
                     stream.read(buff.get(), vendorSize);
                     m_vendor.assignData(move(buff), vendorSize, TagDataType::Text, TagTextEncoding::Utf8);
                     // TODO: Is the vendor string actually UTF-8 (like the field values)?
@@ -141,18 +146,18 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
             uint32 fieldCount = LE::toUInt32(sig);
             VorbisCommentField field;
             const string &fieldId = field.id();
-            for(uint32 i = 0; i < fieldCount; ++i) {
+            for (uint32 i = 0; i < fieldCount; ++i) {
                 // read fields
                 try {
                     field.parse(stream, maxSize, diag);
                     fields().emplace(fieldId, field);
-                } catch(const TruncatedDataException &) {
+                } catch (const TruncatedDataException &) {
                     throw;
-                } catch(const Failure &) {
+                } catch (const Failure &) {
                     // nothing to do here since notifications will be added anyways
                 }
             }
-            if(!(flags & VorbisCommentFlags::NoFramingByte)) {
+            if (!(flags & VorbisCommentFlags::NoFramingByte)) {
                 stream.ignore(); // skip framing byte
             }
             m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
@@ -160,7 +165,7 @@ void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisComm
             diag.emplace_back(DiagLevel::Critical, "Signature is invalid.", context);
             throw InvalidDataException();
         }
-    } catch(const TruncatedDataException &) {
+    } catch (const TruncatedDataException &) {
         m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
         diag.emplace_back(DiagLevel::Critical, "Vorbis comment is truncated.", context);
         throw;
@@ -205,13 +210,13 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
     string vendor;
     try {
         m_vendor.toString(vendor);
-    } catch(const ConversionException &) {
+    } catch (const ConversionException &) {
         diag.emplace_back(DiagLevel::Warning, "Can not convert the assigned vendor to string.", context);
     }
     BinaryWriter writer(&stream);
-    if(!(flags & VorbisCommentFlags::NoSignature)) {
+    if (!(flags & VorbisCommentFlags::NoSignature)) {
         // write signature
-        static const char sig[7] = {0x03, 0x76, 0x6F, 0x72, 0x62, 0x69, 0x73};
+        static const char sig[7] = { 0x03, 0x76, 0x6F, 0x72, 0x62, 0x69, 0x73 };
         stream.write(sig, sizeof(sig));
     }
     // write vendor
@@ -222,14 +227,14 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
     writer.writeUInt32LE(0);
     // write fields
     uint32 fieldsWritten = 0;
-    for(auto i : fields()) {
+    for (auto i : fields()) {
         VorbisCommentField &field = i.second;
-        if(!field.value().isEmpty()) {
+        if (!field.value().isEmpty()) {
             try {
-                if(field.make(writer, flags, diag)) {
+                if (field.make(writer, flags, diag)) {
                     ++fieldsWritten;
                 }
-            } catch(const Failure &) {
+            } catch (const Failure &) {
             }
         }
     }
@@ -239,9 +244,9 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
     writer.writeUInt32LE(fieldsWritten);
     stream.seekp(framingByteOffset);
     // write framing byte
-    if(!(flags & VorbisCommentFlags::NoFramingByte)) {
+    if (!(flags & VorbisCommentFlags::NoFramingByte)) {
         stream.put(0x01);
     }
 }
 
-}
+} // namespace TagParser

@@ -22,7 +22,7 @@ namespace TagParser {
  */
 void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
 {
-    if(maxSize < 7) {
+    if (maxSize < 7) {
         throw TruncatedDataException();
     }
     maxSize -= 7;
@@ -36,20 +36,20 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
     // read SPS info entries
     byte entryCount = reader.readByte() & 0x0f;
     spsInfos.reserve(entryCount);
-    for(; entryCount; --entryCount) {
-        if(maxSize < 2) {
+    for (; entryCount; --entryCount) {
+        if (maxSize < 2) {
             throw TruncatedDataException();
         }
         spsInfos.emplace_back();
         try {
             spsInfos.back().parse(reader, maxSize);
-        } catch(const TruncatedDataException &) {
+        } catch (const TruncatedDataException &) {
             // TODO: log parsing error
-            if(spsInfos.back().size > maxSize - 2) {
+            if (spsInfos.back().size > maxSize - 2) {
                 throw;
             }
             spsInfos.pop_back();
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             spsInfos.pop_back();
             // TODO: log parsing error
         }
@@ -59,20 +59,20 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
     // read PPS info entries
     entryCount = reader.readByte();
     ppsInfos.reserve(entryCount);
-    for(; entryCount; --entryCount) {
-        if(maxSize < 2) {
+    for (; entryCount; --entryCount) {
+        if (maxSize < 2) {
             throw TruncatedDataException();
         }
         ppsInfos.emplace_back();
         try {
             ppsInfos.back().parse(reader, maxSize);
-        } catch(const TruncatedDataException &) {
+        } catch (const TruncatedDataException &) {
             // TODO: log parsing error
-            if(ppsInfos.back().size > maxSize - 2) {
+            if (ppsInfos.back().size > maxSize - 2) {
                 throw;
             }
             ppsInfos.pop_back();
-        } catch(const Failure &) {
+        } catch (const Failure &) {
             ppsInfos.pop_back();
             // TODO: log parsing error
         }
@@ -82,4 +82,4 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
     // ignore remaining data
 }
 
-}
+} // namespace TagParser

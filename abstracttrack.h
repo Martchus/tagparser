@@ -1,17 +1,17 @@
 #ifndef TAG_PARSER_ABSTRACTTRACK_H
 #define TAG_PARSER_ABSTRACTTRACK_H
 
-#include "./diagnostics.h"
-#include "./size.h"
-#include "./margin.h"
 #include "./aspectratio.h"
+#include "./diagnostics.h"
+#include "./margin.h"
 #include "./mediaformat.h"
+#include "./size.h"
 
+#include <c++utilities/chrono/datetime.h>
+#include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/chrono/datetime.h>
-#include <c++utilities/chrono/timespan.h>
 
 #include <iosfwd>
 #include <string>
@@ -25,8 +25,7 @@ class Mp4Track;
 /*!
  * \brief Specifies the track type.
  */
-enum class TrackType
-{
+enum class TrackType {
     Unspecified, /**< The track type is not specified. */
     MatroskaTrack, /**< The track is a Media::MatroskaTrack. */
     MpegAudioFrameStream, /**< The track is a Media::MpegAudioFrameStream. */
@@ -37,8 +36,7 @@ enum class TrackType
     FlacStream, /**< The track is a Media::FlacStream. */
 };
 
-class TAG_PARSER_EXPORT AbstractTrack
-{
+class TAG_PARSER_EXPORT AbstractTrack {
     friend class MpegAudioFrameStream;
     friend class WaveAudioStream;
     friend class Mp4Track;
@@ -684,6 +682,6 @@ inline bool AbstractTrack::isHeaderValid() const
     return m_headerValid;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ABSTRACTTRACK_H

@@ -14,19 +14,20 @@ namespace TagParser {
 /*!
  * \brief Constructs a new BitmapInfoHeader.
  */
-BitmapInfoHeader::BitmapInfoHeader() :
-    size(0),
-    width(0),
-    height(0),
-    planes(0),
-    bitCount(0),
-    compression(0),
-    imageSize(0),
-    horizontalResolution(0),
-    verticalResolution(0),
-    clrUsed(0),
-    clrImportant(0)
-{}
+BitmapInfoHeader::BitmapInfoHeader()
+    : size(0)
+    , width(0)
+    , height(0)
+    , planes(0)
+    , bitCount(0)
+    , compression(0)
+    , imageSize(0)
+    , horizontalResolution(0)
+    , verticalResolution(0)
+    , clrUsed(0)
+    , clrImportant(0)
+{
+}
 
 /*!
  * \brief Parses the BITMAPINFOHEADER structure using the specified \a reader.
@@ -47,5 +48,4 @@ void BitmapInfoHeader::parse(BinaryReader &reader)
     clrImportant = reader.readUInt32LE();
 }
 
-} // namespace Media
-
+} // namespace TagParser

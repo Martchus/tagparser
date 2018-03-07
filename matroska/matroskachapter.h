@@ -9,8 +9,7 @@ namespace TagParser {
 
 class EbmlElement;
 
-class TAG_PARSER_EXPORT MatroskaChapter : public AbstractChapter
-{
+class TAG_PARSER_EXPORT MatroskaChapter : public AbstractChapter {
 public:
     MatroskaChapter(EbmlElement *chapterAtomElement);
     ~MatroskaChapter() override;
@@ -25,8 +24,7 @@ protected:
 
 private:
     EbmlElement *m_chapterAtomElement;
-    std::vector<std::unique_ptr<MatroskaChapter> > m_nestedChapters;
-
+    std::vector<std::unique_ptr<MatroskaChapter>> m_nestedChapters;
 };
 
 inline MatroskaChapter *MatroskaChapter::nestedChapter(std::size_t index)
@@ -44,7 +42,6 @@ inline std::size_t MatroskaChapter::nestedChapterCount() const
     return m_nestedChapters.size();
 }
 
-
-} // namespace Media
+} // namespace TagParser
 
 #endif // TAG_PARSER_MATROSKACHAPTER_H

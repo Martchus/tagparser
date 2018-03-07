@@ -8,8 +8,7 @@
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT OggIterator
-{
+class TAG_PARSER_EXPORT OggIterator {
 public:
     OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize);
 
@@ -68,17 +67,18 @@ private:
 /*!
  * \brief Constructs a new iterator for the specified \a stream of \a streamSize bytes at the specified \a startOffset.
  */
-inline OggIterator::OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize) :
-    m_stream(&stream),
-    m_startOffset(startOffset),
-    m_streamSize(streamSize),
-    m_page(0),
-    m_segment(0),
-    m_offset(0),
-    m_bytesRead(0),
-    m_hasIdFilter(false),
-    m_idFilter(0)
-{}
+inline OggIterator::OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize)
+    : m_stream(&stream)
+    , m_startOffset(startOffset)
+    , m_streamSize(streamSize)
+    , m_page(0)
+    , m_segment(0)
+    , m_offset(0)
+    , m_bytesRead(0)
+    , m_hasIdFilter(false)
+    , m_idFilter(0)
+{
+}
 
 /*!
  * \brief Returns the stream.
@@ -324,6 +324,6 @@ inline bool OggIterator::matchesFilter(const OggPage &page)
     return !m_hasIdFilter || m_idFilter == page.streamSerialNumber();
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_OGGITERATOR_H

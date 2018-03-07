@@ -3,19 +3,17 @@
 
 #include "../abstracttrack.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
-namespace TagParser
-{
+namespace TagParser {
 
 class Mp4Atom;
 class Mpeg4Descriptor;
 struct AvcConfiguration;
 struct TrackHeaderInfo;
 
-class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig
-{
+class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig {
 public:
     Mpeg4AudioSpecificConfig();
 
@@ -40,8 +38,7 @@ public:
     byte epConfig;
 };
 
-class TAG_PARSER_EXPORT Mpeg4VideoSpecificConfig
-{
+class TAG_PARSER_EXPORT Mpeg4VideoSpecificConfig {
 public:
     Mpeg4VideoSpecificConfig();
 
@@ -49,8 +46,7 @@ public:
     std::string userData;
 };
 
-class TAG_PARSER_EXPORT Mpeg4ElementaryStreamInfo
-{
+class TAG_PARSER_EXPORT Mpeg4ElementaryStreamInfo {
 public:
     Mpeg4ElementaryStreamInfo();
 
@@ -75,17 +71,18 @@ public:
     std::unique_ptr<Mpeg4VideoSpecificConfig> videoSpecificConfig;
 };
 
-inline Mpeg4ElementaryStreamInfo::Mpeg4ElementaryStreamInfo() :
-    id(0),
-    esDescFlags(0),
-    dependsOnId(0),
-    ocrId(0),
-    objectTypeId(0),
-    decCfgDescFlags(0),
-    bufferSize(0),
-    maxBitrate(0),
-    averageBitrate(0)
-{}
+inline Mpeg4ElementaryStreamInfo::Mpeg4ElementaryStreamInfo()
+    : id(0)
+    , esDescFlags(0)
+    , dependsOnId(0)
+    , ocrId(0)
+    , objectTypeId(0)
+    , decCfgDescFlags(0)
+    , bufferSize(0)
+    , maxBitrate(0)
+    , averageBitrate(0)
+{
+}
 
 inline bool Mpeg4ElementaryStreamInfo::dependencyFlag() const
 {
@@ -117,8 +114,7 @@ inline bool Mpeg4ElementaryStreamInfo::upstream() const
     return decCfgDescFlags & 0x02;
 }
 
-class TAG_PARSER_EXPORT Mp4Track : public AbstractTrack
-{
+class TAG_PARSER_EXPORT Mp4Track : public AbstractTrack {
 public:
     Mp4Track(Mp4Atom &trakAtom);
     ~Mp4Track() override;
@@ -134,13 +130,16 @@ public:
     const AvcConfiguration *avcConfiguration() const;
 
     // methods to parse configuration details from the track header
-    static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag);
-    static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(std::istream &stream, uint64 startOffset, uint64 size, Diagnostics &diag);
-    static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size, Diagnostics &diag);
+    static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(
+        IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag);
+    static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(
+        std::istream &stream, uint64 startOffset, uint64 size, Diagnostics &diag);
+    static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(
+        IoUtilities::BinaryReader &reader, uint64 startOffset, uint64 size, Diagnostics &diag);
 
     // methods to read the "index" (chunk offsets and sizes)
     std::vector<uint64> readChunkOffsets(bool parseFragments, Diagnostics &diag);
-    std::vector<std::tuple<uint32, uint32, uint32> > readSampleToChunkTable(Diagnostics &diag);
+    std::vector<std::tuple<uint32, uint32, uint32>> readSampleToChunkTable(Diagnostics &diag);
     std::vector<uint64> readChunkSizes(TagParser::Diagnostics &diag);
 
     // methods to make the track header
@@ -257,6 +256,6 @@ inline const AvcConfiguration *Mp4Track::avcConfiguration() const
     return m_avcConfig.get();
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP4TRACK_H

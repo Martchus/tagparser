@@ -5,15 +5,14 @@
 
 #include "../genericfileelement.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/conversion/types.h>
 
-#include <list>
 #include <iostream>
+#include <list>
 #include <memory>
 
-namespace TagParser
-{
+namespace TagParser {
 
 class Mp4Atom;
 class Mp4Container;
@@ -21,9 +20,7 @@ class Mp4Container;
 /*!
  * \brief Defines traits for the GenericFileElement implementation Mp4Atom.
  */
-template <>
-class TAG_PARSER_EXPORT FileElementTraits<Mp4Atom>
-{
+template <> class TAG_PARSER_EXPORT FileElementTraits<Mp4Atom> {
 public:
     typedef Mp4Container ContainerType;
     typedef uint32 IdentifierType;
@@ -38,8 +35,7 @@ public:
     }
 };
 
-class TAG_PARSER_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom>
-{
+class TAG_PARSER_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom> {
     friend class GenericFileElement<Mp4Atom>;
 
 public:
@@ -71,8 +67,8 @@ private:
 inline std::string Mp4Atom::idToString() const
 {
     auto idString = ConversionUtilities::interpretIntegerAsString<IdentifierType>(id());
-    for(char &c : idString) {
-        if(c < ' ') {
+    for (char &c : idString) {
+        if (c < ' ') {
             c = '?';
         }
     }
@@ -87,6 +83,6 @@ inline void Mp4Atom::addHeaderSize(uint64 &dataSize)
     dataSize += (dataSize < 0xFFFFFFF7 ? 8 : 16);
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP4ATOM_H

@@ -10,8 +10,7 @@ namespace TagParser {
 /*!
  * \brief Holds 64-bit signatures.
  */
-enum Sig64 : uint64
-{
+enum Sig64 : uint64 {
     Ar = 0x213C617263683E0A,
     Asf1 = 0x3026B2758E66CF11ul,
     Asf2 = 0xA6D900AA0062CE6Cul,
@@ -23,16 +22,14 @@ enum Sig64 : uint64
 /*!
  * \brief Holds 52-bit signatures.
  */
-enum Sig56 : uint64
-{
+enum Sig56 : uint64 {
     Rar = 0x526172211A0700ul,
 };
 
 /*!
  * \brief Holds 48-bit signatures.
  */
-enum Sig48 : uint64
-{
+enum Sig48 : uint64 {
     Gif87a = 0x474946383761ul,
     Gif89a = 0x474946383961ul,
     SevenZ = 0x377ABCAF271Cul,
@@ -42,8 +39,7 @@ enum Sig48 : uint64
 /*!
  * \brief Holds 32-bit signatures.
  */
-enum Sig32 : uint32
-{
+enum Sig32 : uint32 {
     Dirac = 0x42424344u,
     Elf = 0x7F454C46u,
     Flac = 0x664C6143u,
@@ -55,7 +51,7 @@ enum Sig32 : uint32
     PhotoshopDocument = 0x38425053u,
     QuickTime = 0x6D6F6F76u,
     Riff = 0x52494646u,
-    RiffWave =0x57415645u,
+    RiffWave = 0x57415645u,
     TiffBigEndian = 0x4D4D002Au,
     TiffLittleEndian = 0x49492A00u,
     Utf32Text = 0xFFFE0000u,
@@ -70,8 +66,7 @@ enum Sig32 : uint32
 /*!
  * \brief Holds 24-bit signatures.
  */
-enum Sig24 : uint32
-{
+enum Sig24 : uint32 {
     Bzip2 = 0x425A68u,
     Flv = 0x464C56u,
     Gzip = 0x1F8B08u,
@@ -82,8 +77,7 @@ enum Sig24 : uint32
 /*!
  * \brief Holds 16-bit signatures.
  */
-enum Sig16 : uint16
-{
+enum Sig16 : uint16 {
     Ac3 = 0x0B77u,
     Adts = 0xFFF0u,
     AdtsMask = 0xFFF6u,
@@ -107,19 +101,19 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
 {
     // read signature
     uint64 sig = 0;
-    if(bufferSize >= 8) {
+    if (bufferSize >= 8) {
         sig = ConversionUtilities::BE::toUInt64(buffer);
-    } else if(bufferSize >= 4) {
+    } else if (bufferSize >= 4) {
         sig = ConversionUtilities::BE::toUInt32(buffer);
         sig <<= 4;
-    } else if(bufferSize >= 2) {
+    } else if (bufferSize >= 2) {
         sig = ConversionUtilities::BE::toUInt16(buffer);
         sig <<= 6;
     } else {
         return ContainerFormat::Unknown;
     }
     // return corresponding container format
-    switch(sig) { // check 64-bit signatures
+    switch (sig) { // check 64-bit signatures
     case Ar:
         return ContainerFormat::Ar;
     case Asf1:
@@ -129,28 +123,25 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case Png:
         return ContainerFormat::Png;
     case YUV4Mpeg2:
-        if(bufferSize >= 10 && buffer[8] == 0x32 && buffer[9] == 0x20) {
+        if (bufferSize >= 10 && buffer[8] == 0x32 && buffer[9] == 0x20) {
             return ContainerFormat::YUV4Mpeg2;
         }
         break;
-    default:
-        ;
+    default:;
     }
-    switch(sig & 0x00000000FFFFFFFF) { // check 32-bit signatures @ bit 31
+    switch (sig & 0x00000000FFFFFFFF) { // check 32-bit signatures @ bit 31
     case Mp4:
         return ContainerFormat::Mp4;
     case QuickTime:
         return ContainerFormat::QuickTime;
-    default:
-        ;
+    default:;
     }
-    switch(sig >> 8) { // check 56-bit signatures
+    switch (sig >> 8) { // check 56-bit signatures
     case Rar:
         return ContainerFormat::Rar;
-    default:
-        ;
+    default:;
     }
-    switch(sig >> 16) { // check 48-bit signatures
+    switch (sig >> 16) { // check 48-bit signatures
     case Gif87a:
         return ContainerFormat::Gif87a;
     case Gif89a:
@@ -159,10 +150,9 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::SevenZ;
     case Xz:
         return ContainerFormat::Xz;
-    default:
-        ;
+    default:;
     }
-    switch(sig >> 32) { // check 32-bit signatures
+    switch (sig >> 32) { // check 32-bit signatures
     case Dirac:
         return ContainerFormat::Dirac;
     case Elf:
@@ -180,7 +170,7 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case PhotoshopDocument:
         return ContainerFormat::PhotoshopDocument;
     case Riff:
-        if(bufferSize >= 16 && ConversionUtilities::BE::toUInt64(buffer + 8) == Sig64::RiffAvi) {
+        if (bufferSize >= 16 && ConversionUtilities::BE::toUInt64(buffer + 8) == Sig64::RiffAvi) {
             return ContainerFormat::RiffAvi;
         } else if (bufferSize >= 12 && ConversionUtilities::BE::toUInt32(buffer + 8) == RiffWave) {
             return ContainerFormat::RiffWave;
@@ -203,10 +193,9 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case Zip2:
     case Zip3:
         return ContainerFormat::Zip;
-    default:
-        ;
+    default:;
     }
-    switch(sig >> 40) { // check 24-bit signatures
+    switch (sig >> 40) { // check 24-bit signatures
     case Bzip2:
         return ContainerFormat::Bzip2;
     case Flv:
@@ -218,7 +207,7 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case Utf8Text:
         return ContainerFormat::Utf8Text;
     }
-    switch(sig >> 48) { // check 16-bit signatures
+    switch (sig >> 48) { // check 16-bit signatures
     case Ac3:
         return ContainerFormat::Ac3Frames;
     case Jpeg:
@@ -233,14 +222,13 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::Utf16Text;
     case WindowsBitmap:
         return ContainerFormat::WindowsBitmap;
-    default:
-        ;
+    default:;
     }
     // check other signatures
-    if(((sig >> 48) & AdtsMask) == Adts) {
+    if (((sig >> 48) & AdtsMask) == Adts) {
         return ContainerFormat::Adts;
     }
-    if((sig >> 53) == MpegAudioFrames) {
+    if ((sig >> 53) == MpegAudioFrames) {
         return ContainerFormat::MpegAudioFrames;
     }
     return ContainerFormat::Unknown;
@@ -254,33 +242,45 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
  */
 const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType, unsigned int version)
 {
-    switch(containerFormat) {
-    case ContainerFormat::Ac3Frames: return "ac3";
-    case ContainerFormat::Ar: return "a";
-    case ContainerFormat::Asf: return "asf";
-    case ContainerFormat::Dirac: return "drc";
-    case ContainerFormat::Elf: return "elf";
-    case ContainerFormat::Flac: return "flac";
-    case ContainerFormat::FlashVideo: return "flv";
+    switch (containerFormat) {
+    case ContainerFormat::Ac3Frames:
+        return "ac3";
+    case ContainerFormat::Ar:
+        return "a";
+    case ContainerFormat::Asf:
+        return "asf";
+    case ContainerFormat::Dirac:
+        return "drc";
+    case ContainerFormat::Elf:
+        return "elf";
+    case ContainerFormat::Flac:
+        return "flac";
+    case ContainerFormat::FlashVideo:
+        return "flv";
     case ContainerFormat::Gif87a:
-    case ContainerFormat::Gif89a: return "gif";
-    case ContainerFormat::JavaClassFile: return "class";
-    case ContainerFormat::Jpeg: return "jpeg";
-    case ContainerFormat::Lha: return "lzh";
-    case ContainerFormat::Lzw: return "lzw";
+    case ContainerFormat::Gif89a:
+        return "gif";
+    case ContainerFormat::JavaClassFile:
+        return "class";
+    case ContainerFormat::Jpeg:
+        return "jpeg";
+    case ContainerFormat::Lha:
+        return "lzh";
+    case ContainerFormat::Lzw:
+        return "lzw";
     case ContainerFormat::Mp4:
-        switch(mediaType) {
+        switch (mediaType) {
         case MediaType::Audio:
             return "m4a";
         default:
             return "mp4";
         }
     case ContainerFormat::Ogg:
-        switch(mediaType) {
+        switch (mediaType) {
         case MediaType::Video:
             return "ogv";
         default:
-            switch(version) {
+            switch (version) {
             case static_cast<unsigned int>(GeneralMediaFormat::Opus):
                 return "opus";
             case static_cast<unsigned int>(GeneralMediaFormat::Speex):
@@ -289,19 +289,23 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
                 return "ogg";
             }
         }
-    case ContainerFormat::PhotoshopDocument: return "psd";
-    case ContainerFormat::Png: return "png";
-    case ContainerFormat::PortableExecutable: return "exe";
-    case ContainerFormat::Rar: return "rar";
+    case ContainerFormat::PhotoshopDocument:
+        return "psd";
+    case ContainerFormat::Png:
+        return "png";
+    case ContainerFormat::PortableExecutable:
+        return "exe";
+    case ContainerFormat::Rar:
+        return "rar";
     case ContainerFormat::Matroska:
-        switch(mediaType) {
+        switch (mediaType) {
         case MediaType::Audio:
             return "mka";
         default:
             return "mkv";
         }
     case ContainerFormat::MpegAudioFrames:
-        switch(version) {
+        switch (version) {
         case 1:
             return "mp1";
         case 2:
@@ -309,25 +313,43 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
         default:
             return "mp3";
         }
-    case ContainerFormat::Riff: return "riff";
-    case ContainerFormat::RiffWave: return "wav";
-    case ContainerFormat::RiffAvi: return "avi";
-    case ContainerFormat::Tar: return "tar";
+    case ContainerFormat::Riff:
+        return "riff";
+    case ContainerFormat::RiffWave:
+        return "wav";
+    case ContainerFormat::RiffAvi:
+        return "avi";
+    case ContainerFormat::Tar:
+        return "tar";
     case ContainerFormat::TiffBigEndian:
-    case ContainerFormat::TiffLittleEndian: return "tiff";
-    case ContainerFormat::WindowsBitmap: return "bmp";
-    case ContainerFormat::WindowsIcon: return "ico";
-    case ContainerFormat::Bzip2: return "bz";
-    case ContainerFormat::Gzip: return "gz";
-    case ContainerFormat::Lzip: return "lz";
-    case ContainerFormat::QuickTime: return "mov";
-    case ContainerFormat::Zip: return "zip";
-    case ContainerFormat::SevenZ: return "7z";
-    case ContainerFormat::Xz: return "xz";
-    case ContainerFormat::YUV4Mpeg2: return "y4m";
-    case ContainerFormat::WavPack: return "wv";
-    case ContainerFormat::MonkeysAudio: return "ape";
-    default: return "";
+    case ContainerFormat::TiffLittleEndian:
+        return "tiff";
+    case ContainerFormat::WindowsBitmap:
+        return "bmp";
+    case ContainerFormat::WindowsIcon:
+        return "ico";
+    case ContainerFormat::Bzip2:
+        return "bz";
+    case ContainerFormat::Gzip:
+        return "gz";
+    case ContainerFormat::Lzip:
+        return "lz";
+    case ContainerFormat::QuickTime:
+        return "mov";
+    case ContainerFormat::Zip:
+        return "zip";
+    case ContainerFormat::SevenZ:
+        return "7z";
+    case ContainerFormat::Xz:
+        return "xz";
+    case ContainerFormat::YUV4Mpeg2:
+        return "y4m";
+    case ContainerFormat::WavPack:
+        return "wv";
+    case ContainerFormat::MonkeysAudio:
+        return "ape";
+    default:
+        return "";
     }
 }
 
@@ -338,7 +360,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
  */
 const char *containerFormatName(ContainerFormat containerFormat)
 {
-    switch(containerFormat) {
+    switch (containerFormat) {
     case ContainerFormat::Ac3Frames:
         return "raw Dolby Digital";
     case ContainerFormat::Adts:
@@ -439,7 +461,7 @@ const char *containerFormatName(ContainerFormat containerFormat)
  */
 const char *containerFormatSubversion(ContainerFormat containerFormat)
 {
-    switch(containerFormat) {
+    switch (containerFormat) {
     case ContainerFormat::Gif87a:
         return "87a";
     case ContainerFormat::Gif89a:
@@ -460,7 +482,7 @@ const char *containerFormatSubversion(ContainerFormat containerFormat)
  */
 const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType)
 {
-    switch(containerFormat) {
+    switch (containerFormat) {
     case ContainerFormat::Ac3Frames:
         return "audio/ac3";
     case ContainerFormat::Asf:
@@ -479,21 +501,21 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
     case ContainerFormat::MpegAudioFrames:
         return "audio/mpeg";
     case ContainerFormat::Mp4:
-        switch(mediaType) {
+        switch (mediaType) {
         case MediaType::Audio:
             return "audio/mp4";
         default:
             return "video/mp4";
         }
     case ContainerFormat::Ogg:
-        switch(mediaType) {
+        switch (mediaType) {
         case MediaType::Audio:
             return "audio/ogg";
         default:
             return "video/ogg";
         }
     case ContainerFormat::Matroska:
-        switch(mediaType) {
+        switch (mediaType) {
         case MediaType::Audio:
             return "audio/x-matroska";
         default:
@@ -531,7 +553,7 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
  */
 TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue)
 {
-    switch(containerFormat) {
+    switch (containerFormat) {
     case ContainerFormat::Matroska:
     case ContainerFormat::Webm:
         return matroskaTagTargetLevel(targetLevelValue);
@@ -545,7 +567,7 @@ TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targ
  */
 uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel)
 {
-    switch(containerFormat) {
+    switch (containerFormat) {
     case ContainerFormat::Matroska:
     case ContainerFormat::Webm:
         return matroskaTagTargetLevelValue(targetLevel);
@@ -554,4 +576,4 @@ uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel
     }
 }
 
-}
+} // namespace TagParser

@@ -1,20 +1,19 @@
 #ifndef TAG_PARSER_OGGCONTAINER_H
 #define TAG_PARSER_OGGCONTAINER_H
 
+#include "./oggiterator.h"
 #include "./oggpage.h"
 #include "./oggstream.h"
-#include "./oggiterator.h"
 
 #include "../vorbis/vorbiscomment.h"
 
 #include "../genericcontainer.h"
 
-#include <unordered_map>
 #include <tuple>
+#include <unordered_map>
 
 namespace IoUtilities {
-template<std::size_t bufferSize>
-class CopyHelper;
+template <std::size_t bufferSize> class CopyHelper;
 }
 
 namespace TagParser {
@@ -25,8 +24,7 @@ class OggContainer;
 /*!
  * \brief The OggParameter struct holds the OGG parameter for a VorbisComment.
  */
-struct TAG_PARSER_EXPORT OggParameter
-{
+struct TAG_PARSER_EXPORT OggParameter {
     OggParameter();
     void set(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
 
@@ -43,15 +41,16 @@ struct TAG_PARSER_EXPORT OggParameter
  * \brief Creates new parameters.
  * \remarks The OggContainer class is responsible for assigning sane values.
  */
-inline OggParameter::OggParameter() :
-    firstPageIndex(0),
-    firstSegmentIndex(0),
-    lastPageIndex(0),
-    lastSegmentIndex(0),
-    lastMetaDataBlock(false),
-    streamFormat(GeneralMediaFormat::Vorbis),
-    removed(false)
-{}
+inline OggParameter::OggParameter()
+    : firstPageIndex(0)
+    , firstSegmentIndex(0)
+    , lastPageIndex(0)
+    , lastSegmentIndex(0)
+    , lastMetaDataBlock(false)
+    , streamFormat(GeneralMediaFormat::Vorbis)
+    , removed(false)
+{
+}
 
 /*!
  * \brief Sets the firstPageIndex/lastPageIndex, the firstSegmentIndex/lastSegmentIndex, whether the associated meta data block is the last one and the streamFormat.
@@ -65,8 +64,7 @@ inline void OggParameter::set(std::size_t pageIndex, std::size_t segmentIndex, b
     this->streamFormat = streamFormat;
 }
 
-class TAG_PARSER_EXPORT OggVorbisComment : public VorbisComment
-{
+class TAG_PARSER_EXPORT OggVorbisComment : public VorbisComment {
     friend class OggContainer;
 
 public:
@@ -86,7 +84,8 @@ private:
  * \brief Constructs a new OGG Vorbis comment.
  */
 inline OggVorbisComment::OggVorbisComment()
-{}
+{
+}
 
 inline TagType OggVorbisComment::type() const
 {
@@ -124,8 +123,7 @@ inline const OggParameter &OggVorbisComment::oggParams() const
     return m_oggParams;
 }
 
-class TAG_PARSER_EXPORT OggContainer : public GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage>
-{
+class TAG_PARSER_EXPORT OggContainer : public GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage> {
     friend class OggStream;
 
 public:
@@ -149,10 +147,12 @@ protected:
     void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
-    void announceComment(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
-    void makeVorbisCommentSegment(std::stringstream &buffer, IoUtilities::CopyHelper<65307> &copyHelper, std::vector<uint32> &newSegmentSizes, VorbisComment *comment, OggParameter *params, Diagnostics &diag);
+    void announceComment(
+        std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
+    void makeVorbisCommentSegment(std::stringstream &buffer, IoUtilities::CopyHelper<65307> &copyHelper, std::vector<uint32> &newSegmentSizes,
+        VorbisComment *comment, OggParameter *params, Diagnostics &diag);
 
-    std::unordered_map<uint32, std::vector<std::unique_ptr<OggStream> >::size_type> m_streamsBySerialNo;
+    std::unordered_map<uint32, std::vector<std::unique_ptr<OggStream>>::size_type> m_streamsBySerialNo;
 
     OggIterator m_iterator;
     bool m_validateChecksums;
@@ -180,6 +180,6 @@ inline void OggContainer::setChecksumValidationEnabled(bool enabled)
     m_validateChecksums = enabled;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_OGGCONTAINER_H

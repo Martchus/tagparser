@@ -14,29 +14,19 @@ class TagValue;
 /*!
  * \brief The FlacMetaDataBlockType enum specifies the type of FlacMetaDataBlockHeader.
  */
-enum class FlacMetaDataBlockType : byte
-{
-    StreamInfo = 0,
-    Padding,
-    Application,
-    SeekTable,
-    VorbisComment,
-    CuseSheet,
-    Picture
-};
+enum class FlacMetaDataBlockType : byte { StreamInfo = 0, Padding, Application, SeekTable, VorbisComment, CuseSheet, Picture };
 
-constexpr bool operator ==(byte lhs, FlacMetaDataBlockType type)
+constexpr bool operator==(byte lhs, FlacMetaDataBlockType type)
 {
     return lhs == static_cast<byte>(type);
 }
 
-constexpr bool operator !=(byte lhs, FlacMetaDataBlockType type)
+constexpr bool operator!=(byte lhs, FlacMetaDataBlockType type)
 {
     return lhs != static_cast<byte>(type);
 }
 
-class TAG_PARSER_EXPORT FlacMetaDataBlockHeader
-{
+class TAG_PARSER_EXPORT FlacMetaDataBlockHeader {
 public:
     FlacMetaDataBlockHeader();
 
@@ -59,11 +49,12 @@ private:
 /*!
  * \brief Constructs a new FLAC "METADATA_BLOCK_HEADER".
  */
-inline FlacMetaDataBlockHeader::FlacMetaDataBlockHeader() :
-    m_last(0),
-    m_type(0),
-    m_dataSize(0)
-{}
+inline FlacMetaDataBlockHeader::FlacMetaDataBlockHeader()
+    : m_last(0)
+    , m_type(0)
+    , m_dataSize(0)
+{
+}
 
 /*!
  * \brief Returns whether this is the last metadata block before the audio blocks.
@@ -116,8 +107,7 @@ inline void FlacMetaDataBlockHeader::setDataSize(uint32 dataSize)
     m_dataSize = dataSize;
 }
 
-class TAG_PARSER_EXPORT FlacMetaDataBlockStreamInfo
-{
+class TAG_PARSER_EXPORT FlacMetaDataBlockStreamInfo {
 public:
     FlacMetaDataBlockStreamInfo();
 
@@ -148,17 +138,18 @@ private:
 /*!
  * \brief Constructs a new FLAC "METADATA_BLOCK_STREAMINFO".
  */
-inline FlacMetaDataBlockStreamInfo::FlacMetaDataBlockStreamInfo() :
-    m_minBlockSize(0),
-    m_maxBlockSize(0),
-    m_minFrameSize(0),
-    m_maxFrameSize(0),
-    m_samplingFrequency(0),
-    m_channelCount(0),
-    m_bitsPerSample(0),
-    m_totalSampleCount(0),
-    m_md5Sum{0}
-{}
+inline FlacMetaDataBlockStreamInfo::FlacMetaDataBlockStreamInfo()
+    : m_minBlockSize(0)
+    , m_maxBlockSize(0)
+    , m_minFrameSize(0)
+    , m_maxFrameSize(0)
+    , m_samplingFrequency(0)
+    , m_channelCount(0)
+    , m_bitsPerSample(0)
+    , m_totalSampleCount(0)
+    , m_md5Sum{ 0 }
+{
+}
 
 /*!
  * \brief Returns the minimum block size (in samples) used in the stream.
@@ -255,8 +246,7 @@ inline const char *FlacMetaDataBlockStreamInfo::md5Sum() const
     return m_md5Sum;
 }
 
-class TAG_PARSER_EXPORT FlacMetaDataBlockPicture
-{
+class TAG_PARSER_EXPORT FlacMetaDataBlockPicture {
 public:
     FlacMetaDataBlockPicture(TagValue &tagValue);
 
@@ -280,10 +270,11 @@ private:
  * The FlacMetaDataBlockPicture does not take ownership over
  * the specified \a tagValue.
  */
-inline FlacMetaDataBlockPicture::FlacMetaDataBlockPicture(TagValue &tagValue) :
-    m_pictureType(0),
-    m_value(tagValue)
-{}
+inline FlacMetaDataBlockPicture::FlacMetaDataBlockPicture(TagValue &tagValue)
+    : m_pictureType(0)
+    , m_value(tagValue)
+{
+}
 
 /*!
  * \brief Returns the picture type according to the ID3v2 APIC frame.
@@ -309,6 +300,6 @@ inline TagValue &FlacMetaDataBlockPicture::value()
     return m_value;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_FLACMETADATAHEADER_H

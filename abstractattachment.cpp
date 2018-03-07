@@ -1,13 +1,13 @@
 #include "./abstractattachment.h"
 
-#include "./mediafileinfo.h"
 #include "./exceptions.h"
+#include "./mediafileinfo.h"
 
 #include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/copy.h>
 
-#include <sstream>
 #include <memory>
+#include <sstream>
 
 using namespace std;
 using namespace IoUtilities;
@@ -24,11 +24,12 @@ namespace TagParser {
  *
  * The derived is responsible for the prober initialization of the object.
  */
-StreamDataBlock::StreamDataBlock() :
-    m_stream(nullptr),
-    m_startOffset(0),
-    m_endOffset(0)
-{}
+StreamDataBlock::StreamDataBlock()
+    : m_stream(nullptr)
+    , m_startOffset(0)
+    , m_endOffset(0)
+{
+}
 
 /*!
  * \brief Constructs a new StreamDataBlock with the specified \a stream and offsets.
@@ -40,8 +41,9 @@ StreamDataBlock::StreamDataBlock() :
  *
  * The object does NOT take ownership over the stream returned by the specified function.
  */
-StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream, std::istream::off_type startOffset, std::ios_base::seekdir startDir, std::istream::off_type endOffset, std::ios_base::seekdir endDir) :
-    m_stream(stream)
+StreamDataBlock::StreamDataBlock(const std::function<std::istream &()> &stream, std::istream::off_type startOffset, std::ios_base::seekdir startDir,
+    std::istream::off_type endOffset, std::ios_base::seekdir endDir)
+    : m_stream(stream)
 {
     auto &s = stream();
     auto currentPos = s.tellg();
@@ -50,7 +52,7 @@ StreamDataBlock::StreamDataBlock(const std::function<std::istream & ()> &stream,
     s.seekg(endOffset, endDir);
     m_endOffset = s.tellg();
     s.seekg(currentPos);
-    if(m_endOffset < m_startOffset) {
+    if (m_endOffset < m_startOffset) {
         IoUtilities::throwIoFailure("End offset is less than start offset.");
     }
 }
@@ -71,7 +73,7 @@ void StreamDataBlock::makeBuffer() const
  */
 void StreamDataBlock::copyTo(ostream &stream) const
 {
-    if(buffer()) {
+    if (buffer()) {
         stream.write(buffer().get(), size());
     } else {
         CopyHelper<0x2000> copyHelper;
@@ -92,17 +94,15 @@ void StreamDataBlock::copyTo(ostream &stream) const
  *
  * \throws Throws ios_base::failure when an IO error occurs.
  */
-FileDataBlock::FileDataBlock(const string &path, Diagnostics &diag) :
-    m_fileInfo(new MediaFileInfo)
+FileDataBlock::FileDataBlock(const string &path, Diagnostics &diag)
+    : m_fileInfo(new MediaFileInfo)
 {
     m_fileInfo->setPath(path);
     m_fileInfo->open(true);
     m_fileInfo->parseContainerFormat(diag);
     m_startOffset = 0;
     m_endOffset = m_fileInfo->size();
-    m_stream = [this] () -> std::istream & {
-        return this->m_fileInfo->stream();
-    };
+    m_stream = [this]() -> std::istream & { return this->m_fileInfo->stream(); };
 }
 
 /*!
@@ -117,10 +117,10 @@ string AbstractAttachment::label() const
 {
     stringstream ss;
     ss << "ID: " << id();
-    if(!name().empty()) {
+    if (!name().empty()) {
         ss << ", name: \"" << name() << "\"";
     }
-    if(!mimeType().empty()) {
+    if (!mimeType().empty()) {
         ss << ", mime-type: \"" << mimeType() << "\"";
     }
     return ss.str();
@@ -156,16 +156,15 @@ void AbstractAttachment::setFile(const std::string &path, Diagnostics &diag)
     m_data.reset();
     auto file = make_unique<FileDataBlock>(path, diag);
     const auto fileName = file->fileInfo()->fileName();
-    if(!fileName.empty()) {
+    if (!fileName.empty()) {
         m_name = fileName;
     }
     const char *mimeType = file->fileInfo()->mimeType();
-    if(*mimeType) {
+    if (*mimeType) {
         m_mimeType = mimeType;
     }
     m_data = move(file);
     m_isDataFromFile = true;
 }
 
-} // namespace Media
-
+} // namespace TagParser

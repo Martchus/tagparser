@@ -11,14 +11,12 @@ namespace IoUtilities {
 class BinaryReader;
 }
 
-namespace TagParser
-{
+namespace TagParser {
 
 /*!
  * \brief Specifies the channel mode.
  */
-enum class MpegChannelMode
-{
+enum class MpegChannelMode {
     Stereo, /**< stereo */
     JointStereo, /**< joint stereo */
     DualChannel, /**< dual channel */
@@ -28,8 +26,7 @@ enum class MpegChannelMode
 
 TAG_PARSER_EXPORT const char *mpegChannelModeString(MpegChannelMode channelMode);
 
-enum class XingHeaderFlags
-{
+enum class XingHeaderFlags {
     None = 0x0u, /**< No Xing frames are present  */
     HasFramesField = 0x1u, /**< Xing frames field is present */
     HasBytesField = 0x2u, /**< Xing bytes field is present */
@@ -37,8 +34,7 @@ enum class XingHeaderFlags
     HasQualityIndicator = 0x8u /**< Xing quality indicator is present */
 };
 
-class TAG_PARSER_EXPORT MpegAudioFrame
-{
+class TAG_PARSER_EXPORT MpegAudioFrame {
 public:
     MpegAudioFrame();
 
@@ -81,14 +77,15 @@ private:
 /*!
  * \brief Constructs a new frame.
  */
-inline MpegAudioFrame::MpegAudioFrame() :
-    m_header(0),
-    m_xingHeader(0),
-    m_xingHeaderFlags(XingHeaderFlags::None),
-    m_xingFramefield(0),
-    m_xingBytesfield(0),
-    m_xingQualityIndicator(0)
-{}
+inline MpegAudioFrame::MpegAudioFrame()
+    : m_header(0)
+    , m_xingHeader(0)
+    , m_xingHeaderFlags(XingHeaderFlags::None)
+    , m_xingFramefield(0)
+    , m_xingBytesfield(0)
+    , m_xingQualityIndicator(0)
+{
+}
 
 /*!
  * \brief Returns an indication whether the frame is valid.
@@ -111,7 +108,7 @@ inline bool MpegAudioFrame::isProtectedByCrc() const
  */
 inline uint32 MpegAudioFrame::bitrate() const
 {
-    if(mpegVersion() > 0.0 && layer() > 0)
+    if (mpegVersion() > 0.0 && layer() > 0)
         return m_bitrateTable[mpegVersion() == 1.0 ? 0 : 1][layer() - 1][(m_header & 0xf000u) >> 12];
     else
         return 0;
@@ -122,7 +119,7 @@ inline uint32 MpegAudioFrame::bitrate() const
  */
 inline uint32 MpegAudioFrame::paddingSize() const
 {
-    if(isValid()) {
+    if (isValid()) {
         return (m_header & 0x60000u) == 0x60000u ? 4u : 1u * (m_header & 0x200u);
     } else {
         return 0;
@@ -145,16 +142,15 @@ inline bool MpegAudioFrame::isOriginal() const
     return (m_header & 0x4u) == 0x4u;
 }
 
-inline XingHeaderFlags operator |(XingHeaderFlags lhs, XingHeaderFlags rhs)
+inline XingHeaderFlags operator|(XingHeaderFlags lhs, XingHeaderFlags rhs)
 {
     return static_cast<XingHeaderFlags>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }
 
-inline XingHeaderFlags operator &(XingHeaderFlags lhs, XingHeaderFlags rhs)
+inline XingHeaderFlags operator&(XingHeaderFlags lhs, XingHeaderFlags rhs)
 {
     return static_cast<XingHeaderFlags>(static_cast<int>(lhs) & static_cast<int>(rhs));
 }
-
 
 /*!
  * \brief Returns an indication whether a Xing header is present.
@@ -177,9 +173,7 @@ inline XingHeaderFlags MpegAudioFrame::xingHeaderFlags() const
  */
 inline bool MpegAudioFrame::isXingFramefieldPresent() const
 {
-    return (isXingHeaderAvailable())
-            ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField)
-            : false;
+    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField) : false;
 }
 
 /*!
@@ -187,9 +181,7 @@ inline bool MpegAudioFrame::isXingFramefieldPresent() const
  */
 inline bool MpegAudioFrame::isXingBytesfieldPresent() const
 {
-    return (isXingHeaderAvailable())
-            ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField)
-            : false;
+    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField) : false;
 }
 
 /*!
@@ -197,9 +189,7 @@ inline bool MpegAudioFrame::isXingBytesfieldPresent() const
  */
 inline bool MpegAudioFrame::isXingTocFieldPresent() const
 {
-    return (isXingHeaderAvailable())
-            ? ((m_xingHeaderFlags & XingHeaderFlags::HasTocField) == XingHeaderFlags::HasTocField)
-            : false;
+    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasTocField) == XingHeaderFlags::HasTocField) : false;
 }
 
 /*!
@@ -207,9 +197,7 @@ inline bool MpegAudioFrame::isXingTocFieldPresent() const
  */
 inline bool MpegAudioFrame::isXingQualityIndicatorFieldPresent() const
 {
-    return (isXingHeaderAvailable())
-            ? ((m_xingHeaderFlags & XingHeaderFlags::HasQualityIndicator) == XingHeaderFlags::HasQualityIndicator)
-            : false;
+    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasQualityIndicator) == XingHeaderFlags::HasQualityIndicator) : false;
 }
 
 /*!
@@ -236,6 +224,6 @@ inline uint32 MpegAudioFrame::xingQualityIndicator() const
     return m_xingQualityIndicator;
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_MP3FRAMEAUDIOSTREAM_H

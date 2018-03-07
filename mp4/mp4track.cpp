@@ -1,6 +1,6 @@
+#include "./mp4track.h"
 #include "./mp4atom.h"
 #include "./mp4container.h"
-#include "./mp4track.h"
 #include "./mp4ids.h"
 #include "./mpeg4descriptor.h"
 
@@ -18,8 +18,8 @@
 #include <c++utilities/io/bitreader.h>
 #include <c++utilities/io/catchiofailure.h>
 
-#include <locale>
 #include <cmath>
+#include <locale>
 
 using namespace std;
 using namespace IoUtilities;
@@ -34,8 +34,7 @@ namespace TagParser {
  * \sa TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() for obtaining an instance.
  * \remarks The struct is only used internally by the Mp4Track class.
  */
-struct TrackHeaderInfo
-{
+struct TrackHeaderInfo {
     friend class Mp4Track;
 
 private:
@@ -57,14 +56,15 @@ private:
     bool discardBuffer;
 };
 
-inline TrackHeaderInfo::TrackHeaderInfo() :
-    requiredSize(100),
-    canUseExisting(false),
-    truncated(false),
-    version(0),
-    versionUnknown(false),
-    discardBuffer(false)
-{}
+inline TrackHeaderInfo::TrackHeaderInfo()
+    : requiredSize(100)
+    , canUseExisting(false)
+    , truncated(false)
+    , version(0)
+    , versionUnknown(false)
+    , discardBuffer(false)
+{
+}
 
 /// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
 const DateTime startDate = DateTime::fromDate(1904, 1, 1);
@@ -75,27 +75,28 @@ const DateTime startDate = DateTime::fromDate(1904, 1, 1);
  * \remarks Is part of Mpeg4ElementaryStreamInfo (audio streams only).
  */
 
-Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
-    audioObjectType(0),
-    sampleFrequencyIndex(0xF),
-    sampleFrequency(0),
-    channelConfiguration(0),
-    extensionAudioObjectType(0),
-    sbrPresent(false),
-    psPresent(false),
-    extensionSampleFrequencyIndex(0xF),
-    extensionSampleFrequency(0),
-    extensionChannelConfiguration(0),
-    frameLengthFlag(false),
-    dependsOnCoreCoder(false),
-    coreCoderDelay(0),
-    extensionFlag(0),
-    layerNr(0),
-    numOfSubFrame(0),
-    layerLength(0),
-    resilienceFlags(0),
-    epConfig(0)
-{}
+Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig()
+    : audioObjectType(0)
+    , sampleFrequencyIndex(0xF)
+    , sampleFrequency(0)
+    , channelConfiguration(0)
+    , extensionAudioObjectType(0)
+    , sbrPresent(false)
+    , psPresent(false)
+    , extensionSampleFrequencyIndex(0xF)
+    , extensionSampleFrequency(0)
+    , extensionChannelConfiguration(0)
+    , frameLengthFlag(false)
+    , dependsOnCoreCoder(false)
+    , coreCoderDelay(0)
+    , extensionFlag(0)
+    , layerNr(0)
+    , numOfSubFrame(0)
+    , layerLength(0)
+    , resilienceFlags(0)
+    , epConfig(0)
+{
+}
 
 /*!
  * \class Mpeg4VideoSpecificConfig
@@ -105,9 +106,10 @@ Mpeg4AudioSpecificConfig::Mpeg4AudioSpecificConfig() :
  *  - AVC configuration is another thing and covered by the AvcConfiguration class.
  */
 
-Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig() :
-    profile(0)
-{}
+Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig()
+    : profile(0)
+{
+}
 
 /*!
  * \class Mpeg4ElementaryStreamInfo
@@ -125,32 +127,35 @@ Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig() :
  * "trak"-atoms are stored in the top-level atom "move". Each "trak"-atom holds
  * header information for one track in the MP4 file.
  */
-Mp4Track::Mp4Track(Mp4Atom &trakAtom) :
-    AbstractTrack(trakAtom.stream(), trakAtom.startOffset()),
-    m_trakAtom(&trakAtom),
-    m_tkhdAtom(nullptr),
-    m_mdiaAtom(nullptr),
-    m_mdhdAtom(nullptr),
-    m_hdlrAtom(nullptr),
-    m_minfAtom(nullptr),
-    m_stblAtom(nullptr),
-    m_stsdAtom(nullptr),
-    m_stscAtom(nullptr),
-    m_stcoAtom(nullptr),
-    m_stszAtom(nullptr),
+Mp4Track::Mp4Track(Mp4Atom &trakAtom)
+    : AbstractTrack(trakAtom.stream(), trakAtom.startOffset())
+    , m_trakAtom(&trakAtom)
+    , m_tkhdAtom(nullptr)
+    , m_mdiaAtom(nullptr)
+    , m_mdhdAtom(nullptr)
+    , m_hdlrAtom(nullptr)
+    , m_minfAtom(nullptr)
+    , m_stblAtom(nullptr)
+    , m_stsdAtom(nullptr)
+    , m_stscAtom(nullptr)
+    , m_stcoAtom(nullptr)
+    , m_stszAtom(nullptr)
+    ,
     //m_codecConfigAtom(nullptr),
     //m_esDescAtom(nullptr),
-    m_framesPerSample(1),
-    m_chunkOffsetSize(4),
-    m_chunkCount(0),
-    m_sampleToChunkEntryCount(0)
-{}
+    m_framesPerSample(1)
+    , m_chunkOffsetSize(4)
+    , m_chunkCount(0)
+    , m_sampleToChunkEntryCount(0)
+{
+}
 
 /*!
  * \brief Destroys the track.
  */
 Mp4Track::~Mp4Track()
-{}
+{
+}
 
 TrackType Mp4Track::type() const
 {
@@ -170,15 +175,15 @@ TrackType Mp4Track::type() const
 std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics &diag)
 {
     static const string context("reading chunk offset table of MP4 track");
-    if(!isHeaderValid() || !m_istream) {
+    if (!isHeaderValid() || !m_istream) {
         diag.emplace_back(DiagLevel::Critical, "Track has not been parsed.", context);
         throw InvalidDataException();
     }
     vector<uint64> offsets;
-    if(m_stcoAtom) {
+    if (m_stcoAtom) {
         // verify integrity of the chunk offset table
         uint64 actualTableSize = m_stcoAtom->dataSize();
-        if(actualTableSize < (8 + chunkOffsetSize())) {
+        if (actualTableSize < (8 + chunkOffsetSize())) {
             diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. There are no chunk offsets present.", context);
             throw InvalidDataException();
         } else {
@@ -186,23 +191,24 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
         }
         uint32 actualChunkCount = chunkCount();
         uint64 calculatedTableSize = chunkCount() * chunkOffsetSize();
-        if(calculatedTableSize < actualTableSize) {
-            diag.emplace_back(DiagLevel::Critical, "The stco atom stores more chunk offsets as denoted. The additional chunk offsets will be ignored.", context);
-        } else if(calculatedTableSize > actualTableSize) {
+        if (calculatedTableSize < actualTableSize) {
+            diag.emplace_back(
+                DiagLevel::Critical, "The stco atom stores more chunk offsets as denoted. The additional chunk offsets will be ignored.", context);
+        } else if (calculatedTableSize > actualTableSize) {
             diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. It stores less chunk offsets as denoted.", context);
             actualChunkCount = floor(static_cast<double>(actualTableSize) / static_cast<double>(chunkOffsetSize()));
         }
         // read the table
         offsets.reserve(actualChunkCount);
         m_istream->seekg(m_stcoAtom->dataOffset() + 8);
-        switch(chunkOffsetSize()) {
+        switch (chunkOffsetSize()) {
         case 4:
-            for(uint32 i = 0; i < actualChunkCount; ++i) {
+            for (uint32 i = 0; i < actualChunkCount; ++i) {
                 offsets.push_back(reader().readUInt32BE());
             }
             break;
         case 8:
-            for(uint32 i = 0; i < actualChunkCount; ++i) {
+            for (uint32 i = 0; i < actualChunkCount; ++i) {
                 offsets.push_back(reader().readUInt64BE());
             }
             break;
@@ -212,34 +218,37 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
         }
     }
     // read sample offsets of fragments
-    if(parseFragments) {
+    if (parseFragments) {
         uint64 totalDuration = 0;
-        for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(Mp4AtomIds::MovieFragment, diag); moofAtom; moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
+        for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(Mp4AtomIds::MovieFragment, diag); moofAtom;
+             moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
-            for(Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
+            for (Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom;
+                 trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
                 trafAtom->parse(diag);
-                for(Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
+                for (Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom;
+                     tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                     tfhdAtom->parse(diag);
                     uint32 calculatedDataSize = 0;
-                    if(tfhdAtom->dataSize() < calculatedDataSize) {
+                    if (tfhdAtom->dataSize() < calculatedDataSize) {
                         diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated.", context);
                     } else {
                         inputStream().seekg(tfhdAtom->dataOffset() + 1);
                         const uint32 flags = reader().readUInt24BE();
-                        if(m_id == reader().readUInt32BE()) { // check track ID
-                            if(flags & 0x000001) { // base-data-offset present
+                        if (m_id == reader().readUInt32BE()) { // check track ID
+                            if (flags & 0x000001) { // base-data-offset present
                                 calculatedDataSize += 8;
                             }
-                            if(flags & 0x000002) { // sample-description-index present
+                            if (flags & 0x000002) { // sample-description-index present
                                 calculatedDataSize += 4;
                             }
-                            if(flags & 0x000008) { // default-sample-duration present
+                            if (flags & 0x000008) { // default-sample-duration present
                                 calculatedDataSize += 4;
                             }
-                            if(flags & 0x000010) { // default-sample-size present
+                            if (flags & 0x000010) { // default-sample-size present
                                 calculatedDataSize += 4;
                             }
-                            if(flags & 0x000020) { // default-sample-flags present
+                            if (flags & 0x000020) { // default-sample-flags present
                                 calculatedDataSize += 4;
                             }
                             // some variables are currently skipped because they are currently not interesting
@@ -248,91 +257,92 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                             uint32 defaultSampleDuration = 0;
                             uint32 defaultSampleSize = 0;
                             //uint32 defaultSampleFlags = 0;
-                            if(tfhdAtom->dataSize() < calculatedDataSize) {
+                            if (tfhdAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
                             } else {
-                                if(flags & 0x000001) { // base-data-offset present
+                                if (flags & 0x000001) { // base-data-offset present
                                     //baseDataOffset = reader.readUInt64();
                                     inputStream().seekg(8, ios_base::cur);
                                 }
-                                if(flags & 0x000002) { // sample-description-index present
+                                if (flags & 0x000002) { // sample-description-index present
                                     //defaultSampleDescriptionIndex = reader.readUInt32();
                                     inputStream().seekg(4, ios_base::cur);
                                 }
-                                if(flags & 0x000008) { // default-sample-duration present
+                                if (flags & 0x000008) { // default-sample-duration present
                                     defaultSampleDuration = reader().readUInt32BE();
                                     //inputStream().seekg(4, ios_base::cur);
                                 }
-                                if(flags & 0x000010) { // default-sample-size present
+                                if (flags & 0x000010) { // default-sample-size present
                                     defaultSampleSize = reader().readUInt32BE();
                                 }
-                                if(flags & 0x000020) { // default-sample-flags present
+                                if (flags & 0x000020) { // default-sample-flags present
                                     //defaultSampleFlags = reader().readUInt32BE();
                                     inputStream().seekg(4, ios_base::cur);
                                 }
                             }
-                            for(Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun, diag); trunAtom; trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag)) {
+                            for (Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun, diag); trunAtom;
+                                 trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag)) {
                                 uint32 calculatedDataSize = 8;
-                                if(trunAtom->dataSize() < calculatedDataSize) {
+                                if (trunAtom->dataSize() < calculatedDataSize) {
                                     diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
                                 } else {
                                     inputStream().seekg(trunAtom->dataOffset() + 1);
                                     uint32 flags = reader().readUInt24BE();
                                     uint32 sampleCount = reader().readUInt32BE();
                                     m_sampleCount += sampleCount;
-                                    if(flags & 0x000001) { // data offset present
+                                    if (flags & 0x000001) { // data offset present
                                         calculatedDataSize += 4;
                                     }
-                                    if(flags & 0x000004) { // first-sample-flags present
+                                    if (flags & 0x000004) { // first-sample-flags present
                                         calculatedDataSize += 4;
                                     }
                                     uint32 entrySize = 0;
-                                    if(flags & 0x000100) { // sample-duration present
+                                    if (flags & 0x000100) { // sample-duration present
                                         entrySize += 4;
                                     }
-                                    if(flags & 0x000200) { // sample-size present
+                                    if (flags & 0x000200) { // sample-size present
                                         entrySize += 4;
                                     }
-                                    if(flags & 0x000400) { // sample-flags present
+                                    if (flags & 0x000400) { // sample-flags present
                                         entrySize += 4;
                                     }
-                                    if(flags & 0x000800) { // sample-composition-time-offsets present
+                                    if (flags & 0x000800) { // sample-composition-time-offsets present
                                         entrySize += 4;
                                     }
                                     calculatedDataSize += entrySize * sampleCount;
-                                    if(trunAtom->dataSize() < calculatedDataSize) {
+                                    if (trunAtom->dataSize() < calculatedDataSize) {
                                         diag.emplace_back(DiagLevel::Critical, "trun atom is truncated (presence of fields denoted).", context);
                                     } else {
-                                        if(flags & 0x000001) { // data offset present
+                                        if (flags & 0x000001) { // data offset present
                                             inputStream().seekg(4, ios_base::cur);
                                             //int32 dataOffset = reader().readInt32BE();
                                         }
-                                        if(flags & 0x000004) { // first-sample-flags present
+                                        if (flags & 0x000004) { // first-sample-flags present
                                             inputStream().seekg(4, ios_base::cur);
                                         }
-                                        for(uint32 i = 0; i < sampleCount; ++i) {
-                                            if(flags & 0x000100) { // sample-duration present
+                                        for (uint32 i = 0; i < sampleCount; ++i) {
+                                            if (flags & 0x000100) { // sample-duration present
                                                 totalDuration += reader().readUInt32BE();
                                             } else {
                                                 totalDuration += defaultSampleDuration;
                                             }
-                                            if(flags & 0x000200) { // sample-size present
+                                            if (flags & 0x000200) { // sample-size present
                                                 m_sampleSizes.push_back(reader().readUInt32BE());
                                                 m_size += m_sampleSizes.back();
                                             } else {
                                                 m_size += defaultSampleSize;
                                             }
-                                            if(flags & 0x000400) { // sample-flags present
+                                            if (flags & 0x000400) { // sample-flags present
                                                 inputStream().seekg(4, ios_base::cur);
                                             }
-                                            if(flags & 0x000800) { // sample-composition-time-offsets present
+                                            if (flags & 0x000800) { // sample-composition-time-offsets present
                                                 inputStream().seekg(4, ios_base::cur);
                                             }
                                         }
                                     }
                                 }
                             }
-                            if(m_sampleSizes.empty() && defaultSampleSize) {
+                            if (m_sampleSizes.empty() && defaultSampleSize) {
                                 m_sampleSizes.push_back(defaultSampleSize);
                             }
                         }
@@ -350,13 +360,13 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
  */
 uint64 Mp4Track::accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagnostics &diag)
 {
-    if(sampleIndex + count <= m_sampleSizes.size()) {
+    if (sampleIndex + count <= m_sampleSizes.size()) {
         uint64 sum = 0;
-        for(size_t end = sampleIndex + count; sampleIndex < end; ++sampleIndex) {
+        for (size_t end = sampleIndex + count; sampleIndex < end; ++sampleIndex) {
             sum += m_sampleSizes[sampleIndex];
         }
         return sum;
-    } else if(m_sampleSizes.size() == 1) {
+    } else if (m_sampleSizes.size() == 1) {
         sampleIndex += count;
         return static_cast<uint64>(m_sampleSizes.front()) * count;
     } else {
@@ -375,7 +385,7 @@ uint64 Mp4Track::accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagno
  */
 void Mp4Track::addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t count, size_t &sampleIndex, uint32 sampleCount, Diagnostics &diag)
 {
-    for(size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
         chunkSizeTable.push_back(accumulateSampleSizes(sampleIndex, sampleCount, diag));
     }
 }
@@ -389,18 +399,18 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
     TrackHeaderInfo info;
 
     // return the default TrackHeaderInfo in case there is no track header prsent
-    if(!m_tkhdAtom) {
+    if (!m_tkhdAtom) {
         return info;
     }
 
     // ensure the tkhd atom is buffered but mark the buffer to be discarded again if it has not been present
     info.discardBuffer = m_tkhdAtom->buffer() == nullptr;
-    if(info.discardBuffer) {
+    if (info.discardBuffer) {
         m_tkhdAtom->makeBuffer();
     }
 
     // check the version of the existing tkhd atom to determine where additional data starts
-    switch(info.version = static_cast<byte>(m_tkhdAtom->buffer()[m_tkhdAtom->headerSize()])) {
+    switch (info.version = static_cast<byte>(m_tkhdAtom->buffer()[m_tkhdAtom->headerSize()])) {
     case 0:
         info.additionalDataOffset = 32;
         break;
@@ -413,23 +423,23 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
     }
 
     // check whether the existing tkhd atom is not truncated
-    if(info.additionalDataOffset + 48u <= m_tkhdAtom->dataSize()) {
+    if (info.additionalDataOffset + 48u <= m_tkhdAtom->dataSize()) {
         info.canUseExisting = true;
     } else {
         info.truncated = true;
         info.canUseExisting = info.additionalDataOffset < m_tkhdAtom->dataSize();
-        if(!info.canUseExisting && info.discardBuffer) {
+        if (!info.canUseExisting && info.discardBuffer) {
             m_tkhdAtom->discardBuffer();
         }
     }
 
     // determine required size
     info.requiredSize = m_tkhdAtom->dataSize() + 8;
-    if(info.version == 0) {
+    if (info.version == 0) {
         // add 12 byte to size if the existing version is 0 because we always write version 1 which takes 12 byte more space
         info.requiredSize += 12;
     }
-    if(info.requiredSize > numeric_limits<uint32>::max()) {
+    if (info.requiredSize > numeric_limits<uint32>::max()) {
         // add 8 byte to the size because it must be denoted using a 64-bit integer
         info.requiredSize += 8;
     }
@@ -443,16 +453,16 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
  *          The second value is sample cound and the third value the sample description index.
  * \remarks The table is not validated.
  */
-vector<tuple<uint32, uint32, uint32> > Mp4Track::readSampleToChunkTable(Diagnostics &diag)
+vector<tuple<uint32, uint32, uint32>> Mp4Track::readSampleToChunkTable(Diagnostics &diag)
 {
     static const string context("reading sample to chunk table of MP4 track");
-    if(!isHeaderValid() || !m_istream || !m_stscAtom) {
+    if (!isHeaderValid() || !m_istream || !m_stscAtom) {
         diag.emplace_back(DiagLevel::Critical, "Track has not been parsed or is invalid.", context);
         throw InvalidDataException();
     }
     // verify integrity of the sample to chunk table
     uint64 actualTableSize = m_stscAtom->dataSize();
-    if(actualTableSize < 20) {
+    if (actualTableSize < 20) {
         diag.emplace_back(DiagLevel::Critical, "The stsc atom is truncated. There are no \"sample to chunk\" entries present.", context);
         throw InvalidDataException();
     } else {
@@ -460,18 +470,18 @@ vector<tuple<uint32, uint32, uint32> > Mp4Track::readSampleToChunkTable(Diagnost
     }
     uint32 actualSampleToChunkEntryCount = sampleToChunkEntryCount();
     uint64 calculatedTableSize = actualSampleToChunkEntryCount * 12;
-    if(calculatedTableSize < actualTableSize) {
+    if (calculatedTableSize < actualTableSize) {
         diag.emplace_back(DiagLevel::Critical, "The stsc atom stores more entries as denoted. The additional entries will be ignored.", context);
-    } else if(calculatedTableSize > actualTableSize) {
+    } else if (calculatedTableSize > actualTableSize) {
         diag.emplace_back(DiagLevel::Critical, "The stsc atom is truncated. It stores less entries as denoted.", context);
         // FIXME: floor and cast actually required?
         actualSampleToChunkEntryCount = floor(static_cast<double>(actualTableSize) / 12.0);
     }
     // prepare reading
-    vector<tuple<uint32, uint32, uint32> > sampleToChunkTable;
+    vector<tuple<uint32, uint32, uint32>> sampleToChunkTable;
     sampleToChunkTable.reserve(actualSampleToChunkEntryCount);
     m_istream->seekg(m_stscAtom->dataOffset() + 8);
-    for(uint32 i = 0; i < actualSampleToChunkEntryCount; ++i) {
+    for (uint32 i = 0; i < actualSampleToChunkEntryCount; ++i) {
         // read entry
         uint32 firstChunk = reader().readUInt32BE();
         uint32 samplesPerChunk = reader().readUInt32BE();
@@ -496,7 +506,7 @@ vector<tuple<uint32, uint32, uint32> > Mp4Track::readSampleToChunkTable(Diagnost
 vector<uint64> Mp4Track::readChunkSizes(Diagnostics &diag)
 {
     static const string context("reading chunk sizes of MP4 track");
-    if(!isHeaderValid() || !m_istream || !m_stcoAtom) {
+    if (!isHeaderValid() || !m_istream || !m_stcoAtom) {
         diag.emplace_back(DiagLevel::Critical, "Track has not been parsed or is invalid.", context);
         throw InvalidDataException();
     }
@@ -504,33 +514,35 @@ vector<uint64> Mp4Track::readChunkSizes(Diagnostics &diag)
     const auto sampleToChunkTable = readSampleToChunkTable(diag);
     // accumulate chunk sizes from the table
     vector<uint64> chunkSizes;
-    if(!sampleToChunkTable.empty()) {
+    if (!sampleToChunkTable.empty()) {
         // prepare reading
         auto tableIterator = sampleToChunkTable.cbegin();
         chunkSizes.reserve(m_chunkCount);
         // read first entry
         size_t sampleIndex = 0;
         uint32 previousChunkIndex = get<0>(*tableIterator); // the first chunk has the index 1 and not zero!
-        if(previousChunkIndex != 1) {
+        if (previousChunkIndex != 1) {
             diag.emplace_back(DiagLevel::Critical, "The first chunk of the first \"sample to chunk\" entry must be 1.", context);
             previousChunkIndex = 1; // try to read the entry anyway
         }
         uint32 samplesPerChunk = get<1>(*tableIterator);
         // read the following entries
         ++tableIterator;
-        for(const auto tableEnd = sampleToChunkTable.cend(); tableIterator != tableEnd; ++tableIterator) {
+        for (const auto tableEnd = sampleToChunkTable.cend(); tableIterator != tableEnd; ++tableIterator) {
             uint32 firstChunkIndex = get<0>(*tableIterator);
-            if(firstChunkIndex > previousChunkIndex && firstChunkIndex <= m_chunkCount) {
+            if (firstChunkIndex > previousChunkIndex && firstChunkIndex <= m_chunkCount) {
                 addChunkSizeEntries(chunkSizes, firstChunkIndex - previousChunkIndex, sampleIndex, samplesPerChunk, diag);
             } else {
                 diag.emplace_back(DiagLevel::Critical,
-                                "The first chunk index of a \"sample to chunk\" entry must be greather than the first chunk of the previous entry and not greather than the chunk count.", context);
+                    "The first chunk index of a \"sample to chunk\" entry must be greather than the first chunk of the previous entry and not "
+                    "greather than the chunk count.",
+                    context);
                 throw InvalidDataException();
             }
             previousChunkIndex = firstChunkIndex;
             samplesPerChunk = get<1>(*tableIterator);
         }
-        if(m_chunkCount >= previousChunkIndex) {
+        if (m_chunkCount >= previousChunkIndex) {
             addChunkSizeEntries(chunkSizes, m_chunkCount + 1 - previousChunkIndex, sampleIndex, samplesPerChunk, diag);
         }
     }
@@ -543,15 +555,16 @@ vector<uint64> Mp4Track::readChunkSizes(Diagnostics &diag)
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag)
+std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(
+    IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag)
 {
     static const string context("parsing MPEG-4 elementary stream descriptor");
     using namespace Mpeg4ElementaryStreamObjectIds;
     unique_ptr<Mpeg4ElementaryStreamInfo> esInfo;
-    if(esDescAtom->dataSize() >= 12) {
+    if (esDescAtom->dataSize() >= 12) {
         reader.stream()->seekg(esDescAtom->dataOffset());
         // read version/flags
-        if(reader.readUInt32BE() != 0) {
+        if (reader.readUInt32BE() != 0) {
             diag.emplace_back(DiagLevel::Warning, "Unknown version/flags.", context);
         }
         // read extended descriptor
@@ -559,7 +572,7 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
         try {
             esDesc.parse(diag);
             // check ID
-            if(esDesc.id() != Mpeg4DescriptorIds::ElementaryStreamDescr) {
+            if (esDesc.id() != Mpeg4DescriptorIds::ElementaryStreamDescr) {
                 diag.emplace_back(DiagLevel::Critical, "Invalid descriptor found.", context);
                 throw Failure();
             }
@@ -568,18 +581,19 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
             esInfo = make_unique<Mpeg4ElementaryStreamInfo>();
             esInfo->id = reader.readUInt16BE();
             esInfo->esDescFlags = reader.readByte();
-            if(esInfo->dependencyFlag()) {
+            if (esInfo->dependencyFlag()) {
                 esInfo->dependsOnId = reader.readUInt16BE();
             }
-            if(esInfo->urlFlag()) {
+            if (esInfo->urlFlag()) {
                 esInfo->url = reader.readString(reader.readByte());
             }
-            if(esInfo->ocrFlag()) {
+            if (esInfo->ocrFlag()) {
                 esInfo->ocrId = reader.readUInt16BE();
             }
-            for(Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(reader.stream()->tellg()) - esDesc.startOffset()); esDescChild; esDescChild = esDescChild->nextSibling()) {
+            for (Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(reader.stream()->tellg()) - esDesc.startOffset());
+                 esDescChild; esDescChild = esDescChild->nextSibling()) {
                 esDescChild->parse(diag);
-                switch(esDescChild->id()) {
+                switch (esDescChild->id()) {
                 case Mpeg4DescriptorIds::DecoderConfigDescr:
                     // read decoder config descriptor
                     reader.stream()->seekg(esDescChild->dataOffset());
@@ -588,21 +602,27 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                     esInfo->bufferSize = reader.readUInt24BE();
                     esInfo->maxBitrate = reader.readUInt32BE();
                     esInfo->averageBitrate = reader.readUInt32BE();
-                    for(Mpeg4Descriptor *decCfgDescChild = esDescChild->denoteFirstChild(esDescChild->headerSize() + 13); decCfgDescChild; decCfgDescChild = decCfgDescChild->nextSibling()) {
+                    for (Mpeg4Descriptor *decCfgDescChild = esDescChild->denoteFirstChild(esDescChild->headerSize() + 13); decCfgDescChild;
+                         decCfgDescChild = decCfgDescChild->nextSibling()) {
                         decCfgDescChild->parse(diag);
-                        switch(decCfgDescChild->id()) {
+                        switch (decCfgDescChild->id()) {
                         case Mpeg4DescriptorIds::DecoderSpecificInfo:
                             // read decoder specific info
-                            switch(esInfo->objectTypeId) {
-                            case Aac: case Mpeg2AacMainProfile: case Mpeg2AacLowComplexityProfile:
-                            case Mpeg2AacScaleableSamplingRateProfile: case Mpeg2Audio: case Mpeg1Audio:
-                                esInfo->audioSpecificConfig = parseAudioSpecificConfig(*reader.stream(), decCfgDescChild->dataOffset(), decCfgDescChild->dataSize(), diag);
+                            switch (esInfo->objectTypeId) {
+                            case Aac:
+                            case Mpeg2AacMainProfile:
+                            case Mpeg2AacLowComplexityProfile:
+                            case Mpeg2AacScaleableSamplingRateProfile:
+                            case Mpeg2Audio:
+                            case Mpeg1Audio:
+                                esInfo->audioSpecificConfig
+                                    = parseAudioSpecificConfig(*reader.stream(), decCfgDescChild->dataOffset(), decCfgDescChild->dataSize(), diag);
                                 break;
                             case Mpeg4Visual:
-                                esInfo->videoSpecificConfig = parseVideoSpecificConfig(reader, decCfgDescChild->dataOffset(), decCfgDescChild->dataSize(), diag);
+                                esInfo->videoSpecificConfig
+                                    = parseVideoSpecificConfig(reader, decCfgDescChild->dataOffset(), decCfgDescChild->dataSize(), diag);
                                 break;
-                            default:
-                                ; // TODO: cover more object types
+                            default:; // TODO: cover more object types
                             }
                             break;
                         }
@@ -634,7 +654,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
     using namespace Mpeg4AudioObjectIds;
     // read config into buffer and construct BitReader for bitwise reading
     stream.seekg(startOffset);
-    auto buff = make_unique<char []>(size);
+    auto buff = make_unique<char[]>(size);
     stream.read(buff.get(), size);
     BitReader bitReader(buff.get(), size);
     auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
@@ -642,71 +662,81 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
         // read audio object type
         auto getAudioObjectType = [&bitReader] {
             byte objType = bitReader.readBits<byte>(5);
-            if(objType == 31) {
+            if (objType == 31) {
                 objType = 32 + bitReader.readBits<byte>(6);
             }
             return objType;
         };
         audioCfg->audioObjectType = getAudioObjectType();
         // read sampling frequency
-        if((audioCfg->sampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+        if ((audioCfg->sampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
             audioCfg->sampleFrequency = bitReader.readBits<uint32>(24);
         }
         // read channel config
         audioCfg->channelConfiguration = bitReader.readBits<byte>(4);
         // read extension header
-        switch(audioCfg->audioObjectType) {
+        switch (audioCfg->audioObjectType) {
         case Sbr:
         case Ps:
             audioCfg->extensionAudioObjectType = audioCfg->audioObjectType;
             audioCfg->sbrPresent = true;
-            if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+            if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
                 audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
             }
-            if((audioCfg->audioObjectType = getAudioObjectType()) == ErBsac) {
+            if ((audioCfg->audioObjectType = getAudioObjectType()) == ErBsac) {
                 audioCfg->extensionChannelConfiguration = bitReader.readBits<byte>(4);
             }
             break;
         }
-        switch(audioCfg->extensionAudioObjectType) {
+        switch (audioCfg->extensionAudioObjectType) {
         case Ps:
             audioCfg->psPresent = true;
             audioCfg->extensionChannelConfiguration = Mpeg4ChannelConfigs::FrontLeftFrontRight;
             break;
         }
         // read GA specific config
-        switch(audioCfg->audioObjectType) {
-        case AacMain: case AacLc: case AacLtp: case AacScalable:
-        case TwinVq: case ErAacLc: case ErAacLtp: case ErAacScalable:
-        case ErTwinVq: case ErBsac: case ErAacLd:
+        switch (audioCfg->audioObjectType) {
+        case AacMain:
+        case AacLc:
+        case AacLtp:
+        case AacScalable:
+        case TwinVq:
+        case ErAacLc:
+        case ErAacLtp:
+        case ErAacScalable:
+        case ErTwinVq:
+        case ErBsac:
+        case ErAacLd:
             audioCfg->frameLengthFlag = bitReader.readBits<byte>(1);
-            if((audioCfg->dependsOnCoreCoder = bitReader.readBit())) {
+            if ((audioCfg->dependsOnCoreCoder = bitReader.readBit())) {
                 audioCfg->coreCoderDelay = bitReader.readBits<byte>(14);
             }
             audioCfg->extensionFlag = bitReader.readBit();
-            if(audioCfg->channelConfiguration == 0) {
+            if (audioCfg->channelConfiguration == 0) {
                 throw NotImplementedException(); // TODO: parse program_config_element
             }
-            switch(audioCfg->audioObjectType) {
-            case AacScalable: case ErAacScalable:
+            switch (audioCfg->audioObjectType) {
+            case AacScalable:
+            case ErAacScalable:
                 audioCfg->layerNr = bitReader.readBits<byte>(3);
                 break;
-            default:
-                ;
+            default:;
             }
-            if(audioCfg->extensionFlag == 1) {
-                switch(audioCfg->audioObjectType) {
+            if (audioCfg->extensionFlag == 1) {
+                switch (audioCfg->audioObjectType) {
                 case ErBsac:
                     audioCfg->numOfSubFrame = bitReader.readBits<byte>(5);
                     audioCfg->layerLength = bitReader.readBits<uint16>(11);
                     break;
-                case ErAacLc: case ErAacLtp: case ErAacScalable: case ErAacLd:
+                case ErAacLc:
+                case ErAacLtp:
+                case ErAacScalable:
+                case ErAacLd:
                     audioCfg->resilienceFlags = bitReader.readBits<byte>(3);
                     break;
-                default:
-                    ;
+                default:;
                 }
-                if(bitReader.readBit() == 1) { // extension flag 3
+                if (bitReader.readBit() == 1) { // extension flag 3
                     throw NotImplementedException(); // TODO
                 }
             }
@@ -715,11 +745,19 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
             throw NotImplementedException(); // TODO: cover remaining object types
         }
         // read error specific config
-        switch(audioCfg->audioObjectType) {
-        case ErAacLc: case ErAacLtp: case ErAacScalable: case ErTwinVq:
-        case ErBsac: case ErAacLd: case ErCelp: case ErHvxc: case ErHiln:
-        case ErParametric: case ErAacEld:
-            switch(audioCfg->epConfig = bitReader.readBits<byte>(2)) {
+        switch (audioCfg->audioObjectType) {
+        case ErAacLc:
+        case ErAacLtp:
+        case ErAacScalable:
+        case ErTwinVq:
+        case ErBsac:
+        case ErAacLd:
+        case ErCelp:
+        case ErHvxc:
+        case ErHiln:
+        case ErParametric:
+        case ErAacEld:
+            switch (audioCfg->epConfig = bitReader.readBits<byte>(2)) {
             case 2:
                 break;
             case 3:
@@ -730,23 +768,23 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
             }
             break;
         }
-        if(audioCfg->extensionAudioObjectType != Sbr && audioCfg->extensionAudioObjectType != Ps && bitReader.bitsAvailable() >= 16) {
+        if (audioCfg->extensionAudioObjectType != Sbr && audioCfg->extensionAudioObjectType != Ps && bitReader.bitsAvailable() >= 16) {
             uint16 syncExtensionType = bitReader.readBits<uint16>(11);
-            if(syncExtensionType == 0x2B7) {
-                if((audioCfg->extensionAudioObjectType = getAudioObjectType()) == Sbr) {
-                    if((audioCfg->sbrPresent = bitReader.readBit())) {
-                        if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+            if (syncExtensionType == 0x2B7) {
+                if ((audioCfg->extensionAudioObjectType = getAudioObjectType()) == Sbr) {
+                    if ((audioCfg->sbrPresent = bitReader.readBit())) {
+                        if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
                             audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
                         }
-                        if(bitReader.bitsAvailable() >= 12) {
-                            if((syncExtensionType = bitReader.readBits<uint16>(11)) == 0x548) {
+                        if (bitReader.bitsAvailable() >= 12) {
+                            if ((syncExtensionType = bitReader.readBits<uint16>(11)) == 0x548) {
                                 audioCfg->psPresent = bitReader.readBits<byte>(1);
                             }
                         }
                     }
-                } else if(audioCfg->extensionAudioObjectType == ErBsac) {
-                    if((audioCfg->sbrPresent = bitReader.readBit())) {
-                        if((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
+                } else if (audioCfg->extensionAudioObjectType == ErBsac) {
+                    if ((audioCfg->sbrPresent = bitReader.readBit())) {
+                        if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
                             audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
                         }
                     }
@@ -756,11 +794,11 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
                 audioCfg->psPresent = bitReader.readBit();
             }
         }
-    } catch(const NotImplementedException &) {
+    } catch (const NotImplementedException &) {
         diag.emplace_back(DiagLevel::Information, "Not implemented for the format of audio track.", context);
-    } catch(...) {
+    } catch (...) {
         const char *what = catchIoFailure();
-        if(stream.fail()) {
+        if (stream.fail()) {
             // IO error caused by input stream
             throwIoFailure(what);
         } else {
@@ -784,14 +822,14 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
     auto videoCfg = make_unique<Mpeg4VideoSpecificConfig>();
     // seek to start
     reader.stream()->seekg(startOffset);
-    if(size > 3 && (reader.readUInt24BE() == 1)) {
+    if (size > 3 && (reader.readUInt24BE() == 1)) {
         size -= 3;
         uint32 buff1;
-        while(size) {
+        while (size) {
             --size;
-            switch(reader.readByte()) { // read start code
+            switch (reader.readByte()) { // read start code
             case Mpeg4VideoCodes::VisualObjectSequenceStart:
-                if(size) {
+                if (size) {
                     videoCfg->profile = reader.readByte();
                     --size;
                 }
@@ -801,8 +839,8 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
                 break;
             case Mpeg4VideoCodes::UserDataStart:
                 buff1 = 0;
-                while(size >= 3) {
-                    if((buff1 = reader.readUInt24BE()) != 1) {
+                while (size >= 3) {
+                    if ((buff1 = reader.readUInt24BE()) != 1) {
                         reader.stream()->seekg(-2, ios_base::cur);
                         videoCfg->userData.push_back(buff1 >> 16);
                         --size;
@@ -811,17 +849,16 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
                         break;
                     }
                 }
-                if(buff1 != 1 && size > 0) {
+                if (buff1 != 1 && size > 0) {
                     videoCfg->userData += reader.readString(size);
                     size = 0;
                 }
                 break;
-            default:
-                ;
+            default:;
             }
             // skip remainging values to get the start of the next video object
-            while(size >= 3) {
-                if(reader.readUInt24BE() != 1) {
+            while (size >= 3) {
+                if (reader.readUInt24BE() != 1) {
                     reader.stream()->seekg(-2, ios_base::cur);
                     --size;
                 } else {
@@ -855,10 +892,10 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
  */
 void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vector<int64> &newMdatOffsets)
 {
-    if(!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
+    if (!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
         throw InvalidDataException();
     }
-    if(oldMdatOffsets.size() == 0 || oldMdatOffsets.size() != newMdatOffsets.size()) {
+    if (oldMdatOffsets.size() == 0 || oldMdatOffsets.size() != newMdatOffsets.size()) {
         throw InvalidDataException();
     }
     static const unsigned int stcoDataBegin = 8;
@@ -869,13 +906,13 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
     vector<int64>::size_type i;
     vector<int64>::size_type size;
     uint64 currentPos = m_istream->tellg();
-    switch(m_stcoAtom->id()) {
+    switch (m_stcoAtom->id()) {
     case Mp4AtomIds::ChunkOffset: {
         uint32 off;
-        while((currentPos + 4) <= endPos) {
+        while ((currentPos + 4) <= endPos) {
             off = m_reader.readUInt32BE();
-            for(i = 0, size = oldMdatOffsets.size(); i < size; ++i) {
-                if(off > static_cast<uint64>(oldMdatOffsets[i])) {
+            for (i = 0, size = oldMdatOffsets.size(); i < size; ++i) {
+                if (off > static_cast<uint64>(oldMdatOffsets[i])) {
                     off += (newMdatOffsets[i] - oldMdatOffsets[i]);
                     break;
                 }
@@ -885,12 +922,13 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
             currentPos += m_istream->gcount();
         }
         break;
-    } case Mp4AtomIds::ChunkOffset64: {
+    }
+    case Mp4AtomIds::ChunkOffset64: {
         uint64 off;
-        while((currentPos + 8) <= endPos) {
+        while ((currentPos + 8) <= endPos) {
             off = m_reader.readUInt64BE();
-            for(i = 0, size = oldMdatOffsets.size(); i < size; ++i) {
-                if(off > static_cast<uint64>(oldMdatOffsets[i])) {
+            for (i = 0, size = oldMdatOffsets.size(); i < size; ++i) {
+                if (off > static_cast<uint64>(oldMdatOffsets[i])) {
                     off += (newMdatOffsets[i] - oldMdatOffsets[i]);
                     break;
                 }
@@ -920,21 +958,21 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
  */
 void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
 {
-    if(!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
+    if (!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
         throw InvalidDataException();
     }
-    if(chunkOffsets.size() != chunkCount()) {
+    if (chunkOffsets.size() != chunkCount()) {
         throw InvalidDataException();
     }
     m_ostream->seekp(m_stcoAtom->dataOffset() + 8);
-    switch(m_stcoAtom->id()) {
+    switch (m_stcoAtom->id()) {
     case Mp4AtomIds::ChunkOffset:
-        for(auto offset : chunkOffsets) {
+        for (auto offset : chunkOffsets) {
             m_writer.writeUInt32BE(offset);
         }
         break;
     case Mp4AtomIds::ChunkOffset64:
-        for(auto offset : chunkOffsets) {
+        for (auto offset : chunkOffsets) {
             m_writer.writeUInt64BE(offset);
         }
     default:
@@ -956,11 +994,11 @@ void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
  */
 void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
 {
-    if(!isHeaderValid() || !m_istream || !m_stcoAtom || chunkIndex >= m_chunkCount) {
+    if (!isHeaderValid() || !m_istream || !m_stcoAtom || chunkIndex >= m_chunkCount) {
         throw InvalidDataException();
     }
     m_ostream->seekp(m_stcoAtom->dataOffset() + 8 + chunkOffsetSize() * chunkIndex);
-    switch(chunkOffsetSize()) {
+    switch (chunkOffsetSize()) {
     case 4:
         writer().writeUInt32BE(offset);
         break;
@@ -977,13 +1015,13 @@ void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
  */
 void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
 {
-    if(!avcConfig.spsInfos.empty()) {
+    if (!avcConfig.spsInfos.empty()) {
         const SpsInfo &spsInfo = avcConfig.spsInfos.back();
         track.m_format.sub = spsInfo.profileIndication;
         track.m_version = static_cast<double>(spsInfo.levelIndication) / 10;
         track.m_cropping = spsInfo.cropping;
         track.m_pixelSize = spsInfo.pictureSize;
-        switch(spsInfo.chromaFormatIndication) {
+        switch (spsInfo.chromaFormatIndication) {
         case 0:
             track.m_chromaFormat = "monochrome";
             break;
@@ -996,15 +1034,13 @@ void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
         case 3:
             track.m_chromaFormat = "YUV 4:4:4";
             break;
-        default:
-            ;
+        default:;
         }
         track.m_pixelAspectRatio = spsInfo.pixelAspectRatio;
     } else {
         track.m_format.sub = avcConfig.profileIndication;
         track.m_version = static_cast<double>(avcConfig.levelIndication) / 10;
     }
-
 }
 
 /*!
@@ -1015,32 +1051,32 @@ void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
  */
 void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
 {
-    if(m_tkhdAtom) {
+    if (m_tkhdAtom) {
         m_tkhdAtom->makeBuffer();
     }
-    if(Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
+    if (Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
         trefAtom->makeBuffer();
     }
-    if(Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit, diag)) {
+    if (Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit, diag)) {
         edtsAtom->makeBuffer();
     }
-    if(m_minfAtom) {
-        if(Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
+    if (m_minfAtom) {
+        if (Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
             vmhdAtom->makeBuffer();
         }
-        if(Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
+        if (Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
             smhdAtom->makeBuffer();
         }
-        if(Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
+        if (Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
             hmhdAtom->makeBuffer();
         }
-        if(Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
+        if (Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
             nmhdAtom->makeBuffer();
         }
-        if(Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
+        if (Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
             dinfAtom->makeBuffer();
         }
-        if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
+        if (Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
             stblAtom->makeBuffer();
         }
     }
@@ -1057,39 +1093,39 @@ uint64 Mp4Track::requiredSize(Diagnostics &diag) const
     // ... tkhd atom (TODO: buffer TrackHeaderInfo in v7)
     size += verifyPresentTrackHeader().requiredSize;
     // ... tref atom (if one exists)
-    if(Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
+    if (Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
         size += trefAtom->totalSize();
     }
     // ... edts atom (if one exists)
-    if(Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit, diag)) {
+    if (Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit, diag)) {
         size += edtsAtom->totalSize();
     }
     // ... mdia header + mdhd total size + hdlr total size + minf header
     size += 8 + 44 + (33 + m_name.size()) + 8;
     // ... minf childs
     bool dinfAtomWritten = false;
-    if(m_minfAtom) {
-        if(Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
+    if (m_minfAtom) {
+        if (Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
             size += vmhdAtom->totalSize();
         }
-        if(Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
+        if (Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
             size += smhdAtom->totalSize();
         }
-        if(Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
+        if (Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
             size += hmhdAtom->totalSize();
         }
-        if(Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
+        if (Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
             size += nmhdAtom->totalSize();
         }
-        if(Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
+        if (Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
             size += dinfAtom->totalSize();
             dinfAtomWritten = true;
         }
-        if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
+        if (Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
             size += stblAtom->totalSize();
         }
     }
-    if(!dinfAtomWritten) {
+    if (!dinfAtomWritten) {
         size += 36;
     }
     return size;
@@ -1112,11 +1148,11 @@ void Mp4Track::makeTrack(Diagnostics &diag)
     // write tkhd atom
     makeTrackHeader(diag);
     // write tref atom (if one exists)
-    if(Mp4Atom *trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference, diag)) {
+    if (Mp4Atom *trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference, diag)) {
         trefAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
     }
     // write edts atom (if one exists)
-    if(Mp4Atom *edtsAtom = trakAtom().childById(Mp4AtomIds::Edit, diag)) {
+    if (Mp4Atom *edtsAtom = trakAtom().childById(Mp4AtomIds::Edit, diag)) {
         edtsAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
     }
     // write mdia atom
@@ -1135,17 +1171,18 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     const TrackHeaderInfo info(verifyPresentTrackHeader());
 
     // add notifications in case the present track header could not be parsed
-    if(info.versionUnknown) {
-        diag.emplace_back(DiagLevel::Critical, argsToString("The version of the present \"tkhd\"-atom (", info.version, ") is unknown. Assuming version 1."),
-                        argsToString("making \"tkhd\"-atom of track ", m_id));
+    if (info.versionUnknown) {
+        diag.emplace_back(DiagLevel::Critical,
+            argsToString("The version of the present \"tkhd\"-atom (", info.version, ") is unknown. Assuming version 1."),
+            argsToString("making \"tkhd\"-atom of track ", m_id));
     }
-    if(info.truncated) {
-        diag.emplace_back(DiagLevel::Critical, argsToString("The present \"tkhd\"-atom is truncated."),
-                        argsToString("making \"tkhd\"-atom of track ", m_id));
+    if (info.truncated) {
+        diag.emplace_back(
+            DiagLevel::Critical, argsToString("The present \"tkhd\"-atom is truncated."), argsToString("making \"tkhd\"-atom of track ", m_id));
     }
 
     // make size and element ID
-    if(info.requiredSize > numeric_limits<uint32>::max()) {
+    if (info.requiredSize > numeric_limits<uint32>::max()) {
         writer().writeUInt32BE(1);
         writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
         writer().writeUInt64BE(info.requiredSize);
@@ -1157,13 +1194,13 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     // make version and flags
     writer().writeByte(1);
     uint32 flags = 0;
-    if(m_enabled) {
+    if (m_enabled) {
         flags |= 0x000001;
     }
-    if(m_usedInPresentation) {
+    if (m_usedInPresentation) {
         flags |= 0x000002;
     }
-    if(m_usedWhenPreviewing) {
+    if (m_usedWhenPreviewing) {
         flags |= 0x000004;
     }
     writer().writeUInt24BE(flags);
@@ -1180,11 +1217,12 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     writer().writeUInt32BE(0); // reserved
 
     // make further values, either from existing tkhd atom or just some defaults
-    if(info.canUseExisting) {
+    if (info.canUseExisting) {
         // write all bytes after the previously determined additionalDataOffset
-        m_ostream->write(m_tkhdAtom->buffer().get() + m_tkhdAtom->headerSize() + info.additionalDataOffset, m_tkhdAtom->dataSize() - info.additionalDataOffset);
+        m_ostream->write(
+            m_tkhdAtom->buffer().get() + m_tkhdAtom->headerSize() + info.additionalDataOffset, m_tkhdAtom->dataSize() - info.additionalDataOffset);
         // discard the buffer again if it wasn't present before
-        if(info.discardBuffer) {
+        if (info.discardBuffer) {
             m_tkhdAtom->discardBuffer();
         }
     } else {
@@ -1193,7 +1231,7 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
         writer().writeInt16BE(0); // alternate group
         writer().writeFixed8BE(1.0); // volume (fixed 8.8 - 2 byte)
         writer().writeUInt16BE(0); // reserved
-        for(const int32 value : {0x00010000,0,0,0,0x00010000,0,0,0,0x40000000}) { // unity matrix
+        for (const int32 value : { 0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000 }) { // unity matrix
             writer().writeInt32BE(value);
         }
         writer().writeFixed16BE(1.0); // width
@@ -1221,18 +1259,20 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     writer().writeUInt64BE(static_cast<uint64>(m_duration.totalSeconds() * m_timeScale));
     // convert and write language
     uint16 language = 0;
-    for(size_t charIndex = 0; charIndex != 3; ++charIndex) {
+    for (size_t charIndex = 0; charIndex != 3; ++charIndex) {
         const char langChar = charIndex < m_language.size() ? m_language[charIndex] : 0;
-        if(langChar >= 'a' && langChar <= 'z') {
+        if (langChar >= 'a' && langChar <= 'z') {
             language |= static_cast<uint16>(langChar - 0x60) << (0xA - charIndex * 0x5);
         } else { // invalid character
-            diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
+            diag.emplace_back(
+                DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
             language = 0x55C4; // und
             break;
         }
     }
-    if(m_language.size() > 3) {
-        diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % m_language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
+    if (m_language.size() > 3) {
+        diag.emplace_back(
+            DiagLevel::Warning, "Assigned language \"" % m_language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
     }
     writer().writeUInt16BE(language);
     writer().writeUInt16BE(0); // pre defined
@@ -1240,7 +1280,7 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     writer().writeUInt32BE(33 + m_name.size()); // size
     writer().writeUInt32BE(Mp4AtomIds::HandlerReference);
     writer().writeUInt64BE(0); // version, flags, pre defined
-    switch(m_mediaType) {
+    switch (m_mediaType) {
     case MediaType::Video:
         outputStream().write("vide", 4);
         break;
@@ -1258,7 +1298,8 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         outputStream().write("vide", 4);
         break;
     }
-    for(int i = 0; i < 3; ++i) writer().writeUInt32BE(0); // reserved
+    for (int i = 0; i < 3; ++i)
+        writer().writeUInt32BE(0); // reserved
     writer().writeTerminatedString(m_name);
     // write minf atom
     makeMediaInfo(diag);
@@ -1276,31 +1317,31 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::MediaInformation);
     bool dinfAtomWritten = false;
-    if(m_minfAtom) {
+    if (m_minfAtom) {
         // copy existing vmhd atom
-        if(Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
+        if (Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
             vmhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
         }
         // copy existing smhd atom
-        if(Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
+        if (Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
             smhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
         }
         // copy existing hmhd atom
-        if(Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
+        if (Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
             hmhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
         }
         // copy existing nmhd atom
-        if(Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
+        if (Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
             nmhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
         }
         // copy existing dinf atom
-        if(Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
+        if (Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
             dinfAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
             dinfAtomWritten = true;
         }
     }
     // write dinf atom if not written yet
-    if(!dinfAtomWritten) {
+    if (!dinfAtomWritten) {
         writer().writeUInt32BE(36); // size
         writer().writeUInt32BE(Mp4AtomIds::DataInformation);
         // write dref atom
@@ -1317,14 +1358,15 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
     // write stbl atom
     // -> just copy existing stbl atom because makeSampleTable() is not fully implemented (yet)
     bool stblAtomWritten = false;
-    if(m_minfAtom) {
-        if(Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
+    if (m_minfAtom) {
+        if (Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
             stblAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
             stblAtomWritten = true;
         }
     }
-    if(!stblAtomWritten) {
-        diag.emplace_back(DiagLevel::Critical, "Source track does not contain mandatory stbl atom and the tagparser lib is unable to make one from scratch.", "making stbl atom");
+    if (!stblAtomWritten) {
+        diag.emplace_back(DiagLevel::Critical,
+            "Source track does not contain mandatory stbl atom and the tagparser lib is unable to make one from scratch.", "making stbl atom");
     }
     // write size (of minf atom)
     Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset);
@@ -1342,7 +1384,7 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
     writer().writeUInt32BE(Mp4AtomIds::SampleTable);
     Mp4Atom *stblAtom = m_minfAtom ? m_minfAtom->childById(Mp4AtomIds::SampleTable, diag) : nullptr;
     // write stsd atom
-    if(m_stsdAtom) {
+    if (m_stsdAtom) {
         // copy existing stsd atom
         m_stsdAtom->copyEntirely(outputStream(), diag, nullptr);
     } else {
@@ -1351,7 +1393,7 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
     }
     // write stts and ctts atoms
     Mp4Atom *sttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::DecodingTimeToSample, diag) : nullptr;
-    if(sttsAtom) {
+    if (sttsAtom) {
         // copy existing stts atom
         sttsAtom->copyEntirely(outputStream(), diag, nullptr);
     } else {
@@ -1359,7 +1401,7 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
         throw NotImplementedException();
     }
     Mp4Atom *cttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::CompositionTimeToSample, diag) : nullptr;
-    if(cttsAtom) {
+    if (cttsAtom) {
         // copy existing ctts atom
         cttsAtom->copyEntirely(outputStream(), diag, nullptr);
     }
@@ -1398,54 +1440,54 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 {
     static const string context("parsing MP4 track");
     using namespace Mp4AtomIds;
-    if(!m_trakAtom) {
+    if (!m_trakAtom) {
         diag.emplace_back(DiagLevel::Critical, "\"trak\"-atom is null.", context);
         throw InvalidDataException();
     }
 
     // get atoms
     try {
-        if(!(m_tkhdAtom = m_trakAtom->childById(TrackHeader, diag))) {
+        if (!(m_tkhdAtom = m_trakAtom->childById(TrackHeader, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"tkhd\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_mdiaAtom = m_trakAtom->childById(Media, diag))) {
+        if (!(m_mdiaAtom = m_trakAtom->childById(Media, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"mdia\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_mdhdAtom = m_mdiaAtom->childById(MediaHeader, diag))) {
+        if (!(m_mdhdAtom = m_mdiaAtom->childById(MediaHeader, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"mdhd\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_hdlrAtom = m_mdiaAtom->childById(HandlerReference, diag))) {
+        if (!(m_hdlrAtom = m_mdiaAtom->childById(HandlerReference, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"hdlr\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_minfAtom = m_mdiaAtom->childById(MediaInformation, diag))) {
+        if (!(m_minfAtom = m_mdiaAtom->childById(MediaInformation, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"minf\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_stblAtom = m_minfAtom->childById(SampleTable, diag))) {
+        if (!(m_stblAtom = m_minfAtom->childById(SampleTable, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"stbl\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_stsdAtom = m_stblAtom->childById(SampleDescription, diag))) {
+        if (!(m_stsdAtom = m_stblAtom->childById(SampleDescription, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"stsd\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_stcoAtom = m_stblAtom->childById(ChunkOffset, diag)) && !(m_stcoAtom = m_stblAtom->childById(ChunkOffset64, diag))) {
+        if (!(m_stcoAtom = m_stblAtom->childById(ChunkOffset, diag)) && !(m_stcoAtom = m_stblAtom->childById(ChunkOffset64, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"stco\"/\"co64\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_stscAtom = m_stblAtom->childById(SampleToChunk, diag))) {
+        if (!(m_stscAtom = m_stblAtom->childById(SampleToChunk, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"stsc\"-atom found.", context);
             throw InvalidDataException();
         }
-        if(!(m_stszAtom = m_stblAtom->childById(SampleSize, diag)) && !(m_stszAtom = m_stblAtom->childById(CompactSampleSize, diag))) {
+        if (!(m_stszAtom = m_stblAtom->childById(SampleSize, diag)) && !(m_stszAtom = m_stblAtom->childById(CompactSampleSize, diag))) {
             diag.emplace_back(DiagLevel::Critical, "No \"stsz\"/\"stz2\"-atom found.", context);
             throw InvalidDataException();
         }
-    } catch(const Failure &) {
+    } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Unable to parse relevant atoms.", context);
         throw InvalidDataException();
     }
@@ -1459,7 +1501,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_enabled = flags & 0x000001;
     m_usedInPresentation = flags & 0x000002;
     m_usedWhenPreviewing = flags & 0x000004;
-    switch(atomVersion) {
+    switch (atomVersion) {
     case 0:
         m_creationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
         m_modificationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
@@ -1471,7 +1513,9 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
         m_id = reader.readUInt32BE();
         break;
     default:
-        diag.emplace_back(DiagLevel::Critical, "Version of \"tkhd\"-atom not supported. It will be ignored. Track ID, creation time and modification time might not be be determined.", context);
+        diag.emplace_back(DiagLevel::Critical,
+            "Version of \"tkhd\"-atom not supported. It will be ignored. Track ID, creation time and modification time might not be be determined.",
+            context);
         m_creationTime = DateTime();
         m_modificationTime = DateTime();
         m_id = 0;
@@ -1481,7 +1525,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_istream->seekg(m_mdhdAtom->dataOffset()); // seek to beg, skip size and name
     atomVersion = reader.readByte(); // read version
     m_istream->seekg(3, ios_base::cur); // skip flags
-    switch(atomVersion) {
+    switch (atomVersion) {
     case 0:
         m_creationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
         m_modificationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
@@ -1495,12 +1539,15 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
         m_duration = TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()) / static_cast<double>(m_timeScale));
         break;
     default:
-        diag.emplace_back(DiagLevel::Warning, "Version of \"mdhd\"-atom not supported. It will be ignored. Creation time, modification time, time scale and duration might not be determined.", context);
+        diag.emplace_back(DiagLevel::Warning,
+            "Version of \"mdhd\"-atom not supported. It will be ignored. Creation time, modification time, time scale and duration might not be "
+            "determined.",
+            context);
         m_timeScale = 0;
         m_duration = TimeSpan();
     }
     uint16 tmp = reader.readUInt16BE();
-    if(tmp) {
+    if (tmp) {
         const char buff[] = {
             static_cast<char>(((tmp & 0x7C00) >> 0xA) + 0x60),
             static_cast<char>(((tmp & 0x03E0) >> 0x5) + 0x60),
@@ -1515,7 +1562,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     // -> seek to begin skipping size, name, version, flags and reserved bytes
     m_istream->seekg(m_hdlrAtom->dataOffset() + 8);
     // -> track type
-    switch(reader.readUInt32BE()) {
+    switch (reader.readUInt32BE()) {
     case 0x76696465:
         m_mediaType = MediaType::Video;
         break;
@@ -1525,7 +1572,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     case 0x68696E74:
         m_mediaType = MediaType::Hint;
         break;
-    case 0x6D657461: case 0x74657874:
+    case 0x6D657461:
+    case 0x74657874:
         m_mediaType = MediaType::Text;
         break;
     default:
@@ -1533,7 +1581,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     }
     // -> name
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
-    if((tmp = m_istream->peek()) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {
+    if ((tmp = m_istream->peek()) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {
         // assume size prefixed string (seems to appear in QuickTime files)
         m_istream->seekg(1, ios_base::cur);
         m_name = reader.readString(tmp);
@@ -1551,36 +1599,45 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_istream->seekg(m_stsdAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
     uint32 entryCount = reader.readUInt32BE();
     Mp4Atom *esDescParentAtom = nullptr;
-    if(entryCount) {
+    if (entryCount) {
         try {
-            for(Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom; codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
+            for (Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom;
+                 codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
                 codecConfigContainerAtom->parse(diag);
                 // parse FOURCC
                 m_formatId = interpretIntegerAsString<uint32>(codecConfigContainerAtom->id());
                 m_format = FourccIds::fourccToMediaFormat(codecConfigContainerAtom->id());
                 // parse codecConfigContainerAtom
                 m_istream->seekg(codecConfigContainerAtom->dataOffset());
-                switch(codecConfigContainerAtom->id()) {
-                case FourccIds::Mpeg4Audio: case FourccIds::AmrNarrowband: case FourccIds::Amr:
-                case FourccIds::Drms: case FourccIds::Alac: case FourccIds::WindowsMediaAudio:
-                case FourccIds::Ac3: case FourccIds::EAc3: case FourccIds::DolbyMpl:
-                case FourccIds::Dts: case FourccIds::DtsH: case FourccIds::DtsE:
+                switch (codecConfigContainerAtom->id()) {
+                case FourccIds::Mpeg4Audio:
+                case FourccIds::AmrNarrowband:
+                case FourccIds::Amr:
+                case FourccIds::Drms:
+                case FourccIds::Alac:
+                case FourccIds::WindowsMediaAudio:
+                case FourccIds::Ac3:
+                case FourccIds::EAc3:
+                case FourccIds::DolbyMpl:
+                case FourccIds::Dts:
+                case FourccIds::DtsH:
+                case FourccIds::DtsE:
                     m_istream->seekg(6 + 2, ios_base::cur); // skip reserved bytes, data reference index
                     tmp = reader.readUInt16BE(); // read sound version
                     m_istream->seekg(6, ios_base::cur);
                     m_channelCount = reader.readUInt16BE();
                     m_bitsPerSample = reader.readUInt16BE();
                     m_istream->seekg(4, ios_base::cur); // skip reserved bytes (again)
-                    if(!m_samplingFrequency) {
+                    if (!m_samplingFrequency) {
                         m_samplingFrequency = reader.readUInt32BE() >> 16;
-                        if(codecConfigContainerAtom->id() != FourccIds::DolbyMpl) {
+                        if (codecConfigContainerAtom->id() != FourccIds::DolbyMpl) {
                             m_samplingFrequency >>= 16;
                         }
                     } else {
                         m_istream->seekg(4, ios_base::cur);
                     }
-                    if(codecConfigContainerAtom->id() != FourccIds::WindowsMediaAudio) {
-                        switch(tmp) {
+                    if (codecConfigContainerAtom->id() != FourccIds::WindowsMediaAudio) {
+                        switch (tmp) {
                         case 1:
                             codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 28 + 16);
                             break;
@@ -1590,14 +1647,21 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                         default:
                             codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 28);
                         }
-                        if(!esDescParentAtom) {
+                        if (!esDescParentAtom) {
                             esDescParentAtom = codecConfigContainerAtom;
                         }
                     }
                     break;
-                case FourccIds::Mpeg4Video: case FourccIds::H263Quicktime: case FourccIds::H2633GPP:
-                case FourccIds::Avc1: case FourccIds::Avc2: case FourccIds::Avc3: case FourccIds::Avc4:
-                case FourccIds::Drmi: case FourccIds::Hevc1: case FourccIds::Hevc2:
+                case FourccIds::Mpeg4Video:
+                case FourccIds::H263Quicktime:
+                case FourccIds::H2633GPP:
+                case FourccIds::Avc1:
+                case FourccIds::Avc2:
+                case FourccIds::Avc3:
+                case FourccIds::Avc4:
+                case FourccIds::Drmi:
+                case FourccIds::Hevc1:
+                case FourccIds::Hevc2:
                     m_istream->seekg(6 + 2 + 16, ios_base::cur); // skip reserved bytes, data reference index, and reserved bytes (again)
                     m_pixelSize.setWidth(reader.readUInt16BE());
                     m_pixelSize.setHeight(reader.readUInt16BE());
@@ -1607,21 +1671,21 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                     m_framesPerSample = reader.readUInt16BE();
                     tmp = reader.readByte();
                     m_compressorName = reader.readString(31);
-                    if(tmp == 0) {
+                    if (tmp == 0) {
                         m_compressorName.clear();
-                    } else if(tmp < 32) {
+                    } else if (tmp < 32) {
                         m_compressorName.resize(tmp);
                     }
                     m_depth = reader.readUInt16BE(); // 24: color without alpha
                     codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 78);
-                    if(!esDescParentAtom) {
+                    if (!esDescParentAtom) {
                         esDescParentAtom = codecConfigContainerAtom;
                     }
                     break;
                 case FourccIds::Mpeg4Sample:
                     // skip reserved bytes and data reference index
                     codecConfigContainerAtom->denoteFirstChild(codecConfigContainerAtom->headerSize() + 8);
-                    if(!esDescParentAtom) {
+                    if (!esDescParentAtom) {
                         esDescParentAtom = codecConfigContainerAtom;
                     }
                     break;
@@ -1629,81 +1693,84 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                     break; // TODO
                 case Mp4AtomIds::CleanAperature:
                     break; // TODO
-                default:
-                    ;
+                default:;
                 }
             }
 
-            if(esDescParentAtom) {
+            if (esDescParentAtom) {
                 // parse AVC configuration
-                if(Mp4Atom *avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration, diag)) {
+                if (Mp4Atom *avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration, diag)) {
                     m_istream->seekg(avcConfigAtom->dataOffset());
                     m_avcConfig = make_unique<TagParser::AvcConfiguration>();
                     try {
                         m_avcConfig->parse(reader, avcConfigAtom->dataSize());
                         addInfo(*m_avcConfig, *this);
-                    } catch(const TruncatedDataException &) {
+                    } catch (const TruncatedDataException &) {
                         diag.emplace_back(DiagLevel::Critical, "AVC configuration is truncated.", context);
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, "AVC configuration is invalid.", context);
                     }
                 }
 
                 // parse MPEG-4 elementary stream descriptor
                 Mp4Atom *esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor, diag);
-                if(!esDescAtom) {
+                if (!esDescAtom) {
                     esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2, diag);
                 }
-                if(esDescAtom) {
+                if (esDescAtom) {
                     try {
-                        if((m_esInfo = parseMpeg4ElementaryStreamInfo(m_reader, esDescAtom, diag))) {
+                        if ((m_esInfo = parseMpeg4ElementaryStreamInfo(m_reader, esDescAtom, diag))) {
                             m_format += Mpeg4ElementaryStreamObjectIds::streamObjectTypeFormat(m_esInfo->objectTypeId);
                             m_bitrate = static_cast<double>(m_esInfo->averageBitrate) / 1000;
                             m_maxBitrate = static_cast<double>(m_esInfo->maxBitrate) / 1000;
-                            if(m_esInfo->audioSpecificConfig) {
+                            if (m_esInfo->audioSpecificConfig) {
                                 // check the audio specific config for useful information
-                                m_format += Mpeg4AudioObjectIds::idToMediaFormat(m_esInfo->audioSpecificConfig->audioObjectType, m_esInfo->audioSpecificConfig->sbrPresent, m_esInfo->audioSpecificConfig->psPresent);
-                                if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex == 0xF) {
+                                m_format += Mpeg4AudioObjectIds::idToMediaFormat(m_esInfo->audioSpecificConfig->audioObjectType,
+                                    m_esInfo->audioSpecificConfig->sbrPresent, m_esInfo->audioSpecificConfig->psPresent);
+                                if (m_esInfo->audioSpecificConfig->sampleFrequencyIndex == 0xF) {
                                     m_samplingFrequency = m_esInfo->audioSpecificConfig->sampleFrequency;
-                                } else if(m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+                                } else if (m_esInfo->audioSpecificConfig->sampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
                                     m_samplingFrequency = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->sampleFrequencyIndex];
                                 } else {
                                     diag.emplace_back(DiagLevel::Warning, "Audio specific config has invalid sample frequency index.", context);
                                 }
-                                if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
+                                if (m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex == 0xF) {
                                     m_extensionSamplingFrequency = m_esInfo->audioSpecificConfig->extensionSampleFrequency;
-                                } else if(m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
-                                    m_extensionSamplingFrequency = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
+                                } else if (m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex < sizeof(mpeg4SamplingFrequencyTable)) {
+                                    m_extensionSamplingFrequency
+                                        = mpeg4SamplingFrequencyTable[m_esInfo->audioSpecificConfig->extensionSampleFrequencyIndex];
                                 } else {
-                                    diag.emplace_back(DiagLevel::Warning, "Audio specific config has invalid extension sample frequency index.", context);
+                                    diag.emplace_back(
+                                        DiagLevel::Warning, "Audio specific config has invalid extension sample frequency index.", context);
                                 }
                                 m_channelConfig = m_esInfo->audioSpecificConfig->channelConfiguration;
                                 m_extensionChannelConfig = m_esInfo->audioSpecificConfig->extensionChannelConfiguration;
                             }
-                            if(m_esInfo->videoSpecificConfig) {
+                            if (m_esInfo->videoSpecificConfig) {
                                 // check the video specific config for useful information
-                                if(m_format.general == GeneralMediaFormat::Mpeg4Video && m_esInfo->videoSpecificConfig->profile) {
+                                if (m_format.general == GeneralMediaFormat::Mpeg4Video && m_esInfo->videoSpecificConfig->profile) {
                                     m_format.sub = m_esInfo->videoSpecificConfig->profile;
-                                    if(!m_esInfo->videoSpecificConfig->userData.empty()) {
+                                    if (!m_esInfo->videoSpecificConfig->userData.empty()) {
                                         m_formatId += " / ";
                                         m_formatId += m_esInfo->videoSpecificConfig->userData;
                                     }
                                 }
                             }
                             // check the stream data for missing information
-                            switch(m_format.general) {
-                            case GeneralMediaFormat::Mpeg1Audio: case GeneralMediaFormat::Mpeg2Audio: {
+                            switch (m_format.general) {
+                            case GeneralMediaFormat::Mpeg1Audio:
+                            case GeneralMediaFormat::Mpeg2Audio: {
                                 MpegAudioFrame frame;
                                 m_istream->seekg(m_stcoAtom->dataOffset() + 8);
                                 m_istream->seekg(m_chunkOffsetSize == 8 ? reader.readUInt64BE() : reader.readUInt32BE());
                                 frame.parseHeader(reader);
                                 MpegAudioFrameStream::addInfo(frame, *this);
                                 break;
-                            } default:
-                                ;
+                            }
+                            default:;
                             }
                         }
-                    } catch(const Failure &) {
+                    } catch (const Failure &) {
                     }
                 }
             }
@@ -1716,14 +1783,15 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_sampleSizes.clear();
     m_size = m_sampleCount = 0;
     uint64 actualSampleSizeTableSize = m_stszAtom->dataSize();
-    if(actualSampleSizeTableSize < 12) {
-        diag.emplace_back(DiagLevel::Critical, "The stsz atom is truncated. There are no sample sizes present. The size of the track can not be determined.", context);
+    if (actualSampleSizeTableSize < 12) {
+        diag.emplace_back(DiagLevel::Critical,
+            "The stsz atom is truncated. There are no sample sizes present. The size of the track can not be determined.", context);
     } else {
         actualSampleSizeTableSize -= 12; // subtract size of version and flags
         m_istream->seekg(m_stszAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
         uint32 fieldSize;
         uint32 constantSize;
-        if(m_stszAtom->id() == Mp4AtomIds::CompactSampleSize) {
+        if (m_stszAtom->id() == Mp4AtomIds::CompactSampleSize) {
             constantSize = 0;
             m_istream->seekg(3, ios_base::cur); // seek reserved bytes
             fieldSize = reader.readByte();
@@ -1733,85 +1801,90 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             m_sampleCount = reader.readUInt32BE();
             fieldSize = 32;
         }
-        if(constantSize) {
+        if (constantSize) {
             m_sampleSizes.push_back(constantSize);
             m_size = constantSize * m_sampleCount;
         } else {
             uint64 actualSampleCount = m_sampleCount;
             uint64 calculatedSampleSizeTableSize = ceil((0.125 * fieldSize) * m_sampleCount);
-            if(calculatedSampleSizeTableSize < actualSampleSizeTableSize) {
-                diag.emplace_back(DiagLevel::Critical, "The stsz atom stores more entries as denoted. The additional entries will be ignored.", context);
-            } else if(calculatedSampleSizeTableSize > actualSampleSizeTableSize) {
+            if (calculatedSampleSizeTableSize < actualSampleSizeTableSize) {
+                diag.emplace_back(
+                    DiagLevel::Critical, "The stsz atom stores more entries as denoted. The additional entries will be ignored.", context);
+            } else if (calculatedSampleSizeTableSize > actualSampleSizeTableSize) {
                 diag.emplace_back(DiagLevel::Critical, "The stsz atom is truncated. It stores less entries as denoted.", context);
                 actualSampleCount = floor(static_cast<double>(actualSampleSizeTableSize) / (0.125 * fieldSize));
             }
             m_sampleSizes.reserve(actualSampleCount);
             uint32 i = 1;
-            switch(fieldSize) {
+            switch (fieldSize) {
             case 4:
-                for(; i <= actualSampleCount; i += 2) {
+                for (; i <= actualSampleCount; i += 2) {
                     byte val = reader.readByte();
                     m_sampleSizes.push_back(val >> 4);
                     m_sampleSizes.push_back(val & 0xF0);
                     m_size += (val >> 4) + (val & 0xF0);
                 }
-                if(i <= actualSampleCount + 1) {
+                if (i <= actualSampleCount + 1) {
                     m_sampleSizes.push_back(reader.readByte() >> 4);
                     m_size += m_sampleSizes.back();
                 }
                 break;
             case 8:
-                for(; i <= actualSampleCount; ++i) {
+                for (; i <= actualSampleCount; ++i) {
                     m_sampleSizes.push_back(reader.readByte());
                     m_size += m_sampleSizes.back();
                 }
                 break;
             case 16:
-                for(; i <= actualSampleCount; ++i) {
+                for (; i <= actualSampleCount; ++i) {
                     m_sampleSizes.push_back(reader.readUInt16BE());
                     m_size += m_sampleSizes.back();
                 }
                 break;
             case 32:
-                for(; i <= actualSampleCount; ++i) {
+                for (; i <= actualSampleCount; ++i) {
                     m_sampleSizes.push_back(reader.readUInt32BE());
                     m_size += m_sampleSizes.back();
                 }
                 break;
             default:
-                diag.emplace_back(DiagLevel::Critical, "The fieldsize used to store the sample sizes is not supported. The sample count and size of the track can not be determined.", context);
+                diag.emplace_back(DiagLevel::Critical,
+                    "The fieldsize used to store the sample sizes is not supported. The sample count and size of the track can not be determined.",
+                    context);
             }
         }
     }
 
     // no sample sizes found, search for trun atoms
     uint64 totalDuration = 0;
-    for(Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(MovieFragment, diag); moofAtom; moofAtom = moofAtom->siblingById(MovieFragment, diag)) {
+    for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(MovieFragment, diag); moofAtom;
+         moofAtom = moofAtom->siblingById(MovieFragment, diag)) {
         moofAtom->parse(diag);
-        for(Mp4Atom *trafAtom = moofAtom->childById(TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(TrackFragment, diag)) {
+        for (Mp4Atom *trafAtom = moofAtom->childById(TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(TrackFragment, diag)) {
             trafAtom->parse(diag);
-            for(Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader, diag); tfhdAtom; tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag)) {
+            for (Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader, diag); tfhdAtom;
+                 tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag)) {
                 tfhdAtom->parse(diag);
                 uint32 calculatedDataSize = 0;
-                if(tfhdAtom->dataSize() < calculatedDataSize) {
+                if (tfhdAtom->dataSize() < calculatedDataSize) {
                     diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated.", context);
                 } else {
                     m_istream->seekg(tfhdAtom->dataOffset() + 1);
                     uint32 flags = reader.readUInt24BE();
-                    if(m_id == reader.readUInt32BE()) { // check track ID
-                        if(flags & 0x000001) { // base-data-offset present
+                    if (m_id == reader.readUInt32BE()) { // check track ID
+                        if (flags & 0x000001) { // base-data-offset present
                             calculatedDataSize += 8;
                         }
-                        if(flags & 0x000002) { // sample-description-index present
+                        if (flags & 0x000002) { // sample-description-index present
                             calculatedDataSize += 4;
                         }
-                        if(flags & 0x000008) { // default-sample-duration present
+                        if (flags & 0x000008) { // default-sample-duration present
                             calculatedDataSize += 4;
                         }
-                        if(flags & 0x000010) { // default-sample-size present
+                        if (flags & 0x000010) { // default-sample-size present
                             calculatedDataSize += 4;
                         }
-                        if(flags & 0x000020) { // default-sample-flags present
+                        if (flags & 0x000020) { // default-sample-flags present
                             calculatedDataSize += 4;
                         }
                         //uint64 baseDataOffset = moofAtom->startOffset();
@@ -1819,91 +1892,92 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                         uint32 defaultSampleDuration = 0;
                         uint32 defaultSampleSize = 0;
                         //uint32 defaultSampleFlags = 0;
-                        if(tfhdAtom->dataSize() < calculatedDataSize) {
+                        if (tfhdAtom->dataSize() < calculatedDataSize) {
                             diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
                         } else {
-                            if(flags & 0x000001) { // base-data-offset present
+                            if (flags & 0x000001) { // base-data-offset present
                                 //baseDataOffset = reader.readUInt64();
                                 m_istream->seekg(8, ios_base::cur);
                             }
-                            if(flags & 0x000002) { // sample-description-index present
+                            if (flags & 0x000002) { // sample-description-index present
                                 //defaultSampleDescriptionIndex = reader.readUInt32();
                                 m_istream->seekg(4, ios_base::cur);
                             }
-                            if(flags & 0x000008) { // default-sample-duration present
+                            if (flags & 0x000008) { // default-sample-duration present
                                 defaultSampleDuration = reader.readUInt32BE();
                                 //m_istream->seekg(4, ios_base::cur);
                             }
-                            if(flags & 0x000010) { // default-sample-size present
+                            if (flags & 0x000010) { // default-sample-size present
                                 defaultSampleSize = reader.readUInt32BE();
                             }
-                            if(flags & 0x000020) { // default-sample-flags present
+                            if (flags & 0x000020) { // default-sample-flags present
                                 //defaultSampleFlags = reader.readUInt32BE();
                                 m_istream->seekg(4, ios_base::cur);
                             }
                         }
-                        for(Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun, diag); trunAtom; trunAtom = trunAtom->siblingById(TrackFragmentRun, diag)) {
+                        for (Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun, diag); trunAtom;
+                             trunAtom = trunAtom->siblingById(TrackFragmentRun, diag)) {
                             uint32 calculatedDataSize = 8;
-                            if(trunAtom->dataSize() < calculatedDataSize) {
+                            if (trunAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
                             } else {
                                 m_istream->seekg(trunAtom->dataOffset() + 1);
                                 uint32 flags = reader.readUInt24BE();
                                 uint32 sampleCount = reader.readUInt32BE();
                                 m_sampleCount += sampleCount;
-                                if(flags & 0x000001) { // data offset present
+                                if (flags & 0x000001) { // data offset present
                                     calculatedDataSize += 4;
                                 }
-                                if(flags & 0x000004) { // first-sample-flags present
+                                if (flags & 0x000004) { // first-sample-flags present
                                     calculatedDataSize += 4;
                                 }
                                 uint32 entrySize = 0;
-                                if(flags & 0x000100) { // sample-duration present
+                                if (flags & 0x000100) { // sample-duration present
                                     entrySize += 4;
                                 }
-                                if(flags & 0x000200) { // sample-size present
+                                if (flags & 0x000200) { // sample-size present
                                     entrySize += 4;
                                 }
-                                if(flags & 0x000400) { // sample-flags present
+                                if (flags & 0x000400) { // sample-flags present
                                     entrySize += 4;
                                 }
-                                if(flags & 0x000800) { // sample-composition-time-offsets present
+                                if (flags & 0x000800) { // sample-composition-time-offsets present
                                     entrySize += 4;
                                 }
                                 calculatedDataSize += entrySize * sampleCount;
-                                if(trunAtom->dataSize() < calculatedDataSize) {
+                                if (trunAtom->dataSize() < calculatedDataSize) {
                                     diag.emplace_back(DiagLevel::Critical, "trun atom is truncated (presence of fields denoted).", context);
                                 } else {
-                                    if(flags & 0x000001) { // data offset present
+                                    if (flags & 0x000001) { // data offset present
                                         m_istream->seekg(4, ios_base::cur);
                                         //int32 dataOffset = reader.readInt32();
                                     }
-                                    if(flags & 0x000004) { // first-sample-flags present
+                                    if (flags & 0x000004) { // first-sample-flags present
                                         m_istream->seekg(4, ios_base::cur);
                                     }
-                                    for(uint32 i = 0; i < sampleCount; ++i) {
-                                        if(flags & 0x000100) { // sample-duration present
+                                    for (uint32 i = 0; i < sampleCount; ++i) {
+                                        if (flags & 0x000100) { // sample-duration present
                                             totalDuration += reader.readUInt32BE();
                                         } else {
                                             totalDuration += defaultSampleDuration;
                                         }
-                                        if(flags & 0x000200) { // sample-size present
+                                        if (flags & 0x000200) { // sample-size present
                                             m_sampleSizes.push_back(reader.readUInt32BE());
                                             m_size += m_sampleSizes.back();
                                         } else {
                                             m_size += defaultSampleSize;
                                         }
-                                        if(flags & 0x000400) { // sample-flags present
+                                        if (flags & 0x000400) { // sample-flags present
                                             m_istream->seekg(4, ios_base::cur);
                                         }
-                                        if(flags & 0x000800) { // sample-composition-time-offsets present
+                                        if (flags & 0x000800) { // sample-composition-time-offsets present
                                             m_istream->seekg(4, ios_base::cur);
                                         }
                                     }
                                 }
                             }
                         }
-                        if(m_sampleSizes.empty() && defaultSampleSize) {
+                        if (m_sampleSizes.empty() && defaultSampleSize) {
                             m_sampleSizes.push_back(defaultSampleSize);
                         }
                     }
@@ -1913,18 +1987,18 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     }
 
     // set duration from "trun-information" if the duration has not been determined yet
-    if(m_duration.isNull() && totalDuration) {
+    if (m_duration.isNull() && totalDuration) {
         uint32 timeScale = m_timeScale;
-        if(!timeScale) {
+        if (!timeScale) {
             timeScale = trakAtom().container().timeScale();
         }
-        if(timeScale) {
+        if (timeScale) {
             m_duration = TimeSpan::fromSeconds(static_cast<double>(totalDuration) / static_cast<double>(timeScale));
         }
     }
 
     // caluculate average bitrate
-    if(m_bitrate < 0.01 && m_bitrate > -0.01) {
+    if (m_bitrate < 0.01 && m_bitrate > -0.01) {
         m_bitrate = (static_cast<double>(m_size) * 0.0078125) / m_duration.totalSeconds();
     }
 
@@ -1933,4 +2007,4 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_sampleToChunkEntryCount = reader.readUInt32BE();
 }
 
-}
+} // namespace TagParser

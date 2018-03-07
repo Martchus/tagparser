@@ -1,10 +1,10 @@
 #include "./helper.h"
 
-#include "../tagvalue.h"
 #include "../id3/id3genres.h"
+#include "../tagvalue.h"
 
-#include <c++utilities/conversion/conversionexception.h>
 #include <c++utilities/chrono/format.h>
+#include <c++utilities/conversion/conversionexception.h>
 
 using namespace TestUtilities;
 
@@ -150,45 +150,46 @@ void TagValueTests::testString()
     CPPUNIT_ASSERT_EQUAL("\x31\0\x35\0"s, TagValue(15).toString(TagTextEncoding::Utf16LittleEndian));
     CPPUNIT_ASSERT_EQUAL("\0\x31\0\x35"s, TagValue(15).toString(TagTextEncoding::Utf16BigEndian));
     CPPUNIT_ASSERT_EQUAL(15, TagValue("\0\x31\0\x35"s, TagTextEncoding::Utf16BigEndian).toInteger());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("original encoding preserved",
-                                 "15ä"s, TagValue("15ä", 4, TagTextEncoding::Utf8).toString(TagTextEncoding::Unspecified));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("original encoding preserved",
-                                 "\0\x31\0\x35"s, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toString(TagTextEncoding::Unspecified));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("UTF-8 BOM truncated",
-                                 "täst"s, TagValue("\xef\xbb\xbftäst", 8, TagTextEncoding::Utf8).toString(TagTextEncoding::Unspecified));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("UTF-16 LE BOM truncated",
-                                 "\0t\0\xe4\0s\0t"s, TagValue("\xff\xfe\0t\0\xe4\0s\0t", 10, TagTextEncoding::Utf16LittleEndian).toString(TagTextEncoding::Unspecified));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("UTF-16 BE BOM truncated",
-                                 "t\0\xe4\0s\0t\0"s, TagValue("\xfe\xfft\0\xe4\0s\0t\0", 10, TagTextEncoding::Utf16BigEndian).toString(TagTextEncoding::Unspecified));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion via c'tor",
-                                 "15\xe4"s, TagValue("\xef\xbb\xbf\x31\x35ä", 7, TagTextEncoding::Utf8, TagTextEncoding::Latin1).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "original encoding preserved", "15ä"s, TagValue("15ä", 4, TagTextEncoding::Utf8).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("original encoding preserved", "\0\x31\0\x35"s,
+        TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "UTF-8 BOM truncated", "täst"s, TagValue("\xef\xbb\xbftäst", 8, TagTextEncoding::Utf8).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("UTF-16 LE BOM truncated", "\0t\0\xe4\0s\0t"s,
+        TagValue("\xff\xfe\0t\0\xe4\0s\0t", 10, TagTextEncoding::Utf16LittleEndian).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("UTF-16 BE BOM truncated", "t\0\xe4\0s\0t\0"s,
+        TagValue("\xfe\xfft\0\xe4\0s\0t\0", 10, TagTextEncoding::Utf16BigEndian).toString(TagTextEncoding::Unspecified));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion via c'tor", "15\xe4"s,
+        TagValue("\xef\xbb\xbf\x31\x35ä", 7, TagTextEncoding::Utf8, TagTextEncoding::Latin1).toString(TagTextEncoding::Unspecified));
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to int", -15, TagValue(" - 156", 5, TagTextEncoding::Utf8).toInteger());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to int", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toInteger());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to int", TagValue("15ä", 4, TagTextEncoding::Utf8).toInteger(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to pos", PositionInSet(4, 15), TagValue("4 / 15", 6, TagTextEncoding::Utf8).toPositionInSet());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to pos", PositionInSet(15), TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toPositionInSet());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "conversion to pos", PositionInSet(15), TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toPositionInSet());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion pos", TagValue("a4 / 15", 7, TagTextEncoding::Utf8).toPositionInSet(), ConversionException);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to date", DateTime::fromDate(2004, 4, 15), TagValue("2004-04-15", 10, TagTextEncoding::Utf8).toDateTime());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "conversion to date", DateTime::fromDate(2004, 4, 15), TagValue("2004-04-15", 10, TagTextEncoding::Utf8).toDateTime());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to date", TagValue("_", 1, TagTextEncoding::Utf8).toDateTime(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to time span", TimeSpan::fromHours(1.5), TagValue("01:30:00", 10, TagTextEncoding::Utf8).toTimeSpan());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to time span", TagValue("_", 1, TagTextEncoding::Utf8).toTimeSpan(), ConversionException);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to genre from index", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toStandardGenreIndex());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "conversion to genre from index", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toStandardGenreIndex());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to genre from name", 2, TagValue("Country", 7, TagTextEncoding::Latin1).toStandardGenreIndex());
-    CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to genre", TagValue("Kountry", 7, TagTextEncoding::Latin1).toStandardGenreIndex(), ConversionException);
+    CPPUNIT_ASSERT_THROW_MESSAGE(
+        "failing conversion to genre", TagValue("Kountry", 7, TagTextEncoding::Latin1).toStandardGenreIndex(), ConversionException);
 }
 
 void TagValueTests::testEqualityOperator()
 {
-    CPPUNIT_ASSERT_MESSAGE("equality requires identical types or identical string representation"s,
-                           TagValue(0) != TagValue::empty());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("types might differ"s,
-                                 TagValue(15), TagValue(15));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("types might differ"s,
-                                 TagValue("15", 2, TagTextEncoding::Latin1), TagValue(15));
+    CPPUNIT_ASSERT_MESSAGE("equality requires identical types or identical string representation"s, TagValue(0) != TagValue::empty());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("types might differ"s, TagValue(15), TagValue(15));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("types might differ"s, TagValue("15", 2, TagTextEncoding::Latin1), TagValue(15));
     CPPUNIT_ASSERT_MESSAGE("encoding must be equal if relevant for types"s,
-                           TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian) != TagValue("15", 2, TagTextEncoding::Latin1));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("encoding is ignored when not relevant for types"s,
-                                 TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian), TagValue(15));
+        TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian) != TagValue("15", 2, TagTextEncoding::Latin1));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "encoding is ignored when not relevant for types"s, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian), TagValue(15));
 
     // meta-data
     TagValue withDescription(15);

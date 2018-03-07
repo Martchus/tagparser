@@ -18,15 +18,17 @@ namespace TagParser {
 /*!
  * \brief Constructs a new Tag.
  */
-Tag::Tag() :
-    m_size(0)
-{}
+Tag::Tag()
+    : m_size(0)
+{
+}
 
 /*!
  * \brief Destroys the Tag.
  */
 Tag::~Tag()
-{}
+{
+}
 
 /*!
  * \brief Returns a string representation of the tag.
@@ -35,7 +37,7 @@ string Tag::toString() const
 {
     string res;
     res += typeName();
-    if(supportsTarget()) {
+    if (supportsTarget()) {
         res += " targeting ";
         res += targetString();
     }
@@ -54,7 +56,7 @@ std::vector<const TagValue *> Tag::values(KnownField field) const
 {
     std::vector<const TagValue *> values;
     const TagValue &v = value(field);
-    if(!v.isEmpty()) {
+    if (!v.isEmpty()) {
         values.push_back(&v);
     }
     return values;
@@ -127,13 +129,12 @@ bool Tag::setValues(KnownField field, const std::vector<TagValue> &values)
 unsigned int Tag::insertValues(const Tag &from, bool overwrite)
 {
     unsigned int count = 0;
-    for(int i = static_cast<int>(KnownField::Invalid) + 1, last = static_cast<int>(KnownField::Description);
-        i <= last; ++i) {
+    for (int i = static_cast<int>(KnownField::Invalid) + 1, last = static_cast<int>(KnownField::Description); i <= last; ++i) {
         KnownField field = static_cast<KnownField>(i);
         const TagValue &ownValue = value(field);
-        if(overwrite || ownValue.isEmpty()) {
+        if (overwrite || ownValue.isEmpty()) {
             const TagValue &otherValue = from.value(field);
-            if(!otherValue.isEmpty() && setValue(field, otherValue)) {
+            if (!otherValue.isEmpty() && setValue(field, otherValue)) {
                 ++count;
             }
         }
@@ -174,4 +175,4 @@ unsigned int Tag::insertValues(const Tag &from, bool overwrite)
 //    return true;
 //}
 
-}
+} // namespace TagParser

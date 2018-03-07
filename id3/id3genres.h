@@ -7,11 +7,9 @@
 
 #include <string>
 
-namespace TagParser
-{
+namespace TagParser {
 
-class TAG_PARSER_EXPORT Id3Genres
-{
+class TAG_PARSER_EXPORT Id3Genres {
 public:
     static const char *stringFromIndex(int index);
     static int indexFromString(const std::string &genre);
@@ -47,6 +45,6 @@ constexpr bool Id3Genres::isIndexSupported(int index)
     return index >= 0 && index < genreCount();
 }
 
-}
+} // namespace TagParser
 
 #endif // TAG_PARSER_ID3GENRES_H
