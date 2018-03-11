@@ -16,7 +16,11 @@ std::ostream &operator<<(std::ostream &os, const TagParser::TagTextEncoding &enc
  */
 inline std::ostream &operator<<(std::ostream &os, const TagParser::TagValue &tagValue)
 {
-    return os << tagValue.toString(TagParser::TagTextEncoding::Utf8) << " (encoding: " << tagValue.dataEncoding() << ")";
+    os << tagValue.toString(TagParser::TagTextEncoding::Utf8);
+    if (!tagValue.description().empty()) {
+        os << ", description: " << tagValue.description();
+    }
+    return os << " (encoding: " << tagValue.dataEncoding() << ", description encoding: " << tagValue.descriptionEncoding() << ')';
 }
 
 /*!
