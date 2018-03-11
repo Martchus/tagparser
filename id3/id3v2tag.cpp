@@ -300,20 +300,17 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
 
     // read frames
     auto pos = stream.tellg();
-    Id3v2Frame frame;
     while (bytesRemaining) {
         // seek to next frame
         stream.seekg(pos);
         // parse frame
+        Id3v2Frame frame;
         try {
             frame.parse(reader, majorVersion, bytesRemaining, diag);
-            if (frame.id()) {
-                // add frame if parsing was successfull
-                if (Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
-                    diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
-                }
-                fields().insert(make_pair(frame.id(), frame));
+            if (Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
+                diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
             }
+            fields().emplace(frame.id(), move(frame));
         } catch (const NoDataFoundException &) {
             if (frame.hasPaddingReached()) {
                 m_paddingSize = startOffset + m_size - pos;

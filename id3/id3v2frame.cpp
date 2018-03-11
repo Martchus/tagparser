@@ -111,7 +111,6 @@ template <class stringtype> int parseGenreIndex(const stringtype &denotation)
  */
 void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize, Diagnostics &diag)
 {
-    clear();
     static const string defaultContext("parsing ID3v2 frame");
     string context;
 
@@ -335,9 +334,9 @@ void Id3v2Frame::make(BinaryWriter &writer, byte version, Diagnostics &diag)
 }
 
 /*!
- * \brief Ensures the field is cleared.
+ * \brief Resets ID3v2-specific values. Called via clear().
  */
-void Id3v2Frame::clear()
+void Id3v2Frame::reset()
 {
     m_flag = 0;
     m_group = 0;

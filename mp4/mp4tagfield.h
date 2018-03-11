@@ -121,10 +121,8 @@ public:
     static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(IdentifierType id);
 
-protected:
-    void cleared();
-
 private:
+    void reset();
     std::string m_name;
     std::string m_mean;
     uint32 m_parsedRawDataType;

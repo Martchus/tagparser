@@ -221,7 +221,7 @@ template <class ImplementationType> inline void TagField<ImplementationType>::se
 }
 
 /*!
- * \brief Clears id, value, type info and sets default flag to false.
+ * \brief Clears id, value, type info, sets default flag to false and resets further implementation specific values.
  */
 template <class ImplementationType> void TagField<ImplementationType>::clear()
 {
@@ -230,7 +230,7 @@ template <class ImplementationType> void TagField<ImplementationType>::clear()
     m_typeInfo = TypeInfoType();
     m_typeInfoAssigned = false;
     m_default = true;
-    static_cast<ImplementationType *>(this)->cleared();
+    static_cast<ImplementationType *>(this)->reset();
 }
 
 /*!

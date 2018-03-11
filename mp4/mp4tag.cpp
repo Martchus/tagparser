@@ -352,12 +352,12 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if (subAtom) {
-        Mp4TagField tagField;
         for (auto *child = subAtom->firstChild(); child; child = child->nextSibling()) {
+            Mp4TagField tagField;
             try {
                 child->parse(diag);
                 tagField.reparse(*child, diag);
-                fields().emplace(child->id(), tagField);
+                fields().emplace(child->id(), move(tagField));
             } catch (const Failure &) {
             }
         }

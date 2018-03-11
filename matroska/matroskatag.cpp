@@ -115,18 +115,17 @@ void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
     static const string context("parsing Matroska tag");
     tagElement.parse(diag);
     m_size = tagElement.totalSize();
-    MatroskaTagField field;
     for (EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
         child->parse(diag);
         switch (child->id()) {
-        case MatroskaIds::SimpleTag: {
+        case MatroskaIds::SimpleTag:
             try {
+                MatroskaTagField field;
                 field.reparse(*child, diag, true);
-                fields().insert(make_pair(field.id(), field));
+                fields().emplace(field.id(), move(field));
             } catch (const Failure &) {
             }
             break;
-        }
         case MatroskaIds::Targets:
             parseTargets(*child, diag);
             break;

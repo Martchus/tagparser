@@ -77,7 +77,6 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
     using namespace Mp4AtomIds;
     using namespace Mp4TagAtomIds;
     string context("parsing MP4 tag field");
-    clear(); // clear old values
     ilstChild.parse(diag); // ensure child has been parsed
     setId(ilstChild.id());
     context = "parsing MP4 tag field " + ilstChild.idToString();
@@ -425,9 +424,9 @@ uint32 Mp4TagField::appropriateRawDataType() const
 }
 
 /*!
- * \brief Ensures the field is cleared.
+ * \brief Resets MP4-specific values. Called via clear().
  */
-void Mp4TagField::cleared()
+void Mp4TagField::reset()
 {
     m_name.clear();
     m_mean.clear();

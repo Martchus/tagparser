@@ -144,13 +144,12 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             CHECK_MAX_SIZE(4);
             stream.read(sig, 4);
             uint32 fieldCount = LE::toUInt32(sig);
-            VorbisCommentField field;
-            const string &fieldId = field.id();
             for (uint32 i = 0; i < fieldCount; ++i) {
                 // read fields
+                VorbisCommentField field;
                 try {
                     field.parse(stream, maxSize, diag);
-                    fields().emplace(fieldId, field);
+                    fields().emplace(field.id(), move(field));
                 } catch (const TruncatedDataException &) {
                     throw;
                 } catch (const Failure &) {

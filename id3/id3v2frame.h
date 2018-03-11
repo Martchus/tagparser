@@ -138,10 +138,8 @@ public:
     static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(IdentifierType id);
 
-protected:
-    void clear();
-
 private:
+    void reset();
     uint32 m_parsedVersion;
     uint32 m_dataSize;
     uint32 m_totalSize;

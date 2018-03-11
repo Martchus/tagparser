@@ -47,7 +47,6 @@ MatroskaTagField::MatroskaTagField(const string &id, const TagValue &value)
 void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag, bool parseNestedFields)
 {
     string context("parsing Matroska tag field");
-    clear();
     simpleTagElement.parse(diag);
     bool tagDefaultFound = false;
     for (EbmlElement *child = simpleTagElement.firstChild(); child; child = child->nextSibling()) {

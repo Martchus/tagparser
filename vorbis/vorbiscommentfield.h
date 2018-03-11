@@ -61,10 +61,8 @@ public:
     static typename std::string fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(const std::string &id);
 
-protected:
-    void cleared();
-
 private:
+    void reset();
     template <class StreamType> void internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag);
 };
 
@@ -103,9 +101,9 @@ inline std::string VorbisCommentField::fieldIdToString(const std::string &id)
 }
 
 /*!
- * \brief Ensures the field is cleared.
+ * \brief Resets Vorbis Comment-specific values. Called via clear().
  */
-inline void VorbisCommentField::cleared()
+inline void VorbisCommentField::reset()
 {
 }
 
