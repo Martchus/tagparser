@@ -61,8 +61,6 @@ enum class TagDataType : unsigned int {
 };
 
 class TAG_PARSER_EXPORT TagValue {
-    friend class Id3v2Frame; // FIXME: make ensureHostByteOrder() public in next minor release
-
 public:
     // constructor, destructor
     TagValue();
@@ -100,16 +98,17 @@ public:
     PositionInSet toPositionInSet() const;
     ChronoUtilities::TimeSpan toTimeSpan() const;
     ChronoUtilities::DateTime toDateTime() const;
-    size_t dataSize() const;
-    char *dataPointer() const;
+    std::size_t dataSize() const;
+    char *dataPointer();
+    const char *dataPointer() const;
     const std::string &description() const;
     void setDescription(const std::string &value, TagTextEncoding encoding = TagTextEncoding::Latin1);
     const std::string &mimeType() const;
-    void setMimeType(const std::string &value);
+    void setMimeType(const std::string &mimeType);
     const std::string &language() const;
-    void setLanguage(const std::string &value);
+    void setLanguage(const std::string &language);
     bool isLabeledAsReadonly() const;
-    void setReadonly(bool value);
+    void setReadonly(bool readOnly);
     TagTextEncoding dataEncoding() const;
     void convertDataEncoding(TagTextEncoding encoding);
     void convertDataEncodingForTag(const Tag *tag);
@@ -129,16 +128,17 @@ public:
     void assignTimeSpan(ChronoUtilities::TimeSpan value);
     void assignDateTime(ChronoUtilities::DateTime value);
 
-private:
     static void stripBom(const char *&text, size_t &length, TagTextEncoding encoding);
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
 
+private:
+
     std::unique_ptr<char[]> m_ptr;
-    std::string::size_type m_size;
+    std::size_t m_size;
     TagDataType m_type;
     std::string m_desc;
     std::string m_mimeType;
-    std::string m_lng;
+    std::string m_language;
     bool m_labeledAsReadonly;
     TagTextEncoding m_encoding;
     TagTextEncoding m_descEncoding;
@@ -153,6 +153,13 @@ inline TagValue::TagValue()
     , m_labeledAsReadonly(false)
     , m_encoding(TagTextEncoding::Latin1)
     , m_descEncoding(TagTextEncoding::Latin1)
+{
+}
+
+/*!
+ * \brief Destroys the TagValue.
+ */
+inline TagValue::~TagValue()
 {
 }
 
@@ -207,7 +214,7 @@ inline TagValue::TagValue(int value)
  *                 encoding will only be considered if a text is assigned.
  * \remarks Strips the BOM of the specified \a data if \a type is TagDataType::Text.
  */
-inline TagValue::TagValue(const char *data, size_t length, TagDataType type, TagTextEncoding encoding)
+inline TagValue::TagValue(const char *data, std::size_t length, TagDataType type, TagTextEncoding encoding)
     : m_size(length)
     , m_type(type)
     , m_labeledAsReadonly(false)
@@ -226,7 +233,7 @@ inline TagValue::TagValue(const char *data, size_t length, TagDataType type, Tag
 /*!
  * \brief Constructs a new TagValue holding with the given \a data.
  *
- * The data is not copied. It is moved.
+ * The \a data is not copied. It is moved.
  *
  * \param data Specifies a pointer to the data.
  * \param length Specifies the length of the data.
@@ -235,7 +242,7 @@ inline TagValue::TagValue(const char *data, size_t length, TagDataType type, Tag
  *                 encoding will only be considered if a text is assigned.
  * \remarks Does not strip the BOM so for consistency the caller must ensure there is no BOM present.
  */
-inline TagValue::TagValue(std::unique_ptr<char[]> &&data, size_t length, TagDataType type, TagTextEncoding encoding)
+inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type, TagTextEncoding encoding)
     : m_size(length)
     , m_type(type)
     , m_labeledAsReadonly(false)
@@ -309,6 +316,17 @@ inline void TagValue::assignDateTime(ChronoUtilities::DateTime value)
 }
 
 /*!
+ * \brief Assigns the given standard genre \a index to be assigned.
+ * \param index Specifies the index to be assigned.
+ * \sa <a href="http://en.wikipedia.org/wiki/ID3#List_of_genres">List of genres - Wikipedia</a>
+ */
+inline void TagValue::assignStandardGenreIndex(int index)
+{
+    assignInteger(index);
+    m_type = TagDataType::StandardGenreIndex;
+}
+
+/*!
  * \brief Returns the type of the assigned value.
  */
 inline TagDataType TagValue::type() const
@@ -365,6 +383,17 @@ inline void TagValue::clearData()
 }
 
 /*!
+ * \brief Wipes assigned data including meta data.
+ * \sa clearData()
+ * \sa clearMetadata()
+ */
+inline void TagValue::clearDataAndMetadata()
+{
+    clearData();
+    clearMetadata();
+}
+
+/*!
  * \brief Returns the size of the assigned value in bytes.
  * \remarks Meta data such as description and MIME type is not considered as part of the assigned value.
  */
@@ -376,10 +405,15 @@ inline size_t TagValue::dataSize() const
 /*!
  * \brief Returns a pointer to the raw data assigned to the current instance.
  * \remarks The instance keeps ownership over the data which will be invalidated when the
- *          it gets destroyed or an other value is assigned.
+ *          TagValue gets destroyed or another value is assigned.
  * \remarks The raw data is not null terminated. See dataSize().
  */
-inline char *TagValue::dataPointer() const
+inline char *TagValue::dataPointer()
+{
+    return m_ptr.get();
+}
+
+inline const char *TagValue::dataPointer() const
 {
     return m_ptr.get();
 }
@@ -425,9 +459,9 @@ inline const std::string &TagValue::mimeType() const
  * \remarks The usage of this meta information depends on the tag implementation.
  * \sa mimeType()
  */
-inline void TagValue::setMimeType(const std::string &value)
+inline void TagValue::setMimeType(const std::string &mimeType)
 {
-    m_mimeType = value;
+    m_mimeType = mimeType;
 }
 
 /*!
@@ -437,7 +471,7 @@ inline void TagValue::setMimeType(const std::string &value)
  */
 inline const std::string &TagValue::language() const
 {
-    return m_lng;
+    return m_language;
 }
 
 /*!
@@ -446,9 +480,9 @@ inline const std::string &TagValue::language() const
  * \remarks The usage of this meta information depends on the tag implementation.
  * \sa language()
  */
-inline void TagValue::setLanguage(const std::string &value)
+inline void TagValue::setLanguage(const std::string &language)
 {
-    m_lng = value;
+    m_language = language;
 }
 
 /*!
@@ -472,9 +506,9 @@ inline bool TagValue::isLabeledAsReadonly() const
  *          assignments simply use the "const" keyword).
  * \sa isLabeledAsReadonly()
  */
-inline void TagValue::setReadonly(bool value)
+inline void TagValue::setReadonly(bool readOnly)
 {
-    m_labeledAsReadonly = value;
+    m_labeledAsReadonly = readOnly;
 }
 
 /*!

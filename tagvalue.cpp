@@ -33,7 +33,7 @@ TagValue::TagValue(const TagValue &other)
     , m_type(other.m_type)
     , m_desc(other.m_desc)
     , m_mimeType(other.m_mimeType)
-    , m_lng(other.m_lng)
+    , m_language(other.m_language)
     , m_labeledAsReadonly(other.m_labeledAsReadonly)
     , m_encoding(other.m_encoding)
     , m_descEncoding(other.m_descEncoding)
@@ -54,7 +54,7 @@ TagValue &TagValue::operator=(const TagValue &other)
         m_type = other.m_type;
         m_desc = other.m_desc;
         m_mimeType = other.m_mimeType;
-        m_lng = other.m_lng;
+        m_language = other.m_language;
         m_labeledAsReadonly = other.m_labeledAsReadonly;
         m_encoding = other.m_encoding;
         m_descEncoding = other.m_descEncoding;
@@ -79,7 +79,7 @@ TagValue &TagValue::operator=(const TagValue &other)
 bool TagValue::operator==(const TagValue &other) const
 {
     if (m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding) || m_mimeType != other.m_mimeType
-        || m_lng != other.m_lng || m_labeledAsReadonly != other.m_labeledAsReadonly) {
+        || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
         return false;
     }
     if (m_type == other.m_type) {
@@ -123,13 +123,6 @@ bool TagValue::operator==(const TagValue &other) const
 }
 
 /*!
- * \brief Destroys the TagValue.
- */
-TagValue::~TagValue()
-{
-}
-
-/*!
  * \brief Wipes assigned meta data.
  *  - Clears description, mime type and language.
  *  - Resets the read-only flag to false.
@@ -140,21 +133,10 @@ void TagValue::clearMetadata()
 {
     m_desc.clear();
     m_mimeType.clear();
-    m_lng.clear();
+    m_language.clear();
     m_labeledAsReadonly = false;
     m_encoding = TagTextEncoding::Latin1;
     m_type = TagDataType::Undefined;
-}
-
-/*!
- * \brief Wipes assigned data including meta data.
- * \sa clearData()
- * \sa clearMetadata()
- */
-void TagValue::clearDataAndMetadata()
-{
-    clearData();
-    clearMetadata();
 }
 
 /*!
@@ -317,9 +299,9 @@ DateTime TagValue::toDateTime() const
         case TagDataType::Integer:
         case TagDataType::DateTime:
             if (m_size == sizeof(int32)) {
-                return DateTime(*(reinterpret_cast<int32 *>(m_ptr.get())));
+                return DateTime(*(reinterpret_cast<uint32 *>(m_ptr.get())));
             } else if (m_size == sizeof(int64)) {
-                return DateTime(*(reinterpret_cast<int64 *>(m_ptr.get())));
+                return DateTime(*(reinterpret_cast<uint64 *>(m_ptr.get())));
             } else {
                 throw ConversionException("The assigned data is of unappropriate size.");
             }
@@ -623,17 +605,6 @@ void TagValue::assignInteger(int value)
     std::copy(reinterpret_cast<const char *>(&value), reinterpret_cast<const char *>(&value) + m_size, m_ptr.get());
     m_type = TagDataType::Integer;
     m_encoding = TagTextEncoding::Latin1;
-}
-
-/*!
- * \brief Assigns the given standard genre \a index to be assigned.
- * \param index Specifies the index to be assigned.
- * \sa <a href="http://en.wikipedia.org/wiki/ID3#List_of_genres">List of genres - Wikipedia</a>
- */
-void TagValue::assignStandardGenreIndex(int index)
-{
-    assignInteger(index);
-    m_type = TagDataType::StandardGenreIndex;
 }
 
 /*!
