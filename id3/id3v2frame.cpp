@@ -193,8 +193,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
             diag.emplace_back(DiagLevel::Critical, "The decompressed size is smaller than the compressed size.", context);
             throw InvalidDataException();
         }
-        auto bufferCompressed = make_unique<char[]>(m_dataSize);
-        ;
+        const auto bufferCompressed = make_unique<char[]>(m_dataSize);
         reader.read(bufferCompressed.get(), m_dataSize);
         buffer = make_unique<char[]>(decompressedSize);
         switch (
@@ -228,13 +227,11 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
             || (version < 3 && id() == Id3v2FrameIds::sTrackPosition)) {
             // the track number or the disk number frame
             try {
-                PositionInSet position;
                 if (characterSize(dataEncoding) > 1) {
-                    position = PositionInSet(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag));
+                    value().assignPosition(PositionInSet(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag)));
                 } else {
-                    position = PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag));
+                    value().assignPosition(PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag)));
                 }
-                value().assignPosition(position);
             } catch (const ConversionException &) {
                 diag.emplace_back(DiagLevel::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
             }
@@ -261,10 +258,10 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
             // genre/content type
             int genreIndex;
             if (characterSize(dataEncoding) > 1) {
-                auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
+                const auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 genreIndex = parseGenreIndex(genreDenotation);
             } else {
-                auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
+                const auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 genreIndex = parseGenreIndex(genreDenotation);
             }
             if (genreIndex != -1) {
@@ -273,12 +270,12 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
             } else {
                 // genre is specified as string
                 // string might be null terminated
-                auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
+                const auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
                 value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
             }
         } else {
             // any other text frame
-            auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
+            const auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
             value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
         }
 

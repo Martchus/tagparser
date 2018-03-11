@@ -147,33 +147,32 @@ void TagValue::clearMetadata()
  */
 int32 TagValue::toInteger() const
 {
-    if (!isEmpty()) {
-        switch (m_type) {
-        case TagDataType::Text:
-            switch (m_encoding) {
-            case TagTextEncoding::Unspecified:
-            case TagTextEncoding::Latin1:
-            case TagTextEncoding::Utf8:
-                return ConversionUtilities::bufferToNumber<int32>(m_ptr.get(), m_size);
-            case TagTextEncoding::Utf16LittleEndian:
-            case TagTextEncoding::Utf16BigEndian:
-                u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
-                ensureHostByteOrder(u16str, m_encoding);
-                return ConversionUtilities::stringToNumber<int32>(u16str);
-            }
-        case TagDataType::Integer:
-        case TagDataType::PositionInSet:
-        case TagDataType::StandardGenreIndex:
-            if (m_size == sizeof(int32)) {
-                return *reinterpret_cast<int32 *>(m_ptr.get());
-            } else {
-                throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
-            }
-        default:
-            throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
-        }
+    if (isEmpty()) {
+        return 0;
     }
-    return 0;
+    switch (m_type) {
+    case TagDataType::Text:
+        switch (m_encoding) {
+        case TagTextEncoding::Unspecified:
+        case TagTextEncoding::Latin1:
+        case TagTextEncoding::Utf8:
+            return ConversionUtilities::bufferToNumber<int32>(m_ptr.get(), m_size);
+        case TagTextEncoding::Utf16LittleEndian:
+        case TagTextEncoding::Utf16BigEndian:
+            u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+            ensureHostByteOrder(u16str, m_encoding);
+            return ConversionUtilities::stringToNumber<int32>(u16str);
+        }
+    case TagDataType::Integer:
+    case TagDataType::PositionInSet:
+    case TagDataType::StandardGenreIndex:
+        if (m_size == sizeof(int32)) {
+            return *reinterpret_cast<int32 *>(m_ptr.get());
+        }
+        throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
+    default:
+        throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
+    }
 }
 
 /*!
@@ -183,41 +182,39 @@ int32 TagValue::toInteger() const
  */
 int TagValue::toStandardGenreIndex() const
 {
-    if (!isEmpty()) {
-        int index = 0;
-        switch (m_type) {
-        case TagDataType::Text: {
-            const string s(toString());
-            try {
-                index = toInteger();
-            } catch (const ConversionException &) {
-                TagTextEncoding encoding = TagTextEncoding::Utf8;
-                if (m_encoding == TagTextEncoding::Latin1) {
-                    // no need to convert Latin-1 to UTF-8 (makes no difference in case of genre strings)
-                    encoding = TagTextEncoding::Unspecified;
-                }
-                index = Id3Genres::indexFromString(toString(encoding));
-            }
-            break;
-        }
-        case TagDataType::StandardGenreIndex:
-        case TagDataType::Integer:
-            if (m_size == sizeof(int32)) {
-                index = static_cast<int>(*reinterpret_cast<int32 *>(m_ptr.get()));
-            } else {
-                throw ConversionException("The assigned data is of unappropriate size.");
-            }
-            break;
-        default:
-            throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
-        }
-        if (Id3Genres::isIndexSupported(index)) {
-            return index;
-        } else {
-            throw ConversionException("The assigned number is not a valid standard genre index.");
-        }
+    if (isEmpty()) {
+        return 0;
     }
-    return 0;
+    int index = 0;
+    switch (m_type) {
+    case TagDataType::Text: {
+        const string s(toString());
+        try {
+            index = toInteger();
+        } catch (const ConversionException &) {
+            TagTextEncoding encoding = TagTextEncoding::Utf8;
+            if (m_encoding == TagTextEncoding::Latin1) {
+                // no need to convert Latin-1 to UTF-8 (makes no difference in case of genre strings)
+                encoding = TagTextEncoding::Unspecified;
+            }
+            index = Id3Genres::indexFromString(toString(encoding));
+        }
+        break;
+    }
+    case TagDataType::StandardGenreIndex:
+    case TagDataType::Integer:
+        if (m_size != sizeof(int32)) {
+            throw ConversionException("The assigned data is of unappropriate size.");
+        }
+        index = static_cast<int>(*reinterpret_cast<int32 *>(m_ptr.get()));
+        break;
+    default:
+        throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
+    }
+    if (Id3Genres::isIndexSupported(index)) {
+        return index;
+    }
+    throw ConversionException("The assigned number is not a valid standard genre index.");
 }
 
 /*!
@@ -227,35 +224,35 @@ int TagValue::toStandardGenreIndex() const
  */
 PositionInSet TagValue::toPositionInSet() const
 {
-    if (!isEmpty()) {
-        switch (m_type) {
-        case TagDataType::Text:
-            switch (m_encoding) {
-            case TagTextEncoding::Unspecified:
-            case TagTextEncoding::Latin1:
-            case TagTextEncoding::Utf8:
-                return PositionInSet(string(m_ptr.get(), m_size));
-            case TagTextEncoding::Utf16LittleEndian:
-            case TagTextEncoding::Utf16BigEndian:
-                u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
-                ensureHostByteOrder(u16str, m_encoding);
-                return PositionInSet(u16str);
-            }
-        case TagDataType::Integer:
-        case TagDataType::PositionInSet:
-            switch (m_size) {
-            case sizeof(int32):
-                return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())));
-            case 2 * sizeof(int32):
-                return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())), *(reinterpret_cast<int32 *>(m_ptr.get() + sizeof(int32))));
-            default:
-                throw ConversionException("The size of the assigned data is not appropriate.");
-            }
-        default:
-            throw ConversionException("Can not convert binary data/genre index/picture to \"position in set\".");
-        }
+    if (isEmpty()) {
+        return PositionInSet();
     }
-    return PositionInSet();
+    switch (m_type) {
+    case TagDataType::Text:
+        switch (m_encoding) {
+        case TagTextEncoding::Unspecified:
+        case TagTextEncoding::Latin1:
+        case TagTextEncoding::Utf8:
+            return PositionInSet(string(m_ptr.get(), m_size));
+        case TagTextEncoding::Utf16LittleEndian:
+        case TagTextEncoding::Utf16BigEndian:
+            u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+            ensureHostByteOrder(u16str, m_encoding);
+            return PositionInSet(u16str);
+        }
+    case TagDataType::Integer:
+    case TagDataType::PositionInSet:
+        switch (m_size) {
+        case sizeof(int32):
+            return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())));
+        case 2 * sizeof(int32):
+            return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())), *(reinterpret_cast<int32 *>(m_ptr.get() + sizeof(int32))));
+        default:
+            throw ConversionException("The size of the assigned data is not appropriate.");
+        }
+    default:
+        throw ConversionException("Can not convert binary data/genre index/picture to \"position in set\".");
+    }
 }
 
 /*!
@@ -265,25 +262,25 @@ PositionInSet TagValue::toPositionInSet() const
  */
 TimeSpan TagValue::toTimeSpan() const
 {
-    if (!isEmpty()) {
-        switch (m_type) {
-        case TagDataType::Text:
-            return TimeSpan::fromString(string(m_ptr.get(), m_size));
-        case TagDataType::Integer:
-        case TagDataType::TimeSpan:
-            switch (m_size) {
-            case sizeof(int32):
-                return TimeSpan(*(reinterpret_cast<int32 *>(m_ptr.get())));
-            case sizeof(int64):
-                return TimeSpan(*(reinterpret_cast<int64 *>(m_ptr.get())));
-            default:
-                throw ConversionException("The size of the assigned data is not appropriate.");
-            }
-        default:
-            throw ConversionException("Can not convert binary data/genre index/position in set/picture to time span.");
-        }
+    if (isEmpty()) {
+        return TimeSpan();
     }
-    return TimeSpan();
+    switch (m_type) {
+    case TagDataType::Text:
+        return TimeSpan::fromString(string(m_ptr.get(), m_size));
+    case TagDataType::Integer:
+    case TagDataType::TimeSpan:
+        switch (m_size) {
+        case sizeof(int32):
+            return TimeSpan(*(reinterpret_cast<int32 *>(m_ptr.get())));
+        case sizeof(int64):
+            return TimeSpan(*(reinterpret_cast<int64 *>(m_ptr.get())));
+        default:
+            throw ConversionException("The size of the assigned data is not appropriate.");
+        }
+    default:
+        throw ConversionException("Can not convert binary data/genre index/position in set/picture to time span.");
+    }
 }
 
 /*!
@@ -293,24 +290,24 @@ TimeSpan TagValue::toTimeSpan() const
  */
 DateTime TagValue::toDateTime() const
 {
-    if (!isEmpty()) {
-        switch (m_type) {
-        case TagDataType::Text:
-            return DateTime::fromString(string(m_ptr.get(), m_size));
-        case TagDataType::Integer:
-        case TagDataType::DateTime:
-            if (m_size == sizeof(int32)) {
-                return DateTime(*(reinterpret_cast<uint32 *>(m_ptr.get())));
-            } else if (m_size == sizeof(int64)) {
-                return DateTime(*(reinterpret_cast<uint64 *>(m_ptr.get())));
-            } else {
-                throw ConversionException("The assigned data is of unappropriate size.");
-            }
-        default:
-            throw ConversionException("Can not convert binary data/genre index/position in set/picture to date time.");
-        }
+    if (isEmpty()) {
+        return DateTime();
     }
-    return DateTime();
+    switch (m_type) {
+    case TagDataType::Text:
+        return DateTime::fromString(string(m_ptr.get(), m_size));
+    case TagDataType::Integer:
+    case TagDataType::DateTime:
+        if (m_size == sizeof(int32)) {
+            return DateTime(*(reinterpret_cast<uint32 *>(m_ptr.get())));
+        } else if (m_size == sizeof(int64)) {
+            return DateTime(*(reinterpret_cast<uint64 *>(m_ptr.get())));
+        } else {
+            throw ConversionException("The assigned data is of unappropriate size.");
+        }
+    default:
+        throw ConversionException("Can not convert binary data/genre index/position in set/picture to date time.");
+    }
 }
 
 /*!
@@ -343,8 +340,74 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
  */
 void TagValue::convertDataEncoding(TagTextEncoding encoding)
 {
-    if (m_encoding != encoding) {
-        if (type() == TagDataType::Text) {
+    if (m_encoding == encoding) {
+        return;
+    }
+    if (type() == TagDataType::Text) {
+        StringData encodedData;
+        switch (encoding) {
+        case TagTextEncoding::Utf8:
+            // use pre-defined methods when encoding to UTF-8
+            switch (dataEncoding()) {
+            case TagTextEncoding::Latin1:
+                encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
+                break;
+            case TagTextEncoding::Utf16LittleEndian:
+                encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
+                break;
+            case TagTextEncoding::Utf16BigEndian:
+                encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
+                break;
+            default:;
+            }
+            break;
+        default: {
+            // otherwise, determine input and output parameter to use general covertString method
+            const auto inputParameter = encodingParameter(dataEncoding());
+            const auto outputParameter = encodingParameter(encoding);
+            encodedData
+                = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
+        }
+        }
+        // can't just move the encoded data because it needs to be deleted with free
+        m_ptr = make_unique<char[]>(m_size = encodedData.second);
+        copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
+    }
+    m_encoding = encoding;
+}
+
+/*!
+ * \brief Ensures the encoding of the currently assigned text value is supported by the specified \a tag.
+ * \sa This is a convenience method for convertDataEncoding().
+ */
+void TagValue::convertDataEncodingForTag(const Tag *tag)
+{
+    if (type() == TagDataType::Text && !tag->canEncodingBeUsed(dataEncoding())) {
+        convertDataEncoding(tag->proposedTextEncoding());
+    }
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        std::string representation.
+ * \param result Specifies the string to store the result.
+ * \param encoding Specifies the encoding to to be used; set to TagTextEncoding::Unspecified to use the
+ *        present encoding without any character set conversion.
+ * \remarks If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
+ * \throws Throws ConversionException on failure.
+ */
+void TagValue::toString(string &result, TagTextEncoding encoding) const
+{
+    if (isEmpty()) {
+        result.clear();
+        return;
+    }
+
+    switch (m_type) {
+    case TagDataType::Text:
+        if (encoding == TagTextEncoding::Unspecified || dataEncoding() == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
+            result.assign(m_ptr.get(), m_size);
+        } else {
             StringData encodedData;
             switch (encoding) {
             case TagTextEncoding::Utf8:
@@ -370,99 +433,35 @@ void TagValue::convertDataEncoding(TagTextEncoding encoding)
                     = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
             }
             }
-            // can't just move the encoded data because it needs to be deleted with free
-            m_ptr = make_unique<char[]>(m_size = encodedData.second);
-            copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
-        }
-        m_encoding = encoding;
-    }
-}
-
-/*!
- * \brief Ensures the encoding of the currently assigned text value is supported by the specified \a tag.
- * \sa This is a convenience method for convertDataEncoding().
- */
-void TagValue::convertDataEncodingForTag(const Tag *tag)
-{
-    if (type() == TagDataType::Text && !tag->canEncodingBeUsed(dataEncoding())) {
-        convertDataEncoding(tag->proposedTextEncoding());
-    }
-}
-
-/*!
- * \brief Converts the value of the current TagValue object to its equivalent
- *        std::string representation.
- * \param result Specifies the string to store the result.
- * \param encoding Specifies the encoding to to be used; set to TagTextEncoding::Unspecified to use the
- *        present encoding without any character set conversion.
- * \remarks If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
- * \throws Throws ConversionException on failure.
- */
-void TagValue::toString(string &result, TagTextEncoding encoding) const
-{
-    if (!isEmpty()) {
-        switch (m_type) {
-        case TagDataType::Text:
-            if (encoding == TagTextEncoding::Unspecified || dataEncoding() == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
-                result.assign(m_ptr.get(), m_size);
-            } else {
-                StringData encodedData;
-                switch (encoding) {
-                case TagTextEncoding::Utf8:
-                    // use pre-defined methods when encoding to UTF-8
-                    switch (dataEncoding()) {
-                    case TagTextEncoding::Latin1:
-                        encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
-                        break;
-                    case TagTextEncoding::Utf16LittleEndian:
-                        encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
-                        break;
-                    case TagTextEncoding::Utf16BigEndian:
-                        encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
-                        break;
-                    default:;
-                    }
-                    break;
-                default: {
-                    // otherwise, determine input and output parameter to use general covertString method
-                    const auto inputParameter = encodingParameter(dataEncoding());
-                    const auto outputParameter = encodingParameter(encoding);
-                    encodedData = convertString(
-                        inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
-                }
-                }
-                result.assign(encodedData.first.get(), encodedData.second);
-            }
-            return;
-        case TagDataType::Integer:
-            result = ConversionUtilities::numberToString(toInteger());
-            break;
-        case TagDataType::PositionInSet:
-            result = toPositionInSet().toString();
-            break;
-        case TagDataType::StandardGenreIndex:
-            if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
-                result.assign(genreName);
-                break;
-            } else {
-                throw ConversionException("No string representation for the assigned standard genre index available.");
-            }
-        case TagDataType::TimeSpan:
-            result = toTimeSpan().toString();
-            break;
-        case TagDataType::DateTime:
-            result = toDateTime().toString();
-            break;
-        default:
-            throw ConversionException("Can not convert binary data/picture to string.");
-        }
-        if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
-            auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(result.data(), result.size())
-                                                                              : convertUtf8ToUtf16BE(result.data(), result.size());
             result.assign(encodedData.first.get(), encodedData.second);
         }
-    } else {
-        result.clear();
+        return;
+    case TagDataType::Integer:
+        result = ConversionUtilities::numberToString(toInteger());
+        break;
+    case TagDataType::PositionInSet:
+        result = toPositionInSet().toString();
+        break;
+    case TagDataType::StandardGenreIndex:
+        if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+            result.assign(genreName);
+            break;
+        } else {
+            throw ConversionException("No string representation for the assigned standard genre index available.");
+        }
+    case TagDataType::TimeSpan:
+        result = toTimeSpan().toString();
+        break;
+    case TagDataType::DateTime:
+        result = toDateTime().toString();
+        break;
+    default:
+        throw ConversionException("Can not convert binary data/picture to string.");
+    }
+    if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
+        auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(result.data(), result.size())
+                                                                          : convertUtf8ToUtf16BE(result.data(), result.size());
+        result.assign(encodedData.first.get(), encodedData.second);
     }
 }
 
@@ -475,67 +474,68 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
  */
 void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
 {
-    if (!isEmpty()) {
-        string regularStrRes;
-        switch (m_type) {
-        case TagDataType::Text:
-            if (encoding == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
-                result.assign(reinterpret_cast<const char16_t *>(m_ptr.get()), m_size / sizeof(char16_t));
-            } else {
-                StringData encodedData;
-                switch (encoding) {
-                case TagTextEncoding::Utf8:
-                    // use pre-defined methods when encoding to UTF-8
-                    switch (dataEncoding()) {
-                    case TagTextEncoding::Latin1:
-                        encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
-                        break;
-                    case TagTextEncoding::Utf16LittleEndian:
-                        encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
-                        break;
-                    case TagTextEncoding::Utf16BigEndian:
-                        encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
-                        break;
-                    default:;
-                    }
-                    break;
-                default: {
-                    // otherwise, determine input and output parameter to use general covertString method
-                    const auto inputParameter = encodingParameter(dataEncoding());
-                    const auto outputParameter = encodingParameter(encoding);
-                    encodedData = convertString(
-                        inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
-                }
-                }
-                result.assign(reinterpret_cast<const char16_t *>(encodedData.first.get()), encodedData.second / sizeof(char16_t));
-            }
-            return;
-        case TagDataType::Integer:
-            regularStrRes = ConversionUtilities::numberToString(toInteger());
-            break;
-        case TagDataType::PositionInSet:
-            regularStrRes = toPositionInSet().toString();
-            break;
-        case TagDataType::StandardGenreIndex:
-            if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
-                regularStrRes.assign(genreName);
-                break;
-            } else {
-                throw ConversionException("No string representation for the assigned standard genre index available.");
-            }
-        case TagDataType::TimeSpan:
-            regularStrRes = toTimeSpan().toString();
-            break;
-        default:
-            throw ConversionException("Can not convert binary data/picture to string.");
-        }
-        if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
-            auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(regularStrRes.data(), result.size())
-                                                                              : convertUtf8ToUtf16BE(regularStrRes.data(), result.size());
-            result.assign(reinterpret_cast<const char16_t *>(encodedData.first.get()), encodedData.second / sizeof(const char16_t));
-        }
-    } else {
+    if (isEmpty()) {
         result.clear();
+        return;
+    }
+
+    string regularStrRes;
+    switch (m_type) {
+    case TagDataType::Text:
+        if (encoding == TagTextEncoding::Unspecified || encoding == dataEncoding()) {
+            result.assign(reinterpret_cast<const char16_t *>(m_ptr.get()), m_size / sizeof(char16_t));
+        } else {
+            StringData encodedData;
+            switch (encoding) {
+            case TagTextEncoding::Utf8:
+                // use pre-defined methods when encoding to UTF-8
+                switch (dataEncoding()) {
+                case TagTextEncoding::Latin1:
+                    encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
+                    break;
+                case TagTextEncoding::Utf16LittleEndian:
+                    encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
+                    break;
+                case TagTextEncoding::Utf16BigEndian:
+                    encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
+                    break;
+                default:;
+                }
+                break;
+            default: {
+                // otherwise, determine input and output parameter to use general covertString method
+                const auto inputParameter = encodingParameter(dataEncoding());
+                const auto outputParameter = encodingParameter(encoding);
+                encodedData
+                    = convertString(inputParameter.first, outputParameter.first, m_ptr.get(), m_size, outputParameter.second / inputParameter.second);
+            }
+            }
+            result.assign(reinterpret_cast<const char16_t *>(encodedData.first.get()), encodedData.second / sizeof(char16_t));
+        }
+        return;
+    case TagDataType::Integer:
+        regularStrRes = ConversionUtilities::numberToString(toInteger());
+        break;
+    case TagDataType::PositionInSet:
+        regularStrRes = toPositionInSet().toString();
+        break;
+    case TagDataType::StandardGenreIndex:
+        if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+            regularStrRes.assign(genreName);
+            break;
+        } else {
+            throw ConversionException("No string representation for the assigned standard genre index available.");
+        }
+    case TagDataType::TimeSpan:
+        regularStrRes = toTimeSpan().toString();
+        break;
+    default:
+        throw ConversionException("Can not convert binary data/picture to string.");
+    }
+    if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
+        auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(regularStrRes.data(), result.size())
+                                                                          : convertUtf8ToUtf16BE(regularStrRes.data(), result.size());
+        result.assign(reinterpret_cast<const char16_t *>(encodedData.first.get()), encodedData.second / sizeof(const char16_t));
     }
 }
 
@@ -564,35 +564,36 @@ void TagValue::assignText(const char *text, std::size_t textSize, TagTextEncodin
     if (convertTo == TagTextEncoding::Unspecified || textEncoding == convertTo) {
         m_ptr = make_unique<char[]>(m_size = textSize);
         copy(text, text + textSize, m_ptr.get());
-    } else {
-        StringData encodedData;
-        switch (textEncoding) {
-        case TagTextEncoding::Utf8:
-            // use pre-defined methods when encoding to UTF-8
-            switch (convertTo) {
-            case TagTextEncoding::Latin1:
-                encodedData = convertUtf8ToLatin1(text, textSize);
-                break;
-            case TagTextEncoding::Utf16LittleEndian:
-                encodedData = convertUtf8ToUtf16LE(text, textSize);
-                break;
-            case TagTextEncoding::Utf16BigEndian:
-                encodedData = convertUtf8ToUtf16BE(text, textSize);
-                break;
-            default:;
-            }
-            break;
-        default: {
-            // otherwise, determine input and output parameter to use general covertString method
-            const auto inputParameter = encodingParameter(textEncoding);
-            const auto outputParameter = encodingParameter(convertTo);
-            encodedData = convertString(inputParameter.first, outputParameter.first, text, textSize, outputParameter.second / inputParameter.second);
-        }
-        }
-        // can't just move the encoded data because it needs to be deleted with free
-        m_ptr = make_unique<char[]>(m_size = encodedData.second);
-        copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
+        return;
     }
+
+    StringData encodedData;
+    switch (textEncoding) {
+    case TagTextEncoding::Utf8:
+        // use pre-defined methods when encoding to UTF-8
+        switch (convertTo) {
+        case TagTextEncoding::Latin1:
+            encodedData = convertUtf8ToLatin1(text, textSize);
+            break;
+        case TagTextEncoding::Utf16LittleEndian:
+            encodedData = convertUtf8ToUtf16LE(text, textSize);
+            break;
+        case TagTextEncoding::Utf16BigEndian:
+            encodedData = convertUtf8ToUtf16BE(text, textSize);
+            break;
+        default:;
+        }
+        break;
+    default: {
+        // otherwise, determine input and output parameter to use general covertString method
+        const auto inputParameter = encodingParameter(textEncoding);
+        const auto outputParameter = encodingParameter(convertTo);
+        encodedData = convertString(inputParameter.first, outputParameter.first, text, textSize, outputParameter.second / inputParameter.second);
+    }
+    }
+    // can't just move the encoded data because it needs to be deleted with free
+    m_ptr = make_unique<char[]>(m_size = encodedData.second);
+    copy(encodedData.first.get(), encodedData.first.get() + encodedData.second, m_ptr.get());
 }
 
 /*!
