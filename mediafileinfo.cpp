@@ -489,16 +489,7 @@ void MediaFileInfo::parseEverything(Diagnostics &diag)
 }
 
 /*!
- * \brief Ensures appropriate tags are created according the given specifications.
- * \param treatUnknownFilesAsMp3Files Specifies whether unknown file formats should be treated as MP3 (might break the file).
- * \param id3v1usage Specifies the usage of ID3v1 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
- * \param id3v2usage Specifies the usage of ID3v2 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
- * \param id3InitOnCreate Indicates whether to initialize newly created ID3 tags (according to \a id3v1usage and \a id3v2usage) with the values of the already present ID3 tags.
- * \param id3TransferValuesOnRemoval Indicates whether values of removed ID3 tags (according to \a id3v1usage and \a id3v2usage) should be transfered to remaining ID3 tags (no values will be overwritten).
- * \param mergeMultipleSuccessiveId3v2Tags Specifies whether multiple successive ID3v2 tags should be merged (see mergeId3v2Tags()).
- * \param keepExistingId3v2version Specifies whether the version of existing ID3v2 tags should be adjusted to \a id3v2version (otherwise \a id3v2version is only used when creating a new ID3v2 tag).
- * \param id3v2MajorVersion Specifies the ID3v2 version to be used. Valid values are 2, 3 and 4.
- * \param requiredTargets Specifies the required targets. If targets are not supported by the container an informal notification is added.
+ * \brief Ensures appropriate tags are created according the given \a settings.
  * \return Returns whether appropriate tags could be created for the file.
  * \remarks
  *  - Tags must have been parsed before invoking this method (otherwise it will just return false).
@@ -506,20 +497,20 @@ void MediaFileInfo::parseEverything(Diagnostics &diag)
  *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed if \a id3v1Usage is set to TagUsage::Never.
  *  - The method might do nothing if present tag(s) already match the given specifications.
  *  - This is only a convenience method. The task could be done by manually using the methods createId3v1Tag(), createId3v2Tag(), removeId3v1Tag() ... as well.
- *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (\a id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transfered.
- * \todo Refactoring required, there are too much params (not sure how to refactor though, since not all of the params are simple flags).
+ *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (TagSettings::id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transfered.
  */
-bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagUsage id3v1usage, TagUsage id3v2usage, bool id3InitOnCreate,
-    bool id3TransferValuesOnRemoval, bool mergeMultipleSuccessiveId3v2Tags, bool keepExistingId3v2version, byte id3v2MajorVersion,
-    const std::vector<TagTarget> &requiredTargets)
+bool MediaFileInfo::createAppropriateTags(const TagCreationSettings &settings)
 {
     // check if tags have been parsed yet (tags must have been parsed yet to create appropriate tags)
     if (tagsParsingStatus() == ParsingStatus::NotParsedYet) {
         return false;
     }
+
     // check if tags need to be created/adjusted/removed
-    bool targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 || !requiredTargets.front().isEmpty());
-    bool targetsSupported = false;
+    const auto requiredTargets(settings.requiredTargets);
+    const auto flags(settings.flags);
+    const auto targetsRequired = !requiredTargets.empty() && (requiredTargets.size() != 1 || !requiredTargets.front().isEmpty());
+    auto targetsSupported = false;
     if (areTagsSupported() && m_container) {
         // container object takes care of tag management
         if (targetsRequired) {
@@ -529,11 +520,9 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
                 targetsSupported = m_container->tag(0)->supportsTarget();
             } else {
                 // try to create a new tag and check whether targets are supported
-                auto *tag = m_container->createTag();
-                if (tag) {
-                    if ((targetsSupported = tag->supportsTarget())) {
-                        tag->setTarget(requiredTargets.front());
-                    }
+                auto *const tag = m_container->createTag();
+                if (tag && (targetsSupported = tag->supportsTarget())) {
+                    tag->setTarget(requiredTargets.front());
                 }
             }
             if (targetsSupported) {
@@ -545,82 +534,74 @@ bool MediaFileInfo::createAppropriateTags(bool treatUnknownFilesAsMp3Files, TagU
             // no targets are required -> just ensure that at least one tag is present
             m_container->createTag();
         }
-    } else {
-        // no container object present
-        if (m_containerFormat == ContainerFormat::Flac) {
-            // creation of Vorbis comment is possible
-            static_cast<FlacStream *>(m_singleTrack.get())->createVorbisComment();
-        } else {
-            // creation of ID3 tag is possible
-            if (!hasAnyTag() && !treatUnknownFilesAsMp3Files) {
-                switch (containerFormat()) {
-                case ContainerFormat::Adts:
-                case ContainerFormat::MpegAudioFrames:
-                case ContainerFormat::WavPack:
-                    break;
-                default:
-                    return false;
-                }
-            }
-            // create ID3 tags according to id3v2usage and id3v2usage
-            if (id3v1usage == TagUsage::Always) {
-                // always create ID3v1 tag -> ensure there is one
-                if (!id3v1Tag()) {
-                    Id3v1Tag *id3v1Tag = createId3v1Tag();
-                    if (id3InitOnCreate) {
-                        for (const auto &id3v2Tag : id3v2Tags()) {
-                            // overwrite existing values to ensure default ID3v1 genre "Blues" is updated as well
-                            id3v1Tag->insertValues(*id3v2Tag, true);
-                            // ID3v1 does not support all text encodings which might be used in ID3v2
-                            id3v1Tag->ensureTextValuesAreProperlyEncoded();
-                        }
-                    }
-                }
-            }
-            if (id3v2usage == TagUsage::Always) {
-                // always create ID3v2 tag -> ensure there is one and set version
-                if (!hasId3v2Tag()) {
-                    Id3v2Tag *id3v2Tag = createId3v2Tag();
-                    id3v2Tag->setVersion(id3v2MajorVersion, 0);
-                    if (id3InitOnCreate && id3v1Tag()) {
-                        id3v2Tag->insertValues(*id3v1Tag(), true);
-                    }
-                }
-            }
-        }
+        return true;
+    }
 
-        if (mergeMultipleSuccessiveId3v2Tags) {
-            mergeId3v2Tags();
-        }
-        // remove ID3 tags according to id3v1usage and id3v2usage
-        if (id3v1usage == TagUsage::Never) {
-            if (hasId3v1Tag()) {
-                // transfer tags to ID3v2 tag before removing
-                if (id3TransferValuesOnRemoval && hasId3v2Tag()) {
-                    id3v2Tags().front()->insertValues(*id3v1Tag(), false);
-                }
-                removeId3v1Tag();
+    // no container object present
+    switch (m_containerFormat) {
+    case ContainerFormat::Flac:
+        static_cast<FlacStream *>(m_singleTrack.get())->createVorbisComment();
+        break;
+    default:
+        // create ID3 tag(s)
+        if (!hasAnyTag() && !(flags & TagCreationFlags::TreatUnknownFilesAsMp3Files)) {
+            switch (containerFormat()) {
+            case ContainerFormat::Adts:
+            case ContainerFormat::MpegAudioFrames:
+            case ContainerFormat::WavPack:
+                break;
+            default:
+                return false;
             }
         }
-        if (id3v2usage == TagUsage::Never) {
-            if (id3TransferValuesOnRemoval && hasId3v1Tag()) {
-                // transfer tags to ID3v1 tag before removing
-                for (const auto &tag : id3v2Tags()) {
-                    id3v1Tag()->insertValues(*tag, false);
+        // create ID3 tags according to id3v2usage and id3v2usage
+        // always create ID3v1 tag -> ensure there is one
+        if (settings.id3v1usage == TagUsage::Always && !id3v1Tag()) {
+            auto *const id3v1Tag = createId3v1Tag();
+            if (flags & TagCreationFlags::Id3InitOnCreate) {
+                for (const auto &id3v2Tag : id3v2Tags()) {
+                    // overwrite existing values to ensure default ID3v1 genre "Blues" is updated as well
+                    id3v1Tag->insertValues(*id3v2Tag, true);
+                    // ID3v1 does not support all text encodings which might be used in ID3v2
+                    id3v1Tag->ensureTextValuesAreProperlyEncoded();
                 }
             }
-            removeAllId3v2Tags();
-        } else if (!keepExistingId3v2version) {
-            // set version of ID3v2 tag according user preferences
-            for (const auto &tag : id3v2Tags()) {
-                tag->setVersion(id3v2MajorVersion, 0);
+        }
+        if (settings.id3v2usage == TagUsage::Always && !hasId3v2Tag()) {
+            // always create ID3v2 tag -> ensure there is one and set version
+            auto *const id3v2Tag = createId3v2Tag();
+            id3v2Tag->setVersion(settings.id3v2MajorVersion, 0);
+            if ((flags & TagCreationFlags::Id3InitOnCreate) && id3v1Tag()) {
+                id3v2Tag->insertValues(*id3v1Tag(), true);
             }
         }
     }
-    // FIXME
-    //if(targetsRequired && !targetsSupported) {
-    //    diag.emplace_back(DiagLevel::Information, "The container/tags do not support targets. The specified targets are ignored.", "creating tags");
-    //}
+
+    if (flags & TagCreationFlags::MergeMultipleSuccessiveId3v2Tags) {
+        mergeId3v2Tags();
+    }
+    // remove ID3 tags according to settings
+    if (settings.id3v1usage == TagUsage::Never && hasId3v1Tag()) {
+        // transfer tags to ID3v2 tag before removing
+        if ((flags & TagCreationFlags::Id3TransferValuesOnRemoval) && hasId3v2Tag()) {
+            id3v2Tags().front()->insertValues(*id3v1Tag(), false);
+        }
+        removeId3v1Tag();
+    }
+    if (settings.id3v2usage == TagUsage::Never) {
+        if ((flags & TagCreationFlags::Id3TransferValuesOnRemoval) && hasId3v1Tag()) {
+            // transfer tags to ID3v1 tag before removing
+            for (const auto &tag : id3v2Tags()) {
+                id3v1Tag()->insertValues(*tag, false);
+            }
+        }
+        removeAllId3v2Tags();
+    } else if (!(flags & TagCreationFlags::KeepExistingId3v2Version)) {
+        // set version of ID3v2 tag according user preferences
+        for (const auto &tag : id3v2Tags()) {
+            tag->setVersion(settings.id3v2MajorVersion, 0);
+        }
+    }
     return true;
 }
 
@@ -1307,11 +1288,11 @@ void MediaFileInfo::mergeId3v2Tags()
  */
 bool MediaFileInfo::id3v1ToId3v2()
 {
-    if (tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v1Tag()) {
-        return createAppropriateTags(false, TagUsage::Never, TagUsage::Always, true, true, 3);
-    } else {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet || !areTagsSupported() || !hasId3v1Tag()) {
         return false;
     }
+    return createAppropriateTags(TagCreationSettings{
+        {}, TagCreationFlags::MergeMultipleSuccessiveId3v2Tags | TagCreationFlags::KeepExistingId3v2Version, TagUsage::Never, TagUsage::Always, 3 });
 }
 
 /*!
@@ -1326,11 +1307,11 @@ bool MediaFileInfo::id3v1ToId3v2()
  */
 bool MediaFileInfo::id3v2ToId3v1()
 {
-    if (tagsParsingStatus() != ParsingStatus::NotParsedYet && areTagsSupported() && hasId3v2Tag()) {
-        return createAppropriateTags(false, TagUsage::Always, TagUsage::Never, true, true, 3);
-    } else {
+    if (tagsParsingStatus() == ParsingStatus::NotParsedYet || !areTagsSupported() || !hasId3v2Tag()) {
         return false;
     }
+    return createAppropriateTags(TagCreationSettings{
+        {}, TagCreationFlags::MergeMultipleSuccessiveId3v2Tags | TagCreationFlags::KeepExistingId3v2Version, TagUsage::Always, TagUsage::Never, 3 });
 }
 
 /*!

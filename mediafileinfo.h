@@ -3,6 +3,7 @@
 
 #include "./abstractcontainer.h"
 #include "./basicfileinfo.h"
+#include "./settings.h"
 #include "./signature.h"
 
 #include <memory>
@@ -28,15 +29,6 @@ class AbortableProgressFeedback;
 
 enum class MediaType;
 DECLARE_ENUM_CLASS(TagType, unsigned int);
-
-/*!
- * \brief The TagUsage enum specifies the usage of a certain tag type.
- */
-enum class TagUsage {
-    Always, /**< a tag of the type is always used; a new tag is created if none exists yet */
-    KeepExisting, /**< existing tags of the type are kept and updated but no new tag is created  */
-    Never /**< tags of the type are never used; a possibly existing tag of the type is removed */
-};
 
 /*!
  * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
@@ -112,10 +104,7 @@ public:
     bool areTagsSupported() const;
 
     // methods to create/remove tags
-    bool createAppropriateTags(bool treatUnknownFilesAsMp3Files = false, TagUsage id3v1usage = TagUsage::KeepExisting,
-        TagUsage id3v2usage = TagUsage::Always, bool id3InitOnCreate = false, bool id3TransferValuesOnRemoval = true,
-        bool mergeMultipleSuccessiveId3v2Tags = true, bool keepExistingId3v2version = true, byte id3v2MajorVersion = 3,
-        const std::vector<TagTarget> &requiredTargets = std::vector<TagTarget>());
+    bool createAppropriateTags(const TagCreationSettings &settings = TagCreationSettings());
     bool removeId3v1Tag();
     Id3v1Tag *createId3v1Tag();
     bool removeId3v2Tag(Id3v2Tag *tag);

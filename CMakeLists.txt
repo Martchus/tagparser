@@ -64,6 +64,7 @@ set(HEADER_FILES
     opus/opusidentificationheader.h
     positioninset.h
     progressfeedback.h
+    settings.h
     signature.h
     size.h
     tag.h

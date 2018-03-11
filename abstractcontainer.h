@@ -2,6 +2,7 @@
 #define TAG_PARSER_ABSTRACTCONTAINER_H
 
 #include "./exceptions.h"
+#include "./settings.h"
 #include "./tagtarget.h"
 
 #include <c++utilities/chrono/datetime.h>
@@ -24,12 +25,6 @@ class AbstractChapter;
 class AbstractAttachment;
 class Diagnostics;
 class AbortableProgressFeedback;
-
-enum class ElementPosition {
-    BeforeData, /**< the element is positioned before the actual data */
-    AfterData, /**< the element is positioned after the actual data */
-    Keep /**< the element is placed where it was before */
-};
 
 class TAG_PARSER_EXPORT AbstractContainer {
 public:

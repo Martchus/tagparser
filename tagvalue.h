@@ -31,7 +31,7 @@ enum class TagTextEncoding : unsigned int {
  * \brief Returns the size of one character for the specified \a encoding in bytes.
  * \remarks For variable-width encoding the minimum size is returned.
  */
-inline int characterSize(TagTextEncoding encoding)
+constexpr int characterSize(TagTextEncoding encoding)
 {
     switch (encoding) {
     case TagTextEncoding::Latin1:
@@ -132,7 +132,6 @@ public:
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
 
 private:
-
     std::unique_ptr<char[]> m_ptr;
     std::size_t m_size;
     std::string m_desc;
