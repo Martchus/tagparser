@@ -46,7 +46,7 @@ Id3v2Frame::Id3v2Frame()
 /*!
  * \brief Constructs a new Id3v2Frame with the specified \a id, \a value, \a group and \a flag.
  */
-Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group, int16 flag)
+Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group, uint16 flag)
     : TagField<Id3v2Frame>(id, value)
     , m_flag(flag)
     , m_group(group)
@@ -316,7 +316,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
  */
-Id3v2FrameMaker Id3v2Frame::prepareMaking(const uint32 version, Diagnostics &diag)
+Id3v2FrameMaker Id3v2Frame::prepareMaking(byte version, Diagnostics &diag)
 {
     return Id3v2FrameMaker(*this, version, diag);
 }
@@ -329,7 +329,7 @@ Id3v2FrameMaker Id3v2Frame::prepareMaking(const uint32 version, Diagnostics &dia
  * \throws Throws Media::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Frame::make(BinaryWriter &writer, const uint32 version, Diagnostics &diag)
+void Id3v2Frame::make(BinaryWriter &writer, byte version, Diagnostics &diag)
 {
     prepareMaking(version, diag).make(writer);
 }
@@ -337,7 +337,7 @@ void Id3v2Frame::make(BinaryWriter &writer, const uint32 version, Diagnostics &d
 /*!
  * \brief Ensures the field is cleared.
  */
-void Id3v2Frame::cleared()
+void Id3v2Frame::clear()
 {
     m_flag = 0;
     m_group = 0;
@@ -358,7 +358,7 @@ void Id3v2Frame::cleared()
  * \brief Prepares making the specified \a frame.
  * \sa See Id3v2Frame::prepareMaking() for more information.
  */
-Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, const byte version, Diagnostics &diag)
+Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &diag)
     : m_frame(frame)
     , m_frameId(m_frame.id())
     , m_version(version)
@@ -663,7 +663,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
  */
 string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
-    auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
+    const auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
     return string(get<0>(substr), get<1>(substr));
 }
 
@@ -676,7 +676,7 @@ string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncod
  */
 u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
-    auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
+    const auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
     u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
     TagValue::ensureHostByteOrder(res, encoding);
     return res;

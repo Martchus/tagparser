@@ -30,7 +30,7 @@ public:
     uint32 requiredSize() const;
 
 private:
-    Id3v2FrameMaker(Id3v2Frame &frame, const byte version, Diagnostics &diag);
+    Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &diag);
     Id3v2Frame &m_frame;
     uint32 m_frameId;
     const byte m_version;
@@ -86,12 +86,12 @@ class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame> {
 
 public:
     Id3v2Frame();
-    Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group = 0, int16 flag = 0);
+    Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group = 0, uint16 flag = 0);
 
     // parsing/making
     void parse(IoUtilities::BinaryReader &reader, uint32 version, uint32 maximalSize, Diagnostics &diag);
-    Id3v2FrameMaker prepareMaking(const uint32 version, Diagnostics &diag);
-    void make(IoUtilities::BinaryWriter &writer, const uint32 version, Diagnostics &diag);
+    Id3v2FrameMaker prepareMaking(byte version, Diagnostics &diag);
+    void make(IoUtilities::BinaryWriter &writer, byte version, Diagnostics &diag);
 
     // member access
     bool isAdditionalTypeInfoUsed() const;
@@ -112,7 +112,7 @@ public:
     bool hasDataLengthIndicator() const;
     byte group() const;
     void setGroup(byte value);
-    int32 parsedVersion() const;
+    uint32 parsedVersion() const;
     bool supportsNestedFields() const;
 
     // parsing helper
@@ -139,7 +139,7 @@ public:
     static std::string fieldIdToString(IdentifierType id);
 
 protected:
-    void cleared();
+    void clear();
 
 private:
     uint16 m_flag;
@@ -300,7 +300,7 @@ inline void Id3v2Frame::setGroup(byte value)
 /*!
  * \brief Returns the version of the frame (read when parsing the frame).
  */
-inline int32 Id3v2Frame::parsedVersion() const
+inline uint32 Id3v2Frame::parsedVersion() const
 {
     return m_parsedVersion;
 }
