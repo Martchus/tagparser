@@ -136,6 +136,7 @@ void TagValue::clearMetadata()
     m_language.clear();
     m_labeledAsReadonly = false;
     m_encoding = TagTextEncoding::Latin1;
+    m_descEncoding = TagTextEncoding::Latin1;
     m_type = TagDataType::Undefined;
 }
 
