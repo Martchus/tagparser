@@ -123,13 +123,6 @@ public:
     virtual bool supportsMimeType(KnownField field) const;
     virtual unsigned int insertValues(const Tag &from, bool overwrite);
     virtual void ensureTextValuesAreProperlyEncoded() = 0;
-    //    Tag *parent() const;
-    //    bool setParent(Tag *tag);
-    //    Tag *nestedTag(size_t index) const;
-    //    size_t nestedTagCount() const;
-    //    const std::vector<Tag *> nestedTags() const;
-    //    virtual bool supportsNestedTags() const;
-    //    virtual bool supportsChild(Tag *child);
 
 protected:
     Tag();
@@ -137,8 +130,6 @@ protected:
     std::string m_version;
     uint32 m_size;
     TagTarget m_target;
-    //    Tag *m_parent;
-    //    std::vector<Tag *> m_nestedTags;
 };
 
 /*!
@@ -357,58 +348,6 @@ inline bool Tag::supportsMimeType(KnownField) const
 {
     return false;
 }
-
-///*!
-// * \brief Returns the parent of the tag.
-// */
-//inline Tag *Tag::parent() const
-//{
-//    return m_parent;
-//}
-
-///*!
-// * \brief Returns the nested tags.
-// */
-//inline const std::vector<Tag *> Tag::nestedTags() const
-//{
-//    return m_nestedTags;
-//}
-
-///*!
-// * \brief Returns whether the tag supports nested tags (generally).
-// */
-//inline bool Tag::supportsNestedTags() const
-//{
-//    return false;
-//}
-
-///*!
-// * \brief Returns whether \a child might be added as nested tag.
-// *
-// * The default implementation returns true when nested tag are
-// * generally supported and the \a child is of the same type
-// * as this tag.
-// */
-//inline bool Tag::supportsChild(Tag *child)
-//{
-//    return supportsNestedTags() && type() == child->type();
-//}
-
-///*!
-// * \brief Returns the nested tag with the specified \a index.
-// */
-//inline Tag *Tag::nestedTag(size_t ) const
-//{
-//    return nullptr;
-//}
-
-///*!
-// * \brief Returns the number of nested tags.
-// */
-//inline size_t Tag::nestedTagCount() const
-//{
-//    return 0;
-//}
 
 } // namespace TagParser
 

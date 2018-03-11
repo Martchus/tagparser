@@ -148,31 +148,4 @@ unsigned int Tag::insertValues(const Tag &from, bool overwrite)
  *        converting the character set if neccessary.
  */
 
-//bool Tag::setParent(Tag *tag)
-//{
-//    if(m_parent != tag) {
-//        // ensure this tag is a valid parent for the specified tag
-//        if(!tag->supportsChild(this)) {
-//            return false;
-//        }
-//        // ensure the new parent is no child of this tag
-//        Tag *newParent = tag->parent();
-//        while(newParent) {
-//            if(newParent == this) {
-//                return false;
-//            }
-//            newParent = newParent->parent();
-//        }
-//        // remove this tag from the nested tags of the old parent
-//        if(m_parent) {
-//            m_parent->m_nestedTags.erase(std::remove(m_nestedTags.begin(), m_nestedTags.end(), this));
-//        }
-//        // add this tag to the nested tags of the new parent
-//        if((m_parent = tag)) {
-//            m_parent->m_nestedTags.push_back(this);
-//        }
-//    }
-//    return true;
-//}
-
 } // namespace TagParser
