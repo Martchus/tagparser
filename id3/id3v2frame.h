@@ -142,11 +142,11 @@ protected:
     void clear();
 
 private:
-    uint16 m_flag;
-    byte m_group;
     uint32 m_parsedVersion;
     uint32 m_dataSize;
     uint32 m_totalSize;
+    uint16 m_flag;
+    byte m_group;
     bool m_padding;
 };
 

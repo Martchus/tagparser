@@ -30,13 +30,13 @@ namespace TagParser {
  */
 TagValue::TagValue(const TagValue &other)
     : m_size(other.m_size)
-    , m_type(other.m_type)
     , m_desc(other.m_desc)
     , m_mimeType(other.m_mimeType)
     , m_language(other.m_language)
-    , m_labeledAsReadonly(other.m_labeledAsReadonly)
+    , m_type(other.m_type)
     , m_encoding(other.m_encoding)
     , m_descEncoding(other.m_descEncoding)
+    , m_labeledAsReadonly(other.m_labeledAsReadonly)
 {
     if (!other.isEmpty()) {
         m_ptr = make_unique<char[]>(m_size);

@@ -133,8 +133,8 @@ protected:
     IdentifierType m_id;
     uint64 m_startOffset;
     uint64 m_maxSize;
-    uint32 m_idLength;
     DataSizeType m_dataSize;
+    uint32 m_idLength;
     uint32 m_sizeLength;
     ImplementationType *m_parent;
     std::unique_ptr<ImplementationType> m_nextSibling;
@@ -159,8 +159,8 @@ template <class ImplementationType>
 GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset)
     : m_id(IdentifierType())
     , m_startOffset(startOffset)
-    , m_idLength(0)
     , m_dataSize(0)
+    , m_idLength(0)
     , m_sizeLength(0)
     , m_parent(nullptr)
     , m_container(&container)
@@ -184,8 +184,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &p
     : m_id(IdentifierType())
     , m_startOffset(startOffset)
     , m_maxSize(parent.startOffset() + parent.totalSize() - startOffset)
-    , m_idLength(0)
     , m_dataSize(0)
+    , m_idLength(0)
     , m_sizeLength(0)
     , m_parent(&parent)
     , m_container(&parent.container())
@@ -203,8 +203,8 @@ GenericFileElement<ImplementationType>::GenericFileElement(
     : m_id(IdentifierType())
     , m_startOffset(startOffset)
     , m_maxSize(maxSize)
-    , m_idLength(0)
     , m_dataSize(0)
+    , m_idLength(0)
     , m_sizeLength(0)
     , m_parent(nullptr)
     , m_container(&container)

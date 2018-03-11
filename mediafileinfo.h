@@ -185,14 +185,14 @@ private:
 
     // fields specifying object behaviour
     std::string m_saveFilePath;
-    bool m_forceFullParse;
-    bool m_forceRewrite;
     size_t m_minPadding;
     size_t m_maxPadding;
     size_t m_preferredPadding;
     ElementPosition m_tagPosition;
-    bool m_forceTagPosition;
     ElementPosition m_indexPosition;
+    bool m_forceFullParse;
+    bool m_forceRewrite;
+    bool m_forceTagPosition;
     bool m_forceIndexPosition;
 };
 

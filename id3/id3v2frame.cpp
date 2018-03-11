@@ -34,11 +34,11 @@ enum Id3v2TextEncodingByte : byte { Ascii, Utf16WithBom, Utf16BigEndianWithoutBo
  * \brief Constructs a new Id3v2Frame.
  */
 Id3v2Frame::Id3v2Frame()
-    : m_flag(0)
-    , m_group(0)
-    , m_parsedVersion(0)
+    : m_parsedVersion(0)
     , m_dataSize(0)
     , m_totalSize(0)
+    , m_flag(0)
+    , m_group(0)
     , m_padding(false)
 {
 }
@@ -48,11 +48,11 @@ Id3v2Frame::Id3v2Frame()
  */
 Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group, uint16 flag)
     : TagField<Id3v2Frame>(id, value)
-    , m_flag(flag)
-    , m_group(group)
     , m_parsedVersion(0)
     , m_dataSize(0)
     , m_totalSize(0)
+    , m_flag(flag)
+    , m_group(group)
     , m_padding(false)
 {
 }

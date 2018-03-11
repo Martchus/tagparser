@@ -135,13 +135,13 @@ private:
 
     std::unique_ptr<char[]> m_ptr;
     std::size_t m_size;
-    TagDataType m_type;
     std::string m_desc;
     std::string m_mimeType;
     std::string m_language;
-    bool m_labeledAsReadonly;
+    TagDataType m_type;
     TagTextEncoding m_encoding;
     TagTextEncoding m_descEncoding;
+    bool m_labeledAsReadonly;
 };
 
 /*!
@@ -150,9 +150,9 @@ private:
 inline TagValue::TagValue()
     : m_size(0)
     , m_type(TagDataType::Undefined)
-    , m_labeledAsReadonly(false)
     , m_encoding(TagTextEncoding::Latin1)
     , m_descEncoding(TagTextEncoding::Latin1)
+    , m_labeledAsReadonly(false)
 {
 }
 
@@ -174,8 +174,8 @@ inline TagValue::~TagValue()
  * \remarks Strips the BOM of the specified \a text.
  */
 inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
-    : m_labeledAsReadonly(false)
-    , m_descEncoding(TagTextEncoding::Latin1)
+    : m_descEncoding(TagTextEncoding::Latin1)
+    , m_labeledAsReadonly(false)
 {
     assignText(text, textSize, textEncoding, convertTo);
 }
@@ -190,8 +190,8 @@ inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncodin
  * \remarks Strips the BOM of the specified \a text.
  */
 inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
-    : m_labeledAsReadonly(false)
-    , m_descEncoding(TagTextEncoding::Latin1)
+    : m_descEncoding(TagTextEncoding::Latin1)
+    , m_labeledAsReadonly(false)
 {
     assignText(text, textEncoding, convertTo);
 }
@@ -217,9 +217,9 @@ inline TagValue::TagValue(int value)
 inline TagValue::TagValue(const char *data, std::size_t length, TagDataType type, TagTextEncoding encoding)
     : m_size(length)
     , m_type(type)
-    , m_labeledAsReadonly(false)
     , m_encoding(encoding)
     , m_descEncoding(TagTextEncoding::Latin1)
+    , m_labeledAsReadonly(false)
 {
     if (length) {
         if (type == TagDataType::Text) {
@@ -245,9 +245,9 @@ inline TagValue::TagValue(const char *data, std::size_t length, TagDataType type
 inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type, TagTextEncoding encoding)
     : m_size(length)
     , m_type(type)
-    , m_labeledAsReadonly(false)
     , m_encoding(encoding)
     , m_descEncoding(TagTextEncoding::Latin1)
+    , m_labeledAsReadonly(false)
 {
     if (length) {
         m_ptr = move(data);
