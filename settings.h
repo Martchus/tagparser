@@ -80,10 +80,21 @@ struct TagCreationSettings {
     /// \brief Specifies the ID3v2 version to be used in case an ID3v2 tag present or will be created. Valid values are 2, 3 and 4.
     byte id3v2MajorVersion = 3;
 
-    constexpr TagCreationSettings &setFlag(TagCreationFlags flag, bool enabled);
+    // workaround for GGC bug 66297 (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66297)
+#if __GNUC__ < 7 || (__GNUC__ == 7 && __GNUC_MINOR__ < 2)
+    inline
+#else
+    constexpr
+#endif
+    TagCreationSettings &setFlag(TagCreationFlags flag, bool enabled);
 };
 
-constexpr TagCreationSettings &TagCreationSettings::setFlag(TagCreationFlags flag, bool enabled)
+#if __GNUC__ < 7 || (__GNUC__ == 7 && __GNUC_MINOR__ < 2)
+inline
+#else
+constexpr
+#endif
+TagCreationSettings &TagCreationSettings::setFlag(TagCreationFlags flag, bool enabled)
 {
     if (enabled) {
         flags |= flag;
