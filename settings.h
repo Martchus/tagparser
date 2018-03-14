@@ -86,7 +86,8 @@ struct TagCreationSettings {
 #else
     constexpr
 #endif
-    TagCreationSettings &setFlag(TagCreationFlags flag, bool enabled);
+        TagCreationSettings &
+        setFlag(TagCreationFlags flag, bool enabled);
 };
 
 #if __GNUC__ < 7 || (__GNUC__ == 7 && __GNUC_MINOR__ < 2)
@@ -94,7 +95,8 @@ inline
 #else
 constexpr
 #endif
-TagCreationSettings &TagCreationSettings::setFlag(TagCreationFlags flag, bool enabled)
+    TagCreationSettings &
+    TagCreationSettings::setFlag(TagCreationFlags flag, bool enabled)
 {
     if (enabled) {
         flags |= flag;
