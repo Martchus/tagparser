@@ -122,6 +122,9 @@ public:
     // methods to get, set object behaviour
     const std::string &saveFilePath() const;
     void setSaveFilePath(const std::string &saveFilePath);
+    const std::string writingApplication() const;
+    void setWritingApplication(const std::string &writingApplication);
+    void setWritingApplication(const char *writingApplication);
     bool isForcingFullParse() const;
     void setForceFullParse(bool forceFullParse);
     bool isForcingRewrite() const;
@@ -174,6 +177,7 @@ private:
 
     // fields specifying object behaviour
     std::string m_saveFilePath;
+    std::string m_writingApplication;
     size_t m_minPadding;
     size_t m_maxPadding;
     size_t m_preferredPadding;
@@ -361,6 +365,34 @@ inline const std::string &MediaFileInfo::saveFilePath() const
 inline void MediaFileInfo::setSaveFilePath(const std::string &saveFilePath)
 {
     m_saveFilePath = saveFilePath;
+}
+
+/*!
+ * \brief Sets the writing application as container-level meta-data.
+ * \remarks This is not read from the file when parsing and only used when saving changes.
+ * \sa setWritingApplication() for more details
+ */
+inline const std::string MediaFileInfo::writingApplication() const
+{
+    return m_writingApplication;
+}
+
+/*!
+ * \brief Sets the writing application as container-level meta-data. Put the name of your application here.
+ * \remarks Might not be used (depends on the format).
+ */
+inline void MediaFileInfo::setWritingApplication(const std::string &writingApplication)
+{
+    m_writingApplication = writingApplication;
+}
+
+/*!
+ * \brief Sets the writing application as container-level meta-data. Put the name of your application here.
+ * \remarks Might not be used (depends on the format).
+ */
+inline void MediaFileInfo::setWritingApplication(const char *writingApplication)
+{
+    m_writingApplication = writingApplication;
 }
 
 /*!

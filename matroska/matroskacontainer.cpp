@@ -33,10 +33,6 @@ using namespace ChronoUtilities;
 
 namespace TagParser {
 
-constexpr const char appInfo[] = APP_NAME " v" APP_VERSION;
-constexpr uint64 appInfoElementDataSize = sizeof(appInfo) - 1;
-constexpr uint64 appInfoElementTotalSize = 2 + 1 + appInfoElementDataSize;
-
 /*!
  * \class Media::MatroskaContainer
  * \brief Implementation of GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>.
@@ -931,6 +927,16 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
     const uint64 ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
 
+    // calculate size of "WritingLib"-element
+    constexpr const char muxingAppName[] = APP_NAME " v" APP_VERSION;
+    constexpr uint64 muxingAppElementDataSize = sizeof(muxingAppName) - 1;
+    constexpr uint64 muxingAppElementTotalSize = 2 + 1 + muxingAppElementDataSize;
+
+    // calculate size of "WritingApp"-element
+    const uint64 writingAppElementDataSize
+        = fileInfo().writingApplication().empty() ? muxingAppElementDataSize : fileInfo().writingApplication().size() - 1;
+    const uint64 writingAppElementTotalSize = 2 + 1 + writingAppElementDataSize;
+
     try {
         // calculate size of "Tags"-element
         for (auto &tag : tags()) {
@@ -1103,7 +1109,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     } else {
                         // add size of "SegmentInfo"-element
                         // -> size of "MuxingApp"- and "WritingApp"-element
-                        segment.infoDataSize = 2 * appInfoElementTotalSize;
+                        segment.infoDataSize = muxingAppElementTotalSize + writingAppElementTotalSize;
                         // -> add size of "Title"-element
                         if (segmentIndex < m_titles.size()) {
                             const auto &title = m_titles[segmentIndex];
@@ -1617,8 +1623,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         }
                     }
                     // -> write "MuxingApp"- and "WritingApp"-element
-                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, appInfo, appInfoElementDataSize);
-                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp, appInfo, appInfoElementDataSize);
+                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, muxingAppName, muxingAppElementDataSize);
+                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp,
+                        fileInfo().writingApplication().empty() ? muxingAppName : fileInfo().writingApplication().data(), writingAppElementDataSize);
                 }
 
                 // write "Tracks"-element
