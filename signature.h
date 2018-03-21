@@ -36,6 +36,7 @@ enum class ContainerFormat : unsigned int {
     Lzip, /**< lz compressed file */
     Lzw, /**< LZW */
     Matroska, /**< Matroska (subset of EBML) */
+    MonkeysAudio, /**< Monkey's Audio */
     Mp4, /**< MPEG-4 Part 14 (subset of QuickTime container) */
     MpegAudioFrames, /**< MPEG-1 Layer 1/2/3 frames */
     Ogg, /**< Ogg */
@@ -54,14 +55,13 @@ enum class ContainerFormat : unsigned int {
     Utf16Text, /**< UTF-16 text */
     Utf32Text, /**< UTF-32 text */
     Utf8Text, /**< UTF-8 text */
+    WavPack, /**< WavPack */
     Webm, /**< WebM (subset of Matroska) */
     WindowsBitmap, /**< Microsoft Windows Bitmap */
     WindowsIcon, /**< Microsoft Windows Icon */
-    Zip, /**< ZIP archive */
     Xz, /**< xz compressed file */
     YUV4Mpeg2, /**< YUV4MPEG2 */
-    WavPack, /**< WavPack */
-    MonkeysAudio, /**< Monkey's Audio */
+    Zip, /**< ZIP archive */
 };
 
 TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);

@@ -37,9 +37,12 @@ enum class GeneralMediaFormat : unsigned int {
     Amr, /**< AMR */
     Avc, /**< Advanced Video Coding */
     Bitmap, /**< Windows Bitmap */
+    Daala, /**< Daala ("next-generation video codec" by Xiph) */
     Dirac, /**< Dirac */
+    DolbyMlp, /**< Dolby MLP */
     Dts, /**< DTS */
     DtsHd, /**< DTS-HD */
+    DvbSub, /**< DVBSUB */
     EAc3, /**< Dolby Digital Plus */
     Evrc, /**< EVRC */
     Flac, /**< FLAC */
@@ -51,19 +54,19 @@ enum class GeneralMediaFormat : unsigned int {
     ImageSubtitle, /**< Image subtitle */
     InteractionStream, /**< Interaction Stream */
     Jpeg, /**< JPEG */
-    OggKate, /**< Karaoke And Text Encapsulation */
-    Opus, /**< Opus */
     MicrosoftAudioCodecManager, /**< Microsoft Audio Codec Manager (ACM) */
     MicrosoftMpeg4, /**< Microsoft MPEG-4 */
     MicrosoftVideoCodecManager, /**< Microsoft Video Codec Manager (VCM) */
-    DolbyMlp, /**< Dolby MLP */
+    MonkeysAudio, /**< Monkey's Audio */
+    Mpc, /**< Musepack */
     Mpeg1Audio, /**< MPEG-1 Audio */
     Mpeg1Video, /**< MPEG-1 Vudio */
     Mpeg2Audio, /**< MPEG-2 Audio */
     Mpeg2Video, /**< MPEG-2 Video */
-    Mpeg4Video, /**< MPEG-4 Video */
     Mpeg4TimedText, /**< MPEG-4 Timed Text / Streaming text format / Part 17 */
-    Mpc, /**< Musepack */
+    Mpeg4Video, /**< MPEG-4 Video */
+    OggKate, /**< Karaoke And Text Encapsulation */
+    Opus, /**< Opus */
     Pcm, /**< Pulse Code Modulation */
     Png, /**< PNG */
     ProRes, /**< ProRes */
@@ -74,6 +77,7 @@ enum class GeneralMediaFormat : unsigned int {
     RealVideo, /**< Real Video */
     Sa0c, /**< SAOC */
     Smv, /**< SMV */
+    Speex, /**< Speex */
     StreamingTextStream, /**< Streaming Text Stream */
     SynthesizedTextureStream, /**< Synthesized Texture Stream */
     Systems, /**< Systems */
@@ -92,10 +96,6 @@ enum class GeneralMediaFormat : unsigned int {
     WavPack, /**< WavPack */
     WindowsMediaAudio, /**< Windows Media Audio */
     WindowsMediaVideo, /**< Windows Media Video */
-    DvbSub, /**< DVBSUB */
-    Speex, /**< Speex */
-    Daala, /**< Daala ("next-generation video codec" by Xiph) */
-    MonkeysAudio, /**< Monkey's Audio */
 };
 
 /*!
