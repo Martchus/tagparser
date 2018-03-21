@@ -10,7 +10,7 @@ namespace TagParser {
 /*!
  * \brief The MediaType enum specifies the type of media data (audio, video, text, ...).
  */
-enum class MediaType {
+enum class MediaType : unsigned int {
     Unknown, /**< the type is unknown */
     Audio, /**< audio/sound */
     Video, /**< video */
@@ -25,7 +25,7 @@ extern const char *TAG_PARSER_EXPORT mediaTypeName(MediaType mediaType);
 /*!
  * \brief The GeneralMediaFormat enum specifies the general format of media data (PCM, MPEG-4, PNG, ...).
  */
-enum class GeneralMediaFormat {
+enum class GeneralMediaFormat : unsigned int {
     Unknown, /**< the format is unknown */
     Aac, /**< Advanced Video Coding */
     Ac3, /**< Dolby Digital */

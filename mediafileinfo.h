@@ -27,7 +27,7 @@ class VorbisComment;
 class Diagnostics;
 class AbortableProgressFeedback;
 
-enum class MediaType;
+DECLARE_ENUM_CLASS(MediaType, unsigned int);
 DECLARE_ENUM_CLASS(TagType, unsigned int);
 
 /*!

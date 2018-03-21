@@ -14,7 +14,7 @@ DECLARE_ENUM_CLASS(TagTargetLevel, byte);
  *
  * Raw streams like ADTS or raw FLAC count as container format in this context.
  */
-enum class ContainerFormat {
+enum class ContainerFormat : unsigned int {
     Unknown, /**< unknown container format */
     Ac3Frames, /**< raw AC-3/Dolby Digital frames */
     Adts, /**< Audio Data Transport Stream */
