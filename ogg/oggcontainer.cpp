@@ -106,7 +106,7 @@ OggVorbisComment *OggContainer::createTag(const TagTarget &target)
             case GeneralMediaFormat::Opus:
                 // check whether start page has a valid value
                 if (track->startPage() < m_iterator.pages().size()) {
-                    announceComment(track->startPage(), static_cast<size_t>(-1), false, track->format().general);
+                    announceComment(track->startPage(), numeric_limits<size_t>::max(), false, track->format().general);
                     m_tags.back()->setTarget(target);
                     return m_tags.back().get();
                 } else {
@@ -460,7 +460,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
                             // check whether there is a new comment to be inserted into the current page
                             if (m_iterator.currentPageIndex() == currentParams->lastPageIndex
-                                && currentParams->firstSegmentIndex == static_cast<size_t>(-1)) {
+                                && currentParams->firstSegmentIndex == numeric_limits<size_t>::max()) {
                                 if (!currentParams->removed) {
                                     makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams, diag);
                                 }

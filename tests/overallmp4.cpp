@@ -476,7 +476,7 @@ void OverallTests::testMp4Making()
         m_fileInfo.setIndexPosition(m_fileInfo.tagPosition());
         m_fileInfo.setPreferredPadding(m_mode & PaddingConstraints ? 4096 : 0);
         m_fileInfo.setMinPadding(m_mode & PaddingConstraints ? 1024 : 0);
-        m_fileInfo.setMaxPadding(m_mode & PaddingConstraints ? (4096 + 1024) : static_cast<size_t>(-1));
+        m_fileInfo.setMaxPadding(m_mode & PaddingConstraints ? (4096 + 1024) : numeric_limits<size_t>::max());
         m_fileInfo.setForceTagPosition(m_mode & ForceTagPos);
         m_fileInfo.setForceIndexPosition(m_mode & ForceTagPos);
 

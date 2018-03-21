@@ -38,7 +38,7 @@ enum class TagType : unsigned int {
  * \sa Tag::type()
  */
 enum class KnownField : unsigned int {
-    Invalid = static_cast<unsigned int>(-1), /**< invalid field name, do not map this value when subclassing Tag */
+    Invalid = std::numeric_limits<unsigned int>::max(), /**< invalid field name, do not map this value when subclassing Tag */
     Title = 0, /**< title */
     Album, /**< album/collection */
     Artist, /**< artist/band */

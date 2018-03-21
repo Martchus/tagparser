@@ -240,7 +240,7 @@ void OverallTests::testMp3Making()
         m_fileInfo.setIndexPosition(ElementPosition::Keep);
         m_fileInfo.setPreferredPadding(m_mode & PaddingConstraints ? 4096 : 0);
         m_fileInfo.setMinPadding(m_mode & PaddingConstraints ? 1024 : 0);
-        m_fileInfo.setMaxPadding(m_mode & PaddingConstraints ? (4096 + 1024) : static_cast<size_t>(-1));
+        m_fileInfo.setMaxPadding(m_mode & PaddingConstraints ? (4096 + 1024) : numeric_limits<size_t>::max());
         m_fileInfo.setForceTagPosition(false);
         m_fileInfo.setForceIndexPosition(false);
 
