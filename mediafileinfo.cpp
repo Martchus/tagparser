@@ -1642,6 +1642,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         // ensure we can cast padding safely to uint32
         if (padding > numeric_limits<uint32>::max()) {
             padding = numeric_limits<uint32>::max();
+            diag.emplace_back(DiagLevel::Critical, argsToString("Preferred padding is not supported. Setting preferred padding to ", padding, '.'), context);
         }
 
         if (!makers.empty()) {
