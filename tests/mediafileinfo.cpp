@@ -92,9 +92,7 @@ void MediaFileInfoTests::testParsingUnsupportedFile()
     file.parseContainerFormat(diag);
     file.parseTags(diag);
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.containerParsingStatus());
-    // NOTE: parsing tags of unsupported container is actually supported: there is nothing to do
-    // but maybe not what one would expect?
-    CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.tagsParsingStatus());
+    CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.tagsParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotParsedYet, file.tracksParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotParsedYet, file.chaptersParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotParsedYet, file.attachmentsParsingStatus());

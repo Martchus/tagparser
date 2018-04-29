@@ -150,8 +150,8 @@ MediaFileInfo::~MediaFileInfo()
  */
 void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
 {
+    // skip if container format already parsed
     if (containerParsingStatus() != ParsingStatus::NotParsedYet) {
-        // there's no need to read the container format twice
         return;
     }
 
@@ -293,41 +293,49 @@ startParsingSignature:
  */
 void MediaFileInfo::parseTracks(Diagnostics &diag)
 {
-    if (tracksParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tracks twice
+    // skip if tracks already parsed
+    if (tracksParsingStatus() != ParsingStatus::NotParsedYet) {
         return;
     }
     static const string context("parsing tracks");
+
     try {
+        // parse tracks via container object
         if (m_container) {
             m_container->parseTracks(diag);
-        } else {
-            switch (m_containerFormat) {
-            case ContainerFormat::Adts:
-                m_singleTrack = make_unique<AdtsStream>(stream(), m_containerOffset);
-                break;
-            case ContainerFormat::Flac:
-                m_singleTrack = make_unique<FlacStream>(*this, m_containerOffset);
-                break;
-            case ContainerFormat::MpegAudioFrames:
-                m_singleTrack = make_unique<MpegAudioFrameStream>(stream(), m_containerOffset);
-                break;
-            case ContainerFormat::RiffWave:
-                m_singleTrack = make_unique<WaveAudioStream>(stream(), m_containerOffset);
-                break;
-            default:
-                throw NotImplementedException();
-            }
-            m_singleTrack->parseHeader(diag);
-
-            switch (m_containerFormat) {
-            case ContainerFormat::Flac:
-                // FLAC streams might container padding
-                m_paddingSize += static_cast<FlacStream *>(m_singleTrack.get())->paddingSize();
-                break;
-            default:;
-            }
+            m_tracksParsingStatus = ParsingStatus::Ok;
+            return;
         }
+
+        // parse tracks via track object for "single-track"-formats
+        switch (m_containerFormat) {
+        case ContainerFormat::Adts:
+            m_singleTrack = make_unique<AdtsStream>(stream(), m_containerOffset);
+            break;
+        case ContainerFormat::Flac:
+            m_singleTrack = make_unique<FlacStream>(*this, m_containerOffset);
+            break;
+        case ContainerFormat::MpegAudioFrames:
+            m_singleTrack = make_unique<MpegAudioFrameStream>(stream(), m_containerOffset);
+            break;
+        case ContainerFormat::RiffWave:
+            m_singleTrack = make_unique<WaveAudioStream>(stream(), m_containerOffset);
+            break;
+        default:
+            throw NotImplementedException();
+        }
+        m_singleTrack->parseHeader(diag);
+
+        // take padding for some "single-track" formats into account
+        switch (m_containerFormat) {
+        case ContainerFormat::Flac:
+            m_paddingSize += static_cast<FlacStream *>(m_singleTrack.get())->paddingSize();
+            break;
+        default:;
+        }
+
         m_tracksParsingStatus = ParsingStatus::Ok;
+
     } catch (const NotImplementedException &) {
         diag.emplace_back(DiagLevel::Information, "Parsing tracks is not implemented for the container format of the file.", context);
         m_tracksParsingStatus = ParsingStatus::NotSupported;
@@ -353,11 +361,13 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
  */
 void MediaFileInfo::parseTags(Diagnostics &diag)
 {
-    if (tagsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the tags twice
+    // skip if tags already parsed
+    if (tagsParsingStatus() != ParsingStatus::NotParsedYet) {
         return;
     }
     static const string context("parsing tag");
-    // check for id3v1 tag
+
+    // check for ID3v1 tag
     if (size() >= 128) {
         m_id3v1Tag = make_unique<Id3v1Tag>();
         try {
@@ -371,7 +381,8 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
             diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v1 tag.", context);
         }
     }
-    // the offsets of the ID3v2 tags have already been parsed when parsing the container format
+
+    // check for ID3v2 tags: the offsets of the ID3v2 tags have already been parsed when parsing the container format
     m_id3v2Tags.clear();
     for (const auto offset : m_actualId3v2TagOffsets) {
         auto id3v2Tag = make_unique<Id3v2Tag>();
@@ -387,23 +398,31 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
         }
         m_id3v2Tags.emplace_back(id3v2Tag.release());
     }
-    if (m_container) {
-        try {
+
+    // check for tags in tracks (FLAC only) or via container object
+    try {
+        if (m_containerFormat == ContainerFormat::Flac) {
+            parseTracks(diag);
+        } else if (m_container) {
             m_container->parseTags(diag);
-        } catch (const NotImplementedException &) {
-            if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
-                // do not override parsing status from ID3 tags here
-                m_tagsParsingStatus = ParsingStatus::NotSupported;
-            }
-            diag.emplace_back(DiagLevel::Information, "Parsing tags is not implemented for the container format of the file.", context);
-        } catch (const Failure &) {
-            m_tagsParsingStatus = ParsingStatus::CriticalFailure;
-            diag.emplace_back(DiagLevel::Critical, "Unable to parse tag.", context);
+        } else {
+            throw NotImplementedException();
         }
-    }
-    if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
-        // do not override error status here
-        m_tagsParsingStatus = ParsingStatus::Ok;
+
+        // set status, but do not override error/unsupported status form ID3 tags here
+        if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+            m_tagsParsingStatus = ParsingStatus::Ok;
+        }
+
+    } catch (const NotImplementedException &) {
+        // set status to not supported, but do not override parsing status from ID3 tags here
+        if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+            m_tagsParsingStatus = ParsingStatus::NotSupported;
+        }
+        diag.emplace_back(DiagLevel::Information, "Parsing tags is not implemented for the container format of the file.", context);
+    } catch (const Failure &) {
+        m_tagsParsingStatus = ParsingStatus::CriticalFailure;
+        diag.emplace_back(DiagLevel::Critical, "Unable to parse tag.", context);
     }
 }
 
@@ -420,17 +439,19 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
  */
 void MediaFileInfo::parseChapters(Diagnostics &diag)
 {
-    if (chaptersParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the chapters twice
+    // skip if chapters already parsed
+    if (chaptersParsingStatus() != ParsingStatus::NotParsedYet) {
         return;
     }
     static const string context("parsing chapters");
+
     try {
-        if (m_container) {
-            m_container->parseChapters(diag);
-            m_chaptersParsingStatus = ParsingStatus::Ok;
-        } else {
+        // parse chapters via container object
+        if (!m_container) {
             throw NotImplementedException();
         }
+        m_container->parseChapters(diag);
+        m_chaptersParsingStatus = ParsingStatus::Ok;
     } catch (const NotImplementedException &) {
         m_chaptersParsingStatus = ParsingStatus::NotSupported;
         diag.emplace_back(DiagLevel::Information, "Parsing chapters is not implemented for the container format of the file.", context);
@@ -453,17 +474,19 @@ void MediaFileInfo::parseChapters(Diagnostics &diag)
  */
 void MediaFileInfo::parseAttachments(Diagnostics &diag)
 {
-    if (attachmentsParsingStatus() != ParsingStatus::NotParsedYet) { // there's no need to read the attachments twice
+    // skip if attachments already parsed
+    if (attachmentsParsingStatus() != ParsingStatus::NotParsedYet) {
         return;
     }
     static const string context("parsing attachments");
+
     try {
-        if (m_container) {
-            m_container->parseAttachments(diag);
-            m_attachmentsParsingStatus = ParsingStatus::Ok;
-        } else {
+        // parse attachments via container object
+        if (!m_container) {
             throw NotImplementedException();
         }
+        m_container->parseAttachments(diag);
+        m_attachmentsParsingStatus = ParsingStatus::Ok;
     } catch (const NotImplementedException &) {
         m_attachmentsParsingStatus = ParsingStatus::NotSupported;
         diag.emplace_back(DiagLevel::Information, "Parsing attachments is not implemented for the container format of the file.", context);
