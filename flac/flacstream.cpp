@@ -184,31 +184,45 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     BE::getBytes(static_cast<uint32>(0x664C6143u), copy.buffer());
     outputStream.write(copy.buffer(), 4);
 
-    std::streamoff lastStartOffset = 0;
+    std::streamoff lastStartOffset = -1;
 
     // write meta data blocks which don't need to be adjusted
-    for (FlacMetaDataBlockHeader header; !header.isLast();) {
+    FlacMetaDataBlockHeader header;
+    FlacMetaDataBlockHeader lastActuallyWrittenHeader;
+    do {
         // parse block header
-        m_istream->read(copy.buffer(), 4);
+        originalStream.read(copy.buffer(), 4);
         header.parseHeader(copy.buffer());
 
-        // parse relevant meta data
+        // skip/copy block
         switch (static_cast<FlacMetaDataBlockType>(header.type())) {
         case FlacMetaDataBlockType::VorbisComment:
         case FlacMetaDataBlockType::Picture:
         case FlacMetaDataBlockType::Padding:
-            m_istream->seekg(header.dataSize(), ios_base::cur);
-            break; // written separately/ignored
+            // skip separately written block
+            originalStream.seekg(header.dataSize(), ios_base::cur);
+            break;
         default:
-            m_istream->seekg(-4, ios_base::cur);
+            // copy block which doesn't need to be adjusted
+            originalStream.seekg(-4, ios_base::cur);
             lastStartOffset = outputStream.tellp();
             copy.copy(originalStream, outputStream, 4 + header.dataSize());
+            lastActuallyWrittenHeader = header;
         }
+    } while (!header.isLast());
+
+    // adjust "isLast" flag if neccassary
+    if (lastStartOffset >= 4
+        && ((!m_vorbisComment && !lastActuallyWrittenHeader.isLast()) || (m_vorbisComment && lastActuallyWrittenHeader.isLast()))) {
+        outputStream.seekp(lastStartOffset);
+        lastActuallyWrittenHeader.setLast(!m_vorbisComment);
+        lastActuallyWrittenHeader.makeHeader(outputStream);
+        originalStream.seekg(lastActuallyWrittenHeader.dataSize(), ios_base::cur);
     }
 
     // write Vorbis comment
     if (!m_vorbisComment) {
-        return lastStartOffset;
+        return lastStartOffset >= 0 ? static_cast<uint32>(lastStartOffset) : 0;
     }
     // leave 4 bytes space for the "METADATA_BLOCK_HEADER"
     lastStartOffset = outputStream.tellp();
@@ -222,7 +236,6 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 
     // write "METADATA_BLOCK_HEADER"
     const auto endOffset = outputStream.tellp();
-    FlacMetaDataBlockHeader header;
     header.setType(FlacMetaDataBlockType::VorbisComment);
     auto dataSize(static_cast<uint64>(endOffset) - static_cast<uint64>(lastStartOffset) - 4);
     if (dataSize > 0xFFFFFF) {
@@ -237,7 +250,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 
     // write cover fields separately as "METADATA_BLOCK_PICTURE"
     if (header.isLast()) {
-        return lastStartOffset;
+        return static_cast<uint32>(lastStartOffset);
     }
     header.setType(FlacMetaDataBlockType::Picture);
     const auto coverFields = m_vorbisComment->fields().equal_range(coverId);
@@ -251,7 +264,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
         pictureBlock.make(outputStream);
     }
 
-    return lastStartOffset;
+    return static_cast<uint32>(lastStartOffset);
 }
 
 /*!
