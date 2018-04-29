@@ -1048,11 +1048,26 @@ void MediaFileInfo::removeTag(Tag *tag)
     if (!tag) {
         return;
     }
+
+    // remove tag via container
     if (m_container) {
         m_container->removeTag(tag);
+        return;
     }
+
+    // remove tag via track for "single-track" formats
+    if (m_singleTrack && m_containerFormat == ContainerFormat::Flac) {
+        auto *const flacStream(static_cast<FlacStream *>(m_singleTrack.get()));
+        if (flacStream->vorbisComment() == tag) {
+            flacStream->removeVorbisComment();
+            return;
+        }
+    }
+
+    // remove ID3 tags
     if (m_id3v1Tag.get() == tag) {
         m_id3v1Tag.reset();
+        return;
     }
     for (auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
         if (i->get() == tag) {
@@ -1415,7 +1430,7 @@ void MediaFileInfo::tags(vector<Tag *> &tags) const
         tags.push_back(tag.get());
     }
     if (m_containerFormat == ContainerFormat::Flac && m_singleTrack) {
-        if (auto *vorbisComment = static_cast<FlacStream *>(m_singleTrack.get())->vorbisComment()) {
+        if (auto *const vorbisComment = static_cast<const FlacStream *>(m_singleTrack.get())->vorbisComment()) {
             tags.push_back(vorbisComment);
         }
     }
