@@ -1728,4 +1728,4 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         }
     }
 }
-}
+} // namespace TagParser

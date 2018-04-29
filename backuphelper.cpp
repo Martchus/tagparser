@@ -165,7 +165,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
             }
         }
 
-            // test whether the backup path is still unused; otherwise continue loop
+        // test whether the backup path is still unused; otherwise continue loop
 #ifdef PLATFORM_WINDOWS
         if (GetFileAttributes(backupPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
 #else
