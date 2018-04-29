@@ -20,12 +20,12 @@ enum class VorbisCommentFlags : byte {
     NoCovers = 0x4 /**< Skips all covers when making. */
 };
 
-inline bool operator&(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
+constexpr bool operator&(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
 {
     return static_cast<byte>(lhs) & static_cast<byte>(rhs);
 }
 
-inline VorbisCommentFlags operator|(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
+constexpr VorbisCommentFlags operator|(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
 {
     return static_cast<VorbisCommentFlags>(static_cast<byte>(lhs) | static_cast<byte>(rhs));
 }
