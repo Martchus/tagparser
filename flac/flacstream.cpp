@@ -171,7 +171,8 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
  *  - "METADATA_BLOCK_PICTURE" are updated.
  *  - Padding is skipped
  *
- * \returns Returns the start offset of the last "METADATA_BLOCK_HEADER" withing \a outputStream.
+ * \returns Returns the start offset of the last "METADATA_BLOCK_HEADER" within \a outputStream.
+ * \todo Return as std::streamoff in v8 to avoid conversion.
  */
 uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 {
@@ -183,7 +184,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     BE::getBytes(static_cast<uint32>(0x664C6143u), copy.buffer());
     outputStream.write(copy.buffer(), 4);
 
-    uint32 lastStartOffset = 0;
+    std::streamoff lastStartOffset = 0;
 
     // write meta data blocks which don't need to be adjusted
     for (FlacMetaDataBlockHeader header; !header.isLast();) {
@@ -220,14 +221,19 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     m_vorbisComment->make(outputStream, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte | VorbisCommentFlags::NoCovers, diag);
 
     // write "METADATA_BLOCK_HEADER"
-    const uint32 endOffset = outputStream.tellp();
+    const auto endOffset = outputStream.tellp();
     FlacMetaDataBlockHeader header;
     header.setType(FlacMetaDataBlockType::VorbisComment);
-    header.setDataSize(endOffset - lastStartOffset - 4);
+    auto dataSize(static_cast<uint64>(endOffset) - static_cast<uint64>(lastStartOffset) - 4);
+    if (dataSize > 0xFFFFFF) {
+        dataSize = 0xFFFFFF;
+        diag.emplace_back(DiagLevel::Critical, "Vorbis Comment is too big and will be truncated.", "write Vorbis Comment to FLAC stream");
+    }
+    header.setDataSize(static_cast<uint32>(dataSize));
     header.setLast(!m_vorbisComment->hasField(coverId));
     outputStream.seekp(lastStartOffset);
     header.makeHeader(outputStream);
-    outputStream.seekp(endOffset);
+    outputStream.seekp(static_cast<streamoff>(dataSize), ios_base::cur);
 
     // write cover fields separately as "METADATA_BLOCK_PICTURE"
     if (header.isLast()) {
@@ -254,6 +260,8 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
  */
 void FlacStream::makePadding(ostream &stream, uint32 size, bool isLast, Diagnostics &diag)
 {
+    VAR_UNUSED(diag)
+
     // make header
     FlacMetaDataBlockHeader header;
     header.setType(FlacMetaDataBlockType::Padding);
