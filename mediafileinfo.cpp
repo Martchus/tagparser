@@ -1478,14 +1478,30 @@ void MediaFileInfo::invalidated()
 void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("making MP3/FLAC file");
-    // there's no need to rewrite the complete file if there are no ID3v2 tags present or to be written
+
+    // don't rewrite the complete file if there are no ID3v2/FLAC tags present or to be written
     if (!isForcingRewrite() && m_id3v2Tags.empty() && m_actualId3v2TagOffsets.empty() && m_saveFilePath.empty()
         && m_containerFormat != ContainerFormat::Flac) {
-        if (m_actualExistingId3v1Tag) {
-            // there is currently an ID3v1 tag at the end of the file
-            if (m_id3v1Tag) {
-                // the file shall still have an ID3v1 tag
-                progress.updateStep("Updating ID3v1 tag ...");
+        // alter ID3v1 tag
+        if (!m_id3v1Tag) {
+            // remove ID3v1 tag
+            if (!m_actualExistingId3v1Tag) {
+                diag.emplace_back(DiagLevel::Information, "Nothing to be changed.", context);
+                return;
+            }
+            progress.updateStep("Removing ID3v1 tag ...");
+            stream().close();
+            if (truncate(path().data(), static_cast<std::streamoff>(size() - 128)) == 0) {
+                reportSizeChanged(size() - 128);
+            } else {
+                diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
+                throwIoFailure("Unable to truncate file to remove ID3v1 tag.");
+            }
+            return;
+        } else {
+            // add or update ID3v1 tag
+            if (m_actualExistingId3v1Tag) {
+                progress.updateStep("Updating existing ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(-128, ios_base::end);
@@ -1495,21 +1511,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                     diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             } else {
-                // the currently existing ID3v1 tag shall be removed
-                progress.updateStep("Removing ID3v1 tag ...");
-                stream().close();
-                if (truncate(path().c_str(), size() - 128) == 0) {
-                    reportSizeChanged(size() - 128);
-                } else {
-                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
-                    throwIoFailure("Unable to truncate file to remove ID3v1 tag.");
-                }
-            }
-
-        } else {
-            // there is currently no ID3v1 tag at the end of the file
-            if (m_id3v1Tag) {
-                progress.updateStep("Adding ID3v1 tag ...");
+                progress.updateStep("Adding new ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
                 stream().seekp(0, ios_base::end);
@@ -1518,229 +1520,232 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
-            } else {
-                diag.emplace_back(DiagLevel::Information, "Nothing to be changed.", context);
             }
         }
+        return;
+    }
 
+    // ID3v2 needs to be modified
+    FlacStream *const flacStream = (m_containerFormat == ContainerFormat::Flac ? static_cast<FlacStream *>(m_singleTrack.get()) : nullptr);
+    progress.updateStep(flacStream ? "Updating FLAC tags ..." : "Updating ID3v2 tags ...");
+
+    // prepare ID3v2 tags
+    vector<Id3v2TagMaker> makers;
+    makers.reserve(m_id3v2Tags.size());
+    uint32 tagsSize = 0;
+    for (auto &tag : m_id3v2Tags) {
+        try {
+            makers.emplace_back(tag->prepareMaking(diag));
+            tagsSize += makers.back().requiredSize();
+        } catch (const Failure &) {
+        }
+    }
+
+    // determine stream offset and make track/format specific metadata
+    uint32 streamOffset; // where the actual stream starts
+    stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
+    flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
+    uint32 startOfLastMetaDataBlock;
+    if (flacStream) {
+        // if it is a raw FLAC stream, make FLAC metadata
+        startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
+        tagsSize += flacMetaData.tellp();
+        streamOffset = flacStream->streamOffset();
     } else {
-        // ID3v2 needs to be modified
-        progress.updateStep("Updating ID3v2 tags ...");
+        // make no further metadata, just use the container offset as stream offset
+        streamOffset = static_cast<uint32>(m_containerOffset);
+    }
 
-        // prepare ID3v2 tags
-        vector<Id3v2TagMaker> makers;
-        makers.reserve(m_id3v2Tags.size());
-        uint32 tagsSize = 0;
-        for (auto &tag : m_id3v2Tags) {
-            try {
-                makers.emplace_back(tag->prepareMaking(diag));
-                tagsSize += makers.back().requiredSize();
-            } catch (const Failure &) {
-            }
-        }
-
-        // check whether it is a raw FLAC stream
-        FlacStream *flacStream = (m_containerFormat == ContainerFormat::Flac ? static_cast<FlacStream *>(m_singleTrack.get()) : nullptr);
-        uint32 streamOffset; // where the actual stream starts
-        stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
-        flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
-        uint32 startOfLastMetaDataBlock;
-
-        if (flacStream) {
-            // if it is a raw FLAC stream, make FLAC metadata
-            startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
-            tagsSize += flacMetaData.tellp();
-            streamOffset = flacStream->streamOffset();
-        } else {
-            // make no further metadata, just use the container offset as stream offset
-            streamOffset = static_cast<uint32>(m_containerOffset);
-        }
-
-        // check whether rewrite is required
-        bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > streamOffset);
-        uint32 padding = 0;
-        if (!rewriteRequired) {
-            // rewriting is not forced and new tag is not too big for available space
-            // -> calculate new padding
-            padding = streamOffset - tagsSize;
-            // -> check whether the new padding matches specifications
-            if (padding < minPadding() || padding > maxPadding()) {
-                rewriteRequired = true;
-            }
-        }
-        if (makers.empty() && !flacStream) {
-            // an ID3v2 tag is not written and it is not a FLAC stream
-            // -> can't include padding
-            if (padding) {
-                // but padding would be present -> need to rewrite
-                padding = 0; // can't write the preferred padding despite rewriting
-                rewriteRequired = true;
-            }
-        } else if (rewriteRequired) {
-            // rewriting is forced or new ID3v2 tag is too big for available space
-            // -> use preferred padding when rewriting anyways
-            padding = preferredPadding();
-        } else if (makers.empty() && flacStream && padding && padding < 4) {
-            // no ID3v2 tag -> must include padding in FLAC stream
-            // but padding of 1, 2, and 3 byte isn't possible -> need to rewrite
-            padding = preferredPadding();
+    // check whether rewrite is required
+    bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > streamOffset);
+    size_t padding = 0;
+    if (!rewriteRequired) {
+        // rewriting is not forced and new tag is not too big for available space
+        // -> calculate new padding
+        padding = streamOffset - tagsSize;
+        // -> check whether the new padding matches specifications
+        if (padding < minPadding() || padding > maxPadding()) {
             rewriteRequired = true;
         }
-        if (rewriteRequired && flacStream && makers.empty() && padding) {
-            // the first 4 byte of FLAC padding actually don't count because these
-            // can not be used for additional meta data
-            padding += 4;
+    }
+    if (makers.empty() && !flacStream) {
+        // an ID3v2 tag is not written and it is not a FLAC stream
+        // -> can't include padding
+        if (padding) {
+            // but padding would be present -> need to rewrite
+            padding = 0; // can't write the preferred padding despite rewriting
+            rewriteRequired = true;
         }
-        progress.updateStep(rewriteRequired ? "Preparing streams for rewriting ..." : "Preparing streams for updating ...");
+    } else if (rewriteRequired) {
+        // rewriting is forced or new ID3v2 tag is too big for available space
+        // -> use preferred padding when rewriting anyways
+        padding = preferredPadding();
+    } else if (makers.empty() && flacStream && padding && padding < 4) {
+        // no ID3v2 tag -> must include padding in FLAC stream
+        // but padding of 1, 2, and 3 byte isn't possible -> need to rewrite
+        padding = preferredPadding();
+        rewriteRequired = true;
+    }
+    if (rewriteRequired && flacStream && makers.empty() && padding) {
+        // the first 4 byte of FLAC padding actually don't count because these
+        // can not be used for additional meta data
+        padding += 4;
+    }
+    progress.updateStep(rewriteRequired ? "Preparing streams for rewriting ..." : "Preparing streams for updating ...");
 
-        // setup stream(s) for writing
-        // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
-        string backupPath;
-        NativeFileStream &outputStream = stream();
-        NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
+    // setup stream(s) for writing
+    // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
+    string backupPath;
+    NativeFileStream &outputStream = stream();
+    NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
 
-        if (rewriteRequired) {
-            if (m_saveFilePath.empty()) {
-                // move current file to temp dir and reopen it as backupStream, recreate original file
-                try {
-                    BackupHelper::createBackupFile(path(), backupPath, outputStream, backupStream);
-                    // recreate original file, define buffer variables
-                    outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
-                } catch (...) {
-                    const char *what = catchIoFailure();
-                    diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                    throwIoFailure(what);
-                }
-            } else {
-                // open the current file as backupStream and create a new outputStream at the specified "save file path"
-                try {
-                    close();
-                    backupStream.exceptions(ios_base::badbit | ios_base::failbit);
-                    backupStream.open(path(), ios_base::in | ios_base::binary);
-                    outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
-                } catch (...) {
-                    const char *what = catchIoFailure();
-                    diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
-                    throwIoFailure(what);
-                }
+    if (rewriteRequired) {
+        if (m_saveFilePath.empty()) {
+            // move current file to temp dir and reopen it as backupStream, recreate original file
+            try {
+                BackupHelper::createBackupFile(path(), backupPath, outputStream, backupStream);
+                // recreate original file, define buffer variables
+                outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
+            } catch (...) {
+                const char *const what = catchIoFailure();
+                diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
+                throwIoFailure(what);
             }
-
-        } else { // !rewriteRequired
-            // reopen original file to ensure it is opened for writing
+        } else {
+            // open the current file as backupStream and create a new outputStream at the specified "save file path"
             try {
                 close();
-                outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
+                backupStream.exceptions(ios_base::badbit | ios_base::failbit);
+                backupStream.open(path(), ios_base::in | ios_base::binary);
+                outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (...) {
-                const char *what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
+                const char *const what = catchIoFailure();
+                diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
                 throwIoFailure(what);
             }
         }
 
-        // start actual writing
+    } else { // !rewriteRequired
+        // reopen original file to ensure it is opened for writing
         try {
-            if (!makers.empty()) {
-                // write ID3v2 tags
-                progress.updateStep("Writing ID3v2 tag ...");
-                for (auto i = makers.begin(), end = makers.end() - 1; i != end; ++i) {
-                    i->make(outputStream, 0, diag);
-                }
-                // include padding into the last ID3v2 tag
-                makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : padding, diag);
-            }
-
-            if (flacStream) {
-                if (padding && startOfLastMetaDataBlock) {
-                    // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
-                    flacMetaData.seekg(startOfLastMetaDataBlock);
-                    flacMetaData.seekp(startOfLastMetaDataBlock);
-                    flacMetaData.put(static_cast<byte>(flacMetaData.peek()) & (0x80u - 1));
-                    flacMetaData.seekg(0);
-                }
-
-                // write FLAC metadata
-                outputStream << flacMetaData.rdbuf();
-
-                // write padding
-                if (padding) {
-                    flacStream->makePadding(outputStream, padding, true, diag);
-                }
-            }
-
-            if (makers.empty() && !flacStream) {
-                // just write padding (however, padding should be set to 0 in this case?)
-                for (; padding; --padding) {
-                    outputStream.put(0);
-                }
-            }
-
-            // copy / skip actual stream data
-            // -> determine media data size
-            uint64 mediaDataSize = size() - streamOffset;
-            if (m_actualExistingId3v1Tag) {
-                mediaDataSize -= 128;
-            }
-
-            if (rewriteRequired) {
-                // copy data from original file
-                switch (m_containerFormat) {
-                case ContainerFormat::MpegAudioFrames:
-                    progress.updateStep("Writing MPEG audio frames ...");
-                    break;
-                default:
-                    progress.updateStep("Writing frames ...");
-                }
-                backupStream.seekg(streamOffset);
-                CopyHelper<0x4000> copyHelper;
-                copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)),
-                    bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
-            } else {
-                // just skip actual stream data
-                outputStream.seekp(mediaDataSize, ios_base::cur);
-            }
-
-            // write ID3v1 tag
-            if (m_id3v1Tag) {
-                progress.updateStep("Writing ID3v1 tag ...");
-                try {
-                    m_id3v1Tag->make(stream(), diag);
-                } catch (const Failure &) {
-                    diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
-                }
-            }
-
-            // handle streams
-            if (rewriteRequired) {
-                // report new size
-                reportSizeChanged(outputStream.tellp());
-                // "save as path" is now the regular path
-                if (!saveFilePath().empty()) {
-                    reportPathChanged(saveFilePath());
-                    m_saveFilePath.clear();
-                }
-                // stream is useless for further usage because it is write-only
-                outputStream.close();
-            } else {
-                const auto newSize = static_cast<uint64>(outputStream.tellp());
-                if (newSize < size()) {
-                    // file is smaller after the modification -> truncate
-                    // -> close stream before truncating
-                    outputStream.close();
-                    // -> truncate file
-                    if (truncate(path().c_str(), newSize) == 0) {
-                        reportSizeChanged(newSize);
-                    } else {
-                        diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
-                    }
-                } else {
-                    // file is longer after the modification -> just report new size
-                    reportSizeChanged(newSize);
-                }
-            }
-
+            close();
+            outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
         } catch (...) {
-            BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, diag, context);
+            const char *const what = catchIoFailure();
+            diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
+            throwIoFailure(what);
         }
     }
+
+    // start actual writing
+    try {
+        // ensure we can cast padding safely to uint32
+        if (padding > numeric_limits<uint32>::max()) {
+            padding = numeric_limits<uint32>::max();
+        }
+
+        if (!makers.empty()) {
+            // write ID3v2 tags
+            progress.updateStep("Writing ID3v2 tag ...");
+            for (auto i = makers.begin(), end = makers.end() - 1; i != end; ++i) {
+                i->make(outputStream, 0, diag);
+            }
+            // include padding into the last ID3v2 tag
+            makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : static_cast<uint32>(padding), diag);
+        }
+
+        if (flacStream) {
+            if (padding && startOfLastMetaDataBlock) {
+                // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
+                flacMetaData.seekg(startOfLastMetaDataBlock);
+                flacMetaData.seekp(startOfLastMetaDataBlock);
+                flacMetaData.put(static_cast<byte>(flacMetaData.peek()) & (0x80u - 1));
+                flacMetaData.seekg(0);
+            }
+
+            // write FLAC metadata
+            outputStream << flacMetaData.rdbuf();
+
+            // write padding
+            if (padding) {
+                flacStream->makePadding(outputStream, static_cast<uint32>(padding), true, diag);
+            }
+        }
+
+        if (makers.empty() && !flacStream) {
+            // just write padding (however, padding should be set to 0 in this case?)
+            for (; padding; --padding) {
+                outputStream.put(0);
+            }
+        }
+
+        // copy / skip actual stream data
+        // -> determine media data size
+        uint64 mediaDataSize = size() - streamOffset;
+        if (m_actualExistingId3v1Tag) {
+            mediaDataSize -= 128;
+        }
+
+        if (rewriteRequired) {
+            // copy data from original file
+            switch (m_containerFormat) {
+            case ContainerFormat::MpegAudioFrames:
+                progress.updateStep("Writing MPEG audio frames ...");
+                break;
+            default:
+                progress.updateStep("Writing frames ...");
+            }
+            backupStream.seekg(streamOffset);
+            CopyHelper<0x4000> copyHelper;
+            copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)),
+                bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
+        } else {
+            // just skip actual stream data
+            outputStream.seekp(static_cast<std::streamoff>(mediaDataSize), ios_base::cur);
+        }
+
+        // write ID3v1 tag
+        if (m_id3v1Tag) {
+            progress.updateStep("Writing ID3v1 tag ...");
+            try {
+                m_id3v1Tag->make(stream(), diag);
+            } catch (const Failure &) {
+                diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
+            }
+        }
+
+        // handle streams
+        if (rewriteRequired) {
+            // report new size
+            reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
+            // "save as path" is now the regular path
+            if (!saveFilePath().empty()) {
+                reportPathChanged(saveFilePath());
+                m_saveFilePath.clear();
+            }
+            // stream is useless for further usage because it is write-only
+            outputStream.close();
+        } else {
+            const auto newSize = static_cast<uint64>(outputStream.tellp());
+            if (newSize < size()) {
+                // file is smaller after the modification -> truncate
+                // -> close stream before truncating
+                outputStream.close();
+                // -> truncate file
+                if (truncate(path().c_str(), static_cast<std::streamoff>(newSize)) == 0) {
+                    reportSizeChanged(newSize);
+                } else {
+                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
+                }
+            } else {
+                // file is longer after the modification -> just report new size
+                reportSizeChanged(newSize);
+            }
+        }
+
+    } catch (...) {
+        BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, diag, context);
+    }
 }
+
 } // namespace TagParser
