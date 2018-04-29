@@ -924,7 +924,7 @@ string MediaFileInfo::technicalSummary() const
  * To apply the removal and other changings call the applyChanges() method.
  *
  * \returns Returns whether there was an ID3v1 tag assigned which could be removed.
- *
+ * \remarks Invalidates the removed tag object (eg. returned via tags() or id3v1Tag()).
  * \sa applyChanges()
  */
 bool MediaFileInfo::removeId3v1Tag()
@@ -971,11 +971,8 @@ Id3v1Tag *MediaFileInfo::createId3v1Tag()
  * To apply the removal and other changings call the applyChanges() method.
  *
  * \param tag Specifies the ID3v2 tag to be removed.
- *
  * \returns Returns whether there the an ID3v2 tag could be removed.
- *
- * \remarks The \a tag will be destroyed by the MediaFileInfo if it could be removed.
- *
+ * \remarks Invalidates all removed tag objects (eg. returned via tags() or id3v2Tags()).
  * \sa applyChanges()
  */
 bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
@@ -995,9 +992,9 @@ bool MediaFileInfo::removeId3v2Tag(Id3v2Tag *tag)
 /*!
  * \brief Removes all assigned ID3v2 tags from the current file.
  *
- * To apply the removal and other changings call the applyChanges() method.
- *
+ * To apply the removal and other changings call the applyChanges() method
  * \returns Returns whether there where ID3v2 tags assigned which could be removed.
+ * \remarks Invalidates all removed tag objects (eg. returned via tags() or id3v2Tags()).
  * \sa applyChanges()
  */
 bool MediaFileInfo::removeAllId3v2Tags()
@@ -1035,14 +1032,16 @@ Id3v2Tag *MediaFileInfo::createId3v2Tag()
 /*!
  * \brief Removes a possibly assigned \a tag from the current file.
  *
- * \param tag Specifies the tag to be removed. The tag will not only be detached from the
- *            file, it will be destroyed as well. Might be nullptr (for convenience; eg.
- *            you might want to call file.removeTag(file.mp4Tag()) to ensure no MP4 tag
- *            is present without checking before).
- *
  * To apply the removal and other changings call the applyChanges() method.
  *
+ * \param tag Specifies the tag to be removed. The tag will not only be detached from the
+ *            file, it will be destroyed as well. Might be nullptr for convenience (eg.
+ *            you might want to call file.removeTag(file.mp4Tag()) to ensure no MP4 tag
+ *            is present without checking before).
+ * \remarks Invalidates the removed tag object if it has been removed.
+ *
  * \sa applyChanges()
+ * \todo Make this return whether the \a tag could be removed in v8.
  */
 void MediaFileInfo::removeTag(Tag *tag)
 {
@@ -1065,6 +1064,7 @@ void MediaFileInfo::removeTag(Tag *tag)
 
 /*!
  * \brief Removes all assigned tags from the file.
+ * \remarks Invalidates all removed tag objects (eg. returned via tags()).
  *
  * To apply the removal and other changings call the applyChanges() method.
  */
