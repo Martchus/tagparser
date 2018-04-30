@@ -167,7 +167,7 @@ void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
     char buff[16];
     const char *const buffEnd = buff + sizeof(buff), *buffOffset;
 startParsingSignature:
-    if (size() - m_containerOffset >= 16) {
+    if (size() - containerOffset() >= 16) {
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
 
@@ -264,6 +264,7 @@ startParsingSignature:
                     break;
                 }
             }
+            break;
         default:;
         }
     }
@@ -388,7 +389,7 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
         auto id3v2Tag = make_unique<Id3v2Tag>();
         stream().seekg(offset, ios_base::beg);
         try {
-            id3v2Tag->parse(stream(), size() - offset, diag);
+            id3v2Tag->parse(stream(), size() - static_cast<uint64>(offset), diag);
             m_paddingSize += id3v2Tag->paddingSize();
         } catch (const NoDataFoundException &) {
             continue;
@@ -1553,7 +1554,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     if (flacStream) {
         // if it is a raw FLAC stream, make FLAC metadata
         startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
-        tagsSize += flacMetaData.tellp();
+        tagsSize += static_cast<uint32>(flacMetaData.tellp());
         streamOffset = flacStream->streamOffset();
     } else {
         // make no further metadata, just use the container offset as stream offset
@@ -1663,8 +1664,8 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         if (flacStream) {
             if (padding && startOfLastMetaDataBlock) {
                 // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
-                flacMetaData.seekg(startOfLastMetaDataBlock);
-                flacMetaData.seekp(startOfLastMetaDataBlock);
+                flacMetaData.seekg(static_cast<streamoff>(startOfLastMetaDataBlock));
+                flacMetaData.seekp(static_cast<streamoff>(startOfLastMetaDataBlock));
                 flacMetaData.put(static_cast<byte>(flacMetaData.peek()) & (0x80u - 1));
                 flacMetaData.seekg(0);
             }
@@ -1701,7 +1702,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             default:
                 progress.updateStep("Writing frames ...");
             }
-            backupStream.seekg(streamOffset);
+            backupStream.seekg(static_cast<streamoff>(streamOffset));
             CopyHelper<0x4000> copyHelper;
             copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)),
                 bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
@@ -1738,7 +1739,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if (truncate(path().c_str(), static_cast<std::streamoff>(newSize)) == 0) {
+                if (truncate(path().c_str(), static_cast<streamoff>(newSize)) == 0) {
                     reportSizeChanged(newSize);
                 } else {
                     diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);

@@ -243,7 +243,7 @@ inline const char *MediaFileInfo::containerFormatSubversion() const
  */
 inline uint64 MediaFileInfo::containerOffset() const
 {
-    return m_containerOffset;
+    return static_cast<uint64>(m_containerOffset);
 }
 
 /*!
