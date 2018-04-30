@@ -9,33 +9,33 @@
  */
 void OverallTests::checkFlacTestfile1()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Flac);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Flac, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
-        CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-        CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Flac);
-        CPPUNIT_ASSERT(track->channelCount() == 2);
-        CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
-        CPPUNIT_ASSERT(track->bitsPerSample() == 16);
-        CPPUNIT_ASSERT(track->duration().minutes() == 4);
+        CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+        CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Flac, track->format().general);
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+        CPPUNIT_ASSERT_EQUAL(4, track->duration().minutes());
     }
     const auto tags = m_fileInfo.tags();
     switch (m_tagStatus) {
     case TagStatus::Original:
         // ffmpeg is able to set some tags from the original file (mtx-test-data/alac/othertest-itunes.m4a)
-        CPPUNIT_ASSERT(tags.size() == 1);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Sad Song");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).toString() == "Oasis");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Album).toString() == "Don't Go Away (Apple Lossless)");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Genre).toString() == "Alternative & Punk");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "Lavf57.25.100");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Year).toString() == "1998");
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Sad Song"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL("Oasis"s, tags.front()->value(KnownField::Artist).toString());
+        CPPUNIT_ASSERT_EQUAL("Don't Go Away (Apple Lossless)"s, tags.front()->value(KnownField::Album).toString());
+        CPPUNIT_ASSERT_EQUAL("Alternative & Punk"s, tags.front()->value(KnownField::Genre).toString());
+        CPPUNIT_ASSERT_EQUAL("Lavf57.25.100"s, tags.front()->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::Year).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
         //CPPUNIT_ASSERT(tags.front()->value(KnownField::Cover).dataSize() == 0x58f3);
         //CPPUNIT_ASSERT(BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()) == 0xFFD8FFE000104A46);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::TrackPosition).toPositionInSet() == PositionInSet(3, 4));
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::DiskPosition).toPositionInSet() == PositionInSet(1, 1));
+        CPPUNIT_ASSERT_EQUAL(PositionInSet(3, 4), tags.front()->value(KnownField::TrackPosition).toPositionInSet());
+        CPPUNIT_ASSERT_EQUAL(PositionInSet(1, 1), tags.front()->value(KnownField::DiskPosition).toPositionInSet());
         break;
     case TagStatus::TestMetaDataPresent:
         checkOggTestMetaData();
@@ -53,21 +53,21 @@ void OverallTests::checkFlacTestfile1()
  */
 void OverallTests::checkFlacTestfile2()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Ogg, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
-        CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-        CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Flac);
-        CPPUNIT_ASSERT(track->channelCount() == 2);
-        CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
-        CPPUNIT_ASSERT(track->bitsPerSample() == 16);
-        CPPUNIT_ASSERT(track->duration().minutes() == 4);
+        CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+        CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Flac, track->format().general);
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+        CPPUNIT_ASSERT_EQUAL(4, track->duration().minutes());
     }
     const auto tags = m_fileInfo.tags();
     switch (m_tagStatus) {
     case TagStatus::Original:
-        CPPUNIT_ASSERT(tags.size() == 1);
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         break;
     case TagStatus::TestMetaDataPresent:
         checkOggTestMetaData();

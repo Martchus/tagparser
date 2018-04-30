@@ -22,9 +22,9 @@ enum TestFlag {
  */
 void OverallTests::checkMp4Testfile1()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
         switch (track->id()) {
         case 1:
@@ -63,7 +63,7 @@ void OverallTests::checkMp4Testfile1()
  */
 void OverallTests::checkMp4Testfile2()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
     CPPUNIT_ASSERT_EQUAL(5_st, tracks.size());
     for (const auto &track : tracks) {
@@ -127,20 +127,21 @@ void OverallTests::checkMp4Testfile2()
  */
 void OverallTests::checkMp4Testfile3()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
-    CPPUNIT_ASSERT(m_fileInfo.container() && m_fileInfo.container()->documentType() == "dash");
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT(m_fileInfo.container() != nullptr);
+    CPPUNIT_ASSERT_EQUAL("dash"s, m_fileInfo.container()->documentType());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
         switch (track->id()) {
         case 1:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Avc);
-            CPPUNIT_ASSERT(track->format().sub == SubFormats::AvcMainProfile);
-            CPPUNIT_ASSERT(track->version() == 3.1);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2014);
-            CPPUNIT_ASSERT(track->pixelSize() == Size(854, 480));
-            CPPUNIT_ASSERT(!strcmp(track->chromaFormat(), "YUV 4:2:0"));
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AvcMainProfile), track->format().sub);
+            CPPUNIT_ASSERT_EQUAL(3.1, track->version());
+            CPPUNIT_ASSERT_EQUAL(2014, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(Size(854, 480), track->pixelSize());
+            CPPUNIT_ASSERT_EQUAL("YUV 4:2:0"s, string(track->chromaFormat()));
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -176,18 +177,19 @@ void OverallTests::checkMp4Testfile3()
  */
 void OverallTests::checkMp4Testfile4()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
-    CPPUNIT_ASSERT(m_fileInfo.container() && m_fileInfo.container()->documentType() == "M4A ");
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT(m_fileInfo.container() != nullptr);
+    CPPUNIT_ASSERT_EQUAL("M4A "s, m_fileInfo.container()->documentType());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
         switch (track->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Alac, track->format().general);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2008);
-            CPPUNIT_ASSERT(track->channelCount() == 2);
-            CPPUNIT_ASSERT(track->bitsPerSample() == 16);
+            CPPUNIT_ASSERT_EQUAL(2008, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -197,17 +199,17 @@ void OverallTests::checkMp4Testfile4()
     switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Title).toString() == "Sad Song");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).toString() == "Oasis");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Album).toString() == "Don't Go Away (Apple Lossless)");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Genre).toString() == "Alternative & Punk");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Encoder).toString() == "iTunes v7.5.0.20");
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Year).toString() == "1998");
+        CPPUNIT_ASSERT_EQUAL("Sad Song"s, tags.front()->value(KnownField::Title).toString());
+        CPPUNIT_ASSERT_EQUAL("Oasis"s, tags.front()->value(KnownField::Artist).toString());
+        CPPUNIT_ASSERT_EQUAL("Don't Go Away (Apple Lossless)"s, tags.front()->value(KnownField::Album).toString());
+        CPPUNIT_ASSERT_EQUAL("Alternative & Punk"s, tags.front()->value(KnownField::Genre).toString());
+        CPPUNIT_ASSERT_EQUAL("iTunes v7.5.0.20"s, tags.front()->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::Year).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::Cover).dataSize() == 0x58f3);
-        CPPUNIT_ASSERT(BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()) == 0xFFD8FFE000104A46);
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::TrackPosition).toPositionInSet() == PositionInSet(3, 4));
-        CPPUNIT_ASSERT(tags.front()->value(KnownField::DiskPosition).toPositionInSet() == PositionInSet(1, 1));
+        CPPUNIT_ASSERT_EQUAL(0x58f3_st, tags.front()->value(KnownField::Cover).dataSize());
+        CPPUNIT_ASSERT_EQUAL(0xFFD8FFE000104A46ul, BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()));
+        CPPUNIT_ASSERT_EQUAL(PositionInSet(3, 4), tags.front()->value(KnownField::TrackPosition).toPositionInSet());
+        CPPUNIT_ASSERT_EQUAL(PositionInSet(1, 1), tags.front()->value(KnownField::DiskPosition).toPositionInSet());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMp4TestMetaData();
@@ -223,10 +225,11 @@ void OverallTests::checkMp4Testfile4()
  */
 void OverallTests::checkMp4Testfile5()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
-    CPPUNIT_ASSERT(m_fileInfo.container() && m_fileInfo.container()->documentType() == "mp42");
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT(m_fileInfo.container() != nullptr);
+    CPPUNIT_ASSERT_EQUAL("mp42"s, m_fileInfo.container()->documentType());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
         switch (track->id()) {
         case 1:
@@ -235,13 +238,13 @@ void OverallTests::checkMp4Testfile5()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT(track->format().extension & ExtensionFormats::SpectralBandReplication);
             CPPUNIT_ASSERT(track->format().extension & ExtensionFormats::ParametricStereo);
-            CPPUNIT_ASSERT(track->creationTime().year() == 2014);
-            CPPUNIT_ASSERT(track->channelCount() == 2);
-            CPPUNIT_ASSERT(track->channelConfig() == Mpeg4ChannelConfigs::FrontCenter);
-            CPPUNIT_ASSERT(track->extensionChannelConfig() == Mpeg4ChannelConfigs::FrontLeftFrontRight);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 24000);
-            CPPUNIT_ASSERT(track->extensionSamplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->bitsPerSample() == 16);
+            CPPUNIT_ASSERT_EQUAL(2014, track->creationTime().year());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontCenter), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->extensionChannelConfig());
+            CPPUNIT_ASSERT_EQUAL(24000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(48000u, track->extensionSamplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -266,7 +269,7 @@ void OverallTests::checkMp4Testfile5()
  */
 void OverallTests::checkMp4Testfile6()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Mp4);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
     if (m_mode & Mp4TestFlags::RemoveTagOrTrack) {
         CPPUNIT_ASSERT_EQUAL(4_st, tracks.size());
@@ -282,7 +285,7 @@ void OverallTests::checkMp4Testfile6()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AvcHighProfile), track->format().sub);
             CPPUNIT_ASSERT_EQUAL(4.0, track->version());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
-            CPPUNIT_ASSERT(track->pixelSize() == Size(1920, 750));
+            CPPUNIT_ASSERT_EQUAL(Size(1920, 750), track->pixelSize());
             break;
         case 2:
             CPPUNIT_ASSERT(track2Present = !track2Present);

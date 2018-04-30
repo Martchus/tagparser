@@ -10,21 +10,21 @@
  */
 void OverallTests::checkOggTestfile1()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Ogg, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 2);
+    CPPUNIT_ASSERT_EQUAL(2_st, tracks.size());
     for (const auto &track : tracks) {
         switch (track->id()) {
         case 897658443:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Video);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Theora);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Theora, track->format().general);
             break;
         case 1755441791:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Vorbis);
-            CPPUNIT_ASSERT(track->channelCount() == 2);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
-            CPPUNIT_ASSERT(track->duration().minutes() == 4);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Vorbis, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(4, track->duration().minutes());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -54,17 +54,17 @@ void OverallTests::checkOggTestfile1()
  */
 void OverallTests::checkOggTestfile2()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::Ogg);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Ogg, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
         switch (track->id()) {
         case 1375632254:
-            CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-            CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Opus);
-            CPPUNIT_ASSERT(track->channelCount() == 2);
-            CPPUNIT_ASSERT(track->samplingFrequency() == 48000);
-            CPPUNIT_ASSERT(track->duration().minutes() == 1);
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Opus, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(1, track->duration().minutes());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -94,7 +94,7 @@ void OverallTests::checkOggTestMetaData()
 {
     // check whether a tag is assigned
     const auto tags = m_fileInfo.tags();
-    VorbisComment *tag = m_fileInfo.vorbisComment();
+    const auto *const tag = m_fileInfo.vorbisComment();
     CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
     CPPUNIT_ASSERT(tag != nullptr);
 
@@ -112,7 +112,7 @@ void OverallTests::checkOggTestMetaData()
 void OverallTests::setOggTestMetaData()
 {
     // ensure a tag exists
-    VorbisComment *tag = m_fileInfo.createVorbisComment();
+    auto *const tag = m_fileInfo.createVorbisComment();
 
     // assign test meta data
     tag->setValue(KnownField::Title, m_testTitle);

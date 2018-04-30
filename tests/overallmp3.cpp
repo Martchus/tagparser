@@ -22,48 +22,48 @@ enum TestFlag {
  */
 void OverallTests::checkMp3Testfile1()
 {
-    CPPUNIT_ASSERT(m_fileInfo.containerFormat() == ContainerFormat::MpegAudioFrames);
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::MpegAudioFrames, m_fileInfo.containerFormat());
     const auto tracks = m_fileInfo.tracks();
-    CPPUNIT_ASSERT(tracks.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
     for (const auto &track : tracks) {
-        CPPUNIT_ASSERT(track->mediaType() == MediaType::Audio);
-        CPPUNIT_ASSERT(track->format() == GeneralMediaFormat::Mpeg1Audio);
-        CPPUNIT_ASSERT(track->format().sub == SubFormats::Mpeg1Layer3);
-        CPPUNIT_ASSERT(track->channelCount() == 2);
-        CPPUNIT_ASSERT(track->channelConfig() == static_cast<byte>(MpegChannelMode::JointStereo));
-        CPPUNIT_ASSERT(track->samplingFrequency() == 44100);
-        CPPUNIT_ASSERT(track->duration().seconds() == 3);
+        CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+        CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
+        CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::Mpeg1Layer3), track->format().sub);
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(static_cast<byte>(MpegChannelMode::JointStereo), track->channelConfig());
+        CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+        CPPUNIT_ASSERT_EQUAL(3, track->duration().seconds());
     }
     const auto tags = m_fileInfo.tags();
     switch (m_tagStatus) {
     case TagStatus::Original:
         CPPUNIT_ASSERT(m_fileInfo.id3v1Tag());
-        CPPUNIT_ASSERT(m_fileInfo.id3v2Tags().size() == 1);
-        CPPUNIT_ASSERT(tags.size() == 2);
+        CPPUNIT_ASSERT_EQUAL(1_st, m_fileInfo.id3v2Tags().size());
+        CPPUNIT_ASSERT_EQUAL(2_st, tags.size());
         for (const auto &tag : tags) {
-            CPPUNIT_ASSERT(tag->value(KnownField::TrackPosition).toPositionInSet().position() == 4);
-            CPPUNIT_ASSERT(tag->value(KnownField::Year).toString() == "1984");
+            CPPUNIT_ASSERT_EQUAL(4, tag->value(KnownField::TrackPosition).toPositionInSet().position());
+            CPPUNIT_ASSERT_EQUAL("1984"s, tag->value(KnownField::Year).toString());
             switch (tag->type()) {
             case TagType::Id3v1Tag:
-                CPPUNIT_ASSERT(tag->value(KnownField::Title).toString() == "Cohesion");
-                CPPUNIT_ASSERT(tag->value(KnownField::Artist).toString() == "Minutemen");
-                CPPUNIT_ASSERT(tag->value(KnownField::Album).toString() == "Double Nickels On The Dime");
-                CPPUNIT_ASSERT(tag->value(KnownField::Genre).toString() == "Punk Rock");
-                CPPUNIT_ASSERT(tag->value(KnownField::Comment).toString() == "ExactAudioCopy v0.95b4");
+                CPPUNIT_ASSERT_EQUAL("Cohesion"s, tag->value(KnownField::Title).toString());
+                CPPUNIT_ASSERT_EQUAL("Minutemen"s, tag->value(KnownField::Artist).toString());
+                CPPUNIT_ASSERT_EQUAL("Double Nickels On The Dime"s, tag->value(KnownField::Album).toString());
+                CPPUNIT_ASSERT_EQUAL("Punk Rock"s, tag->value(KnownField::Genre).toString());
+                CPPUNIT_ASSERT_EQUAL("ExactAudioCopy v0.95b4"s, tag->value(KnownField::Comment).toString());
                 break;
             case TagType::Id3v2Tag:
-                CPPUNIT_ASSERT(tag->value(KnownField::Title).dataEncoding() == TagTextEncoding::Utf16LittleEndian);
-                CPPUNIT_ASSERT(tag->value(KnownField::Title).toWString() == u"Cohesion");
-                CPPUNIT_ASSERT(tag->value(KnownField::Title).toString(TagTextEncoding::Utf8) == "Cohesion");
-                CPPUNIT_ASSERT(tag->value(KnownField::Artist).toWString() == u"Minutemen");
-                CPPUNIT_ASSERT(tag->value(KnownField::Artist).toString(TagTextEncoding::Utf8) == "Minutemen");
-                CPPUNIT_ASSERT(tag->value(KnownField::Album).toWString() == u"Double Nickels On The Dime");
-                CPPUNIT_ASSERT(tag->value(KnownField::Album).toString(TagTextEncoding::Utf8) == "Double Nickels On The Dime");
-                CPPUNIT_ASSERT(tag->value(KnownField::Genre).toWString() == u"Punk Rock");
-                CPPUNIT_ASSERT(tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8) == "Punk Rock");
-                CPPUNIT_ASSERT(tag->value(KnownField::Comment).toWString() == u"ExactAudioCopy v0.95b4");
-                CPPUNIT_ASSERT(tag->value(KnownField::Comment).toString(TagTextEncoding::Utf8) == "ExactAudioCopy v0.95b4");
-                CPPUNIT_ASSERT(tag->value(KnownField::TrackPosition).toPositionInSet().total() == 43);
+                CPPUNIT_ASSERT_EQUAL(TagTextEncoding::Utf16LittleEndian, tag->value(KnownField::Title).dataEncoding());
+                CPPUNIT_ASSERT_EQUAL(u"Cohesion"s, tag->value(KnownField::Title).toWString());
+                CPPUNIT_ASSERT_EQUAL("Cohesion"s, tag->value(KnownField::Title).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(u"Minutemen"s, tag->value(KnownField::Artist).toWString());
+                CPPUNIT_ASSERT_EQUAL("Minutemen"s, tag->value(KnownField::Artist).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(u"Double Nickels On The Dime"s, tag->value(KnownField::Album).toWString());
+                CPPUNIT_ASSERT_EQUAL("Double Nickels On The Dime"s, tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(u"Punk Rock"s, tag->value(KnownField::Genre).toWString());
+                CPPUNIT_ASSERT_EQUAL("Punk Rock"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(u"ExactAudioCopy v0.95b4"s, tag->value(KnownField::Comment).toWString());
+                CPPUNIT_ASSERT_EQUAL("ExactAudioCopy v0.95b4"s, tag->value(KnownField::Comment).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(43, tag->value(KnownField::TrackPosition).toPositionInSet().total());
                 CPPUNIT_ASSERT(tag->value(KnownField::Length).toTimeSpan().isNull());
                 CPPUNIT_ASSERT(tag->value(KnownField::Lyricist).isEmpty());
                 break;
@@ -138,12 +138,12 @@ void OverallTests::checkMp3TestMetaData()
 
     // test ID3v1 specific test meta data
     if (id3v1Tag) {
-        CPPUNIT_ASSERT(id3v1Tag->value(KnownField::TrackPosition).toPositionInSet().position() == m_testPosition.toPositionInSet().position());
+        CPPUNIT_ASSERT_EQUAL(m_testPosition.toPositionInSet().position(), id3v1Tag->value(KnownField::TrackPosition).toPositionInSet().position());
     }
     // test ID3v2 specific test meta data
     if (id3v2Tag) {
-        CPPUNIT_ASSERT(id3v2Tag->value(KnownField::TrackPosition) == m_testPosition);
-        CPPUNIT_ASSERT(id3v2Tag->value(KnownField::DiskPosition) == m_testPosition);
+        CPPUNIT_ASSERT_EQUAL(m_testPosition, id3v2Tag->value(KnownField::TrackPosition));
+        CPPUNIT_ASSERT_EQUAL(m_testPosition, id3v2Tag->value(KnownField::DiskPosition));
     }
 }
 
@@ -157,7 +157,7 @@ void OverallTests::checkMp3PaddingConstraints()
     if (!(m_mode & Id3v1Only)) {
         if (m_mode & PaddingConstraints) {
             if (m_mode & ForceRewring) {
-                CPPUNIT_ASSERT(m_fileInfo.paddingSize() == 4096);
+                CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(4096), m_fileInfo.paddingSize());
             } else {
                 CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
                 CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
