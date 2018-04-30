@@ -403,6 +403,10 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
     try {
         if (m_containerFormat == ContainerFormat::Flac) {
             parseTracks(diag);
+            if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
+                m_tagsParsingStatus = m_tracksParsingStatus;
+            }
+            return;
         } else if (m_container) {
             m_container->parseTags(diag);
         } else {
