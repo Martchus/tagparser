@@ -226,7 +226,7 @@ void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag
     }
 }
 
-template <typename NumberType, Traits::EnableIf<std::is_integral<NumberType>>...> NumberType tagValueToNumber(const TagValue &tagValue)
+template <typename NumberType, Traits::EnableIf<std::is_integral<NumberType>>* = nullptr> NumberType tagValueToNumber(const TagValue &tagValue)
 {
     // optimization for Latin1/UTF-8 strings
     if (tagValue.type() == TagDataType::Text) {
@@ -241,7 +241,7 @@ template <typename NumberType, Traits::EnableIf<std::is_integral<NumberType>>...
     return stringToNumber<NumberType>(tagValue.toString(TagTextEncoding::Utf8));
 }
 
-template <typename NumberType, Traits::EnableIf<std::is_floating_point<NumberType>>...> NumberType tagValueToBitrate(const TagValue &tagValue)
+template <typename NumberType, Traits::EnableIf<std::is_floating_point<NumberType>>* = nullptr> NumberType tagValueToBitrate(const TagValue &tagValue)
 {
     return stringToNumber<NumberType>(tagValue.toString(TagTextEncoding::Utf8)) / 1000;
 }
