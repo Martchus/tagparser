@@ -305,7 +305,7 @@ inline typename FieldMapBasedTag<ImplementationType>::IdentifierType FieldMapBas
  */
 template <class ImplementationType> inline KnownField FieldMapBasedTag<ImplementationType>::knownField(const IdentifierType &id) const
 {
-    return static_cast<FieldMapBasedTag<ImplementationType> *>(this)->internallyGetKnownField(id);
+    return static_cast<const ImplementationType *>(this)->internallyGetKnownField(id);
 }
 
 template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field) const
