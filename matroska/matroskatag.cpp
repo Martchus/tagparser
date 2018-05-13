@@ -73,7 +73,7 @@ MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) 
 KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace MatroskaTagIds;
-    static const map<string, KnownField> map({
+    static const map<string, KnownField> fieldMap({
         { artist(), KnownField::Artist },
         { album(), KnownField::Album },
         { comment(), KnownField::Comment },
@@ -96,11 +96,8 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
         { duration(), KnownField::Length },
         { language(), KnownField::Language },
     });
-    try {
-        return map.at(id);
-    } catch (const out_of_range &) {
-        return KnownField::Invalid;
-    }
+    const auto knownField(fieldMap.find(id));
+    return knownField != fieldMap.cend() ? knownField->second : KnownField::Invalid;
 }
 
 /*!
