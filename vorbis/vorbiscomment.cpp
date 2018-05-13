@@ -93,17 +93,14 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
 KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace VorbisCommentIds;
-    static const map<string, KnownField> fieldMap({ { album(), KnownField::Album }, { artist(), KnownField::Artist },
+    static const map<string, KnownField, CaseInsensitiveStringComparer> fieldMap({ { album(), KnownField::Album }, { artist(), KnownField::Artist },
         { comment(), KnownField::Comment }, { cover(), KnownField::Cover }, { date(), KnownField::Year }, { title(), KnownField::Title },
         { genre(), KnownField::Genre }, { trackNumber(), KnownField::TrackPosition }, { diskNumber(), KnownField::DiskPosition },
         { partNumber(), KnownField::PartNumber }, { composer(), KnownField::Composer }, { encoder(), KnownField::Encoder },
         { encoderSettings(), KnownField::EncoderSettings }, { description(), KnownField::Description }, { label(), KnownField::RecordLabel },
         { performer(), KnownField::Performers }, { lyricist(), KnownField::Lyricist } });
-    try {
-        return fieldMap.at(id);
-    } catch (out_of_range &) {
-        return KnownField::Invalid;
-    }
+    const auto knownField(fieldMap.find(id));
+    return knownField != fieldMap.cend() ? knownField->second : KnownField::Invalid;
 }
 
 /*!
