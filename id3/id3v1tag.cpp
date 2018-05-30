@@ -101,7 +101,7 @@ void Id3v1Tag::make(ostream &stream, Diagnostics &diag)
     buffer[1] = 0x0; // track nr
     buffer[2] = 0x0; // genre
     // track
-    if (!m_trackPos.isEmpty() && m_trackPos.type() == TagDataType::PositionInSet) {
+    if (!m_trackPos.isEmpty()) {
         try {
             buffer[1] = m_trackPos.toPositionInSet().position();
         } catch (const ConversionException &) {
