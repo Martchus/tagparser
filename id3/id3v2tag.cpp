@@ -394,17 +394,25 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
 
 /*!
  * \brief Returns true if \a lhs goes before \a rhs; otherwise returns false.
+ * \todo Don't pass args by reference in v8.
  */
-bool FrameComparer::operator()(const uint32 &lhs, const uint32 &rhs) const
+bool FrameComparer::operator()(const uint32 &lhsRef, const uint32 &rhsRef) const
 {
+    uint32 lhs(lhsRef);
+    uint32 rhs(rhsRef);
+
     if (lhs == rhs) {
         return false;
     }
+
     const bool lhsLong = Id3v2FrameIds::isLongId(lhs);
     const bool rhsLong = Id3v2FrameIds::isLongId(rhs);
-    if (((lhsLong && !rhsLong) && (lhs == Id3v2FrameIds::convertToLongId(rhs)))
-        || ((!lhsLong && rhsLong) && (Id3v2FrameIds::convertToLongId(lhs) == rhs))) {
-        return false;
+    if (lhsLong != rhsLong) {
+        if (!lhsLong) {
+            lhs = Id3v2FrameIds::convertToLongId(lhs);
+        } else if (!rhsLong) {
+            rhs = Id3v2FrameIds::convertToLongId(rhs);
+        }
     }
 
     if (lhs == Id3v2FrameIds::lUniqueFileId || lhs == Id3v2FrameIds::sUniqueFileId) {
