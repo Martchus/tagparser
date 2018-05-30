@@ -246,7 +246,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     // prepare parsing
     static const string context("parsing ID3v2 tag");
     BinaryReader reader(&stream);
-    uint64 startOffset = stream.tellg();
+    const auto startOffset = static_cast<uint64>(stream.tellg());
 
     // check whether the header is truncated
     if (maximalSize && maximalSize < 10) {
@@ -294,15 +294,15 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     // how many bytes remain for frames and padding?
     uint32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
     if (maximalSize && bytesRemaining > maximalSize) {
-        bytesRemaining = maximalSize;
+        bytesRemaining = static_cast<uint32>(maximalSize);
         diag.emplace_back(DiagLevel::Critical, "Frames are truncated.", context);
     }
 
     // read frames
-    auto pos = stream.tellg();
+    auto pos = static_cast<uint64>(stream.tellg());
     while (bytesRemaining) {
         // seek to next frame
-        stream.seekg(pos);
+        stream.seekg(static_cast<streamoff>(pos));
         // parse frame
         Id3v2Frame frame;
         try {
@@ -335,7 +335,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     }
     if (maximalSize && m_size + 10 < maximalSize) {
         // the footer does not provide additional information, just check the signature
-        stream.seekg(startOffset + (m_size += 10));
+        stream.seekg(static_cast<streamoff>(startOffset + (m_size += 10)));
         if (reader.readUInt24LE() != 0x494433u) {
             diag.emplace_back(DiagLevel::Critical, "Footer signature is invalid.", context);
         }
@@ -427,14 +427,16 @@ bool FrameComparer::operator()(const uint32 &lhsRef, const uint32 &rhsRef) const
     if (rhs == Id3v2FrameIds::lTitle || rhs == Id3v2FrameIds::sTitle) {
         return false;
     }
-    bool lhstextfield = Id3v2FrameIds::isTextFrame(lhs);
-    bool rhstextfield = Id3v2FrameIds::isTextFrame(rhs);
+
+    const bool lhstextfield = Id3v2FrameIds::isTextFrame(lhs);
+    const bool rhstextfield = Id3v2FrameIds::isTextFrame(rhs);
     if (lhstextfield && !rhstextfield) {
         return true;
     }
     if (!lhstextfield && rhstextfield) {
         return false;
     }
+
     if (lhs == Id3v2FrameIds::lCover || lhs == Id3v2FrameIds::sCover) {
         return false;
     }

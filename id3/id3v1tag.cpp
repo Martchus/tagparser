@@ -90,31 +90,45 @@ void Id3v1Tag::make(ostream &stream, Diagnostics &diag)
     buffer[1] = 0x41;
     buffer[2] = 0x47;
     stream.write(buffer, 3);
+
     // write text fields
     writeValue(m_title, 30, buffer, stream, diag);
     writeValue(m_artist, 30, buffer, stream, diag);
     writeValue(m_album, 30, buffer, stream, diag);
     writeValue(m_year, 4, buffer, stream, diag);
     writeValue(m_comment, 28, buffer, stream, diag);
-    // write numeric fields
+
+    // set "default" values for numeric fields
     buffer[0] = 0x0; // empty byte
-    buffer[1] = 0x0; // track nr
+    buffer[1] = 0x0; // track number
     buffer[2] = 0x0; // genre
-    // track
+
+    // write track
     if (!m_trackPos.isEmpty()) {
         try {
-            buffer[1] = m_trackPos.toPositionInSet().position();
+            const auto position(m_trackPos.toPositionInSet().position());
+            if (position < 0x00 || position > 0xFF) {
+                throw ConversionException();
+            }
+            buffer[1] = static_cast<char>(position);
         } catch (const ConversionException &) {
             diag.emplace_back(
                 DiagLevel::Warning, "Track position field can not be set because given value can not be converted appropriately.", context);
         }
     }
-    // genre
+
+    // write genre
     try {
-        buffer[2] = m_genre.toStandardGenreIndex();
+        const auto genreIndex(m_genre.toStandardGenreIndex());
+        if (genreIndex < 0x00 || genreIndex > 0xFF) {
+            throw ConversionException();
+        }
+        buffer[2] = static_cast<char>(genreIndex);
     } catch (const ConversionException &) {
-        diag.emplace_back(DiagLevel::Warning, "Genre field can not be set because given value can not be converted appropriately.", context);
+        diag.emplace_back(DiagLevel::Warning,
+            "Genre field can not be set because given value can not be converted to a standard genre number supported by ID3v1.", context);
     }
+
     stream.write(buffer, 3);
     stream.flush();
 }
