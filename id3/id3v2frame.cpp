@@ -412,7 +412,18 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
             if ((version >= 3 && (m_frameId == Id3v2FrameIds::lTrackPosition || m_frameId == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && m_frameId == Id3v2FrameIds::sTrackPosition)) {
                 // track number or the disk number frame
-                m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(), TagTextEncoding::Latin1);
+                // -> convert the position to string
+                const auto positionStr(m_frame.value().toString(TagTextEncoding::Latin1));
+                // -> warn if value is no valid position (although we just store a string after all)
+                if (m_frame.value().type() != TagDataType::PositionInSet) {
+                    try {
+                        m_frame.value().toPositionInSet();
+                    } catch (const ConversionException &) {
+                        diag.emplace_back(DiagLevel::Warning,
+                            argsToString("The track/disk number \"", positionStr, "\" is not of the expected form, eg. \"4/10\"."), context);
+                    }
+                }
+                m_frame.makeString(m_data, m_decompressedSize, positionStr, TagTextEncoding::Latin1);
             } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lLength) || (version < 3 && m_frameId == Id3v2FrameIds::sLength)) {
                 // length frame
                 m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toTimeSpan().totalMilliseconds()),
