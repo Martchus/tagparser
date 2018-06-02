@@ -112,6 +112,7 @@ void MatroskaChapter::internalParse(Diagnostics &diag)
             break;
         case MatroskaIds::ChapterAtom:
             m_nestedChapters.emplace_back(make_unique<MatroskaChapter>(chapterAtomChild));
+            break;
         default:
             diag.emplace_back(DiagLevel::Warning,
                 "\"ChapterAtom\"-element contains unknown child element \"" % chapterAtomChild->idToString() + "\". It will be ignored.", context);
