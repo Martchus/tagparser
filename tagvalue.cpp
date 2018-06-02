@@ -106,10 +106,13 @@ TagValue &TagValue::operator=(const TagValue &other)
  */
 bool TagValue::operator==(const TagValue &other) const
 {
+    // check whether meta-data is equal
     if (m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding) || m_mimeType != other.m_mimeType
         || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
         return false;
     }
+
+    // check for equality if both types are identical
     if (m_type == other.m_type) {
         switch (m_type) {
         case TagDataType::Text:
@@ -135,18 +138,15 @@ bool TagValue::operator==(const TagValue &other) const
                 return false;
             }
             return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
-        default:
-            return false;
         }
-    } else {
-        // different types
-        try {
-            // try to convert both values to string
-            // if the string representations are equal, both values can also be considered equal
-            return toString() == other.toString(m_encoding);
-        } catch (const ConversionException &) {
-            return false;
-        }
+        return false;
+    }
+
+    // check for equality if types are different by comparing the string representation
+    try {
+        return toString() == other.toString(m_encoding);
+    } catch (const ConversionException &) {
+        return false;
     }
 }
 
@@ -216,7 +216,6 @@ int TagValue::toStandardGenreIndex() const
     int index = 0;
     switch (m_type) {
     case TagDataType::Text: {
-        const string s(toString());
         try {
             index = toInteger();
         } catch (const ConversionException &) {
@@ -239,10 +238,10 @@ int TagValue::toStandardGenreIndex() const
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to genre index."));
     }
-    if (Id3Genres::isIndexSupported(index)) {
-        return index;
+    if (!Id3Genres::isIndexSupported(index)) {
+        throw ConversionException("The assigned number is not a valid standard genre index.");
     }
-    throw ConversionException("The assigned number is not a valid standard genre index.");
+    return index;
 }
 
 /*!
@@ -548,12 +547,11 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         regularStrRes = toPositionInSet().toString();
         break;
     case TagDataType::StandardGenreIndex:
-        if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+        if (const char *const genreName = Id3Genres::stringFromIndex(toInteger())) {
             regularStrRes.assign(genreName);
             break;
-        } else {
-            throw ConversionException("No string representation for the assigned standard genre index available.");
         }
+        throw ConversionException("No string representation for the assigned standard genre index available.");
     case TagDataType::TimeSpan:
         regularStrRes = toTimeSpan().toString();
         break;
