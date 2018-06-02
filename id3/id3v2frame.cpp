@@ -427,7 +427,12 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
                 m_frame.makeString(m_data, m_decompressedSize, positionStr, TagTextEncoding::Latin1);
             } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lLength) || (version < 3 && m_frameId == Id3v2FrameIds::sLength)) {
                 // length frame
-                m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toTimeSpan().totalMilliseconds()),
+                const auto duration(value.toTimeSpan());
+                if (duration.isNegative()) {
+                    diag.emplace_back(DiagLevel::Critical, argsToString("Assigned duration \"", duration.toString(), "\" is negative."), context);
+                    throw InvalidDataException();
+                }
+                m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(static_cast<uint64>(duration.totalMilliseconds())),
                     TagTextEncoding::Latin1);
             } else if (m_frame.value().type() == TagDataType::StandardGenreIndex
                 && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre) || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
