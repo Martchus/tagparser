@@ -409,16 +409,17 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
     // make actual data depending on the frame ID
     try {
         if (Id3v2FrameIds::isTextFrame(m_frameId)) {
-            // it is a text frame
+            // make text frames
             if ((version >= 3 && (m_frameId == Id3v2FrameIds::lTrackPosition || m_frameId == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && m_frameId == Id3v2FrameIds::sTrackPosition)) {
                 // track number or the disk number frame
+                // make track number or disk number frame
                 // -> convert the position to string
-                const auto positionStr(m_frame.value().toString(TagTextEncoding::Latin1));
+                const auto positionStr(value.toString(TagTextEncoding::Latin1));
                 // -> warn if value is no valid position (although we just store a string after all)
-                if (m_frame.value().type() != TagDataType::PositionInSet) {
+                if (value.type() != TagDataType::PositionInSet) {
                     try {
-                        m_frame.value().toPositionInSet();
+                        value.toPositionInSet();
                     } catch (const ConversionException &) {
                         diag.emplace_back(DiagLevel::Warning,
                             argsToString("The track/disk number \"", positionStr, "\" is not of the expected form, eg. \"4/10\"."), context);
@@ -426,7 +427,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
                 }
                 m_frame.makeString(m_data, m_decompressedSize, positionStr, TagTextEncoding::Latin1);
             } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lLength) || (version < 3 && m_frameId == Id3v2FrameIds::sLength)) {
-                // length frame
+                // make length frame
                 const auto duration(value.toTimeSpan());
                 if (duration.isNegative()) {
                     diag.emplace_back(DiagLevel::Critical, argsToString("Assigned duration \"", duration.toString(), "\" is negative."), context);
@@ -434,37 +435,37 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
                 }
                 m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(static_cast<uint64>(duration.totalMilliseconds())),
                     TagTextEncoding::Latin1);
-            } else if (m_frame.value().type() == TagDataType::StandardGenreIndex
+            } else if (value.type() == TagDataType::StandardGenreIndex
                 && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre) || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
-                // pre-defined genre frame
+                // make pre-defined genre frame
                 m_frame.makeString(
-                    m_data, m_decompressedSize, ConversionUtilities::numberToString(m_frame.value().toStandardGenreIndex()), TagTextEncoding::Latin1);
+                    m_data, m_decompressedSize, ConversionUtilities::numberToString(value.toStandardGenreIndex()), TagTextEncoding::Latin1);
             } else {
-                // any other text frame
-                if (version <= 3 && m_frame.value().dataEncoding() == TagTextEncoding::Utf8) {
+                // make other text frames
+                if (version <= 3 && value.dataEncoding() == TagTextEncoding::Utf8) {
                     // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
                     m_frame.makeString(
-                        m_data, m_decompressedSize, m_frame.value().toString(TagTextEncoding::Utf16LittleEndian), TagTextEncoding::Utf16LittleEndian);
+                        m_data, m_decompressedSize, value.toString(TagTextEncoding::Utf16LittleEndian), TagTextEncoding::Utf16LittleEndian);
                 } else {
                     // just keep encoding of the assigned value
-                    m_frame.makeString(m_data, m_decompressedSize, m_frame.value().toString(), m_frame.value().dataEncoding());
+                    m_frame.makeString(m_data, m_decompressedSize, value.toString(), value.dataEncoding());
                 }
             }
 
         } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lCover) || (version < 3 && m_frameId == Id3v2FrameIds::sCover)) {
-            // picture frame
-            m_frame.makePicture(m_data, m_decompressedSize, m_frame.value(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
+            // make picture frame
+            m_frame.makePicture(m_data, m_decompressedSize, value, m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
 
         } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lComment) || (version < 3 && m_frameId == Id3v2FrameIds::sComment))
             || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
                    || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
-            // the comment frame or the unsynchronized lyrics frame
-            m_frame.makeComment(m_data, m_decompressedSize, m_frame.value(), version, diag);
+            // make comment frame or the unsynchronized lyrics frame
+            m_frame.makeComment(m_data, m_decompressedSize, value, version, diag);
 
         } else {
-            // an unknown frame
-            m_data = make_unique<char[]>(m_decompressedSize = m_frame.value().dataSize());
-            copy(m_frame.value().dataPointer(), m_frame.value().dataPointer() + m_decompressedSize, m_data.get());
+            // make unknown frame
+            m_data = make_unique<char[]>(m_decompressedSize = value.dataSize());
+            copy(value.dataPointer(), value.dataPointer() + m_decompressedSize, m_data.get());
         }
     } catch (const ConversionException &) {
         try {
