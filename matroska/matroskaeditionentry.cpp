@@ -44,7 +44,7 @@ MatroskaEditionEntry::~MatroskaEditionEntry()
  */
 string MatroskaEditionEntry::label() const
 {
-    return "ID: " + numberToString(id());
+    return argsToString("ID: ", id());
 }
 
 /*!
