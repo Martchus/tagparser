@@ -231,7 +231,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         // frame contains text
         TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer.get()), diag); // the first byte stores the encoding
         if ((version >= 3 && (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
-            || (version < 3 && id() == Id3v2FrameIds::sTrackPosition)) {
+            || (version < 3 && (id() == Id3v2FrameIds::sTrackPosition || id() == Id3v2FrameIds::sDiskPosition))) {
             // the track number or the disk number frame
             try {
                 if (characterSize(dataEncoding) > 1) {
@@ -418,8 +418,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
         if (Id3v2FrameIds::isTextFrame(m_frameId)) {
             // make text frames
             if ((version >= 3 && (m_frameId == Id3v2FrameIds::lTrackPosition || m_frameId == Id3v2FrameIds::lDiskPosition))
-                || (version < 3 && m_frameId == Id3v2FrameIds::sTrackPosition)) {
-                // track number or the disk number frame
+                || (version < 3 && (m_frameId == Id3v2FrameIds::sTrackPosition || m_frameId == Id3v2FrameIds::sDiskPosition))) {
                 // make track number or disk number frame
                 // -> convert the position to string
                 const auto positionStr(value.toString(TagTextEncoding::Latin1));

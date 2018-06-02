@@ -42,6 +42,7 @@ enum KnownValue : uint32 {
     sTitle = 0x545432,
     sGenre = 0x54434f,
     sTrackPosition = 0x54524b,
+    sDiskPosition = 0x545041,
     sEncoder = 0x54454e,
     sBpm = 0x544250,
     sCover = 0x504943,

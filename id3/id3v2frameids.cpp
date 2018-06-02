@@ -39,6 +39,8 @@ uint32 convertToShortId(uint32 id)
         return sGenre;
     case lTrackPosition:
         return sTrackPosition;
+    case lDiskPosition:
+        return sDiskPosition;
     case lEncoder:
         return sEncoder;
     case lBpm:
@@ -89,6 +91,8 @@ uint32 convertToLongId(uint32 id)
         return lGenre;
     case sTrackPosition:
         return lTrackPosition;
+    case sDiskPosition:
+        return lDiskPosition;
     case sEncoder:
         return lEncoder;
     case sBpm:

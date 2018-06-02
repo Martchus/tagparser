@@ -90,7 +90,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::TrackPosition:
             return sTrackPosition;
         case KnownField::DiskPosition:
-            return lDiskPosition;
+            return sDiskPosition;
         case KnownField::Encoder:
             return sEncoder;
         case KnownField::Bpm:
