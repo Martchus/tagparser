@@ -294,7 +294,7 @@ TimeSpan TagValue::toTimeSpan() const
     }
     switch (m_type) {
     case TagDataType::Text:
-        return TimeSpan::fromString(string(m_ptr.get(), m_size));
+        return TimeSpan::fromString(toString(m_encoding == TagTextEncoding::Utf8 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1));
     case TagDataType::Integer:
     case TagDataType::TimeSpan:
         switch (m_size) {
@@ -322,7 +322,7 @@ DateTime TagValue::toDateTime() const
     }
     switch (m_type) {
     case TagDataType::Text:
-        return DateTime::fromString(string(m_ptr.get(), m_size));
+        return DateTime::fromString(toString(m_encoding == TagTextEncoding::Utf8 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1));
     case TagDataType::Integer:
     case TagDataType::DateTime:
         if (m_size == sizeof(int32)) {
