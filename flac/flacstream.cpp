@@ -71,7 +71,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
         throw NoDataFoundException();
     }
 
-    m_istream->seekg(m_startOffset, ios_base::beg);
+    m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     char buffer[0x22];
 
     // check signature
@@ -159,7 +159,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
         // TODO: check first FLAC frame
     }
 
-    m_streamOffset = m_istream->tellg();
+    m_streamOffset = static_cast<uint32>(m_istream->tellg());
 }
 
 /*!
@@ -177,7 +177,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
 uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 {
     istream &originalStream = m_mediaFileInfo.stream();
-    originalStream.seekg(m_startOffset + 4);
+    originalStream.seekg(static_cast<streamoff>(m_startOffset + 4));
     CopyHelper<512> copy;
 
     // write signature
@@ -247,6 +247,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     outputStream.seekp(lastStartOffset);
     header.makeHeader(outputStream);
     outputStream.seekp(static_cast<streamoff>(dataSize), ios_base::cur);
+    lastActuallyWrittenHeader = header;
 
     // write cover fields separately as "METADATA_BLOCK_PICTURE"
     if (header.isLast()) {
@@ -255,13 +256,37 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     header.setType(FlacMetaDataBlockType::Picture);
     const auto coverFields = m_vorbisComment->fields().equal_range(coverId);
     for (auto i = coverFields.first; i != coverFields.second;) {
-        lastStartOffset = outputStream.tellp();
-        FlacMetaDataBlockPicture pictureBlock(i->second.value());
-        pictureBlock.setPictureType(i->second.typeInfo());
-        header.setDataSize(pictureBlock.requiredSize());
-        header.setLast(++i == coverFields.second);
-        header.makeHeader(outputStream);
-        pictureBlock.make(outputStream);
+        const auto lastCoverStartOffset = outputStream.tellp();
+
+        try {
+            // write the structure
+            FlacMetaDataBlockPicture pictureBlock(i->second.value());
+            pictureBlock.setPictureType(i->second.typeInfo());
+            header.setDataSize(pictureBlock.requiredSize());
+            header.setLast(++i == coverFields.second);
+            header.makeHeader(outputStream);
+            pictureBlock.make(outputStream);
+
+            // update variables to handle the "isLast" flag
+            lastStartOffset = lastCoverStartOffset;
+            lastActuallyWrittenHeader = header;
+
+        } catch (const Failure &) {
+            // we can expect nothing is written in the error case except the FLAC header, so
+            // -> just add an error message
+            diag.emplace_back(DiagLevel::Critical, "Unable to serialize \"METADATA_BLOCK_PICTURE\" from assigned value.",
+                "write \"METADATA_BLOCK_PICTURE\" to FLAC stream");
+            // -> and to recover, go back to where we were before
+            outputStream.seekp(lastCoverStartOffset);
+        }
+    }
+
+    // adjust "isLast" flag if neccassary
+    if (!lastActuallyWrittenHeader.isLast()) {
+        outputStream.seekp(lastStartOffset);
+        lastActuallyWrittenHeader.setLast(true);
+        lastActuallyWrittenHeader.makeHeader(outputStream);
+        outputStream.seekp(lastActuallyWrittenHeader.dataSize());
     }
 
     return static_cast<uint32>(lastStartOffset);

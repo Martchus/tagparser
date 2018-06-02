@@ -1005,9 +1005,8 @@ const char *mediaTypeName(MediaType mediaType)
         return "Control";
     case MediaType::Unknown:
         return "Other";
-    default:
-        return "";
     }
+    return "";
 }
 
 } // namespace TagParser

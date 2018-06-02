@@ -111,7 +111,12 @@ void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
 {
     static const string context("parsing Matroska tag");
     tagElement.parse(diag);
-    m_size = tagElement.totalSize();
+    if (tagElement.totalSize() > numeric_limits<uint32>::max()) {
+        // FIXME: Support this? Likely not very useful in practise.
+        diag.emplace_back(DiagLevel::Critical, "Matroska tag is too big.", context);
+        throw NotImplementedException();
+    }
+    m_size = static_cast<uint32>(tagElement.totalSize());
     for (EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
         child->parse(diag);
         switch (child->id()) {
@@ -292,7 +297,7 @@ void MatroskaTagMaker::make(ostream &stream) const
         BE::getBytes(static_cast<uint16>(MatroskaIds::TargetTypeValue), buff);
         stream.write(buff, 2);
         len = EbmlElement::makeUInteger(t.level(), buff);
-        stream.put(0x80 | len);
+        stream.put(static_cast<char>(0x80 | len));
         stream.write(buff, len);
     }
     if (!t.levelName().empty()) {
@@ -311,7 +316,7 @@ void MatroskaTagMaker::make(ostream &stream) const
             BE::getBytes(pair.first, buff);
             for (auto uid : pair.second) {
                 len = EbmlElement::makeUInteger(uid, buff + 3);
-                *(buff + 2) = 0x80 | len;
+                *(buff + 2) = static_cast<char>(0x80 | len);
                 stream.write(buff, 3 + len);
             }
         }

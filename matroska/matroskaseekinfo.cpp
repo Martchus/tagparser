@@ -26,7 +26,11 @@ void MatroskaSeekInfo::shift(uint64 start, int64 amount)
 {
     for (auto &info : m_info) {
         if (get<1>(info) >= start) {
-            get<1>(info) += amount;
+            if (amount > 0) {
+                get<1>(info) += static_cast<uint64>(amount);
+            } else {
+                get<1>(info) -= static_cast<uint64>(-amount);
+            }
         }
     }
 }
@@ -106,6 +110,8 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
  */
 void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
 {
+    VAR_UNUSED(diag)
+
     uint64 totalSize = 0;
     char buff0[8];
     char buff1[8];
@@ -129,16 +135,16 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
         // "Seek" header
         BE::getBytes(static_cast<uint16>(MatroskaIds::Seek), buff2);
         stream.write(buff2, 2);
-        stream.put(0x80 | (2 + 1 + sizeLength0 + 2 + 1 + sizeLength1));
+        stream.put(static_cast<char>(0x80 | (2 + 1 + sizeLength0 + 2 + 1 + sizeLength1)));
         // "SeekID" element
         BE::getBytes(static_cast<uint16>(MatroskaIds::SeekID), buff2);
         stream.write(buff2, 2);
-        stream.put(0x80 | sizeLength0);
+        stream.put(static_cast<char>(0x80 | sizeLength0));
         stream.write(buff0, sizeLength0);
         // "SeekPosition" element
         BE::getBytes(static_cast<uint16>(MatroskaIds::SeekPosition), buff2);
         stream.write(buff2, 2);
-        stream.put(0x80 | sizeLength1);
+        stream.put(static_cast<char>(0x80 | sizeLength1));
         stream.write(buff1, sizeLength1);
     }
 }

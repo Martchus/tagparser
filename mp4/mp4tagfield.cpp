@@ -98,7 +98,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     }
                     continue;
                 }
-                stream.seekg(dataAtom->dataOffset());
+                stream.seekg(static_cast<streamoff>(dataAtom->dataOffset()));
                 if (reader.readByte() != 0) {
                     diag.emplace_back(DiagLevel::Warning,
                         "The version indicator byte is not zero, the tag atom might be unsupported and hence not be parsed correctly.", context);
@@ -117,7 +117,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 switch (m_parsedRawDataType) {
                 case RawDataType::Utf8:
                 case RawDataType::Utf16:
-                    stream.seekg(dataAtom->dataOffset() + 8);
+                    stream.seekg(static_cast<streamoff>(dataAtom->dataOffset() + 8));
                     value().assignText(reader.readString(dataAtom->dataSize() - 8),
                         (m_parsedRawDataType == RawDataType::Utf16) ? TagTextEncoding::Utf16BigEndian : TagTextEncoding::Utf8);
                     break;
@@ -140,10 +140,10 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                         break;
                     default:;
                     }
-                    const streamsize coverSize = dataAtom->dataSize() - 8;
-                    unique_ptr<char[]> coverData = make_unique<char[]>(coverSize);
+                    const auto coverSize = static_cast<streamoff>(dataAtom->dataSize() - 8);
+                    auto coverData = make_unique<char[]>(static_cast<size_t>(coverSize));
                     stream.read(coverData.get(), coverSize);
-                    value().assignData(move(coverData), coverSize, TagDataType::Picture);
+                    value().assignData(move(coverData), static_cast<size_t>(coverSize), TagDataType::Picture);
                     break;
                 }
                 case RawDataType::BeSignedInt: {
@@ -215,13 +215,13 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                         }
                         break;
                     default: // no supported data type, read raw data
-                        streamsize dataSize = dataAtom->dataSize() - 8;
-                        unique_ptr<char[]> data = make_unique<char[]>(dataSize);
+                        const auto dataSize = static_cast<streamsize>(dataAtom->dataSize() - 8);
+                        auto data = make_unique<char[]>(static_cast<size_t>(dataSize));
                         stream.read(data.get(), dataSize);
                         if (ilstChild.id() == Mp4TagAtomIds::Cover) {
-                            value().assignData(move(data), dataSize, TagDataType::Picture);
+                            value().assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Picture);
                         } else {
-                            value().assignData(move(data), dataSize, TagDataType::Undefined);
+                            value().assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Undefined);
                         }
                     }
                 }
@@ -237,7 +237,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     }
                     continue;
                 }
-                stream.seekg(dataAtom->dataOffset() + 4);
+                stream.seekg(static_cast<streamoff>(dataAtom->dataOffset() + 4));
                 m_mean = reader.readString(dataAtom->dataSize() - 4);
             } else if (dataAtom->id() == Mp4AtomIds::Name) {
                 if (dataAtom->dataSize() < 4) {
@@ -251,7 +251,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     }
                     continue;
                 }
-                stream.seekg(dataAtom->dataOffset() + 4);
+                stream.seekg(static_cast<streamoff>(dataAtom->dataOffset() + 4));
                 m_name = reader.readString(dataAtom->dataSize() - 4);
             } else {
                 diag.emplace_back(DiagLevel::Warning,
@@ -501,10 +501,10 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                 if (number <= numeric_limits<uint16>::max() && number >= numeric_limits<uint16>::min()) {
                     m_writer.writeUInt16BE(static_cast<uint16>(number));
                 } else if (number > 0) {
-                    m_writer.writeUInt32BE(number);
+                    m_writer.writeUInt32BE(static_cast<uint32>(number));
                 } else {
                     throw ConversionException(
-                        "Negative integer can not be assigned to the field with the id \"" % interpretIntegerAsString<uint32>(m_field.id()) + "\".");
+                        "Negative integer can not be assigned to the field with the ID \"" % interpretIntegerAsString<uint32>(m_field.id()) + "\".");
                 }
                 break;
             }
@@ -531,7 +531,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                     break;
                 }
                 case Mp4TagAtomIds::PreDefinedGenre:
-                    m_writer.writeUInt16BE(m_field.value().toStandardGenreIndex());
+                    m_writer.writeUInt16BE(static_cast<uint16>(m_field.value().toStandardGenreIndex()));
                     break;
                 default:; // leave converted data empty to write original data later
                 }
@@ -553,6 +553,10 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
     m_totalSize = 8 // calculate entire size
         + (m_field.name().empty() ? 0 : (12 + m_field.name().length())) + (m_field.mean().empty() ? 0 : (12 + m_field.mean().length()))
         + (m_dataSize ? (16 + m_dataSize) : 0);
+    if (m_totalSize > numeric_limits<uint32>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Making a such big MP4 tag field is not supported.", context);
+        throw NotImplementedException();
+    }
 }
 
 /*!
@@ -566,25 +570,25 @@ void Mp4TagFieldMaker::make(ostream &stream)
 {
     m_writer.setStream(&stream);
     // size of entire tag atom
-    m_writer.writeUInt32BE(m_totalSize);
+    m_writer.writeUInt32BE(static_cast<uint32>(m_totalSize));
     // id of tag atom
     m_writer.writeUInt32BE(m_field.id());
     if (!m_field.mean().empty()) {
         // write "mean"
-        m_writer.writeUInt32BE(12 + m_field.mean().size());
+        m_writer.writeUInt32BE(static_cast<uint32>(12 + m_field.mean().size()));
         m_writer.writeUInt32BE(Mp4AtomIds::Mean);
         m_writer.writeUInt32BE(0);
         m_writer.writeString(m_field.mean());
     }
     if (!m_field.name().empty()) {
         // write "name"
-        m_writer.writeUInt32BE(12 + m_field.name().length());
+        m_writer.writeUInt32BE(static_cast<uint32>(12 + m_field.name().length()));
         m_writer.writeUInt32BE(Mp4AtomIds::Name);
         m_writer.writeUInt32BE(0);
         m_writer.writeString(m_field.name());
     }
     if (!m_field.value().isEmpty()) { // write data
-        m_writer.writeUInt32BE(16 + m_dataSize); // size of data atom
+        m_writer.writeUInt32BE(static_cast<uint32>(16 + m_dataSize)); // size of data atom
         m_writer.writeUInt32BE(Mp4AtomIds::Data); // id of data atom
         m_writer.writeByte(0); // version
         m_writer.writeUInt24BE(m_rawDataType);
@@ -595,7 +599,7 @@ void Mp4TagFieldMaker::make(ostream &stream)
             stream << m_convertedData.rdbuf();
         } else {
             // no conversion was needed, write data directly from tag value
-            stream.write(m_field.value().dataPointer(), m_field.value().dataSize());
+            stream.write(m_field.value().dataPointer(), static_cast<streamoff>(m_field.value().dataSize()));
         }
     }
 }

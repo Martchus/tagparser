@@ -25,7 +25,7 @@ namespace TagParser {
 void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
 {
     // prepare reading
-    stream.seekg(startOffset);
+    stream.seekg(static_cast<streamoff>(startOffset));
     BinaryReader reader(&stream);
     if (maxSize < 27) {
         throw TruncatedDataException();
@@ -74,7 +74,7 @@ void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
  */
 uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
 {
-    stream.seekg(startOffset);
+    stream.seekg(static_cast<streamoff>(startOffset));
     uint32 crc = 0x0;
     byte value, segmentTableSize = 0, segmentTableIndex = 0;
     for (uint32 i = 0, segmentLength = 27; i != segmentLength; ++i) {
@@ -82,6 +82,7 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
         case 22:
             // bytes 22, 23, 24, 25 hold denoted checksum and must be set to zero
             stream.seekg(4, ios_base::cur);
+            FALLTHROUGH;
         case 23:
         case 24:
         case 25:
@@ -89,10 +90,10 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
             break;
         case 26:
             // byte 26 holds the number of segment sizes
-            segmentLength += (segmentTableSize = (value = stream.get()));
+            segmentLength += (segmentTableSize = (value = static_cast<byte>(stream.get())));
             break;
         default:
-            value = stream.get();
+            value = static_cast<byte>(stream.get());
             if (i > 26 && segmentTableIndex < segmentTableSize) {
                 // bytes 27 to (27 + segment size count) hold page size
                 segmentLength += value;
@@ -112,7 +113,7 @@ void OggPage::updateChecksum(iostream &stream, uint64 startOffset)
 {
     char buff[4];
     LE::getBytes(computeChecksum(stream, startOffset), buff);
-    stream.seekp(startOffset + 22);
+    stream.seekp(static_cast<streamoff>(startOffset + 22));
     stream.write(buff, sizeof(buff));
 }
 
@@ -124,11 +125,11 @@ uint32 OggPage::makeSegmentSizeDenotation(ostream &stream, uint32 size)
 {
     uint32 bytesWritten = 1;
     while (size >= 0xff) {
-        stream.put(0xff);
+        stream.put(static_cast<char>(0xff));
         size -= 0xff;
         ++bytesWritten;
     }
-    stream.put(size);
+    stream.put(static_cast<char>(size));
     return bytesWritten;
 }
 

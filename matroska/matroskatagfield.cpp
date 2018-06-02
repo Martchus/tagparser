@@ -70,8 +70,8 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
         case MatroskaIds::TagBinary:
             if (value().isEmpty()) {
                 unique_ptr<char[]> buffer = make_unique<char[]>(child->dataSize());
-                child->stream().seekg(child->dataOffset());
-                child->stream().read(buffer.get(), child->dataSize());
+                child->stream().seekg(static_cast<streamoff>(child->dataOffset()));
+                child->stream().read(buffer.get(), static_cast<streamoff>(child->dataSize()));
                 switch (child->id()) {
                 case MatroskaIds::TagString:
                     value().assignData(move(buffer), child->dataSize(), TagDataType::Text, TagTextEncoding::Utf8);

@@ -265,7 +265,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                 break;
             case MatroskaIds::CuePoint:
                 // write "CuePoint"-element
-                stream.put(MatroskaIds::CuePoint);
+                stream.put(static_cast<char>(MatroskaIds::CuePoint));
                 len = EbmlElement::makeSizeDenotation(m_sizes[cuePointElement], buff);
                 stream.write(buff, len);
                 for (EbmlElement *cuePointChild = cuePointElement->firstChild(); cuePointChild; cuePointChild = cuePointChild->nextSibling()) {
@@ -282,7 +282,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                         break;
                     case MatroskaIds::CueTrackPositions:
                         // write "CueTrackPositions"-element
-                        stream.put(MatroskaIds::CueTrackPositions);
+                        stream.put(static_cast<char>(MatroskaIds::CueTrackPositions));
                         len = EbmlElement::makeSizeDenotation(m_sizes[cuePointChild], buff);
                         stream.write(buff, len);
                         for (EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild;
@@ -314,7 +314,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                                 break;
                             case MatroskaIds::CueReference:
                                 // write "CueReference"-element
-                                stream.put(MatroskaIds::CueRefTime);
+                                stream.put(static_cast<char>(MatroskaIds::CueRefTime));
                                 len = EbmlElement::makeSizeDenotation(m_sizes[cueTrackPositionsChild], buff);
                                 stream.write(buff, len);
                                 for (EbmlElement *cueReferenceChild = cueTrackPositionsChild->firstChild(); cueReferenceChild;

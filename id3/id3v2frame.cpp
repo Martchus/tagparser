@@ -25,6 +25,9 @@ namespace Id3v2TextEncodingBytes {
 enum Id3v2TextEncodingByte : byte { Ascii, Utf16WithBom, Utf16BigEndianWithoutBom, Utf8 };
 }
 
+/// \brief The maximum (supported) size of an ID3v2Frame.
+constexpr auto maxId3v2FrameDataSize(numeric_limits<uint32>::max() - 15);
+
 /*!
  * \class Media::Id3v2Frame
  * \brief The Id3v2Frame class is used by Id3v2Tag to store the fields.
@@ -213,7 +216,11 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
             diag.emplace_back(DiagLevel::Critical, "Decompressing failed (unknown reason).", context);
             throw InvalidDataException();
         }
-        m_dataSize = decompressedSize;
+        if (decompressedSize > maxId3v2FrameDataSize) {
+            diag.emplace_back(DiagLevel::Critical, "The decompressed data exceeds the maximum supported frame size.", context);
+            throw InvalidDataException();
+        }
+        m_dataSize = static_cast<uint32>(decompressedSize);
     } else {
         buffer = make_unique<char[]>(m_dataSize);
         reader.read(buffer.get(), m_dataSize);
@@ -222,7 +229,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
     // -> get tag value depending of field type
     if (Id3v2FrameIds::isTextFrame(id())) {
         // frame contains text
-        TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer.get(), diag); // the first byte stores the encoding
+        TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer.get()), diag); // the first byte stores the encoding
         if ((version >= 3 && (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
             || (version < 3 && id() == Id3v2FrameIds::sTrackPosition)) {
             // the track number or the disk number frame
@@ -464,7 +471,11 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
 
         } else {
             // make unknown frame
-            m_data = make_unique<char[]>(m_decompressedSize = value.dataSize());
+            if (value.dataSize() > maxId3v2FrameDataSize) {
+                diag.emplace_back(DiagLevel::Critical, "Assigned value exceeds maximum size.", context);
+                throw InvalidDataException();
+            }
+            m_data = make_unique<char[]>(m_decompressedSize = static_cast<uint32>(value.dataSize()));
             copy(value.dataPointer(), value.dataPointer() + m_decompressedSize, m_data.get());
         }
     } catch (const ConversionException &) {
@@ -479,9 +490,9 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
 
     // apply compression if frame should be compressed
     if (version >= 3 && m_frame.isCompressed()) {
-        m_dataSize = compressBound(m_decompressedSize);
-        auto compressedData = make_unique<char[]>(m_decompressedSize);
-        switch (compress(reinterpret_cast<Bytef *>(compressedData.get()), reinterpret_cast<uLongf *>(&m_dataSize),
+        auto compressedSize = compressBound(m_decompressedSize);
+        auto compressedData = make_unique<char[]>(compressedSize);
+        switch (compress(reinterpret_cast<Bytef *>(compressedData.get()), reinterpret_cast<uLongf *>(&compressedSize),
             reinterpret_cast<Bytef *>(m_data.get()), m_decompressedSize)) {
         case Z_MEM_ERROR:
             diag.emplace_back(DiagLevel::Critical, "Decompressing failed. The source buffer was too small.", context);
@@ -491,7 +502,12 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
             throw InvalidDataException();
         case Z_OK:;
         }
+        if (compressedSize > maxId3v2FrameDataSize) {
+            diag.emplace_back(DiagLevel::Critical, "Compressed size exceeds maximum data size.", context);
+            throw InvalidDataException();
+        }
         m_data.swap(compressedData);
+        m_dataSize = static_cast<uint32>(compressedSize);
     } else {
         m_dataSize = m_decompressedSize;
     }
@@ -744,15 +760,15 @@ void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, Tag
         throw TruncatedDataException();
     }
     const char *end = buffer + maxSize;
-    auto dataEncoding = parseTextEncodingByte(*buffer, diag); // the first byte stores the encoding
+    auto dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer), diag); // the first byte stores the encoding
     typeInfo = static_cast<unsigned char>(*(buffer + 4));
-    auto substr = parseSubstring(buffer + 5, end - 5 - buffer, dataEncoding, true, diag);
+    auto substr = parseSubstring(buffer + 5, static_cast<size_t>(end - 5 - buffer), dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if (get<2>(substr) >= end) {
         diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (actual data is missing).", context);
         throw TruncatedDataException();
     }
-    tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
+    tagValue.assignData(get<2>(substr), static_cast<size_t>(end - get<2>(substr)), TagDataType::Picture, dataEncoding);
 }
 
 /*!
@@ -766,7 +782,7 @@ void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue 
 {
     static const string context("parsing ID3v2.3 picture frame");
     const char *end = buffer + maxSize;
-    auto dataEncoding = parseTextEncodingByte(*buffer, diag); // the first byte stores the encoding
+    auto dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer), diag); // the first byte stores the encoding
     auto mimeTypeEncoding = TagTextEncoding::Latin1;
     auto substr = parseSubstring(buffer + 1, maxSize - 1, mimeTypeEncoding, true, diag);
     if (get<1>(substr)) {
@@ -781,13 +797,13 @@ void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue 
         diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (description and actual data are missing).", context);
         throw TruncatedDataException();
     }
-    substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, true, diag);
+    substr = parseSubstring(get<2>(substr), static_cast<size_t>(end - get<2>(substr)), dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
     if (get<2>(substr) >= end) {
         diag.emplace_back(DiagLevel::Critical, "Picture frame is incomplete (actual data is missing).", context);
         throw TruncatedDataException();
     }
-    tagValue.assignData(get<2>(substr), end - get<2>(substr), TagDataType::Picture, dataEncoding);
+    tagValue.assignData(get<2>(substr), static_cast<size_t>(end - get<2>(substr)), TagDataType::Picture, dataEncoding);
 }
 
 /*!
@@ -804,7 +820,7 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
         diag.emplace_back(DiagLevel::Critical, "Comment frame is incomplete.", context);
         throw TruncatedDataException();
     }
-    TagTextEncoding dataEncoding = parseTextEncodingByte(*buffer, diag);
+    TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer), diag);
     if (*(++buffer)) {
         tagValue.setLanguage(string(buffer, 3));
     }
@@ -814,7 +830,7 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
         diag.emplace_back(DiagLevel::Critical, "Comment frame is incomplete (description not terminated?).", context);
         throw TruncatedDataException();
     }
-    substr = parseSubstring(get<2>(substr), end - get<2>(substr), dataEncoding, false, diag);
+    substr = parseSubstring(get<2>(substr), static_cast<size_t>(end - get<2>(substr)), dataEncoding, false, diag);
     tagValue.assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
 }
 
@@ -852,14 +868,14 @@ void Id3v2Frame::makeEncodingAndData(
     case TagTextEncoding::Unspecified: // assumption
         // allocate buffer
         buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 1);
-        buffer[0] = makeTextEncodingByte(encoding); // set text encoding byte
+        buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
         bufferDataAddress = buffer.get() + 1;
         break;
     case TagTextEncoding::Utf16LittleEndian:
     case TagTextEncoding::Utf16BigEndian:
         // allocate buffer
         buffer = make_unique<char[]>(bufferSize = 1 + 2 + dataSize + 2);
-        buffer[0] = makeTextEncodingByte(encoding); // set text encoding byte
+        buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
         ConversionUtilities::LE::getBytes(
             encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<uint16>(0xFEFF) : static_cast<uint16>(0xFFFE), buffer.get() + 1);
         bufferDataAddress = buffer.get() + 3;
@@ -919,7 +935,7 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     // note:                                  encoding byte + image format + picture type byte + description size + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
     char *offset = buffer.get();
     // write encoding byte
-    *offset = makeTextEncodingByte(descriptionEncoding);
+    *offset = static_cast<char>(makeTextEncodingByte(descriptionEncoding));
     // write mime type
     const char *imageFormat;
     if (picture.mimeType() == "image/jpeg") {
@@ -935,7 +951,7 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     }
     strncpy(++offset, imageFormat, 3);
     // write picture type
-    *(offset += 3) = typeInfo;
+    *(offset += 3) = static_cast<char>(typeInfo);
     // write description
     offset += makeBom(offset + 1, descriptionEncoding);
     if (convertedDescription.first) {
@@ -988,12 +1004,12 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize
     // note:                                  encoding byte + mime type size + 0 byte + picture type byte + description size + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
     char *offset = buffer.get();
     // write encoding byte
-    *offset = makeTextEncodingByte(descriptionEncoding);
+    *offset = static_cast<char>(makeTextEncodingByte(descriptionEncoding));
     // write mime type
     picture.mimeType().copy(++offset, mimeTypeSize);
     *(offset += mimeTypeSize) = 0x00; // terminate mime type
     // write picture type
-    *(++offset) = typeInfo;
+    *(++offset) = static_cast<char>(typeInfo);
     // write description
     offset += makeBom(offset + 1, descriptionEncoding);
     if (convertedDescription.first) {
@@ -1045,7 +1061,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, con
     // note:                     encoding byte              + language + description size + actual data size + BOMs and termination
     char *offset = buffer.get();
     // write encoding
-    *offset = makeTextEncodingByte(encoding);
+    *offset = static_cast<char>(makeTextEncodingByte(encoding));
     // write language
     for (unsigned int i = 0; i < 3; ++i) {
         *(++offset) = (lng.length() > i) ? lng[i] : 0x00;

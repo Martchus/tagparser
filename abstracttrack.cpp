@@ -211,7 +211,7 @@ string AbstractTrack::description() const
 void AbstractTrack::parseHeader(Diagnostics &diag)
 {
     m_headerValid = false;
-    m_istream->seekg(m_startOffset, ios_base::beg);
+    m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     try {
         internalParseHeader(diag);
         m_headerValid = true;

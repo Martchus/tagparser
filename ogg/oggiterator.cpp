@@ -136,9 +136,9 @@ void OggIterator::read(char *buffer, size_t count)
     size_t bytesRead = 0;
     while (*this && count) {
         const uint32 available = currentSegmentSize() - m_bytesRead;
-        stream().seekg(currentCharacterOffset());
+        stream().seekg(static_cast<streamoff>(currentCharacterOffset()));
         if (count <= available) {
-            stream().read(buffer + bytesRead, count);
+            stream().read(buffer + bytesRead, static_cast<streamoff>(count));
             m_bytesRead += count;
             return;
         } else {
@@ -171,9 +171,9 @@ size_t OggIterator::readAll(char *buffer, size_t max)
     size_t bytesRead = 0;
     while (*this && max) {
         const uint32 available = currentSegmentSize() - m_bytesRead;
-        stream().seekg(currentCharacterOffset());
+        stream().seekg(static_cast<streamoff>(currentCharacterOffset()));
         if (max <= available) {
-            stream().read(buffer + bytesRead, max);
+            stream().read(buffer + bytesRead, static_cast<streamoff>(max));
             m_bytesRead += max;
             return bytesRead + max;
         } else {
@@ -243,7 +243,7 @@ bool OggIterator::resyncAt(uint64 offset)
     }
 
     // find capture pattern 'OggS'
-    stream().seekg(offset);
+    stream().seekg(static_cast<streamoff>(offset));
     byte lettersFound = 0;
     for (uint64 bytesAvailable = max<uint64>(streamSize() - offset, 65307ul); bytesAvailable >= 27; --bytesAvailable) {
         switch (static_cast<char>(stream().get())) {

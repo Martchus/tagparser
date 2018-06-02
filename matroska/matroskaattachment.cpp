@@ -173,7 +173,7 @@ void MatroskaAttachmentMaker::make(ostream &stream, Diagnostics &diag) const
     if (attachment().data() && attachment().data()->size()) {
         BE::getBytes(static_cast<uint16>(MatroskaIds::FileData), buff);
         stream.write(buff, 2);
-        len = EbmlElement::makeSizeDenotation(attachment().data()->size(), buff);
+        len = EbmlElement::makeSizeDenotation(static_cast<uint64>(attachment().data()->size()), buff);
         stream.write(buff, len);
         attachment().data()->copyTo(stream);
     }

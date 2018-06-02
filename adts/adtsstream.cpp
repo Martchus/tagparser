@@ -17,6 +17,8 @@ namespace TagParser {
 
 void AdtsStream::internalParseHeader(Diagnostics &diag)
 {
+    VAR_UNUSED(diag)
+
     //static const string context("parsing ADTS frame header");
     if (!m_istream) {
         throw NoDataFoundException();
@@ -28,7 +30,7 @@ void AdtsStream::internalParseHeader(Diagnostics &diag)
     } else {
         m_size = static_cast<uint64>(m_istream->tellg()) + 125u - m_startOffset;
     }
-    m_istream->seekg(m_startOffset, ios_base::beg);
+    m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     // parse frame header
     m_firstFrame.parseHeader(m_reader);
     m_format = Mpeg4AudioObjectIds::idToMediaFormat(m_firstFrame.mpeg4AudioObjectId());

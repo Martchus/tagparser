@@ -1579,13 +1579,13 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 outputWriter.writeUInt32BE(MatroskaIds::Segment);
                 sizeLength = EbmlElement::makeSizeDenotation(segment.totalDataSize, buff);
                 outputStream.write(buff, sizeLength);
-                segment.newDataOffset = offset = outputStream.tellp(); // store segment data offset here
+                segment.newDataOffset = offset = static_cast<uint64>(outputStream.tellp()); // store segment data offset here
 
                 // write CRC-32 element ...
                 if (segment.hasCrc32) {
                     // ... if the original element had a CRC-32 element
-                    *buff = EbmlIds::Crc32;
-                    *(buff + 1) = 0x84; // length denotation: 4 byte
+                    *buff = static_cast<char>(EbmlIds::Crc32);
+                    *(buff + 1) = static_cast<char>(0x84); // length denotation: 4 byte
                     // set the value after writing the element
                     crc32Offsets.emplace_back(outputStream.tellp(), segment.totalDataSize);
                     outputStream.write(buff, 6);
@@ -1736,16 +1736,16 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                             switch (level2Element->id()) {
                             case MatroskaIds::Position:
                                 // calculate new position
-                                sizeLength = EbmlElement::makeUInteger(
-                                    level1Element->startOffset() - segmentData.front().newDataOffset, buff, level2Element->dataSize());
+                                sizeLength = EbmlElement::makeUInteger(level1Element->startOffset() - segmentData.front().newDataOffset, buff,
+                                    level2Element->dataSize() > 8 ? 8 : static_cast<byte>(level2Element->dataSize()));
                                 // new position can only applied if it doesn't need more bytes than the previous position
                                 if (level2Element->dataSize() < sizeLength) {
                                     // can't update position -> void position elements ("Position"-elements seem a bit useless anyways)
-                                    outputStream.seekp(level2Element->startOffset());
+                                    outputStream.seekp(static_cast<streamoff>(level2Element->startOffset()));
                                     outputStream.put(static_cast<char>(EbmlIds::Void));
                                 } else {
                                     // update position
-                                    outputStream.seekp(level2Element->dataOffset());
+                                    outputStream.seekp(static_cast<streamoff>(level2Element->dataOffset()));
                                     outputStream.write(buff, sizeLength);
                                 }
                                 break;
@@ -1754,7 +1754,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         }
                     }
                     // skip existing "Cluster"-elements
-                    outputStream.seekp(segment.clusterEndOffset);
+                    outputStream.seekp(static_cast<streamoff>(segment.clusterEndOffset));
                 }
 
                 progress.updateStep("Writing segment tail ...");
@@ -1847,8 +1847,8 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         if (!crc32Offsets.empty()) {
             progress.updateStep("Updating CRC-32 checksums ...");
             for (const auto &crc32Offset : crc32Offsets) {
-                outputStream.seekg(get<0>(crc32Offset) + 6);
-                outputStream.seekp(get<0>(crc32Offset) + 2);
+                outputStream.seekg(static_cast<streamoff>(get<0>(crc32Offset) + 6));
+                outputStream.seekp(static_cast<streamoff>(get<0>(crc32Offset) + 2));
                 writer().writeUInt32LE(reader().readCrc32(get<1>(crc32Offset) - 6));
             }
         }

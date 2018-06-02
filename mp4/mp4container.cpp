@@ -644,8 +644,8 @@ calculatePadding:
                 // write padding
                 if (newPadding) {
                     // write free atom header
-                    if (newPadding < 0xFFFFFFFF) {
-                        outputWriter.writeUInt32BE(newPadding);
+                    if (newPadding < numeric_limits<uint32>::max()) {
+                        outputWriter.writeUInt32BE(static_cast<uint32>(newPadding));
                         outputWriter.writeUInt32BE(Mp4AtomIds::Free);
                         newPadding -= 8;
                     } else {
@@ -678,7 +678,7 @@ calculatePadding:
                                 break;
                             } else {
                                 // store media data offsets when not writing chunk-by-chunk to be able to update chunk offset table
-                                origMediaDataOffsets.push_back(level0Atom->startOffset());
+                                origMediaDataOffsets.push_back(static_cast<int64>(level0Atom->startOffset()));
                                 newMediaDataOffsets.push_back(outputStream.tellp());
                             }
                             FALLTHROUGH;
@@ -741,8 +741,8 @@ calculatePadding:
                                 // still chunks to be copied (of this track)?
                                 if (chunkIndexWithinTrack < chunkOffsetTable.size() && chunkIndexWithinTrack < chunkSizesTable.size()) {
                                     // copy chunk, update entry in chunk offset table
-                                    sourceStream.seekg(chunkOffsetTable[chunkIndexWithinTrack]);
-                                    chunkOffsetTable[chunkIndexWithinTrack] = outputStream.tellp();
+                                    sourceStream.seekg(static_cast<streamoff>(chunkOffsetTable[chunkIndexWithinTrack]));
+                                    chunkOffsetTable[chunkIndexWithinTrack] = static_cast<uint64>(outputStream.tellp());
                                     copyHelper.copy(sourceStream, outputStream, chunkSizesTable[chunkIndexWithinTrack]);
 
                                     // update counter / status
@@ -916,12 +916,13 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                         uint64 off = reader().readUInt64BE();
                         for (auto iOld = oldMdatOffsets.cbegin(), iNew = newMdatOffsets.cbegin(), end = oldMdatOffsets.cend(); iOld != end;
                              ++iOld, ++iNew) {
-                            if (off >= static_cast<uint64>(*iOld)) {
-                                off += (*iNew - *iOld);
-                                stream().seekp(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 8);
-                                writer().writeUInt64BE(off);
-                                break;
+                            if (off < static_cast<uint64>(*iOld)) {
+                                continue;
                             }
+                            off += static_cast<uint64>(*iNew - *iOld);
+                            stream().seekp(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 8);
+                            writer().writeUInt64BE(off);
+                            break;
                         }
                     }
                     switch (tfhdAtomCount) {

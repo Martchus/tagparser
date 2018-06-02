@@ -40,7 +40,7 @@ const char **Id3Genres::genreNames()
  */
 int Id3Genres::indexFromString(const string &genre)
 {
-    const char **ptr = genreNames();
+    const char *const *ptr = genreNames();
     for (int index = 0; index < genreCount(); ++ptr, ++index) {
         if (genre == *ptr) {
             return index;

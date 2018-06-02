@@ -62,7 +62,7 @@ void Mpeg4Descriptor::internalParse(Diagnostics &diag)
             "parsing MPEG-4 descriptor");
         throw TruncatedDataException();
     }
-    stream().seekg(startOffset());
+    stream().seekg(static_cast<streamoff>(startOffset()));
     // read ID
     m_idLength = m_sizeLength = 1;
     m_id = reader().readByte();
@@ -76,18 +76,20 @@ void Mpeg4Descriptor::internalParse(Diagnostics &diag)
     // check whether the denoted data size exceeds the available data size
     if (maxTotalSize() < totalSize()) {
         diag.emplace_back(DiagLevel::Warning, "The descriptor seems to be truncated; unable to parse siblings of that ", parsingContext());
-        m_dataSize = maxTotalSize(); // using max size instead
+        m_dataSize = static_cast<uint32>(maxTotalSize()); // using max size instead
     }
     m_firstChild.reset();
-    Mpeg4Descriptor *sibling = nullptr;
-    if (totalSize() < maxTotalSize()) {
-        if (parent()) {
-            sibling = new Mpeg4Descriptor(*(parent()), startOffset() + totalSize());
-        } else {
-            sibling = new Mpeg4Descriptor(container(), startOffset() + totalSize(), maxTotalSize() - totalSize());
-        }
+
+    // check for siblings
+    if (totalSize() >= maxTotalSize()) {
+        m_nextSibling.reset();
+        return;
     }
-    m_nextSibling.reset(sibling);
+    if (parent()) {
+        m_nextSibling.reset(new Mpeg4Descriptor(*(parent()), startOffset() + totalSize()));
+    } else {
+        m_nextSibling.reset(new Mpeg4Descriptor(container(), startOffset() + totalSize(), maxTotalSize() - totalSize()));
+    }
 }
 
 } // namespace TagParser

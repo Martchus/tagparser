@@ -114,7 +114,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
     if (m_reader.readUInt32BE() != 0x52494646u) {
         throw NoDataFoundException();
     }
-    m_istream->seekg(m_startOffset + 8);
+    m_istream->seekg(static_cast<streamoff>(m_startOffset + 8));
     if (m_reader.readUInt32BE() != 0x57415645u) {
         throw NoDataFoundException();
     }
@@ -133,7 +133,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
             }
             break;
         case 0x64617461u:
-            m_dataOffset = m_istream->tellg();
+            m_dataOffset = static_cast<uint64>(m_istream->tellg());
             m_size = restHeaderLen;
             m_sampleCount = m_size / m_chunkSize;
             m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / static_cast<double>(m_samplingFrequency));
@@ -145,7 +145,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
     if (m_format.general != GeneralMediaFormat::Mpeg1Audio || !m_dataOffset) {
         return;
     }
-    m_istream->seekg(m_dataOffset);
+    m_istream->seekg(static_cast<streamoff>(m_dataOffset));
     MpegAudioFrame frame;
     frame.parseHeader(m_reader);
     MpegAudioFrameStream::addInfo(frame, *this);
@@ -153,7 +153,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
         ? ((static_cast<double>(m_size) * 8.0)
               / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samplingFrequency())) / 1024.0)
         : frame.bitrate();
-    m_bytesPerSecond = m_bitrate * 125;
+    m_bytesPerSecond = static_cast<uint32>(m_bitrate * 125);
     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 128.0));
 }
 

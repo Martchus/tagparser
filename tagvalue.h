@@ -396,7 +396,7 @@ inline void TagValue::clearDataAndMetadata()
  * \brief Returns the size of the assigned value in bytes.
  * \remarks Meta data such as description and MIME type is not considered as part of the assigned value.
  */
-inline size_t TagValue::dataSize() const
+inline std::size_t TagValue::dataSize() const
 {
     return m_size;
 }

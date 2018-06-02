@@ -77,7 +77,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
             diag.emplace_back(DiagLevel::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
             throw TruncatedDataException();
         }
-        stream().seekg(startOffset());
+        stream().seekg(static_cast<streamoff>(startOffset()));
 
         // read ID
         char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = { 0 };
@@ -144,7 +144,8 @@ void EbmlElement::internalParse(Diagnostics &diag)
         }
 
         // read size
-        beg = static_cast<byte>(stream().peek()), mask = 0x80;
+        beg = static_cast<byte>(stream().peek());
+        mask = 0x80;
         m_sizeLength = 1;
         if ((m_sizeUnknown = (beg == 0xFF))) {
             // this indicates that the element size is unknown
@@ -225,7 +226,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
  */
 std::string EbmlElement::readString()
 {
-    stream().seekg(dataOffset());
+    stream().seekg(static_cast<streamoff>(dataOffset()));
     return reader().readString(dataSize());
 }
 
@@ -237,13 +238,11 @@ std::string EbmlElement::readString()
  */
 uint64 EbmlElement::readUInteger()
 {
-    char buff[sizeof(uint64)] = { 0 };
-    int i = static_cast<int>(sizeof(buff)) - dataSize();
-    if (i < 0) {
-        i = 0;
-    }
-    stream().seekg(dataOffset(), ios_base::beg);
-    stream().read(buff + i, sizeof(buff) - i);
+    constexpr DataSizeType maxBytesToRead = 8;
+    char buff[maxBytesToRead] = { 0 };
+    const auto bytesToSkip = maxBytesToRead - min(dataSize(), maxBytesToRead);
+    stream().seekg(static_cast<streamoff>(dataOffset()), ios_base::beg);
+    stream().read(buff + bytesToSkip, static_cast<streamoff>(sizeof(buff) - bytesToSkip));
     return BE::toUInt64(buff);
 }
 
@@ -253,10 +252,10 @@ uint64 EbmlElement::readUInteger()
  */
 float64 EbmlElement::readFloat()
 {
-    stream().seekg(dataOffset());
+    stream().seekg(static_cast<streamoff>(dataOffset()));
     switch (dataSize()) {
     case sizeof(float32):
-        return reader().readFloat32BE();
+        return static_cast<float64>(reader().readFloat32BE());
     case sizeof(float64):
         return reader().readFloat64BE();
     default:
@@ -319,7 +318,7 @@ byte EbmlElement::calculateSizeDenotationLength(uint64 size)
 byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
 {
     if (id <= 0xFF) {
-        *buff = static_cast<byte>(id);
+        *buff = static_cast<char>(id);
         return 1;
     } else if (id <= 0x7FFF) {
         BE::getBytes(static_cast<uint16>(id), buff);
@@ -345,7 +344,7 @@ byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
 byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
 {
     if (size < 126) {
-        *buff = static_cast<byte>(size | 0x80);
+        *buff = static_cast<char>(size | 0x80);
         return 1;
     } else if (size <= 16382ul) {
         BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
@@ -383,7 +382,7 @@ byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
 byte EbmlElement::makeSizeDenotation(uint64 size, char *buff, byte minBytes)
 {
     if (minBytes <= 1 && size < 126) {
-        *buff = static_cast<byte>(size | 0x80);
+        *buff = static_cast<char>(size | 0x80);
         return 1;
     } else if (minBytes <= 2 && size <= 16382ul) {
         BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
@@ -474,6 +473,8 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff)
  * \param value Specifies the value to be written.
  * \param buff Specifies the buffer to write to.
  * \param minBytes Specifies the minimum number of bytes to use.
+ * \remarks Regardless of \a minBytes, this function will never make
+ *          more than 8 bytes.
  */
 byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
 {

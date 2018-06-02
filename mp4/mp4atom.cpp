@@ -68,7 +68,7 @@ void Mp4Atom::internalParse(Diagnostics &diag)
             context);
         throw TruncatedDataException();
     }
-    stream().seekg(startOffset());
+    stream().seekg(static_cast<streamoff>(startOffset()));
     m_dataSize = reader().readUInt32BE();
     if (m_dataSize == 0) {
         // atom size extends to rest of the file/enclosing container
@@ -122,6 +122,11 @@ void Mp4Atom::internalParse(Diagnostics &diag)
  * \brief This function helps to write the atom size after writing an atom to a stream.
  * \param stream Specifies the stream.
  * \param startOffset Specifies the start offset of the atom.
+ * \remarks The caller must ensure that no seek before \a startOffset happended.
+ * \throw The caller has to be sure, that the number of written bytes does not exceed
+ *        maximum of an 32-bit unsigned integer. Otherwise the function will throw
+ *        Failure and Mp4Atom::seekBackAndWriteAtomSize64 should be used instead.
+ * \todo Add a version which creates a diag message (in addition to throwing an exception).
  *
  * This function seeks back to the start offset and writes the difference between the
  * previous offset and the start offset as 32-bit unsigned integer to the \a stream.
@@ -130,9 +135,13 @@ void Mp4Atom::internalParse(Diagnostics &diag)
 void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_type &startOffset)
 {
     ostream::pos_type currentOffset = stream.tellp();
+    const auto atomSize(currentOffset - startOffset);
+    if (atomSize > numeric_limits<uint32>::max()) {
+        throw Failure();
+    }
     stream.seekp(startOffset);
     BinaryWriter writer(&stream);
-    writer.writeUInt32BE(currentOffset - startOffset);
+    writer.writeUInt32BE(static_cast<uint32>(atomSize));
     stream.seekp(currentOffset);
 }
 
@@ -140,6 +149,7 @@ void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_
  * \brief This function helps to write the atom size after writing an atom to a stream.
  * \param stream Specifies the stream.
  * \param startOffset Specifies the start offset of the atom.
+ * \remarks The caller must ensure that no seek before \a startOffset happended.
  *
  * This function seeks back to the start offset and writes the difference between the
  * previous offset and the start offset as 64-bit unsigned integer to the \a stream.
@@ -152,7 +162,7 @@ void Mp4Atom::seekBackAndWriteAtomSize64(std::ostream &stream, const ostream::po
     BinaryWriter writer(&stream);
     writer.writeUInt32BE(1);
     stream.seekp(4, ios_base::cur);
-    writer.writeUInt64BE(currentOffset - startOffset);
+    writer.writeUInt64BE(static_cast<uint64>(currentOffset - startOffset));
     stream.seekp(currentOffset);
 }
 

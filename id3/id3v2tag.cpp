@@ -496,6 +496,8 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag)
  */
 void Id3v2TagMaker::make(std::ostream &stream, uint32 padding, Diagnostics &diag)
 {
+    VAR_UNUSED(diag)
+
     BinaryWriter writer(&stream);
 
     // write header

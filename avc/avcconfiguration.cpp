@@ -5,6 +5,8 @@
 
 #include <c++utilities/io/binaryreader.h>
 
+#include <limits>
+
 using namespace std;
 using namespace IoUtilities;
 
@@ -42,7 +44,7 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
         }
         spsInfos.emplace_back();
         try {
-            spsInfos.back().parse(reader, maxSize);
+            spsInfos.back().parse(reader, maxSize > numeric_limits<uint32>::max() ? numeric_limits<uint32>::max() : static_cast<uint32>(maxSize));
         } catch (const TruncatedDataException &) {
             // TODO: log parsing error
             if (spsInfos.back().size > maxSize - 2) {
@@ -65,7 +67,7 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
         }
         ppsInfos.emplace_back();
         try {
-            ppsInfos.back().parse(reader, maxSize);
+            ppsInfos.back().parse(reader, maxSize > numeric_limits<uint32>::max() ? numeric_limits<uint32>::max() : static_cast<uint32>(maxSize));
         } catch (const TruncatedDataException &) {
             // TODO: log parsing error
             if (ppsInfos.back().size > maxSize - 2) {

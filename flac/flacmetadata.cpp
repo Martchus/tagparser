@@ -108,29 +108,39 @@ void FlacMetaDataBlockPicture::parse(istream &inputStream, uint32 maxSize)
 /*!
  * \brief Returns the number of bytes make() will write.
  * \remarks Any changes to the object will invalidate this value.
+ * \throws Throws an InvalidDataException() if the assigned data is too big.
  */
 uint32 FlacMetaDataBlockPicture::requiredSize() const
 {
-    return 32 + m_value.mimeType().size() + m_value.description().size() + m_value.dataSize();
+    const auto requiredSize(32 + m_value.mimeType().size() + m_value.description().size() + m_value.dataSize());
+    if (requiredSize > numeric_limits<uint32>::max()) {
+        throw InvalidDataException();
+    }
+    return static_cast<uint32>(requiredSize);
 }
 
 /*!
  * \brief Makes the FLAC "METADATA_BLOCK_PICTURE".
+ * \throws Throws an InvalidDataException() if the assigned data can not be serialized into a "METADATA_BLOCK_PICTURE" structure.
  */
 void FlacMetaDataBlockPicture::make(ostream &outputStream)
 {
+    if (m_value.mimeType().size() > numeric_limits<uint32>::max() || m_value.description().size() > numeric_limits<uint32>::max()
+        || m_value.dataSize() > numeric_limits<uint32>::max()) {
+        throw InvalidDataException();
+    }
     BinaryWriter writer(&outputStream);
     writer.writeUInt32BE(pictureType());
-    writer.writeUInt32BE(m_value.mimeType().size());
+    writer.writeUInt32BE(static_cast<uint32>(m_value.mimeType().size()));
     writer.writeString(m_value.mimeType());
-    writer.writeUInt32BE(m_value.description().size());
+    writer.writeUInt32BE(static_cast<uint32>(m_value.description().size()));
     writer.writeString(m_value.description());
     writer.writeUInt32BE(0); // skip width
     writer.writeUInt32BE(0); // skip height
     writer.writeUInt32BE(0); // skip color depth
     writer.writeUInt32BE(0); // skip number of colors used
-    writer.writeUInt32BE(m_value.dataSize());
-    writer.write(value().dataPointer(), m_value.dataSize());
+    writer.writeUInt32BE(static_cast<uint32>(m_value.dataSize()));
+    writer.write(value().dataPointer(), static_cast<streamoff>(m_value.dataSize()));
 }
 
 } // namespace TagParser

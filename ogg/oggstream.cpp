@@ -65,7 +65,7 @@ void OggStream::internalParseHeader(Diagnostics &diag)
         const uint32 currentSize = iterator.currentSegmentSize();
         if (currentSize >= 8) {
             // determine stream format
-            inputStream().seekg(iterator.currentSegmentOffset());
+            inputStream().seekg(static_cast<streamoff>(iterator.currentSegmentOffset()));
             const uint64 sig = reader().readUInt64BE();
 
             if ((sig & 0x00ffffffffffff00u) == 0x00766F7262697300u) {

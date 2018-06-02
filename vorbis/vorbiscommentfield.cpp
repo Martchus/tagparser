@@ -191,6 +191,9 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
 
                 pictureBlock.make(bufferStream);
                 valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), requiredSize);
+            } catch (const Failure &) {
+                diag.emplace_back(DiagLevel::Critical, "Unable to make METADATA_BLOCK_PICTURE struct from the assigned value.", context);
+                throw;
             } catch (...) {
                 catchIoFailure();
                 diag.emplace_back(DiagLevel::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
@@ -200,7 +203,12 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
             // make normal string value
             valueString = value().toString();
         }
-        writer.writeUInt32LE(id().size() + 1 + valueString.size());
+        const auto size(valueString.size() + id().size() + 1);
+        if (size > numeric_limits<uint32>::max()) {
+            diag.emplace_back(DiagLevel::Critical, "Assigned value exceeds the maximum size.", context);
+            throw InvalidDataException();
+        }
+        writer.writeUInt32LE(static_cast<uint32>(size));
         writer.writeString(id());
         writer.writeChar('=');
         writer.writeString(valueString);

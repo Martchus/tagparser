@@ -27,10 +27,12 @@ Mp4ExtendedFieldId::Mp4ExtendedFieldId(KnownField field)
 {
     switch (field) {
     case KnownField::EncoderSettings:
-        mean = Mp4TagExtendedMeanIds::iTunes, name = Mp4TagExtendedNameIds::cdec;
+        mean = Mp4TagExtendedMeanIds::iTunes;
+        name = Mp4TagExtendedNameIds::cdec;
         break;
     case KnownField::RecordLabel:
-        mean = Mp4TagExtendedMeanIds::iTunes, name = Mp4TagExtendedNameIds::label;
+        mean = Mp4TagExtendedMeanIds::iTunes;
+        name = Mp4TagExtendedNameIds::label;
         updateOnly = true; // set record label via extended field only if extended field is already present
         break;
     default:
@@ -319,7 +321,11 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
     static const string context("parsing MP4 tag");
     istream &stream = metaAtom.container().stream();
     BinaryReader &reader = metaAtom.container().reader();
-    m_size = metaAtom.totalSize();
+    if (metaAtom.totalSize() > numeric_limits<uint32>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Can't handle such big \"meta\" atoms.", context);
+        throw NotImplementedException();
+    }
+    m_size = static_cast<uint32>(metaAtom.totalSize());
     Mp4Atom *subAtom = nullptr;
     try {
         metaAtom.childById(Mp4AtomIds::HandlerReference, diag);
@@ -327,7 +333,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
     if (subAtom) {
-        stream.seekg(subAtom->startOffset() + subAtom->headerSize());
+        stream.seekg(static_cast<streamoff>(subAtom->startOffset() + subAtom->headerSize()));
         int versionByte = reader.readByte();
         if (versionByte != 0) {
             diag.emplace_back(DiagLevel::Warning, "Version is unknown.", context);
@@ -351,19 +357,18 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
     } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Unable to parse child atoms of meta atom (stores hdlr and ilst atoms).", context);
     }
-    if (subAtom) {
-        for (auto *child = subAtom->firstChild(); child; child = child->nextSibling()) {
-            Mp4TagField tagField;
-            try {
-                child->parse(diag);
-                tagField.reparse(*child, diag);
-                fields().emplace(child->id(), move(tagField));
-            } catch (const Failure &) {
-            }
-        }
-    } else {
+    if (!subAtom) {
         diag.emplace_back(DiagLevel::Warning, "No ilst atom found (stores attached meta information).", context);
         throw NoDataFoundException();
+    }
+    for (auto *child = subAtom->firstChild(); child; child = child->nextSibling()) {
+        Mp4TagField tagField;
+        try {
+            child->parse(diag);
+            tagField.reparse(*child, diag);
+            fields().emplace(child->id(), move(tagField));
+        } catch (const Failure &) {
+        }
     }
 }
 
@@ -429,6 +434,10 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag)
     if (m_ilstSize != 8) {
         m_metaSize += m_ilstSize;
     }
+    if (m_metaSize >= numeric_limits<uint32>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Making such big tags is not implemented.", "making MP4 tag");
+        throw NotImplementedException();
+    }
 }
 
 /*!
@@ -442,7 +451,7 @@ void Mp4TagMaker::make(ostream &stream, Diagnostics &diag)
 {
     // write meta head
     BinaryWriter writer(&stream);
-    writer.writeUInt32BE(m_metaSize);
+    writer.writeUInt32BE(static_cast<uint32>(m_metaSize));
     writer.writeUInt32BE(Mp4AtomIds::Meta);
     // write hdlr atom
     static const byte hdlrData[37] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x68, 0x64, 0x6C, 0x72, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -450,7 +459,7 @@ void Mp4TagMaker::make(ostream &stream, Diagnostics &diag)
     stream.write(reinterpret_cast<const char *>(hdlrData), sizeof(hdlrData));
     if (m_ilstSize != 8) {
         // write ilst head
-        writer.writeUInt32BE(m_ilstSize);
+        writer.writeUInt32BE(static_cast<uint32>(m_ilstSize));
         writer.writeUInt32BE(Mp4AtomIds::ItunesList);
         // write fields
         for (auto &maker : m_maker) {

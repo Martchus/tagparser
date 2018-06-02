@@ -442,13 +442,13 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
     }
 
     // read further information from the CodecPrivate element for some codecs
+    EbmlElement *codecPrivateElement;
     switch (m_format.general) {
-        EbmlElement *codecPrivateElement;
     case GeneralMediaFormat::MicrosoftVideoCodecManager:
         if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse bitmap info header to determine actual format
             if (codecPrivateElement->dataSize() >= 0x28) {
-                m_istream->seekg(codecPrivateElement->dataOffset());
+                m_istream->seekg(static_cast<streamoff>(codecPrivateElement->dataOffset()));
                 BitmapInfoHeader bitmapInfoHeader;
                 bitmapInfoHeader.parse(reader());
                 m_formatId.reserve(m_formatId.size() + 7);
@@ -465,7 +465,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse WAVE header to determine actual format
             if (codecPrivateElement->dataSize() >= 16) {
-                m_istream->seekg(codecPrivateElement->dataOffset());
+                m_istream->seekg(static_cast<streamoff>(codecPrivateElement->dataOffset()));
                 WaveFormatHeader waveFormatHeader;
                 waveFormatHeader.parse(reader());
                 WaveAudioStream::addInfo(waveFormatHeader, *this);
@@ -502,7 +502,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             auto avcConfig = make_unique<TagParser::AvcConfiguration>();
             try {
-                m_istream->seekg(codecPrivateElement->dataOffset());
+                m_istream->seekg(static_cast<streamoff>(codecPrivateElement->dataOffset()));
                 avcConfig->parse(m_reader, codecPrivateElement->dataSize());
                 Mp4Track::addInfo(*avcConfig, *this);
             } catch (const TruncatedDataException &) {

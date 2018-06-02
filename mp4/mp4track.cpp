@@ -1219,8 +1219,8 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     // make further values, either from existing tkhd atom or just some defaults
     if (info.canUseExisting) {
         // write all bytes after the previously determined additionalDataOffset
-        m_ostream->write(
-            m_tkhdAtom->buffer().get() + m_tkhdAtom->headerSize() + info.additionalDataOffset, m_tkhdAtom->dataSize() - info.additionalDataOffset);
+        m_ostream->write(m_tkhdAtom->buffer().get() + m_tkhdAtom->headerSize() + info.additionalDataOffset,
+            static_cast<streamoff>(m_tkhdAtom->dataSize() - info.additionalDataOffset));
         // discard the buffer again if it wasn't present before
         if (info.discardBuffer) {
             m_tkhdAtom->discardBuffer();
