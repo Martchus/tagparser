@@ -7,6 +7,8 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace IoUtilities;
 using namespace ConversionUtilities;
