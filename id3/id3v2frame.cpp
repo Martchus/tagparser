@@ -362,7 +362,8 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
     const string context("making " % m_frame.frameIdString() + " frame");
 
     // validate assigned data
-    if (m_frame.value().isEmpty()) {
+    const auto value(m_frame.value());
+    if (value.isEmpty()) {
         diag.emplace_back(DiagLevel::Critical, "Cannot make an empty frame.", context);
         throw InvalidDataException();
     }
@@ -461,7 +462,12 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
             copy(m_frame.value().dataPointer(), m_frame.value().dataPointer() + m_decompressedSize, m_data.get());
         }
     } catch (const ConversionException &) {
-        diag.emplace_back(DiagLevel::Critical, "Assigned value can not be converted appropriately.", context);
+        try {
+            diag.emplace_back(DiagLevel::Critical,
+                argsToString("Assigned value \"", value.toString(TagTextEncoding::Utf8), "\" can not be converted appropriately."), context);
+        } catch (const ConversionException &) {
+            diag.emplace_back(DiagLevel::Critical, "Assigned value can not be converted appropriately.", context);
+        }
         throw InvalidDataException();
     }
 
