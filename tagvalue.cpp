@@ -5,6 +5,7 @@
 
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/conversionexception.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 
 #include <algorithm>
@@ -16,6 +17,33 @@ using namespace ConversionUtilities;
 using namespace ChronoUtilities;
 
 namespace TagParser {
+
+/*!
+ * \brief Returns the string representation of the specified \a dataType.
+ */
+const char *tagDataTypeString(TagDataType dataType)
+{
+    switch (dataType) {
+    case TagDataType::Text:
+        return "text";
+    case TagDataType::Integer:
+        return "integer";
+    case TagDataType::PositionInSet:
+        return "position in set";
+    case TagDataType::StandardGenreIndex:
+        return "genre index";
+    case TagDataType::TimeSpan:
+        return "time span";
+    case TagDataType::DateTime:
+        return "date time";
+    case TagDataType::Picture:
+        return "picture";
+    case TagDataType::Binary:
+        return "binary";
+    default:
+        return "undefined";
+    }
+}
 
 /*!
  * \class Media::TagValue
@@ -171,7 +199,7 @@ int32 TagValue::toInteger() const
         }
         throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
     default:
-        throw ConversionException("Can not convert binary data/picture/time span/date time to integer.");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to integer."));
     }
 }
 
@@ -204,12 +232,12 @@ int TagValue::toStandardGenreIndex() const
     case TagDataType::StandardGenreIndex:
     case TagDataType::Integer:
         if (m_size != sizeof(int32)) {
-            throw ConversionException("The assigned data is of unappropriate size.");
+            throw ConversionException("The assigned index/integer is of unappropriate size.");
         }
         index = static_cast<int>(*reinterpret_cast<int32 *>(m_ptr.get()));
         break;
     default:
-        throw ConversionException("It is not possible to convert assigned data to a number because of its incompatible type.");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to genre index."));
     }
     if (Id3Genres::isIndexSupported(index)) {
         return index;
@@ -251,7 +279,7 @@ PositionInSet TagValue::toPositionInSet() const
             throw ConversionException("The size of the assigned data is not appropriate.");
         }
     default:
-        throw ConversionException("Can not convert binary data/genre index/picture to \"position in set\".");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to position in set."));
     }
 }
 
@@ -276,10 +304,10 @@ TimeSpan TagValue::toTimeSpan() const
         case sizeof(int64):
             return TimeSpan(*(reinterpret_cast<int64 *>(m_ptr.get())));
         default:
-            throw ConversionException("The size of the assigned data is not appropriate.");
+            throw ConversionException("The size of the assigned integer is not appropriate for conversion to time span.");
         }
     default:
-        throw ConversionException("Can not convert binary data/genre index/position in set/picture to time span.");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to time span."));
     }
 }
 
@@ -303,10 +331,10 @@ DateTime TagValue::toDateTime() const
         } else if (m_size == sizeof(int64)) {
             return DateTime(*(reinterpret_cast<uint64 *>(m_ptr.get())));
         } else {
-            throw ConversionException("The assigned data is of unappropriate size.");
+            throw ConversionException("The size of the assigned integer is not appropriate for conversion to date time.");
         }
     default:
-        throw ConversionException("Can not convert binary data/genre index/position in set/picture to date time.");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to date time."));
     }
 }
 
@@ -456,7 +484,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         result = toDateTime().toString();
         break;
     default:
-        throw ConversionException("Can not convert binary data/picture to string.");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
     if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
         auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(result.data(), result.size())
@@ -530,7 +558,7 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         regularStrRes = toTimeSpan().toString();
         break;
     default:
-        throw ConversionException("Can not convert binary data/picture to string.");
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
     if (encoding == TagTextEncoding::Utf16LittleEndian || encoding == TagTextEncoding::Utf16BigEndian) {
         auto encodedData = encoding == TagTextEncoding::Utf16LittleEndian ? convertUtf8ToUtf16LE(regularStrRes.data(), result.size())
