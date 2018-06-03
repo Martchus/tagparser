@@ -19,9 +19,10 @@ enum class DiagLevel {
     Information = 2, /**< indicates an informal message */
     Warning = 3, /**< indicates a warning */
     Critical = 4, /**< indicates a critical error */
-    Fatal = 5, /**< indicates a fatal error */
+    Fatal = 5, /**< indicates a fatal error (note that this level is currently not used) */
 };
 
+/// \brief The worst diag level.
 constexpr auto worstDiagLevel = DiagLevel::Fatal;
 
 TAG_PARSER_EXPORT const char *diagLevelName(DiagLevel diagLevel);
@@ -58,6 +59,9 @@ private:
     ChronoUtilities::DateTime m_creationTime;
 };
 
+/*!
+ * \brief Constructs a new DiagMessage.
+ */
 inline DiagMessage::DiagMessage(DiagLevel level, const std::string &message, const std::string &context)
     : m_level(level)
     , m_message(message)
@@ -66,6 +70,9 @@ inline DiagMessage::DiagMessage(DiagLevel level, const std::string &message, con
 {
 }
 
+/*!
+ * \brief Constructs a new DiagMessage.
+ */
 inline DiagMessage::DiagMessage(DiagLevel level, std::string &&message, const std::string &context)
     : m_level(level)
     , m_message(message)
@@ -74,6 +81,9 @@ inline DiagMessage::DiagMessage(DiagLevel level, std::string &&message, const st
 {
 }
 
+/*!
+ * \brief Constructs a new DiagMessage.
+ */
 inline DiagMessage::DiagMessage(DiagLevel level, const std::string &message, std::string &&context)
     : m_level(level)
     , m_message(message)
@@ -82,6 +92,9 @@ inline DiagMessage::DiagMessage(DiagLevel level, const std::string &message, std
 {
 }
 
+/*!
+ * \brief Constructs a new DiagMessage.
+ */
 inline DiagMessage::DiagMessage(DiagLevel level, std::string &&message, std::string &&context)
     : m_level(level)
     , m_message(message)
@@ -90,31 +103,49 @@ inline DiagMessage::DiagMessage(DiagLevel level, std::string &&message, std::str
 {
 }
 
+/*!
+ * \brief Returns the level.
+ */
 inline DiagLevel DiagMessage::level() const
 {
     return m_level;
 }
 
+/*!
+ * \brief Returns the string representation of the level().
+ */
 inline const char *DiagMessage::levelName() const
 {
     return diagLevelName(m_level);
 }
 
+/*!
+ * \brief Returns the message.
+ */
 inline const std::string &DiagMessage::message() const
 {
     return m_message;
 }
 
+/*!
+ * \brief Returns the context.
+ */
 inline const std::string &DiagMessage::context() const
 {
     return m_context;
 }
 
+/*!
+ * \brief Returns the creation time (using GMT timezone).
+ */
 inline const ChronoUtilities::DateTime &DiagMessage::creationTime() const
 {
     return m_creationTime;
 }
 
+/*!
+ * \brief Returns whether the current instance equals \a other. Everything but the creationTime() is considered.
+ */
 inline bool DiagMessage::operator==(const DiagMessage &other) const
 {
     return m_level == other.m_level && m_message == other.m_message && m_context == other.m_context;
@@ -129,11 +160,19 @@ public:
     DiagLevel level() const;
 };
 
+/*!
+ * \brief Constructs a new container with the specified messages.
+ */
 inline Diagnostics::Diagnostics(std::initializer_list<DiagMessage> list)
     : std::vector<DiagMessage>(list)
 {
 }
 
+/*!
+ * \brief The DiagPtr class is a leftover from development which should have been removed.
+ * \deprecated Don't use, this should never have been committed in the first place.
+ * \todo Remove in v8.
+ */
 class DiagPtr {
 public:
     DiagPtr();
