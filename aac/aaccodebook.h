@@ -8,6 +8,8 @@
 
 namespace TagParser {
 
+/// \cond
+
 struct LIB_EXPORT AacHcb {
     byte offset;
     byte extraBits;
@@ -76,6 +78,8 @@ extern const sbyte tHuffmanEnvBal30dB[24][2];
 extern const sbyte fHuffmanEnvBal30dB[24][2];
 extern const sbyte tHuffmanNoise30dB[62][2];
 extern const sbyte tHuffmanNoiseBal30dB[24][2];
+
+/// \endcond
 
 } // namespace TagParser
 

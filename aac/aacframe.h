@@ -9,6 +9,8 @@
 
 namespace TagParser {
 
+/// \cond
+
 class AdtsFrame;
 
 constexpr auto aacMaxChannels = 64;
@@ -523,6 +525,8 @@ constexpr int16 AacFrameElementParser::huffmanCodebook(byte i)
 {
     return static_cast<int16>(i ? (16428320 & 0xFFFF) : ((16428320 >> 16) & 0xFFFF));
 }
+
+/// \endcond
 
 } // namespace TagParser
 

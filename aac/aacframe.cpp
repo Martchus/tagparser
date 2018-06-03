@@ -22,9 +22,7 @@ using namespace IoUtilities;
 
 namespace TagParser {
 
-/*!
- * \cond
- */
+/// \cond
 
 const byte maxPredictionSfb[16] = { 33, 33, 38, 40, 40, 40, 41, 41, 37, 37, 37, 34, 64, 64, 64, 64 };
 
@@ -148,10 +146,6 @@ const uint16 *swbOffset128Window[] = {
     swbOffset128_16, /* 11025 */
     swbOffset128_8 /* 8000  */
 };
-
-/*!
- * \endcond
- */
 
 /*!
  * \brief Constructs a new LTP info object.
@@ -2114,5 +2108,7 @@ void AacFrameElementParser::parse(const AdtsFrame &adtsFrame, std::unique_ptr<ch
     m_mpeg4SamplingFrequencyIndex = adtsFrame.mpeg4SamplingFrequencyIndex();
     parseRawDataBlock();
 }
+
+/// \endcond
 
 } // namespace TagParser
