@@ -11,24 +11,24 @@ namespace TagParser {
 
 // clang-format off
 const AacHcb *const aacHcbTable[] = {
-    0, aacHcb1Step1, aacHcb2Step1, 0, aacHcb4Step1, 0, aacHcb6Step1, 0, aacHcb8Step1, 0, aacHcb10Step1, aacHcb11Step1
+    nullptr, aacHcb1Step1, aacHcb2Step1, nullptr, aacHcb4Step1, nullptr, aacHcb6Step1, nullptr, aacHcb8Step1, nullptr, aacHcb10Step1, aacHcb11Step1
 };
 
 const AacHcb2Pair *const aacHcb2PairTable[] = {
-    0, 0, 0, 0, 0, 0, aacHcb6Step2, 0, aacHcb8Step2, 0, aacHcb10Step2, aacHcb11Step2
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, aacHcb6Step2, nullptr, aacHcb8Step2, nullptr, aacHcb10Step2, aacHcb11Step2
 };
 
 const AacHcb2Quad *const aacHcb2QuadTable[] = {
-    0, aacHcb1Step2, aacHcb2Step2, 0, aacHcb4Step2, 0, 0, 0, 0, 0, 0, 0
+    nullptr, aacHcb1Step2, aacHcb2Step2, nullptr, aacHcb4Step2, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
 const AacHcbBinPair *const aacHcbBinTable[] = {
-    0, 0, 0, 0, 0, aacHcb5, 0, aacHcb7, 0, aacHcb9, 0, 0
+    nullptr, nullptr, nullptr, nullptr, nullptr, aacHcb5, nullptr, aacHcb7, nullptr, aacHcb9, nullptr, nullptr
 };
 
 const byte aacHcbN[] = { 0, 5, 5, 0, 5, 0, 5, 0, 5, 0, 6, 5 };
 
-uint8_t unsigned_cb[] = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+const byte unsignedCb[] = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
   /* codebook 16 to 31 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
