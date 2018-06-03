@@ -146,6 +146,7 @@ void TagValueTests::testDateTime()
 void TagValueTests::testString()
 {
     CPPUNIT_ASSERT_EQUAL("15\xe4"s, TagValue("15ä", 4, TagTextEncoding::Utf8).toString(TagTextEncoding::Latin1));
+    CPPUNIT_ASSERT_EQUAL("15\xe4"s, TagValue("15ä", TagTextEncoding::Utf8, TagTextEncoding::Latin1).toString());
     CPPUNIT_ASSERT_EQUAL("15ä"s, TagValue("15ä", 4, TagTextEncoding::Utf8).toString(TagTextEncoding::Utf8));
     CPPUNIT_ASSERT_EQUAL("\x31\0\x35\0"s, TagValue(15).toString(TagTextEncoding::Utf16LittleEndian));
     CPPUNIT_ASSERT_EQUAL("\0\x31\0\x35"s, TagValue(15).toString(TagTextEncoding::Utf16BigEndian));

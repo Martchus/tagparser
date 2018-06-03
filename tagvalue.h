@@ -7,6 +7,7 @@
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/binaryconversion.h>
 
+#include <cstring>
 #include <iosfwd>
 #include <memory>
 #include <string>
@@ -66,6 +67,7 @@ public:
     TagValue();
     TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
         TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    TagValue(const char *text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(int value);
@@ -177,6 +179,20 @@ inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncodin
     , m_labeledAsReadonly(false)
 {
     assignText(text, textSize, textEncoding, convertTo);
+}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given \a text.
+ * \param text Specifies the text to be assigned. This string must be null-terminated.
+ * \param textEncoding Specifies the encoding of the given \a text.
+ * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
+ *                  use \a textEncoding without any character set conversions.
+ * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
+ */
+inline TagValue::TagValue(const char *text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+{
+    assignText(text, std::strlen(text), textEncoding, convertTo);
 }
 
 /*!
