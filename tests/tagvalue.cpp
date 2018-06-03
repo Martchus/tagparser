@@ -172,8 +172,12 @@ void TagValueTests::testString()
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion pos", TagValue("a4 / 15", 7, TagTextEncoding::Utf8).toPositionInSet(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
         "conversion to date", DateTime::fromDate(2004, 4, 15), TagValue("2004-04-15", 10, TagTextEncoding::Utf8).toDateTime());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to date from UTF-16", DateTime::fromDate(2015, 4, 15),
+        TagValue("\0\x32\0\x30\0\x31\0\x35\0\x2d\0\x30\0\x34\0\x2d\0\x31\0\x35", 20, TagTextEncoding::Utf16BigEndian).toDateTime());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to date", TagValue("_", 1, TagTextEncoding::Utf8).toDateTime(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to time span", TimeSpan::fromHours(1.5), TagValue("01:30:00", 10, TagTextEncoding::Utf8).toTimeSpan());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to time span from UTF-16", TimeSpan::fromHours(1.5),
+        TagValue("\0\x31\0\x3a\0\x33\0\x30\0\x3a\0\x30\0\x30", 14, TagTextEncoding::Utf16BigEndian).toTimeSpan());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to time span", TagValue("_", 1, TagTextEncoding::Utf8).toTimeSpan(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
         "conversion to genre from index", 15, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toStandardGenreIndex());
