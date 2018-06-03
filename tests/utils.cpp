@@ -2,10 +2,13 @@
 
 #include "../aspectratio.h"
 #include "../backuphelper.h"
+#include "../diagnostics.h"
 #include "../exceptions.h"
 #include "../margin.h"
 #include "../mediafileinfo.h"
 #include "../mediaformat.h"
+#include "../positioninset.h"
+#include "../progressfeedback.h"
 #include "../signature.h"
 #include "../size.h"
 #include "../tagtarget.h"
@@ -39,6 +42,10 @@ class UtilitiesTests : public TestFixture {
     CPPUNIT_TEST(testMargin);
     CPPUNIT_TEST(testAspectRatio);
     CPPUNIT_TEST(testMediaFormat);
+    CPPUNIT_TEST(testPositionInSet);
+    CPPUNIT_TEST(testProgressFeedback);
+    CPPUNIT_TEST(testAbortableProgressFeedback);
+    CPPUNIT_TEST(testDiagnostics);
 #ifdef PLATFORM_UNIX
     CPPUNIT_TEST(testBackupFile);
 #endif
@@ -55,6 +62,10 @@ public:
     void testMargin();
     void testAspectRatio();
     void testMediaFormat();
+    void testPositionInSet();
+    void testProgressFeedback();
+    void testAbortableProgressFeedback();
+    void testDiagnostics();
 #ifdef PLATFORM_UNIX
     void testBackupFile();
 #endif
@@ -161,6 +172,127 @@ void UtilitiesTests::testMediaFormat()
     CPPUNIT_ASSERT_EQUAL("MPEG-4 AAC-LC"s, string(aac.abbreviation()));
     CPPUNIT_ASSERT_EQUAL("HE-AAC"s, string(aac.shortAbbreviation()));
     CPPUNIT_ASSERT_EQUAL("Spectral Band Replication / HE-AAC"s, string(aac.extensionName()));
+}
+
+void UtilitiesTests::testPositionInSet()
+{
+    const PositionInSet empty;
+    CPPUNIT_ASSERT(empty.isNull());
+    CPPUNIT_ASSERT_EQUAL(0, empty.position());
+    CPPUNIT_ASSERT_EQUAL(0, empty.total());
+    CPPUNIT_ASSERT_EQUAL(""s, empty.toString());
+
+    const PositionInSet oneOfThree(1, 3);
+    CPPUNIT_ASSERT(!oneOfThree.isNull());
+    CPPUNIT_ASSERT_EQUAL(1, oneOfThree.position());
+    CPPUNIT_ASSERT_EQUAL(3, oneOfThree.total());
+    CPPUNIT_ASSERT_EQUAL("1/3"s, oneOfThree.toString());
+
+    const PositionInSet posOnly(5, 0);
+    CPPUNIT_ASSERT(!posOnly.isNull());
+    CPPUNIT_ASSERT_EQUAL(5, posOnly.position());
+    CPPUNIT_ASSERT_EQUAL(0, posOnly.total());
+    CPPUNIT_ASSERT_EQUAL("5"s, posOnly.toString());
+
+    const PositionInSet totalOnly(0, 5);
+    CPPUNIT_ASSERT(!totalOnly.isNull());
+    CPPUNIT_ASSERT_EQUAL(0, totalOnly.position());
+    CPPUNIT_ASSERT_EQUAL(5, totalOnly.total());
+    CPPUNIT_ASSERT_EQUAL("/5"s, totalOnly.toString());
+}
+
+void UtilitiesTests::testProgressFeedback()
+{
+    unsigned int steps = 0;
+    string step;
+    unsigned int stepPercentage;
+    unsigned int overallPercentage = 0;
+
+    ProgressFeedback progress(
+        [&](const ProgressFeedback &progress) {
+            ++steps;
+            step = progress.step();
+            stepPercentage = progress.stepPercentage();
+            overallPercentage = progress.overallPercentage();
+        },
+        [&](const ProgressFeedback &progress) {
+            stepPercentage = progress.stepPercentage();
+            overallPercentage = progress.overallPercentage();
+        });
+    CPPUNIT_ASSERT_EQUAL(0u, steps);
+    progress.updateOverallPercentage(25);
+    CPPUNIT_ASSERT_EQUAL(0u, steps);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+    progress.updateStep("foo", 45);
+    CPPUNIT_ASSERT_EQUAL(1u, steps);
+    CPPUNIT_ASSERT_EQUAL("foo"s, step);
+    CPPUNIT_ASSERT_EQUAL(45u, stepPercentage);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+    progress.updateStepPercentage(60);
+    CPPUNIT_ASSERT_EQUAL(1u, steps);
+    CPPUNIT_ASSERT_EQUAL("foo"s, step);
+    CPPUNIT_ASSERT_EQUAL(60u, stepPercentage);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+    progress.updateStepPercentageFromFraction(0.75);
+    CPPUNIT_ASSERT_EQUAL(1u, steps);
+    CPPUNIT_ASSERT_EQUAL("foo"s, step);
+    CPPUNIT_ASSERT_EQUAL(75u, stepPercentage);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+}
+
+void UtilitiesTests::testAbortableProgressFeedback()
+{
+    unsigned int steps = 0;
+    string step;
+    unsigned int stepPercentage;
+    unsigned int overallPercentage = 0;
+
+    AbortableProgressFeedback progress(
+        [&](const AbortableProgressFeedback &progress) {
+            ++steps;
+            step = progress.step();
+            stepPercentage = progress.stepPercentage();
+            overallPercentage = progress.overallPercentage();
+        },
+        [&](const AbortableProgressFeedback &progress) {
+            stepPercentage = progress.stepPercentage();
+            overallPercentage = progress.overallPercentage();
+        });
+    CPPUNIT_ASSERT(!progress.isAborted());
+    CPPUNIT_ASSERT_NO_THROW_MESSAGE("stop does nothing if not aborted", progress.stopIfAborted());
+    CPPUNIT_ASSERT_EQUAL(0u, steps);
+    progress.updateOverallPercentage(25);
+    CPPUNIT_ASSERT_EQUAL(0u, steps);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+    progress.updateStep("foo", 45);
+    CPPUNIT_ASSERT_EQUAL(1u, steps);
+    CPPUNIT_ASSERT_EQUAL("foo"s, step);
+    CPPUNIT_ASSERT_EQUAL(45u, stepPercentage);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+    CPPUNIT_ASSERT_NO_THROW_MESSAGE("next step continues if not aborted", progress.nextStepOrStop("bar", 33));
+    CPPUNIT_ASSERT_EQUAL(2u, steps);
+    CPPUNIT_ASSERT_EQUAL("bar"s, step);
+    CPPUNIT_ASSERT_EQUAL(33u, stepPercentage);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+    progress.tryToAbort();
+    CPPUNIT_ASSERT(progress.isAborted());
+    CPPUNIT_ASSERT_THROW(progress.nextStepOrStop("not going to happen", 33), OperationAbortedException);
+    CPPUNIT_ASSERT_EQUAL(2u, steps);
+    CPPUNIT_ASSERT_EQUAL("bar"s, step);
+    CPPUNIT_ASSERT_EQUAL(33u, stepPercentage);
+    CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
+}
+
+void UtilitiesTests::testDiagnostics()
+{
+    Diagnostics diag;
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::None, diag.level());
+    diag.emplace_back(DiagLevel::Warning, "warning msg", "context");
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::Warning, diag.level());
+    CPPUNIT_ASSERT(!diag.has(DiagLevel::Critical));
+    diag.emplace_back(DiagLevel::Critical, "critical msg", "context");
+    CPPUNIT_ASSERT_EQUAL(DiagLevel::Critical, diag.level());
+    CPPUNIT_ASSERT(diag.has(DiagLevel::Critical));
 }
 
 #ifdef PLATFORM_UNIX
