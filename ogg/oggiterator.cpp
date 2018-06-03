@@ -13,7 +13,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::OggIterator
+ * \class TagParser::OggIterator
  * \brief The OggIterator class helps iterating through all segments of an OGG bitstream.
  *
  * If an OggIterator has just been constructed it is invalid. To fetch the first page from

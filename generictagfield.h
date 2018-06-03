@@ -8,7 +8,7 @@ namespace TagParser {
 template <class implementationType> class TagField;
 
 /*!
- * \class Media::TagFieldTraits
+ * \class TagParser::TagFieldTraits
  * \brief Defines traits for the specified \a ImplementationType.
  *
  * A template specialization for each TagField subclass must be provided.

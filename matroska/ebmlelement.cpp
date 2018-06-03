@@ -23,7 +23,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::EbmlElement
+ * \class TagParser::EbmlElement
  * \brief The EbmlElement class helps to parse EBML files such as Matroska files.
  */
 

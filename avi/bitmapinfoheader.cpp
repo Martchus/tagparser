@@ -7,7 +7,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::BitmapInfoHeader
+ * \class TagParser::BitmapInfoHeader
  * \brief The BitmapInfoHeader class parses the BITMAPINFOHEADER structure defined by MS.
  */
 

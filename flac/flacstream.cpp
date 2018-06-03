@@ -21,8 +21,8 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::FlacStream
- * \brief Implementation of Media::AbstractTrack for raw FLAC streams.
+ * \class TagParser::FlacStream
+ * \brief Implementation of TagParser::AbstractTrack for raw FLAC streams.
  */
 
 /*!

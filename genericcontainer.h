@@ -10,11 +10,11 @@
 namespace TagParser {
 
 /*!
- * \class Media::GenericContainer
+ * \class TagParser::GenericContainer
  * \brief The GenericContainer class helps parsing header, track, tag and chapter information
  *        of a file.
  *
- * \tparam FileInfoType Specifies the file info class (a class derived from Media::BasicFileInfo) which is used to specify the related file.
+ * \tparam FileInfoType Specifies the file info class (a class derived from TagParser::BasicFileInfo) which is used to specify the related file.
  * \tparam TagType Specifies the class which is used to deal with the tag information of the file.
  * \tparam TrackType Specifies the class which is used to deal with the track of the file.
  * \tparam ElementType Specifies the class which is used to deal with the elements the file consists of.

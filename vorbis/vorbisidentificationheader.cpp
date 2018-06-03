@@ -13,7 +13,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::VorbisIdentificationHeader
+ * \class TagParser::VorbisIdentificationHeader
  * \brief The VorbisIdentificationHeader class is a Vorbis identification header parser.
  */
 

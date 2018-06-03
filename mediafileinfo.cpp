@@ -66,7 +66,7 @@ namespace TagParser {
 #endif
 
 /*!
- * \class Media::MediaFileInfo
+ * \class TagParser::MediaFileInfo
  * \brief The MediaFileInfo class allows to read and write tag information providing
  *        a container/tag format independent interface.
  *
@@ -144,7 +144,7 @@ MediaFileInfo::~MediaFileInfo()
  * container(), mp4Container() and matroskaContainer() will return the parsed
  * information.
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  * \sa isContainerParsed(), parseTracks(), parseTag(), parseChapters(), parseEverything()
  */
@@ -287,7 +287,7 @@ startParsingSignature:
  * hasTracksOfType() will return the parsed information.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa areTracksParsed(), parseContainerFormat(), parseTags(), parseChapters(), parseEverything()
@@ -355,7 +355,7 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
  *
  * Previously assigned but not applied tag information will be discarted.
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa isTagParsed(), parseContainerFormat(), parseTracks(), parseChapters(), parseEverything()
@@ -437,7 +437,7 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
  * This method parses the chapters of the current file if not been parsed yet.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
@@ -472,7 +472,7 @@ void MediaFileInfo::parseChapters(Diagnostics &diag)
  * This method parses the attachments of the current file if not been parsed yet.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
@@ -644,7 +644,7 @@ bool MediaFileInfo::createAppropriateTags(const TagCreationSettings &settings)
  * will be created to replace the old file.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a making error occurs.
  *
  * \remarks Tags and tracks need to be parsed without errors before this method can be called.
  *          All previous parsing results are cleared (using clearParsingResults()). Hence

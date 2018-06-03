@@ -18,7 +18,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::FlacMetaDataBlockHeader
+ * \class TagParser::FlacMetaDataBlockHeader
  * \brief The FlacMetaDataBlockHeader class is a FLAC "METADATA_BLOCK_HEADER" parser and maker.
  * \sa https://xiph.org/flac/format.html
  */
@@ -47,7 +47,7 @@ void FlacMetaDataBlockHeader::makeHeader(std::ostream &outputStream)
 }
 
 /*!
- * \class Media::FlacMetaDataBlockStreamInfo
+ * \class TagParser::FlacMetaDataBlockStreamInfo
  * \brief The FlacMetaDataBlockStreamInfo class is a FLAC "METADATA_BLOCK_STREAMINFO" parser.
  * \sa https://xiph.org/flac/format.html
  */
@@ -71,7 +71,7 @@ void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
 }
 
 /*!
- * \class Media::FlacMetaDataBlockPicture
+ * \class TagParser::FlacMetaDataBlockPicture
  * \brief The FlacMetaDataBlockPicture class is a FLAC "METADATA_BLOCK_PICTURE" parser and maker.
  * \sa https://xiph.org/flac/format.html
  */

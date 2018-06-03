@@ -34,7 +34,7 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MatroskaContainer
+ * \class TagParser::MatroskaContainer
  * \brief Implementation of GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>.
  */
 
@@ -602,7 +602,7 @@ finish:
  * This private method is called when parsing the header.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)

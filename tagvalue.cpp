@@ -46,10 +46,10 @@ const char *tagDataTypeString(TagDataType dataType)
 }
 
 /*!
- * \class Media::TagValue
+ * \class TagParser::TagValue
  * \brief The TagValue class wraps values of different types. It is meant to be assigned to a tag field.
  *
- * For a list of supported types see Media::TagDataType.
+ * For a list of supported types see TagParser::TagDataType.
  */
 
 /*!

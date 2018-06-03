@@ -13,8 +13,8 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MpegAudioFrameStream
- * \brief Implementation of Media::AbstractTrack MPEG audio streams.
+ * \class TagParser::MpegAudioFrameStream
+ * \brief Implementation of TagParser::AbstractTrack MPEG audio streams.
  */
 
 /*!

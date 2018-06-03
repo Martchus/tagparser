@@ -25,7 +25,7 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::Mp4Container
+ * \class TagParser::Mp4Container
  * \brief Implementation of GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom>.
  */
 
@@ -874,7 +874,7 @@ calculatePadding:
  * updated (this is not tested yet since I don't have files using this atom).
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets, Diagnostics &diag)

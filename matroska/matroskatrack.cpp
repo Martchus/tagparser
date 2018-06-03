@@ -24,8 +24,8 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MatroskaTrack
- * \brief Implementation of Media::AbstractTrack for the Matroska container.
+ * \class TagParser::MatroskaTrack
+ * \brief Implementation of TagParser::AbstractTrack for the Matroska container.
  */
 
 /*!
@@ -540,7 +540,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
 }
 
 /*!
- * \class Media::MatroskaTrackHeaderMaker
+ * \class TagParser::MatroskaTrackHeaderMaker
  * \brief The MatroskaTrackHeaderMaker class helps writing Matroska "TrackEntry"-elements storing track header information.
  *
  * An instance can be obtained using the MatroskaTrack::prepareMakingHeader() method.
@@ -595,7 +595,7 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
  *        specified \a stream (makes a "TrackEntry"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void MatroskaTrackHeaderMaker::make(ostream &stream) const
 {

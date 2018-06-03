@@ -37,7 +37,7 @@ const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
 }
 
 /*!
- * \class Media::TagTarget
+ * \class TagParser::TagTarget
  * \brief The TagTarget class specifies the target of a tag.
  *
  * Tags might only target a specific track, chapter, ...

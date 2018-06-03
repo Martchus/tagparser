@@ -5,7 +5,7 @@ using namespace std;
 namespace TagParser {
 
 /*!
- * \class Media::Tag
+ * \class TagParser::Tag
  * \brief The Tag class is used to store, read and write tag information.
  *
  * The Tag class only provides the interface and common functionality. It

@@ -16,8 +16,8 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::Id3v2Tag
- * \brief Implementation of Media::Tag for ID3v2 tags.
+ * \class TagParser::Id3v2Tag
+ * \brief Implementation of TagParser::Tag for ID3v2 tags.
  */
 
 Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
@@ -240,7 +240,7 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const uint32 &id) const
  * \brief Parses tag information from the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &diag)
@@ -354,7 +354,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
  * \returns Returns a Id3v2TagMaker object which can be used to actually make the tag.
  * \remarks The tag must NOT be mutated after making is prepared when it is intended to actually
  *          make the tag using the make method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a making error occurs.
  *
  * This method might be useful when it is necessary to know the size of the tag before making it.
  * \sa make()
@@ -368,7 +368,7 @@ Id3v2TagMaker Id3v2Tag::prepareMaking(Diagnostics &diag)
  * \brief Writes tag information to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void Id3v2Tag::make(ostream &stream, uint32 padding, Diagnostics &diag)
@@ -388,7 +388,7 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
 }
 
 /*!
- * \class Media::FrameComparer
+ * \class TagParser::FrameComparer
  * \brief Defines the order which is used to store ID3v2 frames.
  *
  * The order is: unique file id, title, other text frames, other frames, cover
@@ -449,7 +449,7 @@ bool FrameComparer::operator()(const uint32 &lhsRef, const uint32 &rhsRef) const
 }
 
 /*!
- * \class Media::Id3v2TagMaker
+ * \class TagParser::Id3v2TagMaker
  * \brief The Id3v2TagMaker class helps writing ID3v2 tags.
  *
  * An instance can be obtained using the Id3v2Tag::prepareMaking() method.
@@ -492,7 +492,7 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag)
  *        specified \a stream.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void Id3v2TagMaker::make(std::ostream &stream, uint32 padding, Diagnostics &diag)
 {

@@ -15,7 +15,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \struct Media::SpsInfo
+ * \struct TagParser::SpsInfo
  * \brief The SpsInfo struct holds the sequence parameter set.
  */
 
@@ -217,7 +217,7 @@ void SpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 }
 
 /*!
- * \struct Media::PpsInfo
+ * \struct TagParser::PpsInfo
  * \brief The PpsInfo struct holds the picture parameter set.
  */
 
@@ -257,7 +257,7 @@ void PpsInfo::parse(BinaryReader &reader, uint32 maxSize)
 }
 
 /*!
- * \struct Media::HrdParameters
+ * \struct TagParser::HrdParameters
  * \brief The HrdParameters struct holds "Hypothetical Reference Decoder" parameters.
  * \remarks This is "a model for thinking about the decoding process".
  */
@@ -283,18 +283,18 @@ void HrdParameters::parse(IoUtilities::BitReader &reader)
 }
 
 /*!
- * \struct Media::TimingInfo
+ * \struct TagParser::TimingInfo
  * \brief The TimingInfo struct holds timing information (part of SPS info).
  */
 
 /*!
- * \struct Media::SliceInfo
+ * \struct TagParser::SliceInfo
  * \brief The SliceInfo struct holds the slice information of an AVC frame.
  * \remarks currently not useful, might be removed
  */
 
 /*!
- * \struct Media::AvcFrame
+ * \struct TagParser::AvcFrame
  * \brief The AvcFrame struct holds an AVC frame.
  * \remarks currently not useful, might be removed
  */

@@ -12,7 +12,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::OpusIdentificationHeader
+ * \class TagParser::OpusIdentificationHeader
  * \brief The OpusIdentificationHeader class is an Opus identification header parser.
  * \sa https://wiki.xiph.org/OggOpus
  */

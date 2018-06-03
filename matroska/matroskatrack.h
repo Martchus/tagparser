@@ -75,7 +75,7 @@ private:
  *          header.
  * \remarks The track must NOT be mutated after making is prepared when it is intended to actually
  *          make the tag using the make() method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a making error occurs.
  *
  * This method might be useful when it is necessary to know the size of the track header before making
  * it.
@@ -90,7 +90,7 @@ inline MatroskaTrackHeaderMaker MatroskaTrack::prepareMakingHeader(Diagnostics &
 /*!
  * \brief Writes header information to the specified \a stream (makes a "TrackEntry"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  * \sa prepareMaking()
  * \todo Make inline in next major release.

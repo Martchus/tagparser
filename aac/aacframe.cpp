@@ -517,7 +517,7 @@ AacIcsInfo::AacIcsInfo()
 }
 
 /*!
- * \class Media::AacFrameElementParser
+ * \class TagParser::AacFrameElementParser
  * \brief The AacFrameElementParser class parses AAC frame elements.
  * \remarks
  *  - Only reads reads the basic syntax yet; does not reconstruct samples.

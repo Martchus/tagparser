@@ -25,7 +25,7 @@ namespace TagParser {
  */
 
 /*!
- * \class Media::MatroskaCuePositionUpdater
+ * \class TagParser::MatroskaCuePositionUpdater
  * \brief The MatroskaCuePositionUpdater class helps to rewrite the "Cues"-element with shifted positions.
  *
  * This class is used when rewriting a Matroska file to save changed tag information.

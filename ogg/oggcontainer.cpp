@@ -19,8 +19,8 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::OggVorbisComment
- * \brief Specialization of Media::VorbisComment for Vorbis comments inside an OGG stream.
+ * \class TagParser::OggVorbisComment
+ * \brief Specialization of TagParser::VorbisComment for Vorbis comments inside an OGG stream.
  */
 
 const char *OggVorbisComment::typeName() const
@@ -38,8 +38,8 @@ const char *OggVorbisComment::typeName() const
 }
 
 /*!
- * \class Media::OggContainer
- * \brief Implementation of Media::AbstractContainer for OGG files.
+ * \class TagParser::OggContainer
+ * \brief Implementation of TagParser::AbstractContainer for OGG files.
  */
 
 /*!

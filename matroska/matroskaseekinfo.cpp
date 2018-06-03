@@ -15,7 +15,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MatroskaSeekInfo
+ * \class TagParser::MatroskaSeekInfo
  * \brief The MatroskaSeekInfo class helps parsing and making "SeekHead"-elements.
  */
 

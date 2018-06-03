@@ -12,7 +12,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::OggPage
+ * \class TagParser::OggPage
  * \brief The OggPage class is used to parse OGG pages.
  * \sa http://www.xiph.org/ogg/doc/framing.html
  */

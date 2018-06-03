@@ -5,7 +5,7 @@ using namespace std;
 namespace TagParser {
 
 /*!
- * \class Media::Failure
+ * \class TagParser::Failure
  * \brief The class inherits from std::exception and serves as base class for exceptions
  *        thrown by the elements of the Media namespace.
  */
@@ -33,7 +33,7 @@ const char *Failure::what() const USE_NOTHROW
 }
 
 /*!
- * \class Media::NoDataFoundException
+ * \class TagParser::NoDataFoundException
  * \brief The exception that is thrown when the data to be parsed holds no
  *        parsable information.
  */
@@ -61,7 +61,7 @@ const char *NoDataFoundException::what() const USE_NOTHROW
 }
 
 /*!
- * \class Media::InvalidDataException
+ * \class TagParser::InvalidDataException
  * \brief The exception that is thrown when the data to be parsed or to be made seems
  *        invalid and therefore can not be parsed.
  */
@@ -89,7 +89,7 @@ const char *InvalidDataException::what() const USE_NOTHROW
 }
 
 /*!
- * \class Media::TruncatedDataException
+ * \class TagParser::TruncatedDataException
  * \brief The exception that is thrown when the data to be parsed is truncated
  *        and therefore can not be parsed at all.
  */
@@ -117,7 +117,7 @@ const char *TruncatedDataException::what() const USE_NOTHROW
 }
 
 /*!
- * \class Media::OperationAbortedException
+ * \class TagParser::OperationAbortedException
  * \brief The exception that is thrown when an operation has been stopped
  *        and thus not successfully completed because it has been aborted.
  */
@@ -145,7 +145,7 @@ const char *OperationAbortedException::what() const USE_NOTHROW
 }
 
 /*!
- * \class Media::VersionNotSupportedException
+ * \class TagParser::VersionNotSupportedException
  * \brief The exception that is thrown when an operation fails because the
  *        detected or specified version is not supported by the implementation.
  */
@@ -173,7 +173,7 @@ const char *VersionNotSupportedException::what() const USE_NOTHROW
 }
 
 /*!
- * \class Media::NotImplementedException
+ * \class TagParser::NotImplementedException
  * \brief This exception is thrown when the an operation is invoked that has not
  *        been implemented yet.
  */

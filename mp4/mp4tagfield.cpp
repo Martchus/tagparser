@@ -20,7 +20,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::Mp4TagField
+ * \class TagParser::Mp4TagField
  * \brief The Mp4TagField class is used by Mp4Tag to store the fields.
  */
 
@@ -68,7 +68,7 @@ Mp4TagField::Mp4TagField(const string &mean, const string &name, const TagValue 
  * Each child of the "ilst" atom holds one field of the Mp4Tag.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
@@ -271,7 +271,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
  * \returns Returns a Mp4TagFieldMaker object which can be used to actually make the field.
  * \remarks The field must NOT be mutated after making is prepared when it is intended to actually
  *          make the field using the make method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
@@ -285,7 +285,7 @@ Mp4TagFieldMaker Mp4TagField::prepareMaking(Diagnostics &diag)
  * \brief Saves the field to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void Mp4TagField::make(ostream &stream, Diagnostics &diag)
@@ -436,7 +436,7 @@ void Mp4TagField::reset()
 }
 
 /*!
- * \class Media::Mp4TagFieldMaker
+ * \class TagParser::Mp4TagFieldMaker
  * \brief The Mp4TagFieldMaker class helps making tag fields.
  *        It allows to calculate the required size.
  * \sa See Mp4TagFieldMaker::prepareMaking() for more information.
@@ -564,7 +564,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
  *        specified \a stream.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void Mp4TagFieldMaker::make(ostream &stream)
 {

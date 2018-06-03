@@ -9,7 +9,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::AbstractContainer
+ * \class TagParser::AbstractContainer
  * \brief The AbstractContainer class provides an interface and common functionality to parse and make a certain container format.
  */
 
@@ -122,7 +122,7 @@ void AbstractContainer::parseTracks(Diagnostics &diag)
  * have been specified when constructing the object.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void AbstractContainer::parseChapters(Diagnostics &diag)
@@ -141,7 +141,7 @@ void AbstractContainer::parseChapters(Diagnostics &diag)
  * have been specified when constructing the object.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void AbstractContainer::parseAttachments(Diagnostics &diag)
@@ -157,7 +157,7 @@ void AbstractContainer::parseAttachments(Diagnostics &diag)
  * \brief Rewrites the file to apply changed tag information.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void AbstractContainer::makeFile(Diagnostics &diag, AbortableProgressFeedback &progress)

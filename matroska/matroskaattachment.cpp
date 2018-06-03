@@ -15,15 +15,15 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MatroskaAttachment
- * \brief Implementation of Media::AbstractAttachment for the Matroska container.
+ * \class TagParser::MatroskaAttachment
+ * \brief Implementation of TagParser::AbstractAttachment for the Matroska container.
  */
 
 /*!
  * \brief Parses attachment from the specified \a attachedFileElement.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void MatroskaAttachment::parse(EbmlElement *attachedFileElement, Diagnostics &diag)
@@ -87,7 +87,7 @@ void MatroskaAttachment::parse(EbmlElement *attachedFileElement, Diagnostics &di
 /*!
  * \brief Writes the attachment to the specified \a stream (makes an "AttachedFile"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  * \sa prepareMaking()
  */
@@ -101,7 +101,7 @@ void MatroskaAttachment::make(std::ostream &stream, Diagnostics &diag)
 }
 
 /*!
- * \class Media::MatroskaAttachmentMaker
+ * \class TagParser::MatroskaAttachmentMaker
  * \brief The MatroskaAttachmentMaker class helps writing Matroska "AttachedFile"-elements which contain an attachment.
  *
  * An instance can be obtained using the MatroskaAttachment::prepareMaking() method.
@@ -141,7 +141,7 @@ MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment,
  *        specified \a stream (makes an "AttachedFile"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void MatroskaAttachmentMaker::make(ostream &stream, Diagnostics &diag) const
 {

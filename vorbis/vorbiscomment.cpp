@@ -20,8 +20,8 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::VorbisComment
- * \brief Implementation of Media::Tag for Vorbis comments.
+ * \class TagParser::VorbisComment
+ * \brief Implementation of TagParser::Tag for Vorbis comments.
  */
 
 const TagValue &VorbisComment::value(KnownField field) const
@@ -172,7 +172,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
  * \brief Parses tag information using the specified OGG \a iterator.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagnostics &diag)
@@ -184,7 +184,7 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagn
  * \brief Parses tag information using the specified OGG \a iterator.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
@@ -196,7 +196,7 @@ void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags fl
  * \brief Writes tag information to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnostics &diag)

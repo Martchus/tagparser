@@ -197,7 +197,7 @@ namespace Mp4FormatExtensionIds {
 namespace Mpeg4ElementaryStreamObjectIds {
 
 /*!
- * \brief Returns the Media::MediaFormat denoted by the specified MPEG-4 stream ID.
+ * \brief Returns the TagParser::MediaFormat denoted by the specified MPEG-4 stream ID.
  */
 MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
 {

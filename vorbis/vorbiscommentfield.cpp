@@ -26,7 +26,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::VorbisCommentField
+ * \class TagParser::VorbisCommentField
  * \brief The VorbisCommentField class is used by VorbisComment to store the fields.
  */
 
@@ -113,7 +113,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
  * at the beginning of the field to be parsed.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void VorbisCommentField::parse(OggIterator &iterator, Diagnostics &diag)
@@ -129,7 +129,7 @@ void VorbisCommentField::parse(OggIterator &iterator, Diagnostics &diag)
  * at the beginning of the field to be parsed.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize, Diagnostics &diag)
@@ -144,7 +144,7 @@ void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize, Diagnosti
  * at the beginning of the field to be parsed.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void VorbisCommentField::parse(istream &stream, uint64 &maxSize, Diagnostics &diag)
@@ -156,7 +156,7 @@ void VorbisCommentField::parse(istream &stream, uint64 &maxSize, Diagnostics &di
  * \brief Writes the field to a stream using the specified \a writer.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  * \returns Returns whether the field has been written. (Some fields might be skipped
  *          when specific \a flags are set.)

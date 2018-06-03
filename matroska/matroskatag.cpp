@@ -13,8 +13,8 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MatroskaTag
- * \brief Implementation of Media::Tag for the Matroska container.
+ * \class TagParser::MatroskaTag
+ * \brief Implementation of TagParser::Tag for the Matroska container.
  */
 
 MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) const
@@ -104,7 +104,7 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
  * \brief Parses tag information from the specified \a tagElement.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
@@ -140,7 +140,7 @@ void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
  * \returns Returns a MatroskaTagMaker object which can be used to actually make the tag.
  * \remarks The tag must NOT be mutated after making is prepared when it is intended to actually
  *          make the tag using the make() method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a making error occurs.
  *
  * This method might be useful when it is necessary to know the size of the tag before making it.
  * \sa make()
@@ -154,7 +154,7 @@ MatroskaTagMaker MatroskaTag::prepareMaking(Diagnostics &diag)
 /*!
  * \brief Writes tag information to the specified \a stream (makes a "Tag"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  * \sa prepareMaking()
  * \todo Make inline in next major release.
@@ -168,7 +168,7 @@ void MatroskaTag::make(ostream &stream, Diagnostics &diag)
  * \brief Parses the specified \a targetsElement.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void MatroskaTag::parseTargets(EbmlElement &targetsElement, Diagnostics &diag)
@@ -226,7 +226,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement, Diagnostics &diag)
 }
 
 /*!
- * \class Media::MatroskaTagMaker
+ * \class TagParser::MatroskaTagMaker
  * \brief The MatroskaTagMaker class helps writing Matroska "Tag"-elements storing tag information.
  *
  * An instance can be obtained using the MatroskaTag::prepareMaking() method.
@@ -276,7 +276,7 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag)
  *        specified \a stream (makes a "Tag"-element).
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void MatroskaTagMaker::make(ostream &stream) const
 {

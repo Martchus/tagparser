@@ -15,7 +15,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::MatroskaTagField
+ * \class TagParser::MatroskaTagField
  * \brief The MatroskaTagField class is used by MatroskaTag to store the fields.
  */
 
@@ -41,7 +41,7 @@ MatroskaTagField::MatroskaTagField(const string &id, const TagValue &value)
  * represents the fields of a MatroskaTag.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag, bool parseNestedFields)
@@ -134,7 +134,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
  * \returns Returns a MatroskaTagFieldMaker object which can be used to actually make the field.
  * \remarks The field must NOT be mutated after making is prepared when it is intended to actually
  *          make the field using the make method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
@@ -158,7 +158,7 @@ MatroskaTagFieldMaker MatroskaTagField::prepareMaking(Diagnostics &diag)
 /*!
  * \brief Saves the field to the specified \a stream (makes a "SimpleTag" element). *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void MatroskaTagField::make(ostream &stream, Diagnostics &diag)
@@ -167,7 +167,7 @@ void MatroskaTagField::make(ostream &stream, Diagnostics &diag)
 }
 
 /*!
- * \class Media::MatroskaTagFieldMaker
+ * \class TagParser::MatroskaTagFieldMaker
  * \brief The MatroskaTagFieldMaker class helps making tag fields.
  *        It allows to calculate the required size.
  * \sa See MatroskaTagField::prepareMaking() for more information.
@@ -219,7 +219,7 @@ MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostic
  *        specified \a stream (makes a "SimpleTag" element). *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void MatroskaTagFieldMaker::make(ostream &stream) const
 {

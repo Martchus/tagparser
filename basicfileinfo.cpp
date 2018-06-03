@@ -6,17 +6,14 @@ using namespace std;
 using namespace ConversionUtilities;
 
 /*!
- * \namespace Media
  * \brief Contains all classes and functions of the TagInfo library.
  */
-
+namespace TagParser {
 /*!
- * \class Media::BasicFileInfo
+ * \class BasicFileInfo
  * \brief The BasicFileInfo class provides basic file information such as
  *        file name, extension, directory and size for a specified file.
  */
-
-namespace TagParser {
 
 /*!
  * \brief Constructs a new BasicFileInfo for the specified file.

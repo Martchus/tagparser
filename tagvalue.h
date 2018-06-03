@@ -52,7 +52,7 @@ constexpr int characterSize(TagTextEncoding encoding)
 enum class TagDataType : unsigned int {
     Text, /**< text/string */
     Integer, /**< integer */
-    PositionInSet, /**< position in set, see Media::PositionInSet */
+    PositionInSet, /**< position in set, see TagParser::PositionInSet */
     StandardGenreIndex, /**< pre-defined genre name denoted by numerical code */
     TimeSpan, /**< time span, see ChronoUtils::TimeSpan */
     DateTime, /**< date time, see ChronoUtils::DateTime */

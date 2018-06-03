@@ -11,7 +11,7 @@
 namespace TagParser {
 
 /*!
- * \class Media::PositionInSet
+ * \class TagParser::PositionInSet
  * \brief The PositionInSet class describes the position of an element in a
  *        set which consists of a certain number of elements.
  *

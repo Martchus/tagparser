@@ -15,7 +15,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::StreamDataBlock
+ * \class TagParser::StreamDataBlock
  * \brief The StreamDataBlock class is a reference to a certain data block of a stream.
  */
 
@@ -83,7 +83,7 @@ void StreamDataBlock::copyTo(ostream &stream) const
 }
 
 /*!
- * \class Media::FileDataBlock
+ * \class TagParser::FileDataBlock
  * \brief The FileDataBlock class is a reference to a certain data block of a file stream.
  */
 
@@ -106,7 +106,7 @@ FileDataBlock::FileDataBlock(const string &path, Diagnostics &diag)
 }
 
 /*!
- * \class Media::AbstractAttachment
+ * \class TagParser::AbstractAttachment
  * \brief The AbstractAttachment class parses and stores attachment information.
  */
 
@@ -146,7 +146,7 @@ void AbstractAttachment::clear()
  * or the attachment gets destroyed.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived class when a parsing
+ * \throws Throws TagParser::Failure or a derived class when a parsing
  *         error occurs.
  *
  * When such an exception is thrown, the attachment remains unchanged.

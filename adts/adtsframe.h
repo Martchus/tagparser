@@ -69,7 +69,7 @@ inline bool AdtsFrame::hasCrc() const
 
 /*!
  * \brief Returns the MPEG-4 audio object type ID.
- * \sa Media::Mpeg4AudioObjectIds
+ * \sa TagParser::Mpeg4AudioObjectIds
  * \sa Mpeg4AudioObjectIds::idToMediaFormat()
  */
 inline byte AdtsFrame::mpeg4AudioObjectId() const
@@ -79,7 +79,7 @@ inline byte AdtsFrame::mpeg4AudioObjectId() const
 
 /*!
  * \brief Returns the MPEG-4 sample rate index.
- * \sa Media::mpeg4SampleRateTable
+ * \sa TagParser::mpeg4SampleRateTable
  */
 inline byte AdtsFrame::mpeg4SamplingFrequencyIndex() const
 {
@@ -88,8 +88,8 @@ inline byte AdtsFrame::mpeg4SamplingFrequencyIndex() const
 
 /*!
  * \brief Returns the MPEG-4 channel configuration.
- * \sa Media::Mpeg4ChannelConfigs
- * \sa Media::mpeg4SampleRateTable::channelConfigString()
+ * \sa TagParser::Mpeg4ChannelConfigs
+ * \sa TagParser::mpeg4SampleRateTable::channelConfigString()
  */
 inline byte AdtsFrame::mpeg4ChannelConfig() const
 {

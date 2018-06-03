@@ -14,7 +14,7 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::WaveFormatHeader
+ * \class TagParser::WaveFormatHeader
  * \brief The WaveFormatHeader class parses the WAVEFORMATEX structure defined by MS.
  */
 
@@ -63,8 +63,8 @@ MediaFormat WaveFormatHeader::format() const
 }
 
 /*!
- * \class Media::WaveAudioStream
- * \brief Implementation of Media::AbstractTrack for the
+ * \class TagParser::WaveAudioStream
+ * \brief Implementation of TagParser::AbstractTrack for the
  *        RIFF WAVE container format.
  */
 

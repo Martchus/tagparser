@@ -24,8 +24,8 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::OggStream
- * \brief Implementation of Media::AbstractTrack for OGG streams.
+ * \class TagParser::OggStream
+ * \brief Implementation of TagParser::AbstractTrack for OGG streams.
  */
 
 /*!

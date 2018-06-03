@@ -11,8 +11,8 @@ using namespace std;
 namespace TagParser {
 
 /*!
- * \class Media::AdtsStream
- * \brief Implementation of Media::AbstractTrack for ADTS streams.
+ * \class TagParser::AdtsStream
+ * \brief Implementation of TagParser::AbstractTrack for ADTS streams.
  */
 
 void AdtsStream::internalParseHeader(Diagnostics &diag)

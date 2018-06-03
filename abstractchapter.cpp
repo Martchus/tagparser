@@ -8,7 +8,7 @@ using namespace ChronoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::AbstractChapter
+ * \class TagParser::AbstractChapter
  * \brief The AbstractChapter class parses chapter information.
  */
 

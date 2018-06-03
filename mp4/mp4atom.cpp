@@ -20,7 +20,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::Mp4Atom
+ * \class TagParser::Mp4Atom
  * \brief The Mp4Atom class helps to parse MP4 files.
  */
 

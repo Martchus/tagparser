@@ -31,7 +31,7 @@ const char *mpegChannelModeString(MpegChannelMode channelMode)
 const uint64 MpegAudioFrame::m_xingHeaderOffset = 0x24;
 
 /*!
- * \class Media::MpegAudioFrame
+ * \class TagParser::MpegAudioFrame
  * \brief The MpegAudioFrame class is used to parse MPEG audio frames.
  */
 

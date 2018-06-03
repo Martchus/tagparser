@@ -12,7 +12,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::FlacToOggMappingHeader
+ * \class TagParser::FlacToOggMappingHeader
  * \brief The FlacToOggMappingHeader class is a FLAC-to-Ogg mapping header parser.
  * \sa https://xiph.org/flac/ogg_mapping.html
  */

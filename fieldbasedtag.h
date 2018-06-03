@@ -9,7 +9,7 @@
 namespace TagParser {
 
 /*!
- * \class Media::FieldMapBasedTagTraits
+ * \class TagParser::FieldMapBasedTagTraits
  * \brief Defines traits for the specified \a ImplementationType.
  *
  * A template specialization for each FieldMapBasedTag subclass must be provided.
@@ -18,7 +18,7 @@ template <typename ImplementationType> class FieldMapBasedTagTraits {
 };
 
 /*!
- * \class Media::FieldMapBasedTag
+ * \class TagParser::FieldMapBasedTag
  * \brief The FieldMapBasedTag provides a generic implementation of Tag which stores
  *        the tag fields using std::multimap.
  *

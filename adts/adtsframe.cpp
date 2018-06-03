@@ -10,7 +10,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::AdtsFrame
+ * \class TagParser::AdtsFrame
  * \brief The AdtsFrame class is used to parse "Audio Data Transport Stream" frames.
  */
 

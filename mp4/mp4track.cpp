@@ -117,8 +117,8 @@ Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig()
  */
 
 /*!
- * \class Media::Mp4Track
- * \brief Implementation of Media::AbstractTrack for the MP4 container.
+ * \class TagParser::Mp4Track
+ * \brief Implementation of TagParser::AbstractTrack for the MP4 container.
  */
 
 /*!

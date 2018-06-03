@@ -14,7 +14,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::AbstractTrack
+ * \class TagParser::AbstractTrack
  * \brief The AbstractTrack class parses and stores technical information about
  *        video, audio and other kinds of media tracks.
  *
@@ -205,7 +205,7 @@ string AbstractTrack::description() const
  * The parsed information can be accessed using the corresponding methods.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void AbstractTrack::parseHeader(Diagnostics &diag)
@@ -226,7 +226,7 @@ void AbstractTrack::parseHeader(Diagnostics &diag)
  *        It needs to be implemented when subclassing this class.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 

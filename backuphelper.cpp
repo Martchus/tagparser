@@ -24,7 +24,7 @@ using namespace IoUtilities;
 namespace TagParser {
 
 /*!
- * \namespace Media::BackupHelper
+ * \namespace TagParser::BackupHelper
  * \brief Helps to create and restore backup files when rewriting
  *        files to apply changed tag information.
  *

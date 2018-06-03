@@ -14,8 +14,8 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::Id3v1Tag
- * \brief Implementation of Media::Tag for ID3v1 tags.
+ * \class TagParser::Id3v1Tag
+ * \brief Implementation of TagParser::Tag for ID3v1 tags.
  */
 
 /*!
@@ -45,7 +45,7 @@ bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
  * \param stream Specifies the stream to read from.
  * \param autoSeek Specifies whether the parser should automatically seek at the end of stream.
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
@@ -79,7 +79,7 @@ void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
  * \brief Writes tag information to the specified \a stream.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void Id3v1Tag::make(ostream &stream, Diagnostics &diag)

@@ -5,7 +5,7 @@ namespace TagParser {
 using namespace SubFormats;
 
 /*!
- * \class Media::MediaFormat
+ * \class TagParser::MediaFormat
  * \brief The MediaFormat class specifies the format of media data.
  */
 

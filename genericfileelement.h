@@ -25,7 +25,7 @@ namespace TagParser {
 class Diagnostics;
 
 /*!
- * \class Media::FileElementTraits
+ * \class TagParser::FileElementTraits
  * \brief Defines traits for the specified \a ImplementationType.
  *
  * A template specialization for each GenericFileElement should
@@ -37,7 +37,7 @@ template <typename ImplementationType> class FileElementTraits {
 };
 
 /*!
- * \class Media::GenericFileElement
+ * \class TagParser::GenericFileElement
  * \brief The GenericFileElement class helps to parse binary files which consist
  *        of an arboreal element strucutre.
  * \tparam ImplementationType Specifies the type of the actual implementation.
@@ -765,7 +765,7 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  * does nothing. To force reparsing call reparse().
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 template <class ImplementationType> void GenericFileElement<ImplementationType>::parse(Diagnostics &diag)
@@ -787,7 +787,7 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  * clears the parsed information and reparses the header.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  *
  * \sa parse()
@@ -806,7 +806,7 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  * If padding is found its size will be set to \a paddingSize if not nullptr.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  *
  * \sa parse()
@@ -985,7 +985,7 @@ template <class ImplementationType> constexpr byte GenericFileElement<Implementa
  * It needs to be implemented when subclassing.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  *
  * \sa parse()

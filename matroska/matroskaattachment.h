@@ -76,7 +76,7 @@ inline EbmlElement *MatroskaAttachment::attachedFileElement() const
  * \returns Returns a MatroskaAttachmentMaker object which can be used to actually make the attachment.
  * \remarks The attachment must NOT be mutated after making is prepared when it is intended to actually
  *          make the attachment using the make method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a making error occurs.
  *
  * This method might be useful when it is necessary to know the size of the attachment before making it.
  * \sa make()

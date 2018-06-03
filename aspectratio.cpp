@@ -5,7 +5,7 @@ using namespace std;
 namespace TagParser {
 
 /*!
- * \struct Media::AspectRatio
+ * \struct TagParser::AspectRatio
  * \brief The AspectRatio struct defines an aspect ratio.
  */
 

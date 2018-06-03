@@ -27,13 +27,13 @@ class Mp4Track;
  */
 enum class TrackType {
     Unspecified, /**< The track type is not specified. */
-    MatroskaTrack, /**< The track is a Media::MatroskaTrack. */
-    MpegAudioFrameStream, /**< The track is a Media::MpegAudioFrameStream. */
-    Mp4Track, /**< The track is a Media::Mp4Track. */
-    WaveAudioStream, /**< The track is a Media::WaveAudioStream. */
-    OggStream, /**< The track is a Media::OggStream. */
-    AdtsStream, /**< The track is a Media::AdtsStream. */
-    FlacStream, /**< The track is a Media::FlacStream. */
+    MatroskaTrack, /**< The track is a TagParser::MatroskaTrack. */
+    MpegAudioFrameStream, /**< The track is a TagParser::MpegAudioFrameStream. */
+    Mp4Track, /**< The track is a TagParser::Mp4Track. */
+    WaveAudioStream, /**< The track is a TagParser::WaveAudioStream. */
+    OggStream, /**< The track is a TagParser::OggStream. */
+    AdtsStream, /**< The track is a TagParser::AdtsStream. */
+    FlacStream, /**< The track is a TagParser::FlacStream. */
 };
 
 class TAG_PARSER_EXPORT AbstractTrack {

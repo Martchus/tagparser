@@ -12,7 +12,7 @@ using namespace ConversionUtilities;
 namespace TagParser {
 
 /*!
- * \class Media::Mpeg4Descriptor
+ * \class TagParser::Mpeg4Descriptor
  * \brief The Mpeg4Descriptor class helps to parse MPEG-4 descriptors.
  */
 

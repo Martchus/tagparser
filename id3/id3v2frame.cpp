@@ -29,7 +29,7 @@ enum Id3v2TextEncodingByte : byte { Ascii, Utf16WithBom, Utf16BigEndianWithoutBo
 constexpr auto maxId3v2FrameDataSize(numeric_limits<uint32>::max() - 15);
 
 /*!
- * \class Media::Id3v2Frame
+ * \class TagParser::Id3v2Frame
  * \brief The Id3v2Frame class is used by Id3v2Tag to store the fields.
  */
 
@@ -109,7 +109,7 @@ template <class stringtype> int parseGenreIndex(const stringtype &denotation)
  * at the beginning of the frame to be parsed.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a parsing
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
 void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize, Diagnostics &diag)
@@ -314,7 +314,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
  * \returns Returns a Id3v2FrameMaker object which can be used to actually make the frame.
  * \remarks The field must NOT be mutated after making is prepared when it is intended to actually
  *          make the field using the make method of the returned object.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
@@ -329,7 +329,7 @@ Id3v2FrameMaker Id3v2Frame::prepareMaking(byte version, Diagnostics &diag)
  *        specified ID3v2 \a version.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws Media::Failure or a derived exception when a making
+ * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
 void Id3v2Frame::make(BinaryWriter &writer, byte version, Diagnostics &diag)
@@ -351,7 +351,7 @@ void Id3v2Frame::reset()
 }
 
 /*!
- * \class Media::Id3v2FrameMaker
+ * \class TagParser::Id3v2FrameMaker
  * \brief The Id3v2FrameMaker class helps making ID3v2 frames.
  *        It allows to calculate the required size.
  * \sa See Id3v2FrameMaker::prepareMaking() for more information.
@@ -536,7 +536,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
  *        the specified \a writer.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Assumes the data is already validated and thus does NOT
- *                throw Media::Failure or a derived exception.
+ *                throw TagParser::Failure or a derived exception.
  */
 void Id3v2FrameMaker::make(BinaryWriter &writer)
 {

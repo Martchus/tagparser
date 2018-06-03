@@ -19,12 +19,12 @@ namespace TagParser {
  */
 enum class TagType : unsigned int {
     Unspecified = 0x00, /**< The tag type is unspecified. */
-    Id3v1Tag = 0x01, /**< The tag is a Media::Id3v1Tag. */
-    Id3v2Tag = 0x02, /**< The tag is a Media::Id3v2Tag. */
-    Mp4Tag = 0x04, /**< The tag is a Media::Mp4Tag. */
-    MatroskaTag = 0x08, /**< The tag is a Media::MatroskaTag. */
-    VorbisComment = 0x10, /**< The tag is a Media::VorbisComment. */
-    OggVorbisComment = 0x20 /**< The tag is a Media::OggVorbisComment. */
+    Id3v1Tag = 0x01, /**< The tag is a TagParser::Id3v1Tag. */
+    Id3v2Tag = 0x02, /**< The tag is a TagParser::Id3v2Tag. */
+    Mp4Tag = 0x04, /**< The tag is a TagParser::Mp4Tag. */
+    MatroskaTag = 0x08, /**< The tag is a TagParser::MatroskaTag. */
+    VorbisComment = 0x10, /**< The tag is a TagParser::VorbisComment. */
+    OggVorbisComment = 0x20 /**< The tag is a TagParser::OggVorbisComment. */
 };
 
 /*!
@@ -70,17 +70,17 @@ enum class KnownField : unsigned int {
 };
 
 /*!
- * \brief The first valid entry in the Media::KnownField enum.
+ * \brief The first valid entry in the TagParser::KnownField enum.
  */
 constexpr KnownField firstKnownField = KnownField::Title;
 
 /*!
- * \brief The last valid entry in the Media::KnownField enum.
+ * \brief The last valid entry in the TagParser::KnownField enum.
  */
 constexpr KnownField lastKnownField = KnownField::Vendor;
 
 /*!
- * \brief The number of valid entries in the Media::KnownField enum.
+ * \brief The number of valid entries in the TagParser::KnownField enum.
  */
 constexpr unsigned int knownFieldArraySize = static_cast<unsigned int>(lastKnownField) + 1;
 
@@ -133,7 +133,7 @@ protected:
 };
 
 /*!
- * \brief Returns the type of the tag as Media::TagType.
+ * \brief Returns the type of the tag as TagParser::TagType.
  *
  * This is TagType::Unspecified by default and might be overwritten
  * when subclassing.
