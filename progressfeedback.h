@@ -115,6 +115,7 @@ template <typename ActualProgressFeedback> inline void BasicProgressFeedback<Act
 }
 
 class ProgressFeedback : public BasicProgressFeedback<ProgressFeedback> {
+public:
     ProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
     ProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
 };
