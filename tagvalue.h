@@ -69,9 +69,9 @@ public:
     TagValue(
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     TagValue(int value);
-    TagValue(const char *data, size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
-    TagValue(
-        std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    TagValue(const char *data, std::size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
+        TagTextEncoding encoding = TagTextEncoding::Latin1);
     TagValue(const PositionInSet &value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
@@ -121,14 +121,14 @@ public:
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
     void assignStandardGenreIndex(int index);
-    void assignData(const char *data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
-    void assignData(
-        std::unique_ptr<char[]> &&data, size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    void assignData(const char *data, std::size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    void assignData(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
+        TagTextEncoding encoding = TagTextEncoding::Latin1);
     void assignPosition(PositionInSet value);
     void assignTimeSpan(ChronoUtilities::TimeSpan value);
     void assignDateTime(ChronoUtilities::DateTime value);
 
-    static void stripBom(const char *&text, size_t &length, TagTextEncoding encoding);
+    static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
 
 private:
@@ -256,6 +256,7 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, Ta
 /*!
  * \brief Constructs a new TagValue holding a copy of the given PositionInSet \a value.
  * \param value Specifies the PositionInSet.
+ * \todo Pass \a value by value in v8.
  */
 inline TagValue::TagValue(const PositionInSet &value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
