@@ -35,6 +35,11 @@ private:
     byte m_overallPercentage;
 };
 
+/*!
+ * \brief Constructs a new BasicProgressFeedback.
+ *
+ * It will call \a callback on the next step and \a percentageOnlyCallback when only the percentage changes.
+ */
 template <typename ActualProgressFeedback>
 inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback)
     : m_callback(callback)
@@ -44,6 +49,11 @@ inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(cons
 {
 }
 
+/*!
+ * \brief Constructs a new BasicProgressFeedback.
+ *
+ * It will call \a callback on the next step and \a percentageOnlyCallback when only the percentage changes.
+ */
 template <typename ActualProgressFeedback>
 inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback)
     : m_callback(callback)
@@ -53,21 +63,36 @@ inline BasicProgressFeedback<ActualProgressFeedback>::BasicProgressFeedback(Call
 {
 }
 
+/*!
+ * \brief Returns the name of the current step (initially empty).
+ */
 template <typename ActualProgressFeedback> inline const std::string &BasicProgressFeedback<ActualProgressFeedback>::step() const
 {
     return m_step;
 }
 
+/*!
+ * \brief Returns the percentage of the current step (initially 0, supposed to be a value from 0 to 100).
+ * \remarks A percentage of 0 means that the percentage is currently unknown; 100 means finished.
+ */
 template <typename ActualProgressFeedback> inline byte BasicProgressFeedback<ActualProgressFeedback>::stepPercentage() const
 {
     return m_stepPercentage;
 }
 
+/*!
+ * \brief Returns the overall percentage (initially 0, supposed to be a value from 0 to 100).
+ * \remarks A percentage of 0 means that the percentage is currently unknown; 100 means finished.
+ */
 template <typename ActualProgressFeedback> inline byte BasicProgressFeedback<ActualProgressFeedback>::overallPercentage() const
 {
     return m_overallPercentage;
 }
 
+/*!
+ * \brief Updates the current step and invokes the first callback specified on construction.
+ * \remarks Supposed to be called only by the operation itself.
+ */
 template <typename ActualProgressFeedback>
 inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(const std::string &step, byte stepPercentage)
 {
@@ -78,6 +103,10 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(const std:
     }
 }
 
+/*!
+ * \brief Updates the current step and invokes the first callback specified on construction.
+ * \remarks Supposed to be called only by the operation itself.
+ */
 template <typename ActualProgressFeedback>
 inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(std::string &&step, byte stepPercentage)
 {
@@ -88,6 +117,10 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateStep(std::strin
     }
 }
 
+/*!
+ * \brief Updates the current step percentage and invokes the second callback specified on construction (or the first if only one has been specified).
+ * \remarks Supposed to be called only by the operation itself.
+ */
 template <typename ActualProgressFeedback> inline void BasicProgressFeedback<ActualProgressFeedback>::updateStepPercentage(byte stepPercentage)
 {
     m_stepPercentage = stepPercentage;
@@ -98,12 +131,21 @@ template <typename ActualProgressFeedback> inline void BasicProgressFeedback<Act
     }
 }
 
+/*!
+ * \brief Updates the current step percentage and invokes the second callback specified on construction (or the first if only one has been specified).
+ * \param stepPercentage Specifies the percentage which is supposed to be a value from 0.0 to 1.0.
+ * \remarks Supposed to be called only by the operation itself.
+ */
 template <typename ActualProgressFeedback>
 inline void BasicProgressFeedback<ActualProgressFeedback>::updateStepPercentageFromFraction(double stepPercentage)
 {
     updateStepPercentage(static_cast<byte>(stepPercentage * 100.0));
 }
 
+/*!
+ * \brief Updates the overall percentage and invokes the second callback specified on construction (or the first if only one has been specified).
+ * \remarks Supposed to be called only by the operation itself.
+ */
 template <typename ActualProgressFeedback> inline void BasicProgressFeedback<ActualProgressFeedback>::updateOverallPercentage(byte overallPercentage)
 {
     m_overallPercentage = overallPercentage;
@@ -120,11 +162,21 @@ public:
     ProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
 };
 
+/*!
+ * \brief Constructs a new ProgressFeedback.
+ *
+ * It will call \a callback on the next step and \a percentageOnlyCallback when only the percentage changes.
+ */
 inline ProgressFeedback::ProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback)
     : BasicProgressFeedback<ProgressFeedback>(callback, percentageOnlyCallback)
 {
 }
 
+/*!
+ * \brief Constructs a new ProgressFeedback.
+ *
+ * It will call \a callback on the next step and \a percentageOnlyCallback when only the percentage changes.
+ */
 inline ProgressFeedback::ProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback)
     : BasicProgressFeedback<ProgressFeedback>(callback, percentageOnlyCallback)
 {
@@ -145,28 +197,50 @@ private:
     std::atomic_bool m_aborted;
 };
 
+/*!
+ * \brief Constructs a new AbortableProgressFeedback.
+ *
+ * It will call \a callback on the next step and \a percentageOnlyCallback when only the percentage changes.
+ */
 inline AbortableProgressFeedback::AbortableProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback)
     : BasicProgressFeedback<AbortableProgressFeedback>(callback, percentageOnlyCallback)
     , m_aborted(false)
 {
 }
 
+/*!
+ * \brief Constructs a new AbortableProgressFeedback.
+ *
+ * It will call \a callback on the next step and \a percentageOnlyCallback when only the percentage changes.
+ */
 inline AbortableProgressFeedback::AbortableProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback)
     : BasicProgressFeedback<AbortableProgressFeedback>(callback, percentageOnlyCallback)
     , m_aborted(false)
 {
 }
 
+/*!
+ * \brief Returns whether the operation has been aborted via tryToAbort().
+ */
 inline bool AbortableProgressFeedback::isAborted() const
 {
     return m_aborted.load();
 }
 
+/*!
+ * \brief Aborts the operation.
+ * \remarks The operation will not be killed forcefully. It will be aborted at the next point where it makes sense or even
+ *          finish if it makes no sense to abort.
+ */
 inline void AbortableProgressFeedback::tryToAbort()
 {
     return m_aborted.store(true);
 }
 
+/*!
+ * \brief Throws an OperationAbortedException if aborted.
+ * \remarks Supposed to be called only by the operation itself.
+ */
 inline void AbortableProgressFeedback::stopIfAborted() const
 {
     if (isAborted()) {
@@ -174,6 +248,10 @@ inline void AbortableProgressFeedback::stopIfAborted() const
     }
 }
 
+/*!
+ * \brief Throws an OperationAbortedException if aborted; otherwise the data for the next step is set.
+ * \remarks Supposed to be called only by the operation itself.
+ */
 inline void AbortableProgressFeedback::nextStepOrStop(const std::string &status, byte percentage)
 {
     if (isAborted()) {
@@ -182,6 +260,10 @@ inline void AbortableProgressFeedback::nextStepOrStop(const std::string &status,
     updateStep(status, percentage);
 }
 
+/*!
+ * \brief Throws an OperationAbortedException if aborted; otherwise the data for the next step is set.
+ * \remarks Supposed to be called only by the operation itself.
+ */
 inline void AbortableProgressFeedback::nextStepOrStop(std::string &&status, byte percentage)
 {
     if (isAborted()) {
