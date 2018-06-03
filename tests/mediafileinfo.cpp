@@ -21,7 +21,7 @@ using namespace TestUtilities::Literals;
 using namespace CPPUNIT_NS;
 
 /*!
- * \brief The MediaFileInfoTests tests convenience methods provided by MediaFileInfo.
+ * \brief The MediaFileInfoTests tests convenience methods provided by TagParser::MediaFileInfo.
  * \remarks It only tests parsing a simple Mkv/Mp4. Parsing different formats with different settings is tested in OverallTests.
  */
 class MediaFileInfoTests : public TestFixture {

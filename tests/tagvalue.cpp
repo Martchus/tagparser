@@ -19,7 +19,7 @@ using namespace ChronoUtilities;
 using namespace CPPUNIT_NS;
 
 /*!
- * \brief The TagValueTests class tests the TagValue class.
+ * \brief The TagValueTests class tests the TagParser::TagValue class.
  */
 class TagValueTests : public TestFixture {
     CPPUNIT_TEST_SUITE(TagValueTests);
