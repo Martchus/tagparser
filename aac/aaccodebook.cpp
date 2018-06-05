@@ -28,9 +28,9 @@ const AacHcbBinPair *const aacHcbBinTable[] = {
 
 const byte aacHcbN[] = { 0, 5, 5, 0, 5, 0, 5, 0, 5, 0, 6, 5 };
 
-const byte unsignedCb[] = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-  /* codebook 16 to 31 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-};
+//const byte unsignedCb[] = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+//  /* codebook 16 to 31 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+//};
 
 const int aacHcb2QuadTableSize[] = { 0, 114, 86, 0, 185, 0, 0, 0, 0, 0, 0, 0 };
 const int aacHcb2PairTableSize[] = { 0, 0, 0, 0, 0, 0, 126, 0, 83, 0, 210, 373 };
