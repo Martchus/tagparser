@@ -102,6 +102,12 @@ download_custom \
     'MPlayer samples' \
     'wget -r -np -R index.html* http://samples.mplayerhq.hu/A-codecs/lossless'
 
+mkdir -p misc && pushd misc
+download_custom \
+    'ID3v2.4 with multiple strings' \
+    'wget https://trac.ffmpeg.org/raw-attachment/ticket/6949/multiple_id3v2_4_values.mp3'
+popd
+
 # convert FLAC files for FLAC tests with ffmpeg
 mkdir -p flac
 [[ ! -f flac/test.flac ]] && ffmpeg -i mtx-test-data/alac/othertest-itunes.m4a -c:a flac flac/test.flac # raw FLAC stream

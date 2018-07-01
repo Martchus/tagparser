@@ -103,6 +103,24 @@ template <class stringtype> int parseGenreIndex(const stringtype &denotation)
 }
 
 /*!
+ * \brief Returns an std::string instance for the substring parsed using parseSubstring().
+ */
+string stringFromSubstring(tuple<const char *, size_t, const char *> substr)
+{
+    return string(get<0>(substr), get<1>(substr));
+}
+
+/*!
+ * \brief Returns an std::u16string instance for the substring parsed using parseSubstring().
+ */
+u16string wideStringFromSubstring(tuple<const char *, size_t, const char *> substr, TagTextEncoding encoding)
+{
+    u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
+    TagValue::ensureHostByteOrder(res, encoding);
+    return res;
+}
+
+/*!
  * \brief Parses a frame from the stream read using the specified \a reader.
  *
  * The position of the current character in the input stream is expected to be
@@ -226,85 +244,148 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         reader.read(buffer.get(), m_dataSize);
     }
 
-    // -> get tag value depending of field type
+    // read tag value depending on frame ID/type
     if (Id3v2FrameIds::isTextFrame(id())) {
-        // frame contains text
-        TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer.get()), diag); // the first byte stores the encoding
-        if ((version >= 3 && (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
-            || (version < 3 && (id() == Id3v2FrameIds::sTrackPosition || id() == Id3v2FrameIds::sDiskPosition))) {
-            // the track number or the disk number frame
-            try {
-                if (characterSize(dataEncoding) > 1) {
-                    value().assignPosition(PositionInSet(parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag)));
+        // parse text encoding byte
+        TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer.get()), diag);
+
+        // parse string values (since ID3v2.4 a text frame may contain multiple strings)
+        std::vector<TagValue> additionalValues;
+        const char *currentOffset = buffer.get() + 1;
+        for (size_t currentIndex = 1; currentIndex < m_dataSize;) {
+            // determine the next substring
+            const auto substr(parseSubstring(currentOffset, m_dataSize - currentIndex, dataEncoding, false, diag));
+
+            // handle case when string is empty
+            if (!get<1>(substr)) {
+                if (currentIndex == 1) {
+                    value().clearDataAndMetadata();
+                }
+                currentIndex = static_cast<size_t>(get<2>(substr) - buffer.get());
+                currentOffset = get<2>(substr);
+                continue;
+            }
+
+            // determine the TagValue instance to store the value
+            TagValue *const value = [&] {
+                if (this->value().isEmpty()) {
+                    return &this->value();
+                }
+                additionalValues.emplace_back();
+                return &additionalValues.back();
+            }();
+
+            // apply further parsing for some text frame types (eg. convert track number to PositionInSet)
+            if ((version >= 3 && (id() == Id3v2FrameIds::lTrackPosition || id() == Id3v2FrameIds::lDiskPosition))
+                || (version < 3 && (id() == Id3v2FrameIds::sTrackPosition || id() == Id3v2FrameIds::sDiskPosition))) {
+                // parse the track number or the disk number frame
+                try {
+                    if (characterSize(dataEncoding) > 1) {
+                        value->assignPosition(PositionInSet(wideStringFromSubstring(substr, dataEncoding)));
+                    } else {
+                        value->assignPosition(PositionInSet(stringFromSubstring(substr)));
+                    }
+                } catch (const ConversionException &) {
+                    diag.emplace_back(DiagLevel::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
+                }
+
+            } else if ((version >= 3 && id() == Id3v2FrameIds::lLength) || (version < 3 && id() == Id3v2FrameIds::sLength)) {
+                // parse frame contains length
+                try {
+                    const auto milliseconds = [&] {
+                        if (dataEncoding == TagTextEncoding::Utf16BigEndian || dataEncoding == TagTextEncoding::Utf16LittleEndian) {
+                            const auto parsedStringRef = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
+                            const auto convertedStringData = dataEncoding == TagTextEncoding::Utf16BigEndian
+                                ? convertUtf16BEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef))
+                                : convertUtf16LEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef));
+                            return string(convertedStringData.first.get(), convertedStringData.second);
+                        } else { // Latin-1 or UTF-8
+                            return stringFromSubstring(substr);
+                        }
+                    }();
+                    value->assignTimeSpan(TimeSpan::fromMilliseconds(stringToNumber<double>(milliseconds)));
+                } catch (const ConversionException &) {
+                    diag.emplace_back(DiagLevel::Warning, "The value of the length frame is not numeric and will be ignored.", context);
+                }
+
+            } else if ((version >= 3 && id() == Id3v2FrameIds::lGenre) || (version < 3 && id() == Id3v2FrameIds::sGenre)) {
+                // parse genre/content type
+                const auto genreIndex = [&] {
+                    if (characterSize(dataEncoding) > 1) {
+                        return parseGenreIndex(wideStringFromSubstring(substr, dataEncoding));
+                    } else {
+                        return parseGenreIndex(stringFromSubstring(substr));
+                    }
+                }();
+                if (genreIndex != -1) {
+                    // genre is specified as ID3 genre number
+                    value->assignStandardGenreIndex(genreIndex);
                 } else {
-                    value().assignPosition(PositionInSet(parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag)));
+                    // genre is specified as string
+                    value->assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
                 }
-            } catch (const ConversionException &) {
-                diag.emplace_back(DiagLevel::Warning, "The value of track/disk position frame is not numeric and will be ignored.", context);
+            } else {
+                // store any other text frames as-is
+                value->assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
             }
 
-        } else if ((version >= 3 && id() == Id3v2FrameIds::lLength) || (version < 3 && id() == Id3v2FrameIds::sLength)) {
-            // frame contains length
-            try {
-                string milliseconds;
-                if (dataEncoding == TagTextEncoding::Utf16BigEndian || dataEncoding == TagTextEncoding::Utf16LittleEndian) {
-                    const auto parsedStringRef = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
-                    const auto convertedStringData = dataEncoding == TagTextEncoding::Utf16BigEndian
-                        ? convertUtf16BEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef))
-                        : convertUtf16LEToUtf8(get<0>(parsedStringRef), get<1>(parsedStringRef));
-                    milliseconds = string(convertedStringData.first.get(), convertedStringData.second);
-                } else { // Latin-1 or UTF-8
-                    milliseconds = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
-                }
-                value().assignTimeSpan(TimeSpan::fromMilliseconds(stringToNumber<double>(milliseconds)));
-            } catch (const ConversionException &) {
-                diag.emplace_back(DiagLevel::Warning, "The value of the length frame is not numeric and will be ignored.", context);
-            }
+            currentIndex = static_cast<size_t>(get<2>(substr) - buffer.get());
+            currentOffset = get<2>(substr);
+        }
 
-        } else if ((version >= 3 && id() == Id3v2FrameIds::lGenre) || (version < 3 && id() == Id3v2FrameIds::sGenre)) {
-            // genre/content type
-            int genreIndex;
-            if (characterSize(dataEncoding) > 1) {
-                const auto genreDenotation = parseWideString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
-                genreIndex = parseGenreIndex(genreDenotation);
+        // add warning about additional values
+        if (!additionalValues.empty()) {
+            // format list of values
+            const auto valuesString = [&]() -> string {
+                if (additionalValues.size() == 1) {
+                    return argsToString("value \"", additionalValues.front().toString(TagTextEncoding::Utf8), "\" is ignored.");
+                }
+                string valuesString = "values";
+                for (auto value = additionalValues.cbegin(), end = additionalValues.cend() - 1; value != end; ++value) {
+                    valuesString += ' ';
+                    valuesString += '\"';
+                    valuesString += value->toString(TagTextEncoding::Utf8);
+                    valuesString += '\"';
+                    if (value != end) {
+                        valuesString += ',';
+                    }
+                }
+                valuesString += " and \"";
+                valuesString += additionalValues.back().toString(TagTextEncoding::Utf8);
+                valuesString += "\" are ignored.";
+                return valuesString;
+            }();
+
+            // emplace diag message
+            if (version < 4) {
+                diag.emplace_back(
+                    DiagLevel::Warning, argsToString("Multiple strings found though the tag is pre-ID3v2.4. Additional ", valuesString), context);
+                additionalValues.clear();
             } else {
-                const auto genreDenotation = parseString(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
-                genreIndex = parseGenreIndex(genreDenotation);
+                diag.emplace_back(DiagLevel::Warning,
+                    argsToString("Multiple strings found. This is not supported so far. Hence the additional ", valuesString), context);
             }
-            if (genreIndex != -1) {
-                // genre is specified as ID3 genre number
-                value().assignStandardGenreIndex(genreIndex);
-            } else {
-                // genre is specified as string
-                // string might be null terminated
-                const auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
-                value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
-            }
-        } else {
-            // any other text frame
-            const auto substr = parseSubstring(buffer.get() + 1, m_dataSize - 1, dataEncoding, false, diag);
-            value().assignData(get<0>(substr), get<1>(substr), TagDataType::Text, dataEncoding);
         }
 
     } else if (version >= 3 && id() == Id3v2FrameIds::lCover) {
-        // frame stores picture
+        // parse picture frame
         byte type;
         parsePicture(buffer.get(), m_dataSize, value(), type, diag);
         setTypeInfo(type);
 
     } else if (version < 3 && id() == Id3v2FrameIds::sCover) {
-        // frame stores legacy picutre
+        // parse legacy picutre
         byte type;
         parseLegacyPicture(buffer.get(), m_dataSize, value(), type, diag);
         setTypeInfo(type);
 
     } else if (((version >= 3 && id() == Id3v2FrameIds::lComment) || (version < 3 && id() == Id3v2FrameIds::sComment))
         || ((version >= 3 && id() == Id3v2FrameIds::lUnsynchronizedLyrics) || (version < 3 && id() == Id3v2FrameIds::sUnsynchronizedLyrics))) {
-        // comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
+        // parse comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
         parseComment(buffer.get(), m_dataSize, value(), diag);
 
     } else {
-        // unknown frame
+        // parse unknown/unsupported frame
         value().assignData(buffer.get(), m_dataSize, TagDataType::Undefined);
     }
 }
@@ -609,7 +690,7 @@ byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
 }
 
 /*!
- * \brief Parses a substring in the specified \a buffer.
+ * \brief Parses a substring from the specified \a buffer.
  *
  * This method ensures that byte order marks and termination characters for the specified \a encoding are omitted.
  * It might add a waring if the substring is not terminated.
@@ -691,18 +772,17 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
 }
 
 /*!
- * \brief Parses a substring in the specified \a buffer.
+ * \brief Parses a substring from the specified \a buffer.
  *
  * Same as Id3v2Frame::parseSubstring() but returns the substring as string object.
  */
 string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
-    const auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
-    return string(get<0>(substr), get<1>(substr));
+    return stringFromSubstring(parseSubstring(buffer, dataSize, encoding, addWarnings, diag));
 }
 
 /*!
- * \brief Parses a substring in the specified \a buffer.
+ * \brief Parses a substring from the specified \a buffer.
  *
  * Same as Id3v2Frame::parseSubstring() but returns the substring as u16string object
  *
@@ -710,10 +790,7 @@ string Id3v2Frame::parseString(const char *buffer, size_t dataSize, TagTextEncod
  */
 u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag)
 {
-    const auto substr = parseSubstring(buffer, dataSize, encoding, addWarnings, diag);
-    u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
-    TagValue::ensureHostByteOrder(res, encoding);
-    return res;
+    return wideStringFromSubstring(parseSubstring(buffer, dataSize, encoding, addWarnings, diag), encoding);
 }
 
 /*!

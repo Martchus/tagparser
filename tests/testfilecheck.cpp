@@ -77,6 +77,7 @@ struct TestFile {
     { "mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4", { "864891f4510f3fa9c49c19e671171cec08ceb331362cf7161419b957be090d47" } },
     { "mtx-test-data/ogg/qt4dance_medium.ogg", { "0b5429da9713be171c6ae0da69621261e8d5ddc9db3da872e5ade1a1c883decd" } },
     { "mtx-test-data/opus/v-opus.ogg", { "e12adece4dbcccf2471b61c3ebd7c6576dee351d85809ab6f01d6f324d65b417" } },
+    { "misc/multiple_id3v2_4_values.mp3", { "da012a41213cdc49b2afe1457625d8baced1a64e2351f17b520bf82c6bfe4e03" } },
 };
 
 /*!

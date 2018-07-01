@@ -89,6 +89,7 @@ private:
     void checkMp4Constraints();
 
     void checkMp3Testfile1();
+    void checkMp3Testfile2();
     void checkMp3TestMetaData();
     void checkMp3PaddingConstraints();
 

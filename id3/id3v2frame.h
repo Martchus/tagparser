@@ -117,7 +117,7 @@ public:
 
     // parsing helper
     TagTextEncoding parseTextEncodingByte(byte textEncodingByte, Diagnostics &diag);
-    std::tuple<const char *, size_t, const char *> parseSubstring(
+    std::tuple<const char *, std::size_t, const char *> parseSubstring(
         const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
     std::string parseString(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);
     std::u16string parseWideString(const char *buffer, std::size_t dataSize, TagTextEncoding &encoding, bool addWarnings, Diagnostics &diag);

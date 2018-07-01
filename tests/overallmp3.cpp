@@ -82,6 +82,67 @@ void OverallTests::checkMp3Testfile1()
 }
 
 /*!
+ * \brief Checks "misc/multiple_id3v2_4_values.mp3" (from https://trac.ffmpeg.org/ticket/6949).
+ */
+void OverallTests::checkMp3Testfile2()
+{
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::MpegAudioFrames, m_fileInfo.containerFormat());
+    const auto tracks = m_fileInfo.tracks();
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
+    for (const auto &track : tracks) {
+        CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+        CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
+        CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::Mpeg1Layer3), track->format().sub);
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(static_cast<byte>(MpegChannelMode::Stereo), track->channelConfig());
+        CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
+        CPPUNIT_ASSERT_EQUAL(20, track->duration().seconds());
+    }
+    const auto tags = m_fileInfo.tags();
+    switch (m_tagStatus) {
+    case TagStatus::Original:
+        CPPUNIT_ASSERT(!m_fileInfo.id3v1Tag());
+        CPPUNIT_ASSERT_EQUAL(1_st, m_fileInfo.id3v2Tags().size());
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        for (const auto &tag : tags) {
+            switch (tag->type()) {
+            case TagType::Id3v1Tag:
+                CPPUNIT_FAIL("no ID3v1 tag expected");
+            case TagType::Id3v2Tag:
+                CPPUNIT_ASSERT_EQUAL(TagTextEncoding::Utf8, tag->value(KnownField::Title).dataEncoding());
+                CPPUNIT_ASSERT_EQUAL("Infinite (Original Mix)"s, tag->value(KnownField::Title).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("B-Front"s, tag->value(KnownField::Artist).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Infinite"s, tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Hardstyle"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Lavf57.83.100"s, tag->value(KnownField::EncoderSettings).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Roughstate"s, tag->value(KnownField::RecordLabel).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("2017"s, tag->value(KnownField::RecordDate).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(1, tag->value(KnownField::TrackPosition).toPositionInSet().position());
+                CPPUNIT_ASSERT(tag->value(KnownField::Length).toTimeSpan().isNull());
+                CPPUNIT_ASSERT(tag->value(KnownField::Lyricist).isEmpty());
+                break;
+            default:;
+            }
+        }
+        CPPUNIT_ASSERT_GREATEREQUAL(2_st, m_diag.size());
+        CPPUNIT_ASSERT_EQUAL(DiagLevel::Warning, m_diag[0].level());
+        CPPUNIT_ASSERT_EQUAL(DiagLevel::Warning, m_diag[1].level());
+        CPPUNIT_ASSERT_EQUAL("parsing TCON frame"s, m_diag[1].context());
+        CPPUNIT_ASSERT_EQUAL(
+            "Multiple strings found. This is not supported so far. Hence the additional values \"Test\", \"Example\", and \"Hard Dance\" are ignored."s,
+            m_diag[1].message());
+        break;
+    case TagStatus::TestMetaDataPresent:
+        checkMp3TestMetaData();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+    }
+
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Warning);
+}
+
+/*!
  * \brief Checks whether test meta data for MP3 files has been applied correctly.
  */
 void OverallTests::checkMp3TestMetaData()
@@ -213,6 +274,7 @@ void OverallTests::testMp3Parsing()
     m_fileInfo.setForceFullParse(false);
     m_tagStatus = TagStatus::Original;
     parseFile(TestUtilities::testFilePath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"), &OverallTests::checkMp3Testfile1);
+    parseFile(TestUtilities::testFilePath("misc/multiple_id3v2_4_values.mp3"), &OverallTests::checkMp3Testfile2);
 }
 
 #ifdef PLATFORM_UNIX
