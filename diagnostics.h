@@ -52,6 +52,8 @@ public:
     const ChronoUtilities::DateTime &creationTime() const;
     bool operator==(const DiagMessage &other) const;
 
+    static std::string formatList(const std::vector<std::string> &values);
+
 private:
     DiagLevel m_level;
     std::string m_message;

@@ -6,6 +6,7 @@
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/misc/traits.h>
 
 #include <cstring>
 #include <iosfwd>
@@ -132,6 +133,11 @@ public:
 
     static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
+    template <typename ContainerType,
+        Traits::EnableIf<Traits::IsIteratable<ContainerType>,
+            std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>>
+            * = nullptr>
+    static std::vector<std::string> toStrings(const ContainerType &values, TagTextEncoding encoding = TagTextEncoding::Utf8);
 
 private:
     std::unique_ptr<char[]> m_ptr;
@@ -545,6 +551,24 @@ inline TagTextEncoding TagValue::dataEncoding() const
 inline TagTextEncoding TagValue::descriptionEncoding() const
 {
     return m_descEncoding;
+}
+
+/*!
+ * \brief Converts the specified \a values to string using the specified \a encoding.
+ * \throws Throws ConversionException on failure.
+ * \sa toString()
+ */
+template <typename ContainerType,
+    Traits::EnableIf<Traits::IsIteratable<ContainerType>,
+        std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>> *>
+std::vector<std::string> TagValue::toStrings(const ContainerType &values, TagTextEncoding encoding)
+{
+    std::vector<std::string> res;
+    res.reserve(values.size());
+    for (const auto &value : values) {
+        res.emplace_back(Traits::dereferenceMaybe(value).toString(encoding));
+    }
+    return res;
 }
 
 } // namespace TagParser

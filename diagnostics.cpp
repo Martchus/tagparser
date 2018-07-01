@@ -61,4 +61,28 @@ DiagLevel Diagnostics::level() const
     return level;
 }
 
+/*!
+ * \brief Concatenates the specified string \a values to a list.
+ */
+string DiagMessage::formatList(const std::vector<string> &values)
+{
+    auto size = values.size() * 4;
+    for (const auto &str : values) {
+        size += str.size();
+    }
+    std::string res;
+    res.reserve(size);
+    for (auto value = values.cbegin(), end = values.cend(), last = values.cend() - 1; value != end; ++value) {
+        if (value == last) {
+            res += " and ";
+        } else if (!res.empty()) {
+            res += ", ";
+        }
+        res += '\"';
+        res += *value;
+        res += '\"';
+    }
+    return res;
+}
+
 } // namespace TagParser

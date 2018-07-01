@@ -129,7 +129,7 @@ void OverallTests::checkMp3Testfile2()
         CPPUNIT_ASSERT_EQUAL(DiagLevel::Warning, m_diag[1].level());
         CPPUNIT_ASSERT_EQUAL("parsing TCON frame"s, m_diag[1].context());
         CPPUNIT_ASSERT_EQUAL(
-            "Multiple strings found. This is not supported so far. Hence the additional values \"Test\", \"Example\", and \"Hard Dance\" are ignored."s,
+            "Multiple strings found. This is not supported so far. Hence the additional values \"Test\", \"Example\" and \"Hard Dance\" are ignored."s,
             m_diag[1].message());
         break;
     case TagStatus::TestMetaDataPresent:

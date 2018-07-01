@@ -340,20 +340,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
                 if (additionalValues.size() == 1) {
                     return argsToString("value \"", additionalValues.front().toString(TagTextEncoding::Utf8), "\" is ignored.");
                 }
-                string valuesString = "values";
-                for (auto value = additionalValues.cbegin(), end = additionalValues.cend() - 1; value != end; ++value) {
-                    valuesString += ' ';
-                    valuesString += '\"';
-                    valuesString += value->toString(TagTextEncoding::Utf8);
-                    valuesString += '\"';
-                    if (value != end) {
-                        valuesString += ',';
-                    }
-                }
-                valuesString += " and \"";
-                valuesString += additionalValues.back().toString(TagTextEncoding::Utf8);
-                valuesString += "\" are ignored.";
-                return valuesString;
+                return argsToString("values ", DiagMessage::formatList(TagValue::toStrings(additionalValues)), " are ignored.");
             }();
 
             // emplace diag message
