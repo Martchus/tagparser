@@ -182,10 +182,11 @@ void OverallTests::checkMp3TestMetaData()
             CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v2Tag->value(KnownField::Artist));
             // TODO: check more fields
         } else {
-            CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", titleValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("not attempted to use UTF-8 in ID3v2.3", TagTextEncoding::Utf16LittleEndian, titleValue.dataEncoding());
             CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), titleValue.toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.dataEncoding() == TagTextEncoding::Utf16LittleEndian);
-            CPPUNIT_ASSERT_MESSAGE("not attempted to use UTF-8 in ID3v2.3", commentValue.descriptionEncoding() == TagTextEncoding::Utf16LittleEndian);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("not attempted to use UTF-8 in ID3v2.3", TagTextEncoding::Utf16LittleEndian, commentValue.dataEncoding());
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(
+                "not attempted to use UTF-8 in ID3v2.3", TagTextEncoding::Utf16LittleEndian, commentValue.descriptionEncoding());
             CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), commentValue.toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL_MESSAGE(
                 "description is also converted to UTF-16", "s\0o\0m\0e\0 \0d\0e\0s\0c\0r\0i\0p\0t\0i\0\xf3\0n\0"s, commentValue.description());
