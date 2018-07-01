@@ -31,6 +31,8 @@ public:
 
 private:
     Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &diag);
+    void makeSubstring(const TagValue &value, Diagnostics &diag, const std::string &context);
+
     Id3v2Frame &m_frame;
     uint32 m_frameId;
     const byte m_version;
@@ -83,6 +85,7 @@ public:
 
 class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame> {
     friend class TagField<Id3v2Frame>;
+    friend class Id3v2FrameMaker;
 
 public:
     Id3v2Frame();
@@ -94,6 +97,8 @@ public:
     void make(IoUtilities::BinaryWriter &writer, byte version, Diagnostics &diag);
 
     // member access
+    const std::vector<TagValue> &additionalValues() const;
+    std::vector<TagValue> &additionalValues();
     bool isAdditionalTypeInfoUsed() const;
     bool isValid() const;
     bool hasPaddingReached() const;
@@ -127,19 +132,23 @@ public:
     void parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, Diagnostics &diag);
 
     // making helper
-    byte makeTextEncodingByte(TagTextEncoding textEncoding);
-    std::size_t makeBom(char *buffer, TagTextEncoding encoding);
-    void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
-    void makeEncodingAndData(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t m_dataSize);
-    void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
-    void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version);
-    void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version, Diagnostics &diag);
+    static byte makeTextEncodingByte(TagTextEncoding textEncoding);
+    static std::size_t makeBom(char *buffer, TagTextEncoding encoding);
+    static void makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding);
+    static void makeEncodingAndData(
+        std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t m_dataSize);
+    static void makeLegacyPicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo);
+    static void makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version);
+    static void makeComment(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version, Diagnostics &diag);
 
     static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(IdentifierType id);
 
 private:
     void reset();
+    std::string ignoreAdditionalValuesDiagMsg() const;
+
+    std::vector<TagValue> m_additionalValues;
     uint32 m_parsedVersion;
     uint32 m_dataSize;
     uint32 m_totalSize;
@@ -147,6 +156,24 @@ private:
     byte m_group;
     bool m_padding;
 };
+
+/*!
+ * \brief Returns additional values.
+ * \remarks Frames might allow to store multiple values, eg. ID3v2.4 text frames allow to store multiple strings.
+ */
+inline const std::vector<TagValue> &Id3v2Frame::additionalValues() const
+{
+    return m_additionalValues;
+}
+
+/*!
+ * \brief Returns additional values.
+ * \remarks Frames might allow to store multiple values, eg. ID3v2.4 text frames allow to store multiple strings.
+ */
+inline std::vector<TagValue> &Id3v2Frame::additionalValues()
+{
+    return m_additionalValues;
+}
 
 /*!
  * \brief Returns whether the instance uses the additional type info.

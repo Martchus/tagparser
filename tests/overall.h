@@ -105,7 +105,8 @@ private:
 
     void setMkvTestMetaData();
     void setMp4TestMetaData();
-    void setMp3TestMetaData();
+    void setMp3TestMetaData1();
+    void setMp3TestMetaData2();
     void setOggTestMetaData();
     void removeAllTags();
     void noop();

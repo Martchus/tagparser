@@ -250,7 +250,6 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer.get()), diag);
 
         // parse string values (since ID3v2.4 a text frame may contain multiple strings)
-        std::vector<TagValue> additionalValues;
         const char *currentOffset = buffer.get() + 1;
         for (size_t currentIndex = 1; currentIndex < m_dataSize;) {
             // determine the next substring
@@ -271,8 +270,8 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
                 if (this->value().isEmpty()) {
                     return &this->value();
                 }
-                additionalValues.emplace_back();
-                return &additionalValues.back();
+                m_additionalValues.emplace_back();
+                return &m_additionalValues.back();
             }();
 
             // apply further parsing for some text frame types (eg. convert track number to PositionInSet)
@@ -334,24 +333,9 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         }
 
         // add warning about additional values
-        if (!additionalValues.empty()) {
-            // format list of values
-            const auto valuesString = [&]() -> string {
-                if (additionalValues.size() == 1) {
-                    return argsToString("value \"", additionalValues.front().toString(TagTextEncoding::Utf8), "\" is ignored.");
-                }
-                return argsToString("values ", DiagMessage::formatList(TagValue::toStrings(additionalValues)), " are ignored.");
-            }();
-
-            // emplace diag message
-            if (version < 4) {
-                diag.emplace_back(
-                    DiagLevel::Warning, argsToString("Multiple strings found though the tag is pre-ID3v2.4. Additional ", valuesString), context);
-                additionalValues.clear();
-            } else {
-                diag.emplace_back(DiagLevel::Warning,
-                    argsToString("Multiple strings found. This is not supported so far. Hence the additional ", valuesString), context);
-            }
+        if (version < 4 && !m_additionalValues.empty()) {
+            diag.emplace_back(
+                DiagLevel::Warning, "Multiple strings found though the tag is pre-ID3v2.4. " + ignoreAdditionalValuesDiagMsg(), context);
         }
 
     } else if (version >= 3 && id() == Id3v2FrameIds::lCover) {
@@ -416,6 +400,18 @@ void Id3v2Frame::reset()
     m_dataSize = 0;
     m_totalSize = 0;
     m_padding = false;
+    m_additionalValues.clear();
+}
+
+/*!
+ * \brief Returns a diag message that additional values are ignored.
+ */
+std::string Id3v2Frame::ignoreAdditionalValuesDiagMsg() const
+{
+    if (m_additionalValues.size() == 1) {
+        return argsToString("Additional value \"", m_additionalValues.front().toString(TagTextEncoding::Utf8), "\" is supposed to be ignored.");
+    }
+    return argsToString("Additional values ", DiagMessage::formatList(TagValue::toStrings(m_additionalValues)), " are supposed to be ignored.");
 }
 
 /*!
@@ -436,9 +432,20 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
 {
     const string context("making " % m_frame.frameIdString() + " frame");
 
+    // get non-empty, assigned values
+    vector<const TagValue *> values;
+    values.reserve(1 + frame.additionalValues().size());
+    if (!frame.value().isEmpty()) {
+        values.emplace_back(&frame.value());
+    }
+    for (const auto &value : frame.additionalValues()) {
+        if (!value.isEmpty()) {
+            values.emplace_back(&value);
+        }
+    }
+
     // validate assigned data
-    const auto value(m_frame.value());
-    if (value.isEmpty()) {
+    if (values.empty()) {
         diag.emplace_back(DiagLevel::Critical, "Cannot make an empty frame.", context);
         throw InvalidDataException();
     }
@@ -456,6 +463,16 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
     if (version < 3 && (m_frame.flag() || m_frame.group())) {
         diag.emplace_back(DiagLevel::Warning,
             "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
+    }
+    const bool isTextFrame = Id3v2FrameIds::isTextFrame(m_frameId);
+    if (values.size() != 1) {
+        if (!isTextFrame) {
+            diag.emplace_back(DiagLevel::Critical, "Multiple values are not supported for non-text-frames.", context);
+            throw InvalidDataException();
+        } else if (version < 4) {
+            diag.emplace_back(
+                DiagLevel::Warning, "Multiple strings assigned to pre-ID3v2.4 text frame. " + frame.ignoreAdditionalValuesDiagMsg(), context);
+        }
     }
 
     // convert frame ID if necessary
@@ -483,61 +500,117 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
 
     // make actual data depending on the frame ID
     try {
-        if (Id3v2FrameIds::isTextFrame(m_frameId)) {
-            // make text frames
+        if (isTextFrame) {
+            // make text frame
+            vector<string> substrings;
+            substrings.reserve(1 + frame.additionalValues().size());
+            TagTextEncoding encoding = TagTextEncoding::Unspecified;
+
             if ((version >= 3 && (m_frameId == Id3v2FrameIds::lTrackPosition || m_frameId == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && (m_frameId == Id3v2FrameIds::sTrackPosition || m_frameId == Id3v2FrameIds::sDiskPosition))) {
                 // make track number or disk number frame
-                // -> convert the position to string
-                const auto positionStr(value.toString(TagTextEncoding::Latin1));
-                // -> warn if value is no valid position (although we just store a string after all)
-                if (value.type() != TagDataType::PositionInSet) {
+                encoding = version >= 4 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1;
+                for (const auto *const value : values) {
+                    // convert the position to string
+                    substrings.emplace_back(value->toString(encoding));
+                    // warn if value is no valid position (although we just store a string after all)
+                    if (value->type() == TagDataType::PositionInSet) {
+                        continue;
+                    }
                     try {
-                        value.toPositionInSet();
+                        value->toPositionInSet();
                     } catch (const ConversionException &) {
                         diag.emplace_back(DiagLevel::Warning,
-                            argsToString("The track/disk number \"", positionStr, "\" is not of the expected form, eg. \"4/10\"."), context);
+                            argsToString("The track/disk number \"", substrings.back(), "\" is not of the expected form, eg. \"4/10\"."), context);
                     }
                 }
-                m_frame.makeString(m_data, m_decompressedSize, positionStr, TagTextEncoding::Latin1);
+
             } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lLength) || (version < 3 && m_frameId == Id3v2FrameIds::sLength)) {
                 // make length frame
-                const auto duration(value.toTimeSpan());
-                if (duration.isNegative()) {
-                    diag.emplace_back(DiagLevel::Critical, argsToString("Assigned duration \"", duration.toString(), "\" is negative."), context);
-                    throw InvalidDataException();
+                encoding = TagTextEncoding::Latin1;
+                for (const auto *const value : values) {
+                    const auto duration(value->toTimeSpan());
+                    if (duration.isNegative()) {
+                        diag.emplace_back(DiagLevel::Critical, argsToString("Assigned duration \"", duration.toString(), "\" is negative."), context);
+                        throw InvalidDataException();
+                    }
+                    substrings.emplace_back(ConversionUtilities::numberToString(static_cast<uint64>(duration.totalMilliseconds())));
                 }
-                m_frame.makeString(m_data, m_decompressedSize, ConversionUtilities::numberToString(static_cast<uint64>(duration.totalMilliseconds())),
-                    TagTextEncoding::Latin1);
-            } else if (value.type() == TagDataType::StandardGenreIndex
-                && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre) || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
-                // make pre-defined genre frame
-                m_frame.makeString(
-                    m_data, m_decompressedSize, ConversionUtilities::numberToString(value.toStandardGenreIndex()), TagTextEncoding::Latin1);
+
             } else {
-                // make other text frames
-                if (version <= 3 && value.dataEncoding() == TagTextEncoding::Utf8) {
-                    // UTF-8 is only supported by ID3v2.4, so convert back to UTF-16
-                    m_frame.makeString(
-                        m_data, m_decompressedSize, value.toString(TagTextEncoding::Utf16LittleEndian), TagTextEncoding::Utf16LittleEndian);
-                } else {
-                    // just keep encoding of the assigned value
-                    m_frame.makeString(m_data, m_decompressedSize, value.toString(), value.dataEncoding());
+                // make standard genre index and other text frames
+                // -> find text encoding suitable for all assigned values
+                for (const auto *const value : values) {
+                    switch (encoding) {
+                    case TagTextEncoding::Unspecified:
+                        switch (value->type()) {
+                        case TagDataType::StandardGenreIndex:
+                            encoding = TagTextEncoding::Latin1;
+                            break;
+                        default:
+                            encoding = value->dataEncoding();
+                        }
+                        break;
+                    case TagTextEncoding::Latin1:
+                        switch (value->dataEncoding()) {
+                        case TagTextEncoding::Latin1:
+                            break;
+                        default:
+                            encoding = value->dataEncoding();
+                        }
+                        break;
+                    default:;
+                    }
+                }
+                if (version <= 3 && encoding == TagTextEncoding::Utf8) {
+                    encoding = TagTextEncoding::Utf16LittleEndian;
+                }
+                // -> format values
+                for (const auto *const value : values) {
+                    if ((value->type() == TagDataType::StandardGenreIndex)
+                        && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre) || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
+                        // make standard genere index
+                        substrings.emplace_back(ConversionUtilities::numberToString(value->toStandardGenreIndex()));
+
+                    } else {
+                        // make other text frame
+                        substrings.emplace_back(value->toString(encoding));
+                    }
                 }
             }
 
+            // concatenate substrings using encoding specific byte order mark and termination
+            const auto terminationLength = (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian) ? 2u : 1u;
+            const auto byteOrderMark = [&] {
+                switch (encoding) {
+                case TagTextEncoding::Utf16LittleEndian:
+                    return string({ '\xFF', '\xFE' });
+                case TagTextEncoding::Utf16BigEndian:
+                    return string({ '\xFE', '\xFF' });
+                default:
+                    return string();
+                }
+            }();
+            const auto concatenatedSubstrings = joinStrings(substrings, string(), false, byteOrderMark, string(terminationLength, '\0'));
+
+            // write text encoding byte and concatenated strings to data buffer
+            m_data = make_unique<char[]>(m_decompressedSize = static_cast<uint32>(1 + concatenatedSubstrings.size()));
+            m_data[0] = static_cast<char>(Id3v2Frame::makeTextEncodingByte(encoding));
+            concatenatedSubstrings.copy(&m_data[1], concatenatedSubstrings.size());
+
         } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lCover) || (version < 3 && m_frameId == Id3v2FrameIds::sCover)) {
             // make picture frame
-            m_frame.makePicture(m_data, m_decompressedSize, value, m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
+            m_frame.makePicture(m_data, m_decompressedSize, *values.front(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
 
         } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lComment) || (version < 3 && m_frameId == Id3v2FrameIds::sComment))
             || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
                    || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
             // make comment frame or the unsynchronized lyrics frame
-            m_frame.makeComment(m_data, m_decompressedSize, value, version, diag);
+            m_frame.makeComment(m_data, m_decompressedSize, *values.front(), version, diag);
 
         } else {
             // make unknown frame
+            const auto &value(*values.front());
             if (value.dataSize() > maxId3v2FrameDataSize) {
                 diag.emplace_back(DiagLevel::Critical, "Assigned value exceeds maximum size.", context);
                 throw InvalidDataException();
@@ -547,10 +620,11 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
         }
     } catch (const ConversionException &) {
         try {
+            const auto valuesAsString = TagValue::toStrings(values);
             diag.emplace_back(DiagLevel::Critical,
-                argsToString("Assigned value \"", value.toString(TagTextEncoding::Utf8), "\" can not be converted appropriately."), context);
+                argsToString("Assigned value(s) \"", DiagMessage::formatList(valuesAsString), "\" can not be converted appropriately."), context);
         } catch (const ConversionException &) {
-            diag.emplace_back(DiagLevel::Critical, "Assigned value can not be converted appropriately.", context);
+            diag.emplace_back(DiagLevel::Critical, "Assigned value(s) can not be converted appropriately.", context);
         }
         throw InvalidDataException();
     }
