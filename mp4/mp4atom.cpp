@@ -266,7 +266,10 @@ uint64 Mp4Atom::firstChildOffset() const
     if (isParent()) {
         switch (id()) {
         case Meta:
-            return headerSize() + 0x4u;
+            if (parent() && parent()->id() == Mp4AtomIds::UserData) {
+                return headerSize() + 0x4u;
+            }
+            return headerSize();
         case DataReference:
             return headerSize() + 0x8u;
         default:
