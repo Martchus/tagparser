@@ -645,7 +645,7 @@ void OverallTests::createMkvWithNestedTags()
         "--default-track", "0:yes", "--language", "1:und", "--default-track", "1:yes", "(", tagsMkvPath.data(), ")", "--global-tags",
         tagsXmlPath.data(), "--track-order", "0:0,0:1", nullptr };
     string mkvmergeOutput, mkvmergeErrors;
-    int res = execHelperApp("/bin/mkvmerge", mkvmergeArgs, mkvmergeOutput, mkvmergeErrors);
+    int res = execHelperApp("/usr/bin/mkvmerge", mkvmergeArgs, mkvmergeOutput, mkvmergeErrors);
     cout << mkvmergeOutput << endl;
     cerr << mkvmergeErrors << endl;
     if (res) {
