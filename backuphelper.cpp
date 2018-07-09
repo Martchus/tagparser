@@ -245,6 +245,7 @@ void createBackupFile(const std::string &originalPath, std::string &backupPath, 
  *                     of \a fileInfo, but is specified here explicitly for higher flexibility.
  * \param backupStream Specifies the stream assembled using createBackupFile(); might be a default fstream if
  *                     no backup file has been created.
+ * \param diag Specifies the container to add diagnostic messages to.
  * \param context      Specifies the context used to add notifications.
  */
 void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &backupPath, NativeFileStream &outputStream,

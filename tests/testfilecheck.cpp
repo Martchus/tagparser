@@ -49,6 +49,7 @@ ostream &operator<<(ostream &os, const Sha256Checksum &checksum)
 
 /*!
  * \brief The TestFile struct holds the path (relative to testfile dir) and checksum of a test file.
+ * \remarks Generated with `scripts/list_required_testfiles.sh`.
  */
 struct TestFile {
     const char *path;

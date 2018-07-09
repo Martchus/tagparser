@@ -477,7 +477,6 @@ inline const std::string &TagValue::mimeType() const
 
 /*!
  * \brief Sets the MIME type.
- * \param value Specifies the mime type.
  * \remarks The usage of this meta information depends on the tag implementation.
  * \sa mimeType()
  */
@@ -498,7 +497,6 @@ inline const std::string &TagValue::language() const
 
 /*!
  * \brief Sets the language.
- * \param value Specifies the language.
  * \remarks The usage of this meta information depends on the tag implementation.
  * \sa language()
  */
