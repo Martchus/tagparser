@@ -6,6 +6,8 @@
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4tag.h"
 
+using namespace ChronoUtilities;
+
 namespace Mp4TestFlags {
 enum TestFlag {
     ForceRewring = 0x1,
@@ -343,6 +345,82 @@ void OverallTests::checkMp4Testfile6()
 }
 
 /*!
+ * \brief Checks "mp4/android-8.1-camera-recoding.mp4".
+ */
+void OverallTests::checkMp4Testfile7()
+{
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
+    CPPUNIT_ASSERT(m_fileInfo.container() != nullptr);
+    CPPUNIT_ASSERT_EQUAL("nvr1"s, m_fileInfo.container()->documentType());
+    const auto tracks = m_fileInfo.tracks();
+    CPPUNIT_ASSERT_EQUAL(3_st, tracks.size());
+    for (const auto &track : tracks) {
+        switch (track->id()) {
+        case 1:
+            CPPUNIT_ASSERT_EQUAL("VideoHandle"s, track->name());
+            CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AvcBaselineProfile), track->format().sub);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(0), track->format().extension);
+            CPPUNIT_ASSERT_EQUAL(4.0, track->version());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(0), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(0), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(0), track->extensionChannelConfig());
+            CPPUNIT_ASSERT_EQUAL(0u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(0u, track->extensionSamplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(24), track->depth());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(51), track->sampleCount());
+            CPPUNIT_ASSERT_EQUAL(1920u, track->pixelSize().width());
+            CPPUNIT_ASSERT_EQUAL(1080u, track->pixelSize().height());
+            CPPUNIT_ASSERT_EQUAL(72u, track->resolution().width());
+            CPPUNIT_ASSERT_EQUAL(72u, track->resolution().height());
+            CPPUNIT_ASSERT_EQUAL(DateTime::fromDateAndTime(2018, 7, 8, 20, 3, 52), track->creationTime());
+            CPPUNIT_ASSERT_EQUAL(DateTime::fromDateAndTime(2018, 7, 8, 20, 3, 52), track->modificationTime());
+            CPPUNIT_ASSERT_EQUAL("YUV 4:2:0"s, string(track->chromaFormat()));
+            CPPUNIT_ASSERT_EQUAL(1, track->duration().seconds());
+            break;
+        case 2:
+            CPPUNIT_ASSERT_EQUAL("SoundHandle"s, track->name());
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
+            CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(0), track->format().extension);
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(0), track->extensionChannelConfig());
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(0u, track->extensionSamplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(76), track->sampleCount());
+            CPPUNIT_ASSERT_EQUAL(DateTime::fromDateAndTime(2018, 7, 8, 20, 3, 52), track->creationTime());
+            CPPUNIT_ASSERT_EQUAL(DateTime::fromDateAndTime(2018, 7, 8, 20, 3, 52), track->modificationTime());
+            CPPUNIT_ASSERT_EQUAL(1, track->duration().seconds());
+            CPPUNIT_ASSERT_EQUAL(256.0, track->bitrate());
+            break;
+        case 3:
+            CPPUNIT_ASSERT_EQUAL("MetaHandler"s, track->name());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Unknown, track->format().general);
+            CPPUNIT_ASSERT_EQUAL("urim"s, track->formatId());
+            break;
+        default:
+            CPPUNIT_FAIL("unknown track ID");
+        }
+    }
+    const auto tags = m_fileInfo.tags();
+    switch (m_tagStatus) {
+    case TagStatus::Original:
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
+        break;
+    case TagStatus::TestMetaDataPresent:
+        checkMp4TestMetaData();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
+    }
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
+}
+
+/*!
  * \brief Checks whether test meta data for MP4 files has been applied correctly.
  */
 void OverallTests::checkMp4TestMetaData()
@@ -452,6 +530,7 @@ void OverallTests::testMp4Parsing()
     parseFile(TestUtilities::testFilePath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), &OverallTests::checkMp4Testfile3);
     parseFile(TestUtilities::testFilePath("mtx-test-data/alac/othertest-itunes.m4a"), &OverallTests::checkMp4Testfile4);
     parseFile(TestUtilities::testFilePath("mtx-test-data/aac/he-aacv2-ps.m4a"), &OverallTests::checkMp4Testfile5);
+    parseFile(TestUtilities::testFilePath("mp4/android-8.1-camera-recoding.mp4"), &OverallTests::checkMp4Testfile7);
 }
 
 #ifdef PLATFORM_UNIX
@@ -517,6 +596,7 @@ void OverallTests::testMp4Making()
             &OverallTests::checkMp4Testfile3);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/alac/othertest-itunes.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile4);
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
+        makeFile(TestUtilities::workingCopyPath("mp4/android-8.1-camera-recoding.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile7);
         // -> add/remove tracks
         modifyRoutine = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeSecondTrack : &OverallTests::alterMp4Tracks;
         m_fileInfo.setTagPosition(ElementPosition::Keep);

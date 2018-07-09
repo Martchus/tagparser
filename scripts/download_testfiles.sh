@@ -48,6 +48,7 @@ testfiles=(
     'mtx-test-data/mkv/handbrake-chapters-2.mkv'
     'mtx-test-data/mkv/tags.mkv'
     'mp4/test1.m4a'
+    'mp4/android-8.1-camera-recoding.mp4'
     'mtx-test-data/aac/he-aacv2-ps.m4a'
     'mtx-test-data/alac/othertest-itunes.m4a'
     'mtx-test-data/mp3/id3-tag-and-xing-header.mp3'

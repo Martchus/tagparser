@@ -8,6 +8,8 @@
 #include "../progressfeedback.h"
 #include "../tagvalue.h"
 
+#include <c++utilities/chrono/datetime.h>
+#include <c++utilities/chrono/format.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/tests/testutils.h>
 using namespace TestUtilities;
@@ -85,6 +87,7 @@ private:
     void checkMp4Testfile4();
     void checkMp4Testfile5();
     void checkMp4Testfile6();
+    void checkMp4Testfile7();
     void checkMp4TestMetaData();
     void checkMp4Constraints();
 

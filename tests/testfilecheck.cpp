@@ -70,6 +70,7 @@ struct TestFile {
     { "mtx-test-data/mkv/tags.mkv", { "4330019afc3d846600c1ded38158fcac081297f4e56c749251c236f4871e0287" } },
     { "mkv/nested-tags.xml", { "85cfcc94920f114e52fd1aa3df24706cd2710626e065a2c8c55dd209ec8dc8ce" } },
     { "mp4/test1.m4a", { "4f16e0a22525bd13ba859431406d7f5991e0b4f155c51e10e5f32b0c97034b36" } },
+    { "mp4/android-8.1-camera-recoding.mp4", { "e7c5624872de1c9c2fb52dd954cef53adc337a6ba88342ff516dde5d4ef374dc" } },
     { "mtx-test-data/aac/he-aacv2-ps.m4a", { "be54be0ae45b0184583ced8a84a881a1652a449feb7f6a917e11f60efabb68ac" } },
     { "mtx-test-data/alac/othertest-itunes.m4a", { "5e9c64cde00902211533fbe38aaa67ef5f79a945e1d717951b78b4bbf9ff84e8" } },
     { "mtx-test-data/mp3/id3-tag-and-xing-header.mp3", { "4a9187b05dc74d32e5a3de53494fde9db8c6c25d46082f86de6f424ad28daacf" } },
