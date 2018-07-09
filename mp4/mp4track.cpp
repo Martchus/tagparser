@@ -1264,8 +1264,10 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         if (langChar >= 'a' && langChar <= 'z') {
             language |= static_cast<uint16>(langChar - 0x60) << (0xA - charIndex * 0x5);
         } else { // invalid character
-            diag.emplace_back(
-                DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
+            if (!m_language.empty()) {
+                diag.emplace_back(
+                    DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
+            }
             language = 0x55C4; // und
             break;
         }
