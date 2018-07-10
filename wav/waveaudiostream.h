@@ -7,11 +7,11 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT WaveFormatHeader {
 public:
-    WaveFormatHeader();
+    constexpr WaveFormatHeader();
 
     void parse(IoUtilities::BinaryReader &reader);
     MediaFormat format() const;
-    uint32 bitrate() const;
+    constexpr uint32 bitrate() const;
 
     uint16 formatTag;
     uint16 channelCount;
@@ -22,9 +22,22 @@ public:
 };
 
 /*!
+ * \brief Constructs a new WaveFormatHeader.
+ */
+constexpr WaveFormatHeader::WaveFormatHeader()
+    : formatTag(0)
+    , channelCount(0)
+    , sampleRate(0)
+    , bytesPerSecond(0)
+    , chunkSize(0)
+    , bitsPerSample(0)
+{
+}
+
+/*!
  * \brief Calculates the bitrate from the header data.
  */
-inline uint32 WaveFormatHeader::bitrate() const
+constexpr uint32 WaveFormatHeader::bitrate() const
 {
     return bitsPerSample * sampleRate * channelCount;
 }

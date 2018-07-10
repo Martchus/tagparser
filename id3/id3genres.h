@@ -11,7 +11,7 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT Id3Genres {
 public:
-    static const char *stringFromIndex(int index);
+    static inline const char *stringFromIndex(int index);
     static int indexFromString(const std::string &genre);
     static constexpr int genreCount();
     static constexpr bool isIndexSupported(int index);

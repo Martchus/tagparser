@@ -25,7 +25,7 @@ class OggContainer;
  * \brief The OggParameter struct holds the OGG parameter for a VorbisComment.
  */
 struct TAG_PARSER_EXPORT OggParameter {
-    OggParameter();
+    constexpr OggParameter();
     void set(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
 
     std::size_t firstPageIndex;
@@ -41,7 +41,7 @@ struct TAG_PARSER_EXPORT OggParameter {
  * \brief Creates new parameters.
  * \remarks The OggContainer class is responsible for assigning sane values.
  */
-inline OggParameter::OggParameter()
+constexpr OggParameter::OggParameter()
     : firstPageIndex(0)
     , firstSegmentIndex(0)
     , lastPageIndex(0)

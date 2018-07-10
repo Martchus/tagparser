@@ -11,16 +11,16 @@ class OggIterator;
 
 class TAG_PARSER_EXPORT OpusIdentificationHeader {
 public:
-    OpusIdentificationHeader();
+    constexpr OpusIdentificationHeader();
 
     void parseHeader(OggIterator &iterator);
 
-    byte version() const;
-    byte channels() const;
-    uint16 preSkip() const;
-    uint32 sampleRate() const;
-    uint16 outputGain() const;
-    byte channelMap() const;
+    constexpr byte version() const;
+    constexpr byte channels() const;
+    constexpr uint16 preSkip() const;
+    constexpr uint32 sampleRate() const;
+    constexpr uint16 outputGain() const;
+    constexpr byte channelMap() const;
 
 private:
     byte m_version;
@@ -34,9 +34,10 @@ private:
 /*!
  * \brief Constructs a new Opus identification header.
  */
-inline OpusIdentificationHeader::OpusIdentificationHeader()
+constexpr OpusIdentificationHeader::OpusIdentificationHeader()
     : m_version(0)
     , m_channels(0)
+    , m_preSkip(0)
     , m_sampleRate(0)
     , m_outputGain(0)
     , m_channelMap(0)
@@ -46,7 +47,7 @@ inline OpusIdentificationHeader::OpusIdentificationHeader()
 /*!
  * \brief Returns the version (which should be 1 currently).
  */
-inline byte OpusIdentificationHeader::version() const
+constexpr byte OpusIdentificationHeader::version() const
 {
     return m_version;
 }
@@ -54,7 +55,7 @@ inline byte OpusIdentificationHeader::version() const
 /*!
  * \brief Returns the number of channels for the Opus stream.
  */
-inline byte OpusIdentificationHeader::channels() const
+constexpr byte OpusIdentificationHeader::channels() const
 {
     return m_channels;
 }
@@ -66,7 +67,7 @@ inline byte OpusIdentificationHeader::channels() const
  * output when starting playback, and also the number to subtract from a
  * page's granule position to calculate its PCM sample position.
  */
-inline uint16 OpusIdentificationHeader::preSkip() const
+constexpr uint16 OpusIdentificationHeader::preSkip() const
 {
     return m_preSkip;
 }
@@ -76,7 +77,7 @@ inline uint16 OpusIdentificationHeader::preSkip() const
  * \remarks This is not the sample rate to use for playback of the encoded data.
  * \sa https://wiki.xiph.org/OggOpus
  */
-inline uint32 OpusIdentificationHeader::sampleRate() const
+constexpr uint32 OpusIdentificationHeader::sampleRate() const
 {
     return m_sampleRate;
 }
@@ -87,7 +88,7 @@ inline uint32 OpusIdentificationHeader::sampleRate() const
  * This is a gain to be applied by the decoder. Virtually all players and media frameworks
  * should apply it by default.
  */
-inline uint16 OpusIdentificationHeader::outputGain() const
+constexpr uint16 OpusIdentificationHeader::outputGain() const
 {
     return m_outputGain;
 }
@@ -99,7 +100,7 @@ inline uint16 OpusIdentificationHeader::outputGain() const
  * encoded in each Opus packet.
  * \sa https://wiki.xiph.org/OggOpus
  */
-inline byte OpusIdentificationHeader::channelMap() const
+constexpr byte OpusIdentificationHeader::channelMap() const
 {
     return m_channelMap;
 }

@@ -23,15 +23,15 @@ typedef uint32 ugolomb;
 typedef int32 sgolomb;
 
 struct TAG_PARSER_EXPORT TimingInfo {
-    TimingInfo();
+    constexpr TimingInfo();
     uint32 unitsInTick;
     uint32 timeScale;
     byte isPresent;
     byte fixedFrameRate;
-    int64 defaultDuration() const;
+    constexpr int64 defaultDuration() const;
 };
 
-inline TimingInfo::TimingInfo()
+constexpr TimingInfo::TimingInfo()
     : unitsInTick(0)
     , timeScale(0)
     , isPresent(0)
@@ -39,13 +39,13 @@ inline TimingInfo::TimingInfo()
 {
 }
 
-inline int64 TimingInfo::defaultDuration() const
+constexpr int64 TimingInfo::defaultDuration() const
 {
     return 1000000000ll * unitsInTick / timeScale;
 }
 
 struct TAG_PARSER_EXPORT HrdParameters {
-    HrdParameters();
+    constexpr HrdParameters();
     ugolomb cpbCount;
     byte bitRateScale;
     byte cpbSizeScale;
@@ -57,7 +57,7 @@ struct TAG_PARSER_EXPORT HrdParameters {
     void parse(IoUtilities::BitReader &reader);
 };
 
-inline HrdParameters::HrdParameters()
+constexpr HrdParameters::HrdParameters()
     : cpbCount(0)
     , bitRateScale(0)
     , cpbSizeScale(0)
@@ -69,7 +69,7 @@ inline HrdParameters::HrdParameters()
 }
 
 struct TAG_PARSER_EXPORT SpsInfo {
-    SpsInfo();
+    constexpr SpsInfo();
     ugolomb id;
     byte profileIndication;
     byte profileConstraints;
@@ -97,7 +97,7 @@ struct TAG_PARSER_EXPORT SpsInfo {
     void parse(IoUtilities::BinaryReader &reader, uint32 maxSize);
 };
 
-inline SpsInfo::SpsInfo()
+constexpr SpsInfo::SpsInfo()
     : id(0)
     , profileIndication(0)
     , profileConstraints(0)
@@ -119,7 +119,7 @@ inline SpsInfo::SpsInfo()
 }
 
 struct TAG_PARSER_EXPORT PpsInfo {
-    PpsInfo();
+    constexpr PpsInfo();
     ugolomb id;
     ugolomb spsId;
     byte picOrderPresent;
@@ -128,7 +128,7 @@ struct TAG_PARSER_EXPORT PpsInfo {
     void parse(IoUtilities::BinaryReader &reader, uint32 maxSize);
 };
 
-inline PpsInfo::PpsInfo()
+constexpr PpsInfo::PpsInfo()
     : id(0)
     , spsId(0)
     , picOrderPresent(false)
@@ -137,7 +137,7 @@ inline PpsInfo::PpsInfo()
 }
 
 struct TAG_PARSER_EXPORT SliceInfo {
-    SliceInfo();
+    constexpr SliceInfo();
     byte naluType;
     byte naluRefIdc;
     byte type;
@@ -154,7 +154,7 @@ struct TAG_PARSER_EXPORT SliceInfo {
     uint32 pps;
 };
 
-inline SliceInfo::SliceInfo()
+constexpr SliceInfo::SliceInfo()
     : naluType(0)
     , naluRefIdc(0)
     , type(0)
@@ -173,27 +173,27 @@ inline SliceInfo::SliceInfo()
 }
 
 struct TAG_PARSER_EXPORT AvcFrame {
-    AvcFrame();
+    constexpr AvcFrame();
     uint64 start;
     uint64 end;
     uint64 ref1;
     uint64 ref2;
-    bool keyframe;
-    bool hasProvidedTimecode;
     SliceInfo sliceInfo;
     uint32 presentationOrder;
     uint32 decodeOrder;
+    bool keyframe;
+    bool hasProvidedTimecode;
 };
 
-inline AvcFrame::AvcFrame()
+constexpr AvcFrame::AvcFrame()
     : start(0)
     , end(0)
     , ref1(0)
     , ref2(0)
-    , keyframe(false)
-    , hasProvidedTimecode(false)
     , presentationOrder(0)
     , decodeOrder(0)
+    , keyframe(false)
+    , hasProvidedTimecode(false)
 {
 }
 

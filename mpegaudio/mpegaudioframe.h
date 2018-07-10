@@ -36,31 +36,31 @@ enum class XingHeaderFlags {
 
 class TAG_PARSER_EXPORT MpegAudioFrame {
 public:
-    MpegAudioFrame();
+    constexpr MpegAudioFrame();
 
     void parseHeader(IoUtilities::BinaryReader &reader);
 
-    bool isValid() const;
+    constexpr bool isValid() const;
     double mpegVersion() const;
     int layer() const;
-    bool isProtectedByCrc() const;
+    constexpr bool isProtectedByCrc() const;
     uint32 bitrate() const;
     uint32 samplingFrequency() const;
-    uint32 paddingSize() const;
+    constexpr uint32 paddingSize() const;
     MpegChannelMode channelMode() const;
-    bool hasCopyright() const;
-    bool isOriginal() const;
+    constexpr bool hasCopyright() const;
+    constexpr bool isOriginal() const;
     uint32 sampleCount() const;
     uint32 size() const;
-    bool isXingHeaderAvailable() const;
-    XingHeaderFlags xingHeaderFlags() const;
-    bool isXingFramefieldPresent() const;
-    bool isXingBytesfieldPresent() const;
-    bool isXingTocFieldPresent() const;
-    bool isXingQualityIndicatorFieldPresent() const;
-    uint32 xingFrameCount() const;
-    uint32 xingBytesfield() const;
-    uint32 xingQualityIndicator() const;
+    constexpr bool isXingHeaderAvailable() const;
+    constexpr XingHeaderFlags xingHeaderFlags() const;
+    constexpr bool isXingFramefieldPresent() const;
+    constexpr bool isXingBytesfieldPresent() const;
+    constexpr bool isXingTocFieldPresent() const;
+    constexpr bool isXingQualityIndicatorFieldPresent() const;
+    constexpr uint32 xingFrameCount() const;
+    constexpr uint32 xingBytesfield() const;
+    constexpr uint32 xingQualityIndicator() const;
 
 private:
     static const uint64 m_xingHeaderOffset;
@@ -77,7 +77,7 @@ private:
 /*!
  * \brief Constructs a new frame.
  */
-inline MpegAudioFrame::MpegAudioFrame()
+constexpr MpegAudioFrame::MpegAudioFrame()
     : m_header(0)
     , m_xingHeader(0)
     , m_xingHeaderFlags(XingHeaderFlags::None)
@@ -90,7 +90,7 @@ inline MpegAudioFrame::MpegAudioFrame()
 /*!
  * \brief Returns an indication whether the frame is valid.
  */
-inline bool MpegAudioFrame::isValid() const
+constexpr bool MpegAudioFrame::isValid() const
 {
     return (m_header & m_sync) == m_sync;
 }
@@ -98,7 +98,7 @@ inline bool MpegAudioFrame::isValid() const
 /*!
  * \brief Returns an indication whether the frame is protected by CRC.
  */
-inline bool MpegAudioFrame::isProtectedByCrc() const
+constexpr bool MpegAudioFrame::isProtectedByCrc() const
 {
     return (m_header & 0x10000u) != 0x10000u;
 }
@@ -108,16 +108,17 @@ inline bool MpegAudioFrame::isProtectedByCrc() const
  */
 inline uint32 MpegAudioFrame::bitrate() const
 {
-    if (mpegVersion() > 0.0 && layer() > 0)
+    if (mpegVersion() > 0.0 && layer() > 0) {
         return m_bitrateTable[mpegVersion() == 1.0 ? 0 : 1][layer() - 1][(m_header & 0xf000u) >> 12];
-    else
+    } else {
         return 0;
+    }
 }
 
 /*!
  * \brief Returns the padding size if known; otherwise returns 0.
  */
-inline uint32 MpegAudioFrame::paddingSize() const
+constexpr uint32 MpegAudioFrame::paddingSize() const
 {
     if (isValid()) {
         return (m_header & 0x60000u) == 0x60000u ? 4u : 1u * (m_header & 0x200u);
@@ -129,7 +130,7 @@ inline uint32 MpegAudioFrame::paddingSize() const
 /*!
  * \brief Returns an indication whether the frame is copyrighted.
  */
-inline bool MpegAudioFrame::hasCopyright() const
+constexpr bool MpegAudioFrame::hasCopyright() const
 {
     return (m_header & 0x8u) == 0x8u;
 }
@@ -137,17 +138,17 @@ inline bool MpegAudioFrame::hasCopyright() const
 /*!
  * \brief Returns an indication whether the frame labeled as original.
  */
-inline bool MpegAudioFrame::isOriginal() const
+constexpr bool MpegAudioFrame::isOriginal() const
 {
     return (m_header & 0x4u) == 0x4u;
 }
 
-inline XingHeaderFlags operator|(XingHeaderFlags lhs, XingHeaderFlags rhs)
+constexpr XingHeaderFlags operator|(XingHeaderFlags lhs, XingHeaderFlags rhs)
 {
     return static_cast<XingHeaderFlags>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }
 
-inline XingHeaderFlags operator&(XingHeaderFlags lhs, XingHeaderFlags rhs)
+constexpr XingHeaderFlags operator&(XingHeaderFlags lhs, XingHeaderFlags rhs)
 {
     return static_cast<XingHeaderFlags>(static_cast<int>(lhs) & static_cast<int>(rhs));
 }
@@ -155,7 +156,7 @@ inline XingHeaderFlags operator&(XingHeaderFlags lhs, XingHeaderFlags rhs)
 /*!
  * \brief Returns an indication whether a Xing header is present.
  */
-inline bool MpegAudioFrame::isXingHeaderAvailable() const
+constexpr bool MpegAudioFrame::isXingHeaderAvailable() const
 {
     return ((m_xingHeader & 0x58696e6700000000uL) == 0x58696e6700000000uL) || ((m_xingHeader & 0x496e666f00000000uL) == 0x496e666f00000000uL);
 }
@@ -163,7 +164,7 @@ inline bool MpegAudioFrame::isXingHeaderAvailable() const
 /*!
  * \brief Returns the Xing header flags.
  */
-inline XingHeaderFlags MpegAudioFrame::xingHeaderFlags() const
+constexpr XingHeaderFlags MpegAudioFrame::xingHeaderFlags() const
 {
     return m_xingHeaderFlags;
 }
@@ -171,7 +172,7 @@ inline XingHeaderFlags MpegAudioFrame::xingHeaderFlags() const
 /*!
  * \brief Returns an indication whether the Xing frame field is present.
  */
-inline bool MpegAudioFrame::isXingFramefieldPresent() const
+constexpr bool MpegAudioFrame::isXingFramefieldPresent() const
 {
     return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField) : false;
 }
@@ -179,7 +180,7 @@ inline bool MpegAudioFrame::isXingFramefieldPresent() const
 /*!
  * \brief Returns an indication whether the Xing bytes field is present.
  */
-inline bool MpegAudioFrame::isXingBytesfieldPresent() const
+constexpr bool MpegAudioFrame::isXingBytesfieldPresent() const
 {
     return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField) : false;
 }
@@ -187,7 +188,7 @@ inline bool MpegAudioFrame::isXingBytesfieldPresent() const
 /*!
  * \brief Returns an indication whether the Xing TOC is present.
  */
-inline bool MpegAudioFrame::isXingTocFieldPresent() const
+constexpr bool MpegAudioFrame::isXingTocFieldPresent() const
 {
     return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasTocField) == XingHeaderFlags::HasTocField) : false;
 }
@@ -195,7 +196,7 @@ inline bool MpegAudioFrame::isXingTocFieldPresent() const
 /*!
  * \brief Returns an indication whether the Xing quality indicator field is present.
  */
-inline bool MpegAudioFrame::isXingQualityIndicatorFieldPresent() const
+constexpr bool MpegAudioFrame::isXingQualityIndicatorFieldPresent() const
 {
     return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasQualityIndicator) == XingHeaderFlags::HasQualityIndicator) : false;
 }
@@ -203,7 +204,7 @@ inline bool MpegAudioFrame::isXingQualityIndicatorFieldPresent() const
 /*!
  * \brief Returns an indication whether the Xing frame count is present.
  */
-inline uint32 MpegAudioFrame::xingFrameCount() const
+constexpr uint32 MpegAudioFrame::xingFrameCount() const
 {
     return m_xingFramefield;
 }
@@ -211,7 +212,7 @@ inline uint32 MpegAudioFrame::xingFrameCount() const
 /*!
  * \brief Returns the Xing bytes field if known; otherwise returns 0.
  */
-inline uint32 MpegAudioFrame::xingBytesfield() const
+constexpr uint32 MpegAudioFrame::xingBytesfield() const
 {
     return m_xingBytesfield;
 }
@@ -219,7 +220,7 @@ inline uint32 MpegAudioFrame::xingBytesfield() const
 /*!
  * \brief Returns the Xing quality indicator if known; otherwise returns 0.
  */
-inline uint32 MpegAudioFrame::xingQualityIndicator() const
+constexpr uint32 MpegAudioFrame::xingQualityIndicator() const
 {
     return m_xingQualityIndicator;
 }

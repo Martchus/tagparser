@@ -38,7 +38,7 @@ struct TrackHeaderInfo {
     friend class Mp4Track;
 
 private:
-    TrackHeaderInfo();
+    constexpr TrackHeaderInfo();
 
     /// \brief Specifies the size which is required for <i>making a new</i> track header based one the existing one.
     uint64 requiredSize;
@@ -56,12 +56,13 @@ private:
     bool discardBuffer;
 };
 
-inline TrackHeaderInfo::TrackHeaderInfo()
+constexpr TrackHeaderInfo::TrackHeaderInfo()
     : requiredSize(100)
     , canUseExisting(false)
     , truncated(false)
     , version(0)
     , versionUnknown(false)
+    , additionalDataOffset(0)
     , discardBuffer(false)
 {
 }

@@ -28,16 +28,16 @@ constexpr bool operator!=(byte lhs, FlacMetaDataBlockType type)
 
 class TAG_PARSER_EXPORT FlacMetaDataBlockHeader {
 public:
-    FlacMetaDataBlockHeader();
+    constexpr FlacMetaDataBlockHeader();
 
     void parseHeader(const char *buffer);
     void makeHeader(std::ostream &outputStream);
 
-    byte isLast() const;
+    constexpr byte isLast() const;
     void setLast(byte last);
-    byte type() const;
+    constexpr byte type() const;
     void setType(FlacMetaDataBlockType type);
-    uint32 dataSize() const;
+    constexpr uint32 dataSize() const;
     void setDataSize(uint32 dataSize);
 
 private:
@@ -49,7 +49,7 @@ private:
 /*!
  * \brief Constructs a new FLAC "METADATA_BLOCK_HEADER".
  */
-inline FlacMetaDataBlockHeader::FlacMetaDataBlockHeader()
+constexpr FlacMetaDataBlockHeader::FlacMetaDataBlockHeader()
     : m_last(0)
     , m_type(0)
     , m_dataSize(0)
@@ -60,7 +60,7 @@ inline FlacMetaDataBlockHeader::FlacMetaDataBlockHeader()
  * \brief Returns whether this is the last metadata block before the audio blocks.
  * \remarks The default value is 0/false.
  */
-inline byte FlacMetaDataBlockHeader::isLast() const
+constexpr byte FlacMetaDataBlockHeader::isLast() const
 {
     return m_last;
 }
@@ -77,7 +77,7 @@ inline void FlacMetaDataBlockHeader::setLast(byte last)
  * \brief Returns the block type.
  * \sa FlacMetaDataBlockType
  */
-inline byte FlacMetaDataBlockHeader::type() const
+constexpr byte FlacMetaDataBlockHeader::type() const
 {
     return m_type;
 }
@@ -93,7 +93,7 @@ inline void FlacMetaDataBlockHeader::setType(FlacMetaDataBlockType type)
 /*!
  * \brief Returns the length in bytes of the meta data (excluding the size of the header itself).
  */
-inline uint32 FlacMetaDataBlockHeader::dataSize() const
+constexpr uint32 FlacMetaDataBlockHeader::dataSize() const
 {
     return m_dataSize;
 }
@@ -109,19 +109,19 @@ inline void FlacMetaDataBlockHeader::setDataSize(uint32 dataSize)
 
 class TAG_PARSER_EXPORT FlacMetaDataBlockStreamInfo {
 public:
-    FlacMetaDataBlockStreamInfo();
+    constexpr FlacMetaDataBlockStreamInfo();
 
     void parse(const char *buffer);
 
-    uint16 minBlockSize() const;
-    uint16 maxBlockSize() const;
-    uint32 minFrameSize() const;
-    uint32 maxFrameSize() const;
-    uint32 samplingFrequency() const;
-    byte channelCount() const;
-    byte bitsPerSample() const;
-    uint64 totalSampleCount() const;
-    const char *md5Sum() const;
+    constexpr uint16 minBlockSize() const;
+    constexpr uint16 maxBlockSize() const;
+    constexpr uint32 minFrameSize() const;
+    constexpr uint32 maxFrameSize() const;
+    constexpr uint32 samplingFrequency() const;
+    constexpr byte channelCount() const;
+    constexpr byte bitsPerSample() const;
+    constexpr uint64 totalSampleCount() const;
+    constexpr const char *md5Sum() const;
 
 private:
     uint16 m_minBlockSize;
@@ -138,7 +138,7 @@ private:
 /*!
  * \brief Constructs a new FLAC "METADATA_BLOCK_STREAMINFO".
  */
-inline FlacMetaDataBlockStreamInfo::FlacMetaDataBlockStreamInfo()
+constexpr FlacMetaDataBlockStreamInfo::FlacMetaDataBlockStreamInfo()
     : m_minBlockSize(0)
     , m_maxBlockSize(0)
     , m_minFrameSize(0)
@@ -154,7 +154,7 @@ inline FlacMetaDataBlockStreamInfo::FlacMetaDataBlockStreamInfo()
 /*!
  * \brief Returns the minimum block size (in samples) used in the stream.
  */
-inline uint16 FlacMetaDataBlockStreamInfo::minBlockSize() const
+constexpr uint16 FlacMetaDataBlockStreamInfo::minBlockSize() const
 {
     return m_minBlockSize;
 }
@@ -164,7 +164,7 @@ inline uint16 FlacMetaDataBlockStreamInfo::minBlockSize() const
  *
  * (Minimum blocksize == maximum blocksize) implies a fixed-blocksize stream.
  */
-inline uint16 FlacMetaDataBlockStreamInfo::maxBlockSize() const
+constexpr uint16 FlacMetaDataBlockStreamInfo::maxBlockSize() const
 {
     return m_maxBlockSize;
 }
@@ -174,7 +174,7 @@ inline uint16 FlacMetaDataBlockStreamInfo::maxBlockSize() const
  *
  * May be 0 to imply the value is not known.
  */
-inline uint32 FlacMetaDataBlockStreamInfo::minFrameSize() const
+constexpr uint32 FlacMetaDataBlockStreamInfo::minFrameSize() const
 {
     return m_minFrameSize;
 }
@@ -184,7 +184,7 @@ inline uint32 FlacMetaDataBlockStreamInfo::minFrameSize() const
  *
  * May be 0 to imply the value is not known.
  */
-inline uint32 FlacMetaDataBlockStreamInfo::maxFrameSize() const
+constexpr uint32 FlacMetaDataBlockStreamInfo::maxFrameSize() const
 {
     return m_maxFrameSize;
 }
@@ -195,7 +195,7 @@ inline uint32 FlacMetaDataBlockStreamInfo::maxFrameSize() const
  * Though 20 bits are available, the maximum sample rate is limited by the
  * structure of frame headers to 655350Hz. Also, a value of 0 is invalid.
  */
-inline uint32 FlacMetaDataBlockStreamInfo::samplingFrequency() const
+constexpr uint32 FlacMetaDataBlockStreamInfo::samplingFrequency() const
 {
     return m_samplingFrequency;
 }
@@ -205,7 +205,7 @@ inline uint32 FlacMetaDataBlockStreamInfo::samplingFrequency() const
  *
  * FLAC supports from 1 to 8 channels .
  */
-inline byte FlacMetaDataBlockStreamInfo::channelCount() const
+constexpr byte FlacMetaDataBlockStreamInfo::channelCount() const
 {
     return m_channelCount;
 }
@@ -217,7 +217,7 @@ inline byte FlacMetaDataBlockStreamInfo::channelCount() const
  * Currently the reference encoder and decoders only support up
  * to 24 bits per sample.
  */
-inline byte FlacMetaDataBlockStreamInfo::bitsPerSample() const
+constexpr byte FlacMetaDataBlockStreamInfo::bitsPerSample() const
 {
     return m_bitsPerSample;
 }
@@ -230,7 +230,7 @@ inline byte FlacMetaDataBlockStreamInfo::bitsPerSample() const
  *
  * A value of zero here means the number of total samples is unknown.
  */
-inline uint64 FlacMetaDataBlockStreamInfo::totalSampleCount() const
+constexpr uint64 FlacMetaDataBlockStreamInfo::totalSampleCount() const
 {
     return m_totalSampleCount;
 }
@@ -241,7 +241,7 @@ inline uint64 FlacMetaDataBlockStreamInfo::totalSampleCount() const
  * This allows the decoder to determine if an error exists in the
  * audio data even when the error does not result in an invalid bitstream.
  */
-inline const char *FlacMetaDataBlockStreamInfo::md5Sum() const
+constexpr const char *FlacMetaDataBlockStreamInfo::md5Sum() const
 {
     return m_md5Sum;
 }

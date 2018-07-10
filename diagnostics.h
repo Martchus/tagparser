@@ -30,7 +30,7 @@ TAG_PARSER_EXPORT const char *diagLevelName(DiagLevel diagLevel);
 /*!
  * \brief Sets \a lhs to \a rhs if \a rhs is more critical than \a lhs and returns \a lhs.
  */
-inline DiagLevel &operator|=(DiagLevel &lhs, const DiagLevel &rhs)
+constexpr DiagLevel &operator|=(DiagLevel &lhs, const DiagLevel &rhs)
 {
     if (lhs < rhs) {
         lhs = rhs;

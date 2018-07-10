@@ -11,18 +11,18 @@ class OggIterator;
 
 class TAG_PARSER_EXPORT VorbisIdentificationHeader {
 public:
-    VorbisIdentificationHeader();
+    constexpr VorbisIdentificationHeader();
 
     void parseHeader(OggIterator &iterator);
 
-    uint32 version() const;
-    byte channels() const;
-    uint32 sampleRate() const;
-    uint32 maxBitrate() const;
-    uint32 nominalBitrate() const;
-    uint32 minBitrate() const;
-    byte blockSize() const;
-    byte framingFlag() const;
+    constexpr uint32 version() const;
+    constexpr byte channels() const;
+    constexpr uint32 sampleRate() const;
+    constexpr uint32 maxBitrate() const;
+    constexpr uint32 nominalBitrate() const;
+    constexpr uint32 minBitrate() const;
+    constexpr byte blockSize() const;
+    constexpr byte framingFlag() const;
 
 private:
     uint32 m_version;
@@ -38,7 +38,7 @@ private:
 /*!
  * \brief Constructs a new Vorbis identification header.
  */
-inline VorbisIdentificationHeader::VorbisIdentificationHeader()
+constexpr VorbisIdentificationHeader::VorbisIdentificationHeader()
     : m_version(0)
     , m_channels(0)
     , m_sampleRate(0)
@@ -50,42 +50,42 @@ inline VorbisIdentificationHeader::VorbisIdentificationHeader()
 {
 }
 
-inline uint32 VorbisIdentificationHeader::version() const
+constexpr uint32 VorbisIdentificationHeader::version() const
 {
     return m_version;
 }
 
-inline byte VorbisIdentificationHeader::channels() const
+constexpr byte VorbisIdentificationHeader::channels() const
 {
     return m_channels;
 }
 
-inline uint32 VorbisIdentificationHeader::sampleRate() const
+constexpr uint32 VorbisIdentificationHeader::sampleRate() const
 {
     return m_sampleRate;
 }
 
-inline uint32 VorbisIdentificationHeader::maxBitrate() const
+constexpr uint32 VorbisIdentificationHeader::maxBitrate() const
 {
     return m_maxBitrate;
 }
 
-inline uint32 VorbisIdentificationHeader::nominalBitrate() const
+constexpr uint32 VorbisIdentificationHeader::nominalBitrate() const
 {
     return m_nominalBitrate;
 }
 
-inline uint32 VorbisIdentificationHeader::minBitrate() const
+constexpr uint32 VorbisIdentificationHeader::minBitrate() const
 {
     return m_minBitrate;
 }
 
-inline byte VorbisIdentificationHeader::blockSize() const
+constexpr byte VorbisIdentificationHeader::blockSize() const
 {
     return m_blockSize;
 }
 
-inline byte VorbisIdentificationHeader::framingFlag() const
+constexpr byte VorbisIdentificationHeader::framingFlag() const
 {
     return m_framingFlag;
 }

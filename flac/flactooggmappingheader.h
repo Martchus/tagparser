@@ -9,14 +9,14 @@ class OggIterator;
 
 class TAG_PARSER_EXPORT FlacToOggMappingHeader {
 public:
-    FlacToOggMappingHeader();
+    constexpr FlacToOggMappingHeader();
 
     void parseHeader(OggIterator &iterator);
 
-    byte majorVersion() const;
-    byte minorVersion() const;
-    uint16 headerCount() const;
-    const FlacMetaDataBlockStreamInfo &streamInfo() const;
+    constexpr byte majorVersion() const;
+    constexpr byte minorVersion() const;
+    constexpr uint16 headerCount() const;
+    constexpr const FlacMetaDataBlockStreamInfo &streamInfo() const;
 
 private:
     byte m_majorVersion;
@@ -28,7 +28,7 @@ private:
 /*!
  * \brief Constructs a new FLAC identification header.
  */
-inline FlacToOggMappingHeader::FlacToOggMappingHeader()
+constexpr FlacToOggMappingHeader::FlacToOggMappingHeader()
     : m_majorVersion(0)
     , m_minorVersion(0)
     , m_headerCount(0)
@@ -38,7 +38,7 @@ inline FlacToOggMappingHeader::FlacToOggMappingHeader()
 /*!
  * \brief Returns the major version for the mapping (which should be 1 currently).
  */
-inline byte FlacToOggMappingHeader::majorVersion() const
+constexpr byte FlacToOggMappingHeader::majorVersion() const
 {
     return m_majorVersion;
 }
@@ -46,7 +46,7 @@ inline byte FlacToOggMappingHeader::majorVersion() const
 /*!
  * \brief Returns the version for the mapping (which should be 0 currently).
  */
-inline byte FlacToOggMappingHeader::minorVersion() const
+constexpr byte FlacToOggMappingHeader::minorVersion() const
 {
     return m_minorVersion;
 }
@@ -54,7 +54,7 @@ inline byte FlacToOggMappingHeader::minorVersion() const
 /*!
  * \brief Returns the number of header (non-audio) packets, not including this one.
  */
-inline uint16 FlacToOggMappingHeader::headerCount() const
+constexpr uint16 FlacToOggMappingHeader::headerCount() const
 {
     return m_headerCount;
 }
@@ -62,7 +62,7 @@ inline uint16 FlacToOggMappingHeader::headerCount() const
 /*!
  * \brief Returns the stream info.
  */
-inline const FlacMetaDataBlockStreamInfo &FlacToOggMappingHeader::streamInfo() const
+constexpr const FlacMetaDataBlockStreamInfo &FlacToOggMappingHeader::streamInfo() const
 {
     return m_streamInfo;
 }

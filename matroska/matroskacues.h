@@ -10,23 +10,23 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT MatroskaOffsetStates {
 public:
-    MatroskaOffsetStates(uint64 initialValue);
-    uint64 currentValue() const;
+    constexpr MatroskaOffsetStates(uint64 initialValue);
+    constexpr uint64 currentValue() const;
     void update(uint64 newValue);
-    uint64 initialValue() const;
+    constexpr uint64 initialValue() const;
 
 private:
     uint64 m_initialValue;
     uint64 m_currentValue;
 };
 
-inline MatroskaOffsetStates::MatroskaOffsetStates(uint64 initialValue)
+constexpr MatroskaOffsetStates::MatroskaOffsetStates(uint64 initialValue)
     : m_initialValue(initialValue)
     , m_currentValue(initialValue)
 {
 }
 
-inline uint64 MatroskaOffsetStates::currentValue() const
+constexpr uint64 MatroskaOffsetStates::currentValue() const
 {
     return m_currentValue;
 }
@@ -36,27 +36,27 @@ inline void MatroskaOffsetStates::update(uint64 newValue)
     m_currentValue = newValue;
 }
 
-inline uint64 MatroskaOffsetStates::initialValue() const
+constexpr uint64 MatroskaOffsetStates::initialValue() const
 {
     return m_initialValue;
 }
 
 class TAG_PARSER_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates {
 public:
-    MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue);
-    uint64 referenceOffset() const;
+    constexpr MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue);
+    constexpr uint64 referenceOffset() const;
 
 private:
     uint64 m_referenceOffset;
 };
 
-inline MatroskaReferenceOffsetPair::MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue)
+constexpr MatroskaReferenceOffsetPair::MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue)
     : MatroskaOffsetStates(initialValue)
     , m_referenceOffset(referenceOffset)
 {
 }
 
-inline uint64 MatroskaReferenceOffsetPair::referenceOffset() const
+constexpr uint64 MatroskaReferenceOffsetPair::referenceOffset() const
 {
     return m_referenceOffset;
 }

@@ -19,19 +19,6 @@ namespace TagParser {
  */
 
 /*!
- * \brief Constructs a new WaveFormatHeader.
- */
-WaveFormatHeader::WaveFormatHeader()
-    : formatTag(0)
-    , channelCount(0)
-    , sampleRate(0)
-    , bytesPerSecond(0)
-    , chunkSize(0)
-    , bitsPerSample(0)
-{
-}
-
-/*!
  * \brief Parses the WAVE "fmt " header segment using the specified \a reader.
  * \remarks Reads 16 bytes from the associated stream.
  */

@@ -66,7 +66,7 @@ uint32 convertToLongId(uint32 id);
 /*!
  * \brief Returns an indication whether the specified \a id is a long frame id.
  */
-inline bool isLongId(uint32 id)
+constexpr bool isLongId(uint32 id)
 {
     return (id & 0x00ffffff) != id;
 }
@@ -74,7 +74,7 @@ inline bool isLongId(uint32 id)
 /*!
  * \brief Returns an indication whether the specified \a id is a short frame id.
  */
-inline bool isShortId(uint32 id)
+constexpr bool isShortId(uint32 id)
 {
     return (id & 0x00ffffff) == id;
 }
@@ -82,7 +82,7 @@ inline bool isShortId(uint32 id)
 /*!
  * \brief Returns an indication whether the specified \a id is a text frame id.
  */
-inline bool isTextFrame(uint32 id)
+constexpr bool isTextFrame(uint32 id)
 {
     if (isShortId(id)) {
         return ((id & 0x00FF0000u) == 0x00540000u) && (id != Id3v2FrameIds::sUserDefinedText);

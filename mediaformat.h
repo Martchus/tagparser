@@ -242,16 +242,16 @@ enum AudioFormatExtensions : unsigned char { SpectralBandReplication = 1, Parame
 
 class TAG_PARSER_EXPORT MediaFormat {
 public:
-    MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0, unsigned char extension = 0);
+    constexpr MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0, unsigned char extension = 0);
 
     const char *name() const;
     const char *abbreviation() const;
     const char *shortAbbreviation() const;
     const char *extensionName() const;
-    operator bool() const;
-    MediaFormat &operator+=(const MediaFormat &other);
-    bool operator==(GeneralMediaFormat general) const;
-    bool operator!=(GeneralMediaFormat general) const;
+    constexpr operator bool() const;
+    constexpr MediaFormat &operator+=(const MediaFormat &other);
+    constexpr bool operator==(GeneralMediaFormat general) const;
+    constexpr bool operator!=(GeneralMediaFormat general) const;
 
     GeneralMediaFormat general;
     unsigned char sub;
@@ -261,7 +261,7 @@ public:
 /*!
  * \brief Constructs a new media format.
  */
-inline MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub, unsigned char extension)
+constexpr MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub, unsigned char extension)
     : general(general)
     , sub(sub)
     , extension(extension)
@@ -271,7 +271,7 @@ inline MediaFormat::MediaFormat(GeneralMediaFormat general, unsigned char sub, u
 /*!
  * \brief "Adds" information from another instance to the object.
  */
-inline MediaFormat &MediaFormat::operator+=(const MediaFormat &other)
+constexpr MediaFormat &MediaFormat::operator+=(const MediaFormat &other)
 {
     if (other) {
         general = other.general;
@@ -288,7 +288,7 @@ inline MediaFormat &MediaFormat::operator+=(const MediaFormat &other)
 /*!
  * \brief Returns whether the media format is the specified general media format.
  */
-inline bool MediaFormat::operator==(GeneralMediaFormat general) const
+constexpr bool MediaFormat::operator==(GeneralMediaFormat general) const
 {
     return this->general == general;
 }
@@ -296,7 +296,7 @@ inline bool MediaFormat::operator==(GeneralMediaFormat general) const
 /*!
  * \brief Returns whether the media format is not the specified general media format.
  */
-inline bool MediaFormat::operator!=(GeneralMediaFormat general) const
+constexpr bool MediaFormat::operator!=(GeneralMediaFormat general) const
 {
     return this->general != general;
 }
@@ -304,7 +304,7 @@ inline bool MediaFormat::operator!=(GeneralMediaFormat general) const
 /*!
  * \brief Returns whether the media format is known.
  */
-inline MediaFormat::operator bool() const
+constexpr MediaFormat::operator bool() const
 {
     return general != GeneralMediaFormat::Unknown;
 }
