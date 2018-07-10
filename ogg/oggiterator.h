@@ -35,7 +35,7 @@ public:
     uint32 currentSegmentSize() const;
     void setFilter(uint32 streamSerialId);
     void removeFilter();
-    bool areAllPagesFetched() const;
+    bool isLastPageFetched() const;
     void read(char *buffer, std::size_t count);
     size_t readAll(char *buffer, std::size_t max);
     void ignore(std::size_t count = 1);
@@ -255,17 +255,9 @@ inline void OggIterator::removeFilter()
 }
 
 /*!
- * \brief Returns an indication whether all pages have been fetched.
- *
- * This means that for each page in the stream in the specified range (stream and range have been specified when
- * constructing the iterator) an OggPage instance has been created and pushed to pages(). This is independend from
- * the current iterator position. Fetched pages remain after resetting the iterator.
- *
- * \remarks This is also true if pages in the middle of the file have been omitted because it is actually just checked
- *          whether the last page has been fetched.
- * \todo Rename to isLastPageFetched() in next major release.
+ * \brief Returns whether the last page has already been fetched.
  */
-inline bool OggIterator::areAllPagesFetched() const
+inline bool OggIterator::isLastPageFetched() const
 {
     return (m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize()) >= m_streamSize;
 }

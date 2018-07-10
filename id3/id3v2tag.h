@@ -12,7 +12,7 @@ namespace TagParser {
 class Id3v2Tag;
 
 struct TAG_PARSER_EXPORT FrameComparer {
-    bool operator()(const uint32 &lhs, const uint32 &rhs) const;
+    bool operator()(uint32 lhs, uint32 rhs) const;
 };
 
 class TAG_PARSER_EXPORT Id3v2TagMaker {

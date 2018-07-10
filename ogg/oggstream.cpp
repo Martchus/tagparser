@@ -293,7 +293,7 @@ void OggStream::calculateDurationViaSampleCount(uint16 preSkip)
 
     // determine sample count
     const auto &iterator = m_container.m_iterator;
-    if (!m_sampleCount && iterator.areAllPagesFetched()) {
+    if (!m_sampleCount && iterator.isLastPageFetched()) {
         const auto &pages = iterator.pages();
         const auto firstPage = find_if(pages.cbegin(), pages.cend(), pred);
         const auto lastPage = find_if(pages.crbegin(), pages.crend(), pred);

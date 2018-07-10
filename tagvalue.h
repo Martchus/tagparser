@@ -75,7 +75,7 @@ public:
     TagValue(const char *data, std::size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
     TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
         TagTextEncoding encoding = TagTextEncoding::Latin1);
-    TagValue(const PositionInSet &value);
+    TagValue(PositionInSet value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
     ~TagValue();
@@ -278,9 +278,8 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, Ta
 /*!
  * \brief Constructs a new TagValue holding a copy of the given PositionInSet \a value.
  * \param value Specifies the PositionInSet.
- * \todo Pass \a value by value in v8.
  */
-inline TagValue::TagValue(const PositionInSet &value)
+inline TagValue::TagValue(PositionInSet value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
 {
 }

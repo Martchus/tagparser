@@ -126,17 +126,17 @@ void Mp4Atom::internalParse(Diagnostics &diag)
  * \throw The caller has to be sure, that the number of written bytes does not exceed
  *        maximum of an 32-bit unsigned integer. Otherwise the function will throw
  *        Failure and Mp4Atom::seekBackAndWriteAtomSize64 should be used instead.
- * \todo Add a version which creates a diag message (in addition to throwing an exception).
  *
  * This function seeks back to the start offset and writes the difference between the
  * previous offset and the start offset as 32-bit unsigned integer to the \a stream.
  * Then it seeks back to the previous offset.
  */
-void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_type &startOffset)
+void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_type &startOffset, Diagnostics &diag)
 {
     ostream::pos_type currentOffset = stream.tellp();
     const auto atomSize(currentOffset - startOffset);
     if (atomSize > numeric_limits<uint32>::max()) {
+        diag.emplace_back(DiagLevel::Fatal, argsToString(atomSize, " exceeds maximum."), "write 32-bit atom size");
         throw Failure();
     }
     stream.seekp(startOffset);

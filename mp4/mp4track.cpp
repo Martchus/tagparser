@@ -1159,7 +1159,7 @@ void Mp4Track::makeTrack(Diagnostics &diag)
     // write mdia atom
     makeMedia(diag);
     // write size (of trak atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), trakStartOffset);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), trakStartOffset, diag);
 }
 
 /*!
@@ -1307,7 +1307,7 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     // write minf atom
     makeMediaInfo(diag);
     // write size (of mdia atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), mdiaStartOffset);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), mdiaStartOffset, diag);
 }
 
 /*!
@@ -1372,7 +1372,7 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
             "Source track does not contain mandatory stbl atom and the tagparser lib is unable to make one from scratch.", "making stbl atom");
     }
     // write size (of minf atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset, diag);
 }
 
 /*!
@@ -1436,7 +1436,7 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
     // write subs atom (sub-sample information)
 
     // write size (of stbl atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset);
+    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset, diag);
 }
 
 void Mp4Track::internalParseHeader(Diagnostics &diag)

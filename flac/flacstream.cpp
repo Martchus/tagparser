@@ -172,9 +172,8 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
  *  - Padding is skipped
  *
  * \returns Returns the start offset of the last "METADATA_BLOCK_HEADER" within \a outputStream.
- * \todo Return as std::streamoff in v8 to avoid conversion.
  */
-uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
+std::streamoff FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 {
     istream &originalStream = m_mediaFileInfo.stream();
     originalStream.seekg(static_cast<streamoff>(m_startOffset + 4));
@@ -222,7 +221,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 
     // write Vorbis comment
     if (!m_vorbisComment) {
-        return lastStartOffset >= 0 ? static_cast<uint32>(lastStartOffset) : 0;
+        return lastStartOffset >= 0 ? lastStartOffset : 0;
     }
     // leave 4 bytes space for the "METADATA_BLOCK_HEADER"
     lastStartOffset = outputStream.tellp();
@@ -251,7 +250,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
 
     // write cover fields separately as "METADATA_BLOCK_PICTURE"
     if (header.isLast()) {
-        return static_cast<uint32>(lastStartOffset);
+        return lastStartOffset;
     }
     header.setType(FlacMetaDataBlockType::Picture);
     const auto coverFields = m_vorbisComment->fields().equal_range(coverId);
@@ -289,7 +288,7 @@ uint32 FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
         outputStream.seekp(lastActuallyWrittenHeader.dataSize());
     }
 
-    return static_cast<uint32>(lastStartOffset);
+    return lastStartOffset;
 }
 
 /*!

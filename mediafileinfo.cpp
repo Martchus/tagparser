@@ -1046,40 +1046,38 @@ Id3v2Tag *MediaFileInfo::createId3v2Tag()
  * \remarks Invalidates the removed tag object if it has been removed.
  *
  * \sa applyChanges()
- * \todo Make this return whether the \a tag could be removed in v8.
  */
-void MediaFileInfo::removeTag(Tag *tag)
+bool MediaFileInfo::removeTag(Tag *tag)
 {
     if (!tag) {
-        return;
+        return false;
     }
 
     // remove tag via container
     if (m_container) {
-        m_container->removeTag(tag);
-        return;
+        return m_container->removeTag(tag);
     }
 
     // remove tag via track for "single-track" formats
     if (m_singleTrack && m_containerFormat == ContainerFormat::Flac) {
         auto *const flacStream(static_cast<FlacStream *>(m_singleTrack.get()));
         if (flacStream->vorbisComment() == tag) {
-            flacStream->removeVorbisComment();
-            return;
+            return flacStream->removeVorbisComment();
         }
     }
 
     // remove ID3 tags
     if (m_id3v1Tag.get() == tag) {
         m_id3v1Tag.reset();
-        return;
+        return true;
     }
     for (auto i = m_id3v2Tags.begin(), end = m_id3v2Tags.end(); i != end; ++i) {
         if (i->get() == tag) {
             m_id3v2Tags.erase(i);
-            break;
+            return true;
         }
     }
+    return false;
 }
 
 /*!
@@ -1550,11 +1548,11 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     uint32 streamOffset; // where the actual stream starts
     stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
     flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
-    uint32 startOfLastMetaDataBlock;
+    std::streamoff startOfLastMetaDataBlock;
     if (flacStream) {
         // if it is a raw FLAC stream, make FLAC metadata
         startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
-        tagsSize += static_cast<uint32>(flacMetaData.tellp());
+        tagsSize += flacMetaData.tellp();
         streamOffset = flacStream->streamOffset();
     } else {
         // make no further metadata, just use the container offset as stream offset
@@ -1664,8 +1662,8 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         if (flacStream) {
             if (padding && startOfLastMetaDataBlock) {
                 // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
-                flacMetaData.seekg(static_cast<streamoff>(startOfLastMetaDataBlock));
-                flacMetaData.seekp(static_cast<streamoff>(startOfLastMetaDataBlock));
+                flacMetaData.seekg(startOfLastMetaDataBlock);
+                flacMetaData.seekp(startOfLastMetaDataBlock);
                 flacMetaData.put(static_cast<byte>(flacMetaData.peek()) & (0x80u - 1));
                 flacMetaData.seekg(0);
             }

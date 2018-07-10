@@ -23,7 +23,7 @@ public:
     uint32 paddingSize() const;
     uint32 streamOffset() const;
 
-    uint32 makeHeader(std::ostream &stream, Diagnostics &diag);
+    std::streamoff makeHeader(std::ostream &stream, Diagnostics &diag);
     static void makePadding(std::ostream &stream, uint32 size, bool isLast, Diagnostics &diag);
 
 protected:

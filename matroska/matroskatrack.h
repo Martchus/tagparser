@@ -80,7 +80,6 @@ private:
  * This method might be useful when it is necessary to know the size of the track header before making
  * it.
  * \sa make()
- * \todo Make inline in next major release.
  */
 inline MatroskaTrackHeaderMaker MatroskaTrack::prepareMakingHeader(Diagnostics &diag) const
 {
@@ -93,7 +92,6 @@ inline MatroskaTrackHeaderMaker MatroskaTrack::prepareMakingHeader(Diagnostics &
  * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  * \sa prepareMaking()
- * \todo Make inline in next major release.
  */
 inline void MatroskaTrack::makeHeader(std::ostream &stream, Diagnostics &diag) const
 {

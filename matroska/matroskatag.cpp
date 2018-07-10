@@ -136,35 +136,6 @@ void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
 }
 
 /*!
- * \brief Prepares making.
- * \returns Returns a MatroskaTagMaker object which can be used to actually make the tag.
- * \remarks The tag must NOT be mutated after making is prepared when it is intended to actually
- *          make the tag using the make() method of the returned object.
- * \throws Throws TagParser::Failure or a derived exception when a making error occurs.
- *
- * This method might be useful when it is necessary to know the size of the tag before making it.
- * \sa make()
- * \todo Make inline in next major release.
- */
-MatroskaTagMaker MatroskaTag::prepareMaking(Diagnostics &diag)
-{
-    return MatroskaTagMaker(*this, diag);
-}
-
-/*!
- * \brief Writes tag information to the specified \a stream (makes a "Tag"-element).
- * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws TagParser::Failure or a derived exception when a making
- *                error occurs.
- * \sa prepareMaking()
- * \todo Make inline in next major release.
- */
-void MatroskaTag::make(ostream &stream, Diagnostics &diag)
-{
-    prepareMaking(diag).make(stream);
-}
-
-/*!
  * \brief Parses the specified \a targetsElement.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.

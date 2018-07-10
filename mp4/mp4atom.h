@@ -46,7 +46,7 @@ public:
     bool isPadding() const;
     uint64 firstChildOffset() const;
 
-    static void seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset);
+    static void seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset, Diagnostics &diag);
     static void seekBackAndWriteAtomSize64(std::ostream &stream, const std::ostream::pos_type &startOffset);
     static constexpr void addHeaderSize(uint64 &dataSize);
     static void makeHeader(uint64 size, uint32 id, IoUtilities::BinaryWriter &writer);

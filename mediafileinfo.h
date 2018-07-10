@@ -110,7 +110,7 @@ public:
     bool removeId3v2Tag(Id3v2Tag *tag);
     bool removeAllId3v2Tags();
     Id3v2Tag *createId3v2Tag();
-    void removeTag(Tag *tag);
+    bool removeTag(Tag *tag);
     void removeAllTags();
     void mergeId3v2Tags();
     bool id3v1ToId3v2();
