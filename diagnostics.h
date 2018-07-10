@@ -170,42 +170,6 @@ inline Diagnostics::Diagnostics(std::initializer_list<DiagMessage> list)
 {
 }
 
-/*!
- * \brief The DiagPtr class is a leftover from development which should have been removed.
- * \deprecated Don't use, this should never have been committed in the first place.
- * \todo Remove in v8.
- */
-class DiagPtr {
-public:
-    DiagPtr();
-    DiagPtr(Diagnostics &diag);
-    Diagnostics *operator->();
-    const Diagnostics *operator->() const;
-
-private:
-    Diagnostics *m_ptr;
-};
-
-inline DiagPtr::DiagPtr()
-    : m_ptr(nullptr)
-{
-}
-
-inline DiagPtr::DiagPtr(Diagnostics &diag)
-    : m_ptr(&diag)
-{
-}
-
-inline Diagnostics *DiagPtr::operator->()
-{
-    return m_ptr;
-}
-
-inline const Diagnostics *DiagPtr::operator->() const
-{
-    return m_ptr;
-}
-
 } // namespace TagParser
 
 #endif // TAGPARSER_DIAGNOSTICS_H
