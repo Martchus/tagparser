@@ -300,19 +300,16 @@ void UtilitiesTests::testBackupFile()
 {
     using namespace BackupHelper;
 
-    // ensure backup directory is empty, so backups will be created in the same directory
-    // as the original file
-    backupDirectory().clear();
-
     // setup testfile
     MediaFileInfo file(workingCopyPath("unsupported.bin"));
+    file.setBackupDirectory(string()); // ensure backup directory is empty, so backups will be created in the same directory as the original file
     const auto workingDir(file.containingDirectory());
     file.open();
 
     // create backup file
     string backupPath1, backupPath2;
     NativeFileStream backupStream1, backupStream2;
-    createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
+    createBackupFile(string(), file.path(), backupPath1, file.stream(), backupStream1);
     CPPUNIT_ASSERT_EQUAL(workingDir + "/unsupported.bin.bak", backupPath1);
 
     // recreate original file (like the 'make' methods would do to apply changes)
@@ -320,7 +317,7 @@ void UtilitiesTests::testBackupFile()
     file.stream() << "test1" << endl;
 
     // create a 2nd backup which should not override the first one
-    createBackupFile(file.path(), backupPath2, file.stream(), backupStream2);
+    createBackupFile(string(), file.path(), backupPath2, file.stream(), backupStream2);
     CPPUNIT_ASSERT_EQUAL(workingDir + "/unsupported.bin.1.bak", backupPath2);
 
     // get rid of 2nd backup, recreate original file
@@ -330,9 +327,8 @@ void UtilitiesTests::testBackupFile()
     file.stream() << "test2" << endl;
 
     // create backup under another location
-    backupDirectory() = "bak";
     try {
-        createBackupFile(file.path(), backupPath2, file.stream(), backupStream2);
+        createBackupFile("bak", file.path(), backupPath2, file.stream(), backupStream2);
         CPPUNIT_FAIL("renaming failed because backup dir does not exist");
     } catch (...) {
         const char *what = catchIoFailure();
@@ -340,13 +336,13 @@ void UtilitiesTests::testBackupFile()
     }
     backupStream2.clear();
     workingCopyPathMode("bak/unsupported.bin", WorkingCopyMode::NoCopy);
-    createBackupFile(file.path(), backupPath2, file.stream(), backupStream2);
+    createBackupFile("bak", file.path(), backupPath2, file.stream(), backupStream2);
     CPPUNIT_ASSERT_EQUAL(workingDir + "/bak/unsupported.bin", backupPath2);
 
     // get rid of 2nd backup (again)
     backupStream2.close();
     CPPUNIT_ASSERT_EQUAL(0, remove(backupPath2.data()));
-    CPPUNIT_ASSERT_EQUAL(0, remove(argsToString(workingDir % '/' + backupDirectory()).data()));
+    CPPUNIT_ASSERT_EQUAL(0, remove((workingDir + "/bak").data()));
 
     // should be able to use backup stream, eg. seek to the end
     backupStream1.seekg(0, ios_base::end);
@@ -361,11 +357,8 @@ void UtilitiesTests::testBackupFile()
     CPPUNIT_ASSERT_EQUAL(0x34_st, static_cast<size_t>(file.stream().get()));
     file.close();
 
-    // reset backup dir again
-    backupDirectory().clear();
-
     // restore after user aborted
-    createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
+    createBackupFile(string(), file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throw OperationAbortedException();
     } catch (...) {
@@ -379,7 +372,7 @@ void UtilitiesTests::testBackupFile()
     }
 
     // restore after error
-    createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
+    createBackupFile(string(), file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throw Failure();
     } catch (...) {
@@ -391,7 +384,7 @@ void UtilitiesTests::testBackupFile()
     }
 
     // restore after io failure
-    createBackupFile(file.path(), backupPath1, file.stream(), backupStream1);
+    createBackupFile(string(), file.path(), backupPath1, file.stream(), backupStream1);
     try {
         throwIoFailure("simulated IO failure");
     } catch (...) {

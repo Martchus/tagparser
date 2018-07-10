@@ -34,20 +34,6 @@ namespace TagParser {
 namespace BackupHelper {
 
 /*!
- * \brief Returns the directory used to store backup files.
- *
- * Setting this value allows creation of backup files in a custom location
- * instead of the directory of the file being modified.
- *
- * \todo Add this as member variable to MediaFileInfo to avoid global.
- */
-string &backupDirectory()
-{
-    static string backupDir;
-    return backupDir;
-}
-
-/*!
  * \brief Restores the original file from the specified backup file.
  * \param originalPath Specifies the path to the original file.
  * \param backupPath Specifies the path to the backup file.
@@ -111,6 +97,8 @@ static bool isRelative(const std::string &path)
 
 /*!
  * \brief Creates a backup file for the specified file.
+ * \param backupDir Specifies the directory to store backup files. If empty, the directory of the file
+ *                  to be backuped is used.
  * \param originalPath Specifies the path of the file to be backuped.
  * \param backupPath Contains the path of the created backup file when this function returns.
  * \param originalStream Specifies a std::fstream for the original file.
@@ -132,10 +120,10 @@ static bool isRelative(const std::string &path)
  * \throws Throws std::ios_base::failure on failure.
  * \todo Implement callback for progress updates (copy).
  */
-void createBackupFile(const std::string &originalPath, std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
+void createBackupFile(const std::string &backupDir, const std::string &originalPath, std::string &backupPath, NativeFileStream &originalStream,
+    NativeFileStream &backupStream)
 {
     // determine dirs
-    const auto &backupDir(backupDirectory());
     const auto backupDirRelative(isRelative(backupDir));
     const auto originalDir(backupDirRelative ? BasicFileInfo::containingDirectory(originalPath) : string());
 

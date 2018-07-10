@@ -120,6 +120,8 @@ public:
     void clearParsingResults();
 
     // methods to get, set object behaviour
+    const std::string &backupDirectory() const;
+    void setBackupDirectory(const std::string &backupDirectory);
     const std::string &saveFilePath() const;
     void setSaveFilePath(const std::string &saveFilePath);
     const std::string writingApplication() const;
@@ -176,6 +178,7 @@ private:
     ParsingStatus m_attachmentsParsingStatus;
 
     // fields specifying object behaviour
+    std::string m_backupDirectory;
     std::string m_saveFilePath;
     std::string m_writingApplication;
     size_t m_minPadding;
@@ -337,6 +340,25 @@ inline Id3v1Tag *MediaFileInfo::id3v1Tag() const
 inline const std::vector<std::unique_ptr<Id3v2Tag>> &MediaFileInfo::id3v2Tags() const
 {
     return m_id3v2Tags;
+}
+
+/*!
+ * \brief Returns the directory used to store backup files.
+ * \remarks If empty, backup files will be stored in the same directory of the file being modified.
+ * \sa setBackupDirectory()
+ */
+inline const std::string &MediaFileInfo::backupDirectory() const
+{
+    return m_backupDirectory;
+}
+
+/*!
+ * \brief Sets the directory used to store backup files.
+ * \remarks If empty, backup files will be stored in the same directory of the file being modified.
+ */
+inline void MediaFileInfo::setBackupDirectory(const std::string &backupDirectory)
+{
+    m_backupDirectory = backupDirectory;
 }
 
 /*!

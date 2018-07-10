@@ -376,7 +376,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     if (fileInfo().saveFilePath().empty()) {
         // move current file to temp dir and reopen it as backupStream, recreate original file
         try {
-            BackupHelper::createBackupFile(fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
+            BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
             // recreate original file, define buffer variables
             fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
         } catch (...) {

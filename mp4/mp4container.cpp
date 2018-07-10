@@ -517,7 +517,7 @@ calculatePadding:
         if (fileInfo().saveFilePath().empty()) {
             // move current file to temp dir and reopen it as backupStream, recreate original file
             try {
-                BackupHelper::createBackupFile(fileInfo().path(), backupPath, outputStream, backupStream);
+                BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
                 outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (...) {
