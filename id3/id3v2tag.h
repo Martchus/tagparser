@@ -54,8 +54,8 @@ inline uint64 Id3v2TagMaker::requiredSize() const
  */
 template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Id3v2Tag> {
 public:
-    typedef Id3v2Frame FieldType;
-    typedef FrameComparer Compare;
+    using FieldType = Id3v2Frame;
+    using Compare = FrameComparer;
 };
 
 class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag> {

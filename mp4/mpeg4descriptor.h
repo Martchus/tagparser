@@ -15,9 +15,9 @@ class Mpeg4Descriptor;
  */
 template <> class TAG_PARSER_EXPORT FileElementTraits<Mpeg4Descriptor> {
 public:
-    typedef Mp4Container ContainerType;
-    typedef byte IdentifierType;
-    typedef uint32 DataSizeType;
+    using ContainerType = Mp4Container;
+    using IdentifierType = byte;
+    using DataSizeType = uint32;
 
     /*!
      * \brief Returns the minimal descriptor size which is 2 byte.

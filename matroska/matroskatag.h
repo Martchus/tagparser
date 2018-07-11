@@ -51,8 +51,8 @@ inline uint64 MatroskaTagMaker::requiredSize() const
  */
 template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<MatroskaTag> {
 public:
-    typedef MatroskaTagField FieldType;
-    typedef std::less<typename FieldType::IdentifierType> Compare;
+    using FieldType = MatroskaTagField;
+    using Compare = std::less<typename FieldType::IdentifierType>;
 };
 
 class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag> {

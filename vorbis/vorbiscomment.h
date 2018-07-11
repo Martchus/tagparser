@@ -18,8 +18,8 @@ class Diagnostics;
  */
 template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<VorbisComment> {
 public:
-    typedef VorbisCommentField FieldType;
-    typedef CaseInsensitiveStringComparer Compare;
+    using FieldType = VorbisCommentField;
+    using Compare = CaseInsensitiveStringComparer;
 };
 
 class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment> {

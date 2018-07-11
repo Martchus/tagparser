@@ -15,12 +15,12 @@ namespace TagParser {
 /*!
  * \brief Type used to store unsigned integer values using golomb coding.
  */
-typedef uint32 ugolomb;
+using ugolomb = uint32;
 
 /*!
  * \brief Type used to store signed integer values using golomb coding.
  */
-typedef int32 sgolomb;
+using sgolomb = int32;
 
 struct TAG_PARSER_EXPORT TimingInfo {
     constexpr TimingInfo();

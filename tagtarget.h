@@ -20,8 +20,8 @@ TAG_PARSER_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
 
 class TAG_PARSER_EXPORT TagTarget {
 public:
-    typedef uint64 IdType;
-    typedef std::vector<IdType> IdContainerType;
+    using IdType = uint64;
+    using IdContainerType = std::vector<IdType>;
 
     TagTarget(uint64 level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
         IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());

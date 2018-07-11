@@ -32,9 +32,10 @@ template <class ImplementationType> class FieldMapBasedTag : public Tag {
     friend class FieldMapBasedTagTraits<ImplementationType>;
 
 public:
-    typedef typename FieldMapBasedTagTraits<ImplementationType>::FieldType FieldType;
-    typedef typename FieldMapBasedTagTraits<ImplementationType>::FieldType::IdentifierType IdentifierType;
-    typedef typename FieldMapBasedTagTraits<ImplementationType>::Compare Compare;
+    using FieldType = typename FieldMapBasedTagTraits<ImplementationType>::FieldType;
+    using IdentifierType = typename FieldMapBasedTagTraits<ImplementationType>::FieldType::IdentifierType;
+    using Compare = typename FieldMapBasedTagTraits<ImplementationType>::Compare;
+    using FieldMapBasedTagBase = FieldMapBasedTag<ImplementationType>;
 
     FieldMapBasedTag();
 

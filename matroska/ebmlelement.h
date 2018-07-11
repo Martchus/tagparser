@@ -23,9 +23,9 @@ class MatroskaContainer;
  */
 template <> class TAG_PARSER_EXPORT FileElementTraits<EbmlElement> {
 public:
-    typedef MatroskaContainer ContainerType;
-    typedef uint32 IdentifierType;
-    typedef uint64 DataSizeType;
+    using ContainerType = MatroskaContainer;
+    using IdentifierType = uint32;
+    using DataSizeType = uint64;
 };
 
 class TAG_PARSER_EXPORT EbmlElement : public GenericFileElement<EbmlElement> {

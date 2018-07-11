@@ -27,7 +27,7 @@ constexpr auto aacSbrM = 49;
 constexpr auto aacSbrMaxLe = 5;
 constexpr auto aacSbrMaxNtsrhfg = 40;
 
-typedef const sbyte (*SbrHuffTab)[2];
+using SbrHuffTab = const sbyte (*)[2];
 
 namespace AacSyntaxElementTypes {
 enum KnownTypes : byte {

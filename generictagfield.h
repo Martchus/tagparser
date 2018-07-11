@@ -31,8 +31,8 @@ template <class ImplementationType> class TAG_PARSER_EXPORT TagField {
     friend class TagFieldTraits<ImplementationType>;
 
 public:
-    typedef typename TagFieldTraits<ImplementationType>::IdentifierType IdentifierType;
-    typedef typename TagFieldTraits<ImplementationType>::TypeInfoType TypeInfoType;
+    using IdentifierType = typename TagFieldTraits<ImplementationType>::IdentifierType;
+    using TypeInfoType = typename TagFieldTraits<ImplementationType>::TypeInfoType;
 
     TagField();
     TagField(const IdentifierType &id, const TagValue &value);

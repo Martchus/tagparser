@@ -38,8 +38,8 @@ class Diagnostics;
  */
 template <> class TAG_PARSER_EXPORT TagFieldTraits<VorbisCommentField> {
 public:
-    typedef std::string IdentifierType;
-    typedef uint32 TypeInfoType;
+    using IdentifierType = std::string;
+    using TypeInfoType = uint32;
 };
 
 class OggIterator;

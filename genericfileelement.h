@@ -51,17 +51,17 @@ public:
     /*!
      * \brief Specifies the type of the corresponding container.
      */
-    typedef typename FileElementTraits<ImplementationType>::ContainerType ContainerType;
+    using ContainerType = typename FileElementTraits<ImplementationType>::ContainerType;
 
     /*!
      * \brief Specifies the type used to store identifiers.
      */
-    typedef typename FileElementTraits<ImplementationType>::IdentifierType IdentifierType;
+    using IdentifierType = typename FileElementTraits<ImplementationType>::IdentifierType;
 
     /*!
      * \brief Specifies the type used to store data sizes.
      */
-    typedef typename FileElementTraits<ImplementationType>::DataSizeType DataSizeType;
+    using DataSizeType = typename FileElementTraits<ImplementationType>::DataSizeType;
 
     GenericFileElement(ContainerType &container, uint64 startOffset);
     GenericFileElement(ImplementationType &parent, uint64 startOffset);

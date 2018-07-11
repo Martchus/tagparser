@@ -79,8 +79,8 @@ inline uint32 Id3v2FrameMaker::requiredSize() const
  */
 template <> class TAG_PARSER_EXPORT TagFieldTraits<Id3v2Frame> {
 public:
-    typedef uint32 IdentifierType;
-    typedef byte TypeInfoType;
+    using IdentifierType = uint32;
+    using TypeInfoType = byte;
 };
 
 class TAG_PARSER_EXPORT Id3v2Frame : public TagField<Id3v2Frame> {

@@ -22,9 +22,9 @@ class Mp4Container;
  */
 template <> class TAG_PARSER_EXPORT FileElementTraits<Mp4Atom> {
 public:
-    typedef Mp4Container ContainerType;
-    typedef uint32 IdentifierType;
-    typedef uint64 DataSizeType;
+    using ContainerType = Mp4Container;
+    using IdentifierType = uint32;
+    using DataSizeType = uint64;
 
     /*!
      * \brief Returns the minimal atom size which is 8 byte.

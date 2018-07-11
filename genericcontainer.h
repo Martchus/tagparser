@@ -49,10 +49,10 @@ public:
     void removeAllTracks() override;
     void reset() override;
 
-    typedef FileInfoType ContainerFileInfoType;
-    typedef TagType ContainerTagType;
-    typedef TrackType ContainerTrackType;
-    typedef ElementType ContainerElementType;
+    using ContainerFileInfoType = FileInfoType;
+    using ContainerTagType = TagType;
+    using ContainerTrackType = TrackType;
+    using ContainerElementType = ElementType;
 
 protected:
     std::unique_ptr<ElementType> m_firstElement;

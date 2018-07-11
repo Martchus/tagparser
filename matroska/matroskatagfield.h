@@ -14,8 +14,8 @@ class Diagnostics;
  */
 template <> class TAG_PARSER_EXPORT TagFieldTraits<MatroskaTagField> {
 public:
-    typedef std::string IdentifierType;
-    typedef std::string TypeInfoType;
+    using IdentifierType = std::string;
+    using TypeInfoType = std::string;
     static bool supportsNestedFields();
 };
 

@@ -53,8 +53,8 @@ class Diagnostics;
  */
 template <> class TAG_PARSER_EXPORT TagFieldTraits<Mp4TagField> {
 public:
-    typedef uint32 IdentifierType;
-    typedef uint32 TypeInfoType;
+    using IdentifierType = uint32;
+    using TypeInfoType = uint32;
 };
 
 class Mp4Atom;

@@ -90,8 +90,8 @@ inline uint64 Mp4TagMaker::requiredSize() const
  */
 template <> class TAG_PARSER_EXPORT FieldMapBasedTagTraits<Mp4Tag> {
 public:
-    typedef Mp4TagField FieldType;
-    typedef std::less<typename FieldType::IdentifierType> Compare;
+    using FieldType = Mp4TagField;
+    using Compare = std::less<typename FieldType::IdentifierType>;
 };
 
 class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag> {

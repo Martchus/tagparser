@@ -280,7 +280,7 @@ void MatroskaTagMaker::make(ostream &stream) const
         stream.write(t.levelName().c_str(), t.levelName().size());
     }
     // write UIDs
-    typedef pair<uint16, vector<uint64>> p;
+    using p = pair<uint16, vector<uint64>>;
     for (const auto &pair : initializer_list<p>{ p(MatroskaIds::TagTrackUID, t.tracks()), p(MatroskaIds::TagEditionUID, t.editions()),
              p(MatroskaIds::TagChapterUID, t.chapters()), p(MatroskaIds::TagAttachmentUID, t.attachments()) }) {
         if (!pair.second.empty()) {
