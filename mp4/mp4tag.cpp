@@ -114,14 +114,6 @@ const TagValue &Mp4Tag::value(const char *mean, const char *name) const
     return TagValue::empty();
 }
 
-/*!
- * \brief Returns the value of the field with the specified \a mean and \a name attributes.
- */
-const TagValue &Mp4Tag::value(const string mean, const string name) const
-{
-    return (this->*static_cast<const TagValue &(Mp4Tag::*)(const string &, const string &)const>(&Mp4Tag::value))(mean, name);
-}
-
 Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
 {
     using namespace Mp4TagAtomIds;
@@ -289,14 +281,6 @@ bool Mp4Tag::setValue(const char *mean, const char *name, const TagValue &value)
     }
     fields().insert(make_pair(Mp4TagAtomIds::Extended, FieldType(mean, name, value)));
     return true;
-}
-
-/*!
- * \brief Assigns the given \a value to the field with the specified \a mean and \a name attributes.
- */
-bool Mp4Tag::setValue(const string mean, const string name, const TagValue &value)
-{
-    return (this->*static_cast<bool (Mp4Tag::*)(const string &, const string &, const TagValue &)>(&Mp4Tag::setValue))(mean, name, value);
 }
 
 bool Mp4Tag::hasField(KnownField field) const

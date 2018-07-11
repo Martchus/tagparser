@@ -110,18 +110,12 @@ public:
     const TagValue &value(KnownField value) const override;
     using FieldMapBasedTag<Mp4Tag>::values;
     std::vector<const TagValue *> values(KnownField field) const override;
-#ifdef LEGACY_API
-    const TagValue &value(const std::string mean, const std::string name) const;
-#endif
     const TagValue &value(const std::string &mean, const std::string &name) const;
     const TagValue &value(const char *mean, const char *name) const;
     using FieldMapBasedTag<Mp4Tag>::setValue;
     bool setValue(KnownField field, const TagValue &value) override;
     using FieldMapBasedTag<Mp4Tag>::setValues;
     bool setValues(KnownField field, const std::vector<TagValue> &values) override;
-#ifdef LEGACY_API
-    bool setValue(const std::string mean, const std::string name, const TagValue &value);
-#endif
     bool setValue(const std::string &mean, const std::string &name, const TagValue &value);
     bool setValue(const char *mean, const char *name, const TagValue &value);
     using FieldMapBasedTag<Mp4Tag>::hasField;
