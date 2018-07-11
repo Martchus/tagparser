@@ -92,6 +92,8 @@ protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
     KnownField internallyGetKnownField(const IdentifierType &id) const;
     TagDataType internallyGetProposedDataType(const uint32 &id) const;
+    std::vector<const TagValue *> internallyGetValues(const IdentifierType &id) const;
+    bool internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values);
 
 private:
     byte m_majorVersion;

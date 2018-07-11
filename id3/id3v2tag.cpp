@@ -20,6 +20,68 @@ namespace TagParser {
  * \brief Implementation of TagParser::Tag for ID3v2 tags.
  */
 
+/*!
+ * \brief Works like the default implementation but adds additional values as well.
+ */
+std::vector<const TagValue *> Id3v2Tag::internallyGetValues(const IdentifierType &id) const
+{
+    auto range = fields().equal_range(id);
+    std::vector<const TagValue *> values;
+    for (auto i = range.first; i != range.second; ++i) {
+        const auto &frame(i->second);
+        if (!frame.value().isEmpty()) {
+            values.push_back(&frame.value());
+        }
+        for (const auto &value : frame.additionalValues()) {
+            values.push_back(&value);
+        }
+    }
+    return values;
+}
+
+/*!
+ * \brief Uses default implementation for non-text frames and applies special handling to text frames.
+ *
+ * - Ensure text frames are unique
+ * - Allow to store multiple values inside the same text frame.
+ */
+bool Id3v2Tag::internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values)
+{
+    // use default implementation for non-text frames
+    if (!Id3v2FrameIds::isTextFrame(id)) {
+        return CRTPBase::internallySetValues(id, values);
+    }
+
+    // find existing text frame
+    auto range = fields().equal_range(id);
+    auto frameIterator = range.first;
+
+    // use existing frame or insert new text frame
+    if (frameIterator != range.second) {
+        ++range.first;
+    } else {
+        frameIterator = fields().insert(make_pair(id, Id3v2Frame()));
+    }
+
+    // add primary value to frame
+    auto &frame(frameIterator->second);
+    auto valuesIterator = values.cbegin();
+    if (valuesIterator != values.cend()) {
+        frame.setValue(*valuesIterator);
+        ++valuesIterator;
+    } else {
+        frame.value().clearDataAndMetadata();
+    }
+    // add additional values to frame
+    frame.additionalValues() = vector<TagValue>(valuesIterator, values.cend());
+
+    // remove remaining existing values (there are more existing values than specified ones)
+    for (; range.first != range.second; ++range.first) {
+        range.first->second.setValue(TagValue());
+    }
+    return true;
+}
+
 Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
 {
     using namespace Id3v2FrameIds;

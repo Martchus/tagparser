@@ -35,7 +35,6 @@ public:
     using FieldType = typename FieldMapBasedTagTraits<ImplementationType>::FieldType;
     using IdentifierType = typename FieldMapBasedTagTraits<ImplementationType>::FieldType::IdentifierType;
     using Compare = typename FieldMapBasedTagTraits<ImplementationType>::Compare;
-    using FieldMapBasedTagBase = FieldMapBasedTag<ImplementationType>;
 
     FieldMapBasedTag();
 
@@ -66,8 +65,12 @@ public:
     void ensureTextValuesAreProperlyEncoded();
 
 protected:
+    using CRTPBase = FieldMapBasedTag<ImplementationType>;
+
     const TagValue &internallyGetValue(const IdentifierType &id) const;
+    std::vector<const TagValue *> internallyGetValues(const IdentifierType &id) const;
     bool internallySetValue(const IdentifierType &id, const TagValue &value);
+    bool internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values);
     bool internallyHasField(const IdentifierType &id) const;
     // no default implementation: IdentifierType internallyGetFieldId(KnownField field) const;
     // no default implementation: KnownField internallyGetKnownField(const IdentifierType &id) const;
@@ -124,6 +127,23 @@ template <class ImplementationType> const TagValue &FieldMapBasedTag<Implementat
 }
 
 /*!
+ * \brief Default implementation for values().
+ * \remarks Shadow in subclass to provide custom implementation.
+ */
+template <class ImplementationType>
+std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::internallyGetValues(const IdentifierType &id) const
+{
+    auto range = m_fields.equal_range(id);
+    std::vector<const TagValue *> values;
+    for (auto i = range.first; i != range.second; ++i) {
+        if (!i->second.value().isEmpty()) {
+            values.push_back(&i->second.value());
+        }
+    }
+    return values;
+}
+
+/*!
  * \brief Returns the value of the field with the specified \a id.
  * \sa Tag::value()
  */
@@ -143,19 +163,12 @@ template <class ImplementationType> inline const TagValue &FieldMapBasedTag<Impl
  */
 template <class ImplementationType> inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(const IdentifierType &id) const
 {
-    auto range = m_fields.equal_range(id);
-    std::vector<const TagValue *> values;
-    for (auto i = range.first; i != range.second; ++i) {
-        if (!i->second.value().isEmpty()) {
-            values.push_back(&i->second.value());
-        }
-    }
-    return values;
+    return static_cast<const ImplementationType *>(this)->internallyGetValues(id);
 }
 
 template <class ImplementationType> inline std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::values(KnownField field) const
 {
-    return values(fieldId(field));
+    return static_cast<const ImplementationType *>(this)->values(fieldId(field));
 }
 
 template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, const TagValue &value)
@@ -181,22 +194,11 @@ template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::i
 }
 
 /*!
- * \brief Assigns the given \a value to the field with the specified \a id.
- * \sa Tag::setValue()
- */
-template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::setValue(const IdentifierType &id, const TagParser::TagValue &value)
-{
-    return static_cast<ImplementationType *>(this)->internallySetValue(id, value);
-}
-
-/*!
- * \brief Assigns the given \a values to the field with the specified \a id.
- * \remarks There might me more than one value assigned to an \a id. Whereas setValue() only alters the first value, this
- *          method will replace all currently assigned values with the specified \a values.
- * \sa Tag::setValues()
+ * \brief Default implementation for setValues().
+ * \remarks Shadow in subclass to provide custom implementation.
  */
 template <class ImplementationType>
-bool FieldMapBasedTag<ImplementationType>::setValues(const IdentifierType &id, const std::vector<TagValue> &values)
+bool FieldMapBasedTag<ImplementationType>::internallySetValues(const FieldMapBasedTag::IdentifierType &id, const std::vector<TagValue> &values)
 {
     auto valuesIterator = values.cbegin();
     auto range = m_fields.equal_range(id);
@@ -217,6 +219,27 @@ bool FieldMapBasedTag<ImplementationType>::setValues(const IdentifierType &id, c
         range.first->second.setValue(TagValue());
     }
     return true;
+}
+
+/*!
+ * \brief Assigns the given \a value to the field with the specified \a id.
+ * \sa Tag::setValue()
+ */
+template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::setValue(const IdentifierType &id, const TagParser::TagValue &value)
+{
+    return static_cast<ImplementationType *>(this)->internallySetValue(id, value);
+}
+
+/*!
+ * \brief Assigns the given \a values to the field with the specified \a id.
+ * \remarks There might me more than one value assigned to an \a id. Whereas setValue() only alters the first value, this
+ *          method will replace all currently assigned values with the specified \a values.
+ * \sa Tag::setValues()
+ */
+template <class ImplementationType>
+bool FieldMapBasedTag<ImplementationType>::setValues(const IdentifierType &id, const std::vector<TagValue> &values)
+{
+    return static_cast<ImplementationType *>(this)->internallySetValues(id, values);
 }
 
 /*!

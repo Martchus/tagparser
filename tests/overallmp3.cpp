@@ -121,7 +121,8 @@ void OverallTests::checkMp3Testfile2()
             CPPUNIT_ASSERT_EQUAL("Infinite (Original Mix)"s, tag->value(KnownField::Title).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("B-Front"s, tag->value(KnownField::Artist).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("Infinite"s, tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL("Hardstyle"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL(m_tagStatus == TagStatus::TestMetaDataPresent ? "Test"s : "Hardstyle"s,
+                tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("Lavf57.83.100"s, tag->value(KnownField::EncoderSettings).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("Roughstate"s, tag->value(KnownField::RecordLabel).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("2017"s, tag->value(KnownField::RecordDate).toString(TagTextEncoding::Utf8));
@@ -129,29 +130,57 @@ void OverallTests::checkMp3Testfile2()
             CPPUNIT_ASSERT(tag->value(KnownField::Length).toTimeSpan().isNull());
             CPPUNIT_ASSERT(tag->value(KnownField::Lyricist).isEmpty());
 
-            // check multiple values
+            // check additional text frame values
             const auto &fields = id3v2Tag->fields();
             auto genreFields = fields.equal_range(Id3v2FrameIds::lGenre);
             CPPUNIT_ASSERT_MESSAGE("genre field present"s, genreFields.first != genreFields.second);
             const auto &genreField = genreFields.first->second;
             const auto &additionalValues = genreField.additionalValues();
-            CPPUNIT_ASSERT_EQUAL("Hardstyle"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL(3_st, additionalValues.size());
-            CPPUNIT_ASSERT_EQUAL("Test"s, additionalValues[0].toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL("Example"s, additionalValues[1].toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL("Hard Dance"s, additionalValues[2].toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL("Hardstyle"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
+            if (m_tagStatus == TagStatus::TestMetaDataPresent) {
+                CPPUNIT_ASSERT_EQUAL("Test"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(1_st, additionalValues.size());
+                CPPUNIT_ASSERT_EQUAL("Example"s, additionalValues[0].toString(TagTextEncoding::Utf8));
+            } else {
+                CPPUNIT_ASSERT_EQUAL("Hardstyle"s, tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL(3_st, additionalValues.size());
+                CPPUNIT_ASSERT_EQUAL("Test"s, additionalValues[0].toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Example"s, additionalValues[1].toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Hard Dance"s, additionalValues[2].toString(TagTextEncoding::Utf8));
+            }
             CPPUNIT_ASSERT_MESSAGE("exactly one genre field present"s, ++genreFields.first == genreFields.second);
+
+            // check whether additional text frame values are returned correctly by values()
+            const auto artists = id3v2Tag->values(KnownField::Artist);
+            CPPUNIT_ASSERT_EQUAL(m_tagStatus == TagStatus::TestMetaDataPresent ? 3_st : 2_st, artists.size());
+            CPPUNIT_ASSERT_EQUAL("B-Front"s, artists[0]->toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL("Second Artist Example"s, artists[1]->toString(TagTextEncoding::Utf8));
+            if (m_tagStatus == TagStatus::TestMetaDataPresent) {
+                CPPUNIT_ASSERT_EQUAL("3rd Artist Example"s, artists[2]->toString(TagTextEncoding::Utf8));
+            }
+
+            const auto genres = id3v2Tag->values(KnownField::Genre);
+            if (m_tagStatus == TagStatus::TestMetaDataPresent) {
+                CPPUNIT_ASSERT_EQUAL(2_st, genres.size());
+                CPPUNIT_ASSERT_EQUAL("Test"s, genres[0]->toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Example"s, genres[1]->toString(TagTextEncoding::Utf8));
+            } else {
+                CPPUNIT_ASSERT_EQUAL(4_st, genres.size());
+                CPPUNIT_ASSERT_EQUAL("Hardstyle"s, genres[0]->toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Test"s, genres[1]->toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Example"s, genres[2]->toString(TagTextEncoding::Utf8));
+                CPPUNIT_ASSERT_EQUAL("Hard Dance"s, genres[3]->toString(TagTextEncoding::Utf8));
+            }
         }
         break;
     case TagStatus::Removed:
-        CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
     }
 
-    if (expectId3v24) {
+    if (expectId3v24 || m_tagStatus == TagStatus::Removed) {
         CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
         return;
     }
+
     CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Warning);
     int warningCount = 0;
     for (const auto &msg : m_diag) {
@@ -162,8 +191,8 @@ void OverallTests::checkMp3Testfile2()
         TESTUTILS_ASSERT_LIKE("context", "(parsing|making) (TPE1|TCON)( frame)?", msg.context());
         TESTUTILS_ASSERT_LIKE("message",
             "Multiple strings (found|assigned) .*"
-            "Additional (value \"Second Artist Example\" is|"
-            "values \"Test\", \"Example\" and \"Hard Dance\" are) "
+            "Additional (values \"Second Artist Example\" and \"3rd Artist Example\" are|"
+            "value \"Example\" is) "
             "supposed to be ignored.",
             msg.message());
     }
@@ -306,7 +335,12 @@ void OverallTests::setMp3TestMetaData2()
     using namespace Mp3TestFlags;
 
     CPPUNIT_ASSERT_EQUAL(1_st, m_fileInfo.id3v2Tags().size());
-    m_fileInfo.id3v2Tags().front()->setVersion((m_mode & UseId3v24) ? 4 : 3, 0);
+    auto &id3v2Tag(m_fileInfo.id3v2Tags().front());
+    id3v2Tag->setVersion((m_mode & UseId3v24) ? 4 : 3, 0);
+    const auto artists = id3v2Tag->values(KnownField::Artist);
+    CPPUNIT_ASSERT_EQUAL(2_st, artists.size());
+    id3v2Tag->setValues(KnownField::Artist, { *artists[0], *artists[1], TagValue("3rd Artist Example") });
+    id3v2Tag->setValues(KnownField::Genre, { TagValue("Test"), TagValue("Example") });
 }
 
 /*!
