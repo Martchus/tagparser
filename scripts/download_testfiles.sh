@@ -17,6 +17,13 @@ fail() {
     echo "${bold}==> ${red}FAILURE:${normal} ${bold}${1}${normal}"
 }
 
+# find source location
+srcdir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+if ! [[ -d $srcdir/testfiles ]]; then
+    fail "The tagparser checkout \"$srcdir\" does not contain a testfiles directory."
+    exit -2
+fi
+
 # read args
 testfilespath="$1"
 testfileurl="$2"
@@ -102,7 +109,21 @@ mkdir -p flac
     || inform "Skipping already existing flac/test.flac"
 # FLAC in Ogg
 [[ ! -f flac/test.ogg ]] \
-    && ffmpeg -i flac/test.flac -c:a copy flac/test.ogg \
+    && ffmpeg -i flac/test.flac -vn -c:a copy flac/test.ogg \
     || inform "Skipping already existing flac/test.ogg"
+
+# convert further Mkv files mkvmerge
+inform "Creating further testfiles with mkvmerge"
+[[ ! -f mkv/nested-tags.mkv ]] \
+    && mkvmerge --ui-language en_US \
+                --output 'mkv/nested-tags.mkv' \
+                --no-global-tags \
+                --language '0:und' \
+                --default-track '0:yes' \
+                --language '1:und' \
+                --default-track '1:yes' \
+                \( 'mtx-test-data/mkv/tags.mkv' \) \
+                --global-tags "$srcdir/testfiles/mkv/nested-tags.xml" \
+                --track-order '0:0,0:1'
 
 success "All testfiles downloaded/converted!"

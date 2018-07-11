@@ -23,11 +23,6 @@ void OverallTests::setUp()
 
 void OverallTests::tearDown()
 {
-    for (const string &file : { m_nestedTagsMkvPath, m_rawFlacPath, m_flacInOggPath }) {
-        if (!file.empty()) {
-            remove(file.data());
-        }
-    }
 }
 
 /*!

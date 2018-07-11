@@ -109,7 +109,6 @@ private:
     void setOggTestMetaData();
     void removeAllTags();
     void noop();
-    void createMkvWithNestedTags();
     void alterMp4Tracks();
     void removeSecondTrack();
 
@@ -141,9 +140,6 @@ private:
     TagValue m_testPosition;
     string m_testCover;
     queue<TagValue> m_preservedMetaData;
-    string m_nestedTagsMkvPath;
-    string m_rawFlacPath;
-    string m_flacInOggPath;
     TagStatus m_tagStatus;
     uint16 m_mode;
     ElementPosition m_expectedTagPos;
