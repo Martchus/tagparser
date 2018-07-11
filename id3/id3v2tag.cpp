@@ -310,7 +310,7 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
         try {
             frame.parse(reader, majorVersion, bytesRemaining, diag);
             if (Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
-                diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.frameIdString() + " exists more than once.", context);
+                diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.idToString() + " exists more than once.", context);
             }
             fields().emplace(frame.id(), move(frame));
         } catch (const NoDataFoundException &) {

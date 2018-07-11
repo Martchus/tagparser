@@ -102,7 +102,6 @@ public:
     bool isAdditionalTypeInfoUsed() const;
     bool isValid() const;
     bool hasPaddingReached() const;
-    std::string frameIdString() const;
     uint16 flag() const;
     void setFlag(uint16 value);
     uint32 totalSize() const;
@@ -197,15 +196,6 @@ inline bool Id3v2Frame::isValid() const
 inline bool Id3v2Frame::hasPaddingReached() const
 {
     return m_padding;
-}
-
-/*!
- * \brief Returns the frame ID as string.
- * \deprecated Will be removed in favour of generic idToString().
- */
-inline std::string Id3v2Frame::frameIdString() const
-{
-    return idToString();
 }
 
 /*!

@@ -150,7 +150,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         }
 
         // -> update context
-        context = "parsing " % frameIdString() + " frame";
+        context = "parsing " % idToString() + " frame";
 
         // -> read size, check whether frame is truncated
         m_dataSize = reader.readUInt24BE();
@@ -178,7 +178,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         }
 
         // -> update context
-        context = "parsing " % frameIdString() + " frame";
+        context = "parsing " % idToString() + " frame";
 
         // -> read size, check whether frame is truncated
         m_dataSize = version >= 4 ? reader.readSynchsafeUInt32BE() : reader.readUInt32BE();
@@ -430,7 +430,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
     , m_frameId(m_frame.id())
     , m_version(version)
 {
-    const string context("making " % m_frame.frameIdString() + " frame");
+    const string context("making " % m_frame.idToString() + " frame");
 
     // get non-empty, assigned values
     vector<const TagValue *> values;
@@ -726,7 +726,7 @@ TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte, Diagnos
         return TagTextEncoding::Utf8;
     default:
         diag.emplace_back(
-            DiagLevel::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + frameIdString());
+            DiagLevel::Warning, "The charset of the frame is invalid. Latin-1 will be used.", "parsing encoding of frame " + idToString());
         return TagTextEncoding::Latin1;
     }
 }
@@ -775,7 +775,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
         if ((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
             if (encoding == TagTextEncoding::Latin1) {
                 diag.emplace_back(DiagLevel::Critical, "Denoted character set is Latin-1 but an UTF-8 BOM is present - assuming UTF-8.",
-                    "parsing frame " + frameIdString());
+                    "parsing frame " + idToString());
                 encoding = TagTextEncoding::Utf8;
             }
             get<0>(res) += 3;
@@ -787,7 +787,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
             } else {
                 if (addWarnings) {
                     diag.emplace_back(
-                        DiagLevel::Warning, "String in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
+                        DiagLevel::Warning, "String in frame is not terminated properly.", "parsing termination of frame " + idToString());
                 }
                 break;
             }
@@ -803,7 +803,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
                 if (encoding == TagTextEncoding::Utf16BigEndian) {
                     diag.emplace_back(DiagLevel::Critical,
                         "Denoted character set is UTF-16 Big Endian but UTF-16 Little Endian BOM is present - assuming UTF-16 LE.",
-                        "parsing frame " + frameIdString());
+                        "parsing frame " + idToString());
                     encoding = TagTextEncoding::Utf16LittleEndian;
                 }
                 get<0>(res) += 2;
@@ -820,7 +820,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
             } else {
                 if (addWarnings) {
                     diag.emplace_back(
-                        DiagLevel::Warning, "Wide string in frame is not terminated properly.", "parsing termination of frame " + frameIdString());
+                        DiagLevel::Warning, "Wide string in frame is not terminated properly.", "parsing termination of frame " + idToString());
                 }
                 break;
             }
@@ -875,7 +875,7 @@ void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &e
     default:
         if ((maxSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
             encoding = TagTextEncoding::Utf8;
-            diag.emplace_back(DiagLevel::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + frameIdString());
+            diag.emplace_back(DiagLevel::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + idToString());
         }
     }
 }
