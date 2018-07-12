@@ -57,23 +57,28 @@ bool Id3v2Tag::internallySetValues(const IdentifierType &id, const std::vector<T
     auto frameIterator = range.first;
 
     // use existing frame or insert new text frame
+    auto valuesIterator = values.cbegin();
     if (frameIterator != range.second) {
         ++range.first;
+        // add primary value to existing frame
+        if (valuesIterator != values.cend()) {
+            frameIterator->second.setValue(*valuesIterator);
+            ++valuesIterator;
+        } else {
+            frameIterator->second.value().clearDataAndMetadata();
+        }
     } else {
-        frameIterator = fields().insert(make_pair(id, Id3v2Frame()));
+        // skip if there is no existing frame but also no values to be assigned
+        if (valuesIterator == values.cend()) {
+            return true;
+        }
+        // add primary value to new frame
+        frameIterator = fields().insert(make_pair(id, Id3v2Frame(id, *valuesIterator)));
+        ++valuesIterator;
     }
 
-    // add primary value to frame
-    auto &frame(frameIterator->second);
-    auto valuesIterator = values.cbegin();
-    if (valuesIterator != values.cend()) {
-        frame.setValue(*valuesIterator);
-        ++valuesIterator;
-    } else {
-        frame.value().clearDataAndMetadata();
-    }
     // add additional values to frame
-    frame.additionalValues() = vector<TagValue>(valuesIterator, values.cend());
+    frameIterator->second.additionalValues() = vector<TagValue>(valuesIterator, values.cend());
 
     // remove remaining existing values (there are more existing values than specified ones)
     for (; range.first != range.second; ++range.first) {
