@@ -72,7 +72,7 @@ std::vector<const TagValue *> Tag::values(KnownField field) const
  */
 bool Tag::setValues(KnownField field, const std::vector<TagValue> &values)
 {
-    return setValue(field, values.size() ? *values.begin() : TagValue());
+    return setValue(field, values.size() ? values.front() : TagValue());
 }
 
 /*!
