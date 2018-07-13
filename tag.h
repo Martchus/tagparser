@@ -132,172 +132,71 @@ protected:
     TagTarget m_target;
 };
 
-/*!
- * \brief Returns the type of the tag as TagParser::TagType.
- *
- * This is TagType::Unspecified by default and might be overwritten
- * when subclassing.
- */
 inline TagType Tag::type() const
 {
     return TagType::Unspecified;
 }
 
-/*!
- * \brief Returns the type name of the tag as C-style string.
- *
- * This is "unspecified" by default and might be overwritten
- * when subclassing.
- */
 inline const char *Tag::typeName() const
 {
     return "unspecified";
 }
 
-/*!
- * \brief Returns the proposed text encoding.
- *
- * This is TagTextEncoding::Latin1 by default an might be
- * overwritten when subclassing.
- *
- * The tag class and its subclasses do not perform any conversions.
- * You have to provide all string values using an encoding which is
- * appropriate for the specific tag type. This method returns such
- * an encoding.
- *
- * \sa canEncodingBeUsed()
- */
 inline TagTextEncoding Tag::proposedTextEncoding() const
 {
     return TagTextEncoding::Latin1;
 }
 
-/*!
- * \brief Returns an indication whether the specified \a encoding
- *        can be used to provide string values for the tag.
- *
- * Only the proposedTextEncoding() is accepted by default. This might
- * be overwritten when subclassing.
- *
- * The tag class and its subclasses do not perform any conversions.
- * You have to provide all string values using an encoding which is
- * appropriate for the specific tag type. This method is meant to
- * determine if a particular \a encoding can be used.
- *
- * \sa canEncodingBeUsed()
- */
 inline bool Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 {
     return encoding == proposedTextEncoding();
 }
 
-/*!
- * \brief Returns the version of the tag as std::string.
- * The version denotation depends on the tag type.
- */
 inline const std::string &Tag::version() const
 {
     return m_version;
 }
 
-/*!
- * \brief Returns the size of the tag in bytes.
- * The tag needs to be parsed before.
- */
 inline uint32 Tag::size() const
 {
     return m_size;
 }
 
-/*!
- * \brief Returns an indication whether a target is supported by the tag.
- *
- * If no target is supported, setting a target using setTarget()
- * has no effect when saving the tag.
- *
- * Most tag types don't support this feature so the default implementation
- * returns always false. This might be overwritten when subclassing.
- */
 inline bool Tag::supportsTarget() const
 {
     return false;
 }
 
-/*!
- * \brief Returns the target of tag.
- *
- * \sa supportsTarget()
- * \sa setTarget()
- */
 inline const TagTarget &Tag::target() const
 {
     return m_target;
 }
 
-/*!
- * \brief Sets the target of tag.
- *
- * Most tag types don't support this feature so setting
- * the target has no effect when saving the file.
- *
- * \sa supportsTarget()
- * \sa target()
- */
 inline void Tag::setTarget(const TagTarget &target)
 {
     m_target = target;
 }
 
-/*!
- * \brief Returns the name of the current tag target level.
- * \remarks Returns TagTargetLevel::Unspecified if target levels are not supported by the tag.
- */
 inline TagTargetLevel Tag::targetLevel() const
 {
     return TagTargetLevel::Unspecified;
 }
 
-/*!
- * \brief Returns the name of the current target level.
- * \remarks Returns nullptr if target levels are not supported by the tag.
- */
 inline const char *Tag::targetLevelName() const
 {
     return supportsTarget() ? tagTargetLevelName(targetLevel()) : nullptr;
 }
 
-/*!
- * \brief Returns whether the tag is targeting the specified \a tagTargetLevel.
- * \remarks If targets are not supported by the tag it is considered targeting
- *          everything and hence this method returns always true in this case.
- */
 inline bool Tag::isTargetingLevel(TagTargetLevel tagTargetLevel) const
 {
     return !supportsTarget() || static_cast<byte>(targetLevel()) >= static_cast<byte>(tagTargetLevel);
 }
 
-/*!
- * \brief Returns the string representation for the assigned tag target.
- */
 inline std::string Tag::targetString() const
 {
     return target().toString(targetLevel());
 }
 
-/*!
- * \brief Returns the proposed data type for the specified \a field as TagDataType.
- *
- * Most values need to be provided as string (see proposedTextEncoding() and
- * canEncodingBeUsed()). Other values need to be provided as integer or an other
- * TagDataType. This method helps to determine which type is required for a particular
- * \a field. The tag class and its subclasses try to convert the provided values.
- * Nevertheless it is recommend to use the proposed data types to avoid conversion
- * failures.
- *
- * The default implementation returns a data type which is most commonly used for
- * the specified \a field. The default implementation might be overwritten when
- * subclassing.
- */
 inline TagDataType Tag::proposedDataType(KnownField field) const
 {
     switch (field) {
@@ -321,29 +220,11 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
     }
 }
 
-/*!
- * \brief Returns an indications whether the specified field supports descriptions.
- *
- * If you assign a description to a field value and the field does not support
- * descriptions the description is ignored when saving the tag.
- *
- * The default implementation returns false for all fields. This might be overwritten
- * when subclassing.
- */
 inline bool Tag::supportsDescription(KnownField) const
 {
     return false;
 }
 
-/*!
- * \brief Returns an indications whether the specified field supports mime types.
- *
- * If you assign a mime types to a field value and the field does not support
- * mime types the mime type is ignored when saving the tag.
- *
- * The default implementation returns false for all fields. This might be overwritten
- * when subclassing.
- */
 inline bool Tag::supportsMimeType(KnownField) const
 {
     return false;
