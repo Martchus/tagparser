@@ -120,6 +120,7 @@ public:
     bool setValue(const char *mean, const char *name, const TagValue &value);
     using FieldMapBasedTag<Mp4Tag>::hasField;
     bool hasField(KnownField value) const override;
+    bool supportsMultipleValues(KnownField) const override;
 
     void parse(Mp4Atom &metaAtom, Diagnostics &diag);
     Mp4TagMaker prepareMaking(Diagnostics &diag);
@@ -161,6 +162,16 @@ inline const TagValue &Mp4Tag::value(const std::string &mean, const std::string 
 inline bool Mp4Tag::setValue(const std::string &mean, const std::string &name, const TagValue &value)
 {
     return setValue(mean.data(), name.data(), value);
+}
+
+/*!
+ * \brief Returns false for all fields (for now).
+ * \remarks Not sure whether iTunes-style MP4 tags allow this. Let's return false for now.
+ * \todo Do some research whether it is supported or not.
+ */
+inline bool Mp4Tag::supportsMultipleValues(KnownField) const
+{
+    return false;
 }
 
 } // namespace TagParser

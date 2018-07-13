@@ -21,6 +21,43 @@ namespace TagParser {
  */
 
 /*!
+ * \brief Allows multiple values for some fields.
+ * \remarks The standard defines no general rule applicable to all fields.
+ */
+bool Id3v2Tag::supportsMultipleValues(KnownField field) const
+{
+    switch (field) {
+    case KnownField::Album:
+    case KnownField::Artist:
+    case KnownField::Year:
+    case KnownField::RecordDate:
+    case KnownField::Title:
+    case KnownField::Genre:
+    case KnownField::TrackPosition:
+    case KnownField::DiskPosition:
+    case KnownField::Encoder:
+    case KnownField::Bpm:
+    case KnownField::Lyricist:
+    case KnownField::Length:
+    case KnownField::Language:
+    case KnownField::EncoderSettings:
+    case KnownField::Grouping:
+    case KnownField::RecordLabel:
+    case KnownField::Composer:
+        return m_majorVersion > 3;
+    case KnownField::Rating:
+    case KnownField::Comment:
+    case KnownField::Cover:
+    case KnownField::Lyrics:
+    case KnownField::SynchronizedLyrics:
+        return true;
+    default:
+        return false;
+        ;
+    }
+}
+
+/*!
  * \brief Works like the default implementation but adds additional values as well.
  */
 std::vector<const TagValue *> Id3v2Tag::internallyGetValues(const IdentifierType &id) const

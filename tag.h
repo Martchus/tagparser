@@ -121,6 +121,7 @@ public:
     virtual TagDataType proposedDataType(KnownField field) const;
     virtual bool supportsDescription(KnownField field) const;
     virtual bool supportsMimeType(KnownField field) const;
+    virtual bool supportsMultipleValues(KnownField field) const;
     virtual unsigned int insertValues(const Tag &from, bool overwrite);
     virtual void ensureTextValuesAreProperlyEncoded() = 0;
 
@@ -226,6 +227,11 @@ inline bool Tag::supportsDescription(KnownField) const
 }
 
 inline bool Tag::supportsMimeType(KnownField) const
+{
+    return false;
+}
+
+inline bool Tag::supportsMultipleValues(KnownField) const
 {
     return false;
 }

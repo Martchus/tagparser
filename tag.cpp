@@ -289,6 +289,26 @@ unsigned int Tag::insertValues(const Tag &from, bool overwrite)
  */
 
 /*!
+ * \fn Tag::supportsMultipleValues()
+ * \brief Returns an indications whether the specified field supports multiple values.
+ * \remarks
+ * - If you assign multiple values to a field which doesn't support multiple values,
+ *   the tag implementation might just ignore additional values. It might also try
+ *   to preserve the values nevertheless by bending the rules of the tag format
+ *   specification when it is safe to do so. (Usually it is safe because additional
+ *   values would be simply ignored by other applications.)
+ * - So it is not really mandatory to check this before adding multiple values. Nothing
+ *   bad will happen otherwise. However, a GUI application could use this method to
+ *   determine which widget to use.
+ * - In case it is not known whether multiple values are supported, this method returns
+ *   false. If you know better, you can try to assign multiple values anyways.
+ * - If this method returns true, there might be further constraints, though. Eg. only
+ *   one cover of a certain type may be present at a time in an ID3v2 tag.
+ * - The default implementation returns false for all fields. This might be overwritten
+ *   when subclassing.
+ */
+
+/*!
  * \fn Tag::supportsField()
  * \brief Returns an indication whether the specified \a field
  *        is supported by the tag.

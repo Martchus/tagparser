@@ -71,6 +71,7 @@ public:
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;
     bool supportsDescription(KnownField field) const override;
     bool supportsMimeType(KnownField field) const override;
+    bool supportsMultipleValues(KnownField field) const override;
 
     void parse(std::istream &sourceStream, const uint64 maximalSize, Diagnostics &diag);
     Id3v2TagMaker prepareMaking(Diagnostics &diag);
@@ -130,7 +131,14 @@ inline bool Id3v2Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 
 inline bool Id3v2Tag::supportsDescription(KnownField field) const
 {
-    return field == KnownField::Cover;
+    switch (field) {
+    case KnownField::Cover:
+    case KnownField::Lyrics:
+    case KnownField::SynchronizedLyrics:
+        return true;
+    default:
+        return false;
+    }
 }
 
 inline bool Id3v2Tag::supportsMimeType(KnownField field) const

@@ -44,6 +44,7 @@ public:
 
     const TagValue &vendor() const;
     void setVendor(const TagValue &vendor);
+    bool supportsMultipleValues(KnownField) const override;
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
@@ -84,6 +85,15 @@ inline const TagValue &VorbisComment::vendor() const
 inline void VorbisComment::setVendor(const TagValue &vendor)
 {
     m_vendor = vendor;
+}
+
+/*!
+ * \brief Allows multiple values for all fields.
+ * \remarks "Field names are not required to be unique (occur once) within a comment header."
+ */
+inline bool VorbisComment::supportsMultipleValues(KnownField) const
+{
+    return true;
 }
 
 } // namespace TagParser

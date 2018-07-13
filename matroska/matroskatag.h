@@ -64,9 +64,10 @@ public:
     static constexpr TagType tagType = TagType::MatroskaTag;
     static constexpr const char *tagName = "Matroska tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const;
-    bool supportsTarget() const;
-    TagTargetLevel targetLevel() const;
+    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
+    bool supportsTarget() const override;
+    bool supportsMultipleValues(KnownField field) const override;
+    TagTargetLevel targetLevel() const override;
 
     void parse(EbmlElement &tagElement, Diagnostics &diag);
     MatroskaTagMaker prepareMaking(Diagnostics &diag);
@@ -88,6 +89,16 @@ inline MatroskaTag::MatroskaTag()
 }
 
 inline bool MatroskaTag::supportsTarget() const
+{
+    return true;
+}
+
+/*!
+ * \brief Allows multiple values for all fields.
+ * \remarks "Multiple items should never be stored as a list in a single TagString. If there is
+ *          more than one tag of a certain type to be stored, then more than one SimpleTag should be used."
+ */
+inline bool MatroskaTag::supportsMultipleValues(KnownField) const
 {
     return true;
 }
