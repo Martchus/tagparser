@@ -500,7 +500,8 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
 
 /*!
  * \brief Returns true if \a lhs goes before \a rhs; otherwise returns false.
- * \todo Handle case when Id3v2FrameIds::convertToLongId() returns 0.
+ * \remarks Long and short IDs are treated equal if the short ID can be converted to
+ *          the corresponding long ID. Otherwise short IDs go before long IDs.
  */
 bool FrameComparer::operator()(uint32 lhs, uint32 rhs) const
 {
@@ -513,8 +514,14 @@ bool FrameComparer::operator()(uint32 lhs, uint32 rhs) const
     if (lhsLong != rhsLong) {
         if (!lhsLong) {
             lhs = Id3v2FrameIds::convertToLongId(lhs);
+            if (!lhs) {
+                return true;
+            }
         } else if (!rhsLong) {
             rhs = Id3v2FrameIds::convertToLongId(rhs);
+            if (!rhs) {
+                return true;
+            }
         }
     }
 
