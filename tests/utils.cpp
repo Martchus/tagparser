@@ -396,7 +396,7 @@ void UtilitiesTests::testBackupFile()
             catchIoFailure();
         }
         CPPUNIT_ASSERT(diag.level() >= DiagLevel::Critical);
-        CPPUNIT_ASSERT_EQUAL("An IO error occured when rewriting the file to apply changed tag information."s, diag.front().message());
+        CPPUNIT_ASSERT_EQUAL("An IO error occurred when rewriting the file to apply changed tag information."s, diag.front().message());
         CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, diag.back().message());
     }
 

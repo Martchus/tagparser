@@ -859,7 +859,7 @@ calculatePadding:
         // flush output stream
         outputStream.flush();
 
-        // handle errors (which might have been occured after renaming/creating backup file)
+        // handle errors (which might have been occurred after renaming/creating backup file)
     } catch (...) {
         BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, diag, context);
     }

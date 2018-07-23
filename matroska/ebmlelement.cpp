@@ -208,7 +208,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
             m_nextSibling.reset();
         }
 
-        // no critical errors occured
+        // no critical errors occurred
         // -> add a warning if bytes have been skipped
         if (skipped) {
             diag.emplace_back(DiagLevel::Warning, argsToString(skipped, " bytes have been skipped"), parsingContext());
@@ -217,7 +217,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
         return;
     }
 
-    // critical errors occured and skipping some bytes wasn't successful
+    // critical errors occurred and skipping some bytes wasn't successful
     throw InvalidDataException();
 }
 

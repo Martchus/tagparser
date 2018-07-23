@@ -124,6 +124,7 @@ inform "Creating further testfiles with mkvmerge"
                 --default-track '1:yes' \
                 \( 'mtx-test-data/mkv/tags.mkv' \) \
                 --global-tags "$srcdir/testfiles/mkv/nested-tags.xml" \
-                --track-order '0:0,0:1'
+                --track-order '0:0,0:1' \
+    || inform "Skipping already existing mkv/nested-tags.mkv"
 
 success "All testfiles downloaded/converted!"

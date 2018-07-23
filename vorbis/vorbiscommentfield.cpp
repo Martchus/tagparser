@@ -92,7 +92,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
                     throw InvalidDataException();
                 } catch (...) {
                     catchIoFailure();
-                    diag.emplace_back(DiagLevel::Critical, "An IO error occured when reading the METADATA_BLOCK_PICTURE struct.", context);
+                    diag.emplace_back(DiagLevel::Critical, "An IO error occurred when reading the METADATA_BLOCK_PICTURE struct.", context);
                     throw Failure();
                 }
             } else if (id().size() + 1 < size) {
@@ -196,7 +196,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
                 throw;
             } catch (...) {
                 catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "An IO error occured when writing the METADATA_BLOCK_PICTURE struct.", context);
+                diag.emplace_back(DiagLevel::Critical, "An IO error occurred when writing the METADATA_BLOCK_PICTURE struct.", context);
                 throw Failure();
             }
         } else {

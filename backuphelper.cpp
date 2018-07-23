@@ -218,7 +218,7 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
 }
 
 /*!
- * \brief Handles a failure/abort which occured after the file has been modified.
+ * \brief Handles a failure/abort which occurred after the file has been modified.
  *
  * - Restores the backup file using restoreOriginalFileFromBackupFile() if one has been created.
  * - Adds appropriate notifications to the specified \a fileInfo.
@@ -281,7 +281,7 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
         const char *what = catchIoFailure();
         if (!backupPath.empty()) {
             // a temp/backup file has been created -> restore original file
-            diag.emplace_back(DiagLevel::Critical, "An IO error occured when rewriting the file to apply changed tag information.", context);
+            diag.emplace_back(DiagLevel::Critical, "An IO error occurred when rewriting the file to apply changed tag information.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
                 diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
@@ -289,7 +289,7 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
                 diag.emplace_back(DiagLevel::Critical, catchIoFailure(), context);
             }
         } else {
-            diag.emplace_back(DiagLevel::Critical, "An IO error occured when applying tag information.", context);
+            diag.emplace_back(DiagLevel::Critical, "An IO error occurred when applying tag information.", context);
         }
         throwIoFailure(what);
     }

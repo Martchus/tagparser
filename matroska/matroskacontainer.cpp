@@ -1478,7 +1478,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         throw;
     } catch (...) {
         const char *what = catchIoFailure();
-        diag.emplace_back(DiagLevel::Critical, "An IO error occured when parsing the original file.", context);
+        diag.emplace_back(DiagLevel::Critical, "An IO error occurred when parsing the original file.", context);
         throwIoFailure(what);
     }
 
@@ -1856,7 +1856,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         // flush output stream
         outputStream.flush();
 
-        // handle errors (which might have been occured after renaming/creating backup file)
+        // handle errors (which might have been occurred after renaming/creating backup file)
     } catch (...) {
         BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, diag, context);
     }

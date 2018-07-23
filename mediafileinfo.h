@@ -36,9 +36,9 @@ DECLARE_ENUM_CLASS(TagType, unsigned int);
  */
 enum class ParsingStatus : byte {
     NotParsedYet, /**< the part has not been parsed yet */
-    Ok, /**< the part has been parsed and no critical errors occured */
+    Ok, /**< the part has been parsed and no critical errors occurred */
     NotSupported, /**< tried to parse the part, but the format is not supported */
-    CriticalFailure /**< tried to parse the part, but critical errors occured */
+    CriticalFailure /**< tried to parse the part, but critical errors occurred */
 };
 
 class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo {

@@ -218,7 +218,7 @@ void OggIterator::ignore(size_t count)
  * This allows to omit parts of a file which is useful to
  * - find the last page faster by skipping pages in the middle (last page is required for calculating
  *   the files duration).
- * - recover parsing after after an error occured.
+ * - recover parsing after after an error occurred.
  *
  * Regardless of the current iterator position, this method will assume the page at \a offset comes after
  * the last known page. Hence \a offset must be greather than OggPage::startOffset() + OggPage::totalSize() of the
