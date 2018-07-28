@@ -36,6 +36,7 @@ enum class GeneralMediaFormat : unsigned int {
     Als, /**< ALS */
     Amr, /**< AMR */
     Avc, /**< Advanced Video Coding */
+    Av1, /**< AOMedia Video 1 (AV1) */
     Bitmap, /**< Windows Bitmap */
     Daala, /**< Daala ("next-generation video codec" by Xiph) */
     Dirac, /**< Dirac */

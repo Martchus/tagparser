@@ -31,6 +31,7 @@ if [[ -z $testfilespath ]] || [[ -z $testfileurl ]]; then
     echo "Usage: testfilepath testfileurl"
     echo " testfilepath specifies the directory to store the downloaded files"
     echo " testfileurl specifies the URL to the server hosting the test files"
+    exit -1
 fi
 
 # enter testfiles directory
@@ -100,31 +101,31 @@ if [[ ! -z $missing ]]; then
     exit 1
 fi
 
-# convert FLAC files for FLAC tests with ffmpeg
-inform "Creating further testfiles with ffmpeg"
+# convert more testfiles from the downloaded ones (FIXME: use a Makefile)
+inform "Creating further testfiles with ffmpeg and mkvtoolnix"
 mkdir -p flac
-# raw FLAC stream
-[[ ! -f flac/test.flac ]] \
-    && ffmpeg -i mtx-test-data/alac/othertest-itunes.m4a -c:a flac flac/test.flac \
-    || inform "Skipping already existing flac/test.flac"
-# FLAC in Ogg
-[[ ! -f flac/test.ogg ]] \
-    && ffmpeg -i flac/test.flac -vn -c:a copy flac/test.ogg \
-    || inform "Skipping already existing flac/test.ogg"
-
-# convert further Mkv files mkvmerge
-inform "Creating further testfiles with mkvmerge"
-[[ ! -f mkv/nested-tags.mkv ]] \
-    && mkvmerge --ui-language en_US \
-                --output 'mkv/nested-tags.mkv' \
-                --no-global-tags \
-                --language '0:und' \
-                --default-track '0:yes' \
-                --language '1:und' \
-                --default-track '1:yes' \
-                \( 'mtx-test-data/mkv/tags.mkv' \) \
-                --global-tags "$srcdir/testfiles/mkv/nested-tags.xml" \
-                --track-order '0:0,0:1' \
-    || inform "Skipping already existing mkv/nested-tags.mkv"
+mkdir -p mkv
+convert() {
+    local filename=$1 && shift
+    if [[ -f $filename ]]; then
+        inform "Skipping already existing $filename"
+        return
+    fi
+    "$@"
+}
+convert flac/test.flac ffmpeg -i mtx-test-data/alac/othertest-itunes.m4a -c:a flac flac/test.flac
+convert flac/test.ogg ffmpeg -i flac/test.flac -vn -c:a copy flac/test.ogg
+convert mkv/av1_test.mkv ffmpeg -i matroska_wave1/test1.mkv -t 1 -c:v libaom-av1 -crf 30 -cpu-used 5 -an -strict experimental mkv/av1_test.mkv
+convert mkv/nested-tags.mkv \
+        mkvmerge --ui-language en_US \
+                 --output 'mkv/nested-tags.mkv' \
+                 --no-global-tags \
+                 --language '0:und' \
+                 --default-track '0:yes' \
+                 --language '1:und' \
+                 --default-track '1:yes' \
+                 \( 'mtx-test-data/mkv/tags.mkv' \) \
+                 --global-tags "$srcdir/testfiles/mkv/nested-tags.xml" \
+                 --track-order '0:0,0:1'
 
 success "All testfiles downloaded/converted!"

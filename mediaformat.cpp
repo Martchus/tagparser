@@ -93,6 +93,8 @@ const char *MediaFormat::name() const
         default:
             return "Advanced Video Coding";
         }
+    case GeneralMediaFormat::Av1:
+        return "AOMedia Video 1";
     case GeneralMediaFormat::Bitmap:
         return "Windows Bitmap";
     case GeneralMediaFormat::Daala:
@@ -489,6 +491,8 @@ const char *MediaFormat::abbreviation() const
         return "AMR";
     case GeneralMediaFormat::Avc:
         return "H.264";
+    case GeneralMediaFormat::Av1:
+        return "AV1";
     case GeneralMediaFormat::Bitmap:
         return "BMP";
     case GeneralMediaFormat::Daala:
@@ -774,6 +778,8 @@ const char *MediaFormat::shortAbbreviation() const
         return "AMR";
     case GeneralMediaFormat::Avc:
         return "H.264";
+    case GeneralMediaFormat::Av1:
+        return "AV1";
     case GeneralMediaFormat::Bitmap:
         return "BMP";
     case GeneralMediaFormat::Daala:

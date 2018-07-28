@@ -94,6 +94,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::Vp8;
     } else if (part1 == "V_VP9") {
         fmt.general = GeneralMediaFormat::Vp9;
+    } else if (part1 == "V_AV1") {
+        fmt.general = GeneralMediaFormat::Av1;
     } else if (part1 == "A_MPEG") {
         fmt.general = GeneralMediaFormat::Mpeg1Audio;
         if (part2 == "L1") {
