@@ -28,20 +28,16 @@ const char *mpegChannelModeString(MpegChannelMode channelMode)
     }
 }
 
-const uint64 MpegAudioFrame::m_xingHeaderOffset = 0x24;
-
 /*!
  * \class TagParser::MpegAudioFrame
  * \brief The MpegAudioFrame class is used to parse MPEG audio frames.
  */
 
-const int MpegAudioFrame::m_bitrateTable[0x2][0x3][0xF] = { { { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448 },
-                                                                { 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384 },
-                                                                { 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320 } },
+const uint16 MpegAudioFrame::s_bitrateTable[0x2][0x3][0xF] = { { { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448 },
+                                                                   { 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384 },
+                                                                   { 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320 } },
     { { 0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256 }, { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 },
         { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 } } };
-
-const uint32 MpegAudioFrame::m_sync = 0xFFE00000u;
 
 /*!
  * \brief Parses the header read using the specified \a reader.
@@ -55,7 +51,7 @@ void MpegAudioFrame::parseHeader(BinaryReader &reader, Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "Header is invalid.", "parsing MPEG audio frame header");
         throw InvalidDataException();
     }
-    reader.stream()->seekg(m_xingHeaderOffset - 4, ios_base::cur);
+    reader.stream()->seekg(s_xingHeaderOffset - 4, ios_base::cur);
     m_xingHeader = reader.readUInt64BE();
     m_xingHeaderFlags = static_cast<XingHeaderFlags>(m_xingHeader & 0xffffffffuL);
     if (isXingHeaderAvailable()) {

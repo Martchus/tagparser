@@ -44,7 +44,7 @@ public:
     double mpegVersion() const;
     int layer() const;
     constexpr bool isProtectedByCrc() const;
-    uint32 bitrate() const;
+    uint16 bitrate() const;
     uint32 samplingFrequency() const;
     constexpr uint32 paddingSize() const;
     MpegChannelMode channelMode() const;
@@ -63,9 +63,9 @@ public:
     constexpr uint32 xingQualityIndicator() const;
 
 private:
-    static const uint64 m_xingHeaderOffset;
-    static const int m_bitrateTable[0x2][0x3][0xF];
-    static const uint32 m_sync;
+    static constexpr uint64 s_xingHeaderOffset = 0x24;
+    static constexpr uint32 s_sync = 0xFFE00000u;
+    static const uint16 s_bitrateTable[0x2][0x3][0xF];
     uint32 m_header;
     uint64 m_xingHeader;
     XingHeaderFlags m_xingHeaderFlags;
@@ -92,7 +92,7 @@ constexpr MpegAudioFrame::MpegAudioFrame()
  */
 constexpr bool MpegAudioFrame::isValid() const
 {
-    return (m_header & m_sync) == m_sync;
+    return (m_header & s_sync) == s_sync;
 }
 
 /*!
@@ -106,10 +106,10 @@ constexpr bool MpegAudioFrame::isProtectedByCrc() const
 /*!
  * \brief Returns the bitrate of the frame if known; otherwise returns 0.
  */
-inline uint32 MpegAudioFrame::bitrate() const
+inline uint16 MpegAudioFrame::bitrate() const
 {
     if (mpegVersion() > 0.0 && layer() > 0) {
-        return m_bitrateTable[mpegVersion() == 1.0 ? 0 : 1][layer() - 1][(m_header & 0xf000u) >> 12];
+        return s_bitrateTable[mpegVersion() == 1.0 ? 0 : 1][layer() - 1][(m_header & 0xf000u) >> 12];
     } else {
         return 0;
     }
