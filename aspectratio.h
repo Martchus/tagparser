@@ -3,7 +3,10 @@
 
 #include "./global.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/types.h>
+
+#include <string>
 
 namespace TagParser {
 
@@ -13,6 +16,7 @@ struct TAG_PARSER_EXPORT AspectRatio {
     constexpr AspectRatio(uint16 numerator, uint16 denominator);
     constexpr bool isValid() const;
     constexpr bool isExtended() const;
+    std::string toString() const;
 
     byte type;
     uint16 numerator;
@@ -54,6 +58,14 @@ constexpr bool AspectRatio::isValid() const
 constexpr bool AspectRatio::isExtended() const
 {
     return type == 0xFF;
+}
+
+/*!
+ * \brief Returns the string representation "numerator : denominator".
+ */
+inline std::string AspectRatio::toString() const
+{
+    return ConversionUtilities::argsToString(numerator, " : ", denominator);
 }
 
 } // namespace TagParser
