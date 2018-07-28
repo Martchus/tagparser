@@ -48,10 +48,11 @@ const uint32 MpegAudioFrame::m_sync = 0xFFE00000u;
  * \throws Throws InvalidDataException if the data read from the stream is
  *         no valid frame header.
  */
-void MpegAudioFrame::parseHeader(BinaryReader &reader)
+void MpegAudioFrame::parseHeader(BinaryReader &reader, Diagnostics &diag)
 {
     m_header = reader.readUInt32BE();
     if (!isValid()) {
+        diag.emplace_back(DiagLevel::Critical, "Header is invalid.", "parsing MPEG audio frame header");
         throw InvalidDataException();
     }
     reader.stream()->seekg(m_xingHeaderOffset - 4, ios_base::cur);

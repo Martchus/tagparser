@@ -1,0 +1,47 @@
+#ifndef TAG_PARSER_IVFSTREAM_H
+#define TAG_PARSER_IVFSTREAM_H
+
+#include "./ivfframe.h"
+
+#include "../abstracttrack.h"
+
+namespace TagParser {
+
+class TAG_PARSER_EXPORT IvfStream : public AbstractTrack {
+public:
+    IvfStream(std::iostream &stream, uint64 startOffset);
+    ~IvfStream() override;
+
+    TrackType type() const override;
+
+    void readFrame(Diagnostics &diag);
+
+protected:
+    void internalParseHeader(Diagnostics &diag) override;
+
+private:
+    std::vector<IvfFrame> m_frames;
+    uint16 m_headerLength;
+};
+
+/*!
+ * \brief Constructs a new track for the \a stream at the specified \a startOffset.
+ */
+inline IvfStream::IvfStream(std::iostream &stream, uint64 startOffset)
+    : AbstractTrack(stream, startOffset)
+{
+    m_mediaType = MediaType::Video;
+}
+
+inline IvfStream::~IvfStream()
+{
+}
+
+inline TrackType IvfStream::type() const
+{
+    return TrackType::IvfStream;
+}
+
+} // namespace TagParser
+
+#endif // TAG_PARSER_IVFSTREAM_H

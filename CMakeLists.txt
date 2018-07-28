@@ -31,6 +31,8 @@ set(HEADER_FILES
     id3/id3v2frame.h
     id3/id3v2frameids.h
     id3/id3v2tag.h
+    ivf/ivfframe.h
+    ivf/ivfstream.h
     localeawarestring.h
     margin.h
     matroska/ebmlelement.h
@@ -102,6 +104,8 @@ set(SRC_FILES
     id3/id3v2frame.cpp
     id3/id3v2frameids.cpp
     id3/id3v2tag.cpp
+    ivf/ivfframe.cpp
+    ivf/ivfstream.cpp
     localeawarestring.cpp
     matroska/ebmlelement.cpp
     matroska/matroskaattachment.cpp

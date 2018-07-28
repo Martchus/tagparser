@@ -46,7 +46,7 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag)
     // parse frame header
     m_frames.emplace_back();
     MpegAudioFrame &frame = m_frames.back();
-    frame.parseHeader(m_reader);
+    frame.parseHeader(m_reader, diag);
     addInfo(frame, *this);
     if (frame.isXingBytesfieldPresent()) {
         uint32 xingSize = frame.xingBytesfield();

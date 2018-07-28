@@ -57,7 +57,7 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
         return GeneralMediaFormat::Mpeg4TimedText;
     case Hevc1:
     case Hevc2:
-        return MediaFormat(GeneralMediaFormat::Hevc);
+        return GeneralMediaFormat::Hevc;
     case Avc1:
     case Avc2:
     case Avc3:
@@ -68,7 +68,9 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     case H264Decoder4:
     case H264Decoder5:
     case H264Decoder6:
-        return MediaFormat(GeneralMediaFormat::Avc);
+        return GeneralMediaFormat::Avc;
+    case Av1:
+        return GeneralMediaFormat::Av1;
     case Divx4Decoder1:
     case Divx4Decoder2:
     case H263Quicktime:
@@ -169,6 +171,10 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     case MsMpeg4V3Decoder1:
     case MsMpeg4V3Decoder2:
         return MediaFormat(GeneralMediaFormat::MicrosoftMpeg4, 3);
+    case Vp8:
+        return GeneralMediaFormat::Vp8;
+    case Vp9:
+        return GeneralMediaFormat::Vp9;
     case WavPack:
         return MediaFormat(GeneralMediaFormat::WavPack);
     case WindowsMediaVideoV17:

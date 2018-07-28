@@ -1,7 +1,7 @@
 #ifndef TAG_PARSER_MP3FRAMEAUDIOSTREAM_H
 #define TAG_PARSER_MP3FRAMEAUDIOSTREAM_H
 
-#include "../global.h"
+#include "../diagnostics.h"
 
 #include <c++utilities/conversion/types.h>
 
@@ -38,7 +38,7 @@ class TAG_PARSER_EXPORT MpegAudioFrame {
 public:
     constexpr MpegAudioFrame();
 
-    void parseHeader(IoUtilities::BinaryReader &reader);
+    void parseHeader(IoUtilities::BinaryReader &reader, Diagnostics &diag);
 
     constexpr bool isValid() const;
     double mpegVersion() const;

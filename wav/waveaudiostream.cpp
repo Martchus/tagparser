@@ -134,7 +134,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
     }
     m_istream->seekg(static_cast<streamoff>(m_dataOffset));
     MpegAudioFrame frame;
-    frame.parseHeader(m_reader);
+    frame.parseHeader(m_reader, diag);
     MpegAudioFrameStream::addInfo(frame, *this);
     m_bitrate = frame.isXingFramefieldPresent()
         ? ((static_cast<double>(m_size) * 8.0)

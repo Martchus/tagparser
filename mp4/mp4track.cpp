@@ -1766,7 +1766,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                                 MpegAudioFrame frame;
                                 m_istream->seekg(m_stcoAtom->dataOffset() + 8);
                                 m_istream->seekg(m_chunkOffsetSize == 8 ? reader.readUInt64BE() : reader.readUInt32BE());
-                                frame.parseHeader(reader);
+                                frame.parseHeader(reader, diag);
                                 MpegAudioFrameStream::addInfo(frame, *this);
                                 break;
                             }

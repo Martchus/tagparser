@@ -30,6 +30,7 @@ enum class ContainerFormat : unsigned int {
     Gif89a, /**< Graphics Interchange Format (1989) */
     Gzip, /**< gzip compressed file */
     Id2v2Tag, /**< file holding an ID2v2 tag only */
+    Ivf, /**< IVF (simple file format that transports raw VP8/VP9/AV1 data) */
     JavaClassFile, /**< Java class file */
     Jpeg, /**< JPEG File Interchange Format */
     Lha, /**< LHA */

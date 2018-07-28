@@ -16,6 +16,8 @@
 
 #include "./adts/adtsstream.h"
 
+#include "./ivf/ivfstream.h"
+
 #include "./mp4/mp4atom.h"
 #include "./mp4/mp4container.h"
 #include "./mp4/mp4ids.h"
@@ -315,6 +317,9 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
             break;
         case ContainerFormat::Flac:
             m_singleTrack = make_unique<FlacStream>(*this, m_containerOffset);
+            break;
+        case ContainerFormat::Ivf:
+            m_singleTrack = make_unique<IvfStream>(stream(), m_containerOffset);
             break;
         case ContainerFormat::MpegAudioFrames:
             m_singleTrack = make_unique<MpegAudioFrameStream>(stream(), m_containerOffset);

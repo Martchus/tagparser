@@ -217,6 +217,7 @@ enum KnownValue : uint32 {
     Avc2 = 0x61766332, /**< H.264/MPEG-4 AVC video */
     Avc3 = 0x61766333, /**< H.264/MPEG-4 AVC video */
     Avc4 = 0x61766334, /**< H.264/MPEG-4 AVC video */
+    Av1 = 0x41563031, /**< AV1 video */
     Blur = 0x626C7572,
     Bps8 = 0x38627073,
     BrightnessAndContrast = 0x6272636F,
@@ -375,6 +376,8 @@ enum KnownValue : uint32 {
     Ulaw21 = 0x756C6177,
     VcmImageCodec = 0x4D6A7067,
     Vdva = 0x76647661,
+    Vp8 = 0x56503830, /**< VP8 video */
+    Vp9 = 0x56503930, /**< VP9 video */
     WavPack = 0x5756504B,
     WindowsMediaAudio = 0x6F776D61, /**< ? */
     WindowsMediaAudio7 = 0x574D4131,

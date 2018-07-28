@@ -34,6 +34,7 @@ enum class TrackType {
     OggStream, /**< The track is a TagParser::OggStream. */
     AdtsStream, /**< The track is a TagParser::AdtsStream. */
     FlacStream, /**< The track is a TagParser::FlacStream. */
+    IvfStream, /**< The track is a TagParser::IvfStream. */
 };
 
 class TAG_PARSER_EXPORT AbstractTrack {

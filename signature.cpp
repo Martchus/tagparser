@@ -43,6 +43,7 @@ enum Sig32 : uint32 {
     Dirac = 0x42424344u,
     Elf = 0x7F454C46u,
     Flac = 0x664C6143u,
+    Ivf = 0x444B4946u,
     JavaClassFile = 0xCAFEBABEu,
     Ebml = 0x1A45DFA3u,
     MonkeysAudio = 0x4D414320u,
@@ -159,6 +160,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::Elf;
     case Flac:
         return ContainerFormat::Flac;
+    case Ivf:
+        return ContainerFormat::Ivf;
     case JavaClassFile:
         return ContainerFormat::JavaClassFile;
     case Ebml:
@@ -260,6 +263,8 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
     case ContainerFormat::Gif87a:
     case ContainerFormat::Gif89a:
         return "gif";
+    case ContainerFormat::Ivf:
+        return "ivf";
     case ContainerFormat::JavaClassFile:
         return "class";
     case ContainerFormat::Jpeg:
@@ -380,6 +385,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
     case ContainerFormat::Gif87a:
     case ContainerFormat::Gif89a:
         return "Graphics Interchange Format";
+    case ContainerFormat::Ivf:
+        return "IVF";
     case ContainerFormat::JavaClassFile:
         return "Java class file";
     case ContainerFormat::Jpeg:
