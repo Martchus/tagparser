@@ -956,7 +956,8 @@ int16 AacFrameElementParser::sbrHuffmanDec(SbrHuffTab table)
 
 void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
 {
-    byte tmp, bsEnvCount, bsRelCount0, bsRelCount1;
+    byte tmp, bsEnvCount;
+    //byte bsRelCount0, bsRelCount1;
     switch ((sbr->bsFrameClass[channel] = m_reader.readBits<byte>(2))) {
         using namespace BsFrameClasses;
     case FixFix:
@@ -999,8 +1000,9 @@ void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, byte 
     case VarVar:
         sbr->absBordLead[channel] = m_reader.readBits<byte>(2);
         sbr->absBordTrail[channel] = m_reader.readBits<byte>(2) + sbr->timeSlotsCount;
-        bsRelCount0 = m_reader.readBits<byte>(2);
-        bsRelCount1 = m_reader.readBits<byte>(2);
+        //bsRelCount0 = m_reader.readBits<byte>(2);
+        //bsRelCount1 = m_reader.readBits<byte>(2);
+        m_reader.skipBits(4);
         bsEnvCount = min<byte>(5, sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 1);
         for (byte rel = 0; rel < sbr->bsRelCount0[channel]; ++rel) {
             sbr->bsRelBord0[channel][rel] = 2 * m_reader.readBits<byte>(2) + 2;
@@ -1045,7 +1047,8 @@ void AacFrameElementParser::parseInvfMode(std::shared_ptr<AacSbrInfo> &sbr, byte
 void AacFrameElementParser::parseSbrEnvelope(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
 {
     sbyte delta;
-    SbrHuffTab tHuff, fHuff;
+    //SbrHuffTab tHuff;
+    SbrHuffTab fHuff;
     if ((sbr->le[channel] == 1) && (sbr->bsFrameClass[channel] == BsFrameClasses::FixFix)) {
         sbr->ampRes[channel] = 0;
     } else {
@@ -1054,19 +1057,19 @@ void AacFrameElementParser::parseSbrEnvelope(std::shared_ptr<AacSbrInfo> &sbr, b
     if ((sbr->bsCoupling) && (channel == 1)) {
         delta = 1;
         if (sbr->ampRes[channel]) {
-            tHuff = tHuffmanEnvBal30dB;
+            //tHuff = tHuffmanEnvBal30dB;
             fHuff = fHuffmanEnvBal30dB;
         } else {
-            tHuff = tHuffmanEnvBal15dB;
+            //tHuff = tHuffmanEnvBal15dB;
             fHuff = fHuffmanEnvBal15dB;
         }
     } else {
         delta = 0;
         if (sbr->ampRes[channel]) {
-            tHuff = tHuffmanEnv30dB;
+            //tHuff = tHuffmanEnv30dB;
             fHuff = fHuffmanEnv30dB;
         } else {
-            tHuff = tHuffmanEnv15dB;
+            //tHuff = tHuffmanEnv15dB;
             fHuff = fHuffmanEnv15dB;
         }
     }
@@ -1100,14 +1103,15 @@ void AacFrameElementParser::parseSbrEnvelope(std::shared_ptr<AacSbrInfo> &sbr, b
 void AacFrameElementParser::parseSbrNoise(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
 {
     sbyte delta;
-    SbrHuffTab tHuff, fHuff;
+    //SbrHuffTab tHuff;
+    SbrHuffTab fHuff;
     if ((sbr->bsCoupling == 1) && (channel == 1)) {
         delta = 1;
-        tHuff = tHuffmanNoiseBal30dB;
+        //tHuff = tHuffmanNoiseBal30dB;
         fHuff = fHuffmanEnvBal30dB;
     } else {
         delta = 1;
-        tHuff = tHuffmanNoise30dB;
+        //tHuff = tHuffmanNoise30dB;
         fHuff = fHuffmanEnv30dB;
     }
     for (byte noise = 0; noise < sbr->lq[channel]; ++noise) {
@@ -2001,10 +2005,12 @@ void AacFrameElementParser::parseFillElement(byte sbrElement)
                     m_reader.skipBits(8); // data element byte
                     count -= dataElementLength + loopCounter + 1;
                     goto continueWhile;
+                    // FIXME: loop will run at most once
                 }
             }
             m_reader.skipBits(8 * (count - 1));
             count = 0;
+            break;
         case Fill:
         case SacData:
         default:

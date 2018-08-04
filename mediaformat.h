@@ -20,7 +20,7 @@ enum class MediaType : unsigned int {
     Hint /**< hint */
 };
 
-extern const char *TAG_PARSER_EXPORT mediaTypeName(MediaType mediaType);
+TAG_PARSER_EXPORT const char *mediaTypeName(MediaType mediaType);
 
 /*!
  * \brief The GeneralMediaFormat enum specifies the general format of media data (PCM, MPEG-4, PNG, ...).
