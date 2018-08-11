@@ -620,7 +620,7 @@ void OverallTests::setMkvTestMetaData()
     newTag->setValue(KnownField::PartNumber, m_testPartNumber);
     newTag->setValue(KnownField::TotalParts, m_testTotalParts);
     // assign an attachment
-    AbstractAttachment *attachment = container->createAttachment();
+    AbstractAttachment *const attachment = container->createAttachment();
     CPPUNIT_ASSERT_MESSAGE("create attachment", attachment);
     attachment->setFile(TestUtilities::testFilePath("matroska_wave1/logo3_256x256.png"), m_diag);
     attachment->setMimeType("image/png");

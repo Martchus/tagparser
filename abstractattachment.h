@@ -17,6 +17,7 @@ public:
     StreamDataBlock(const std::function<std::istream &()> &stream, std::istream::off_type startOffset = 0,
         std::ios_base::seekdir startDir = std::ios_base::beg, std::istream::off_type endOffset = 0,
         std::ios_base::seekdir endDir = std::ios_base::end);
+    virtual ~StreamDataBlock();
 
     std::istream &stream() const;
     std::istream::pos_type startOffset() const;

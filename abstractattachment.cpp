@@ -58,6 +58,13 @@ StreamDataBlock::StreamDataBlock(const std::function<std::istream &()> &stream, 
 }
 
 /*!
+ * \brief Discards buffered data.
+ */
+StreamDataBlock::~StreamDataBlock()
+{
+}
+
+/*!
  * \brief Buffers the data block. Buffered data can be accessed via buffer().
  */
 void StreamDataBlock::makeBuffer() const
@@ -95,7 +102,7 @@ void StreamDataBlock::copyTo(ostream &stream) const
  * \throws Throws ios_base::failure when an IO error occurs.
  */
 FileDataBlock::FileDataBlock(const string &path, Diagnostics &diag)
-    : m_fileInfo(new MediaFileInfo)
+    : m_fileInfo(make_unique<MediaFileInfo>())
 {
     m_fileInfo->setPath(path);
     m_fileInfo->open(true);
