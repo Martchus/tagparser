@@ -29,6 +29,7 @@ Mp4ExtendedFieldId::Mp4ExtendedFieldId(KnownField field)
     case KnownField::EncoderSettings:
         mean = Mp4TagExtendedMeanIds::iTunes;
         name = Mp4TagExtendedNameIds::cdec;
+        updateOnly = false;
         break;
     case KnownField::RecordLabel:
         mean = Mp4TagExtendedMeanIds::iTunes;
@@ -37,6 +38,8 @@ Mp4ExtendedFieldId::Mp4ExtendedFieldId(KnownField field)
         break;
     default:
         mean = nullptr;
+        name = nullptr;
+        updateOnly = false;
     }
 }
 

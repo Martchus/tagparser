@@ -135,18 +135,17 @@ void OggIterator::read(char *buffer, size_t count)
 {
     size_t bytesRead = 0;
     while (*this && count) {
-        const uint32 available = currentSegmentSize() - m_bytesRead;
+        const auto available = currentSegmentSize() - m_bytesRead;
         stream().seekg(static_cast<streamoff>(currentCharacterOffset()));
         if (count <= available) {
             stream().read(buffer + bytesRead, static_cast<streamoff>(count));
             m_bytesRead += count;
             return;
-        } else {
-            stream().read(buffer + bytesRead, available);
-            nextSegment();
-            bytesRead += available;
-            count -= available;
         }
+        stream().read(buffer + bytesRead, available);
+        nextSegment();
+        bytesRead += available;
+        count -= available;
     }
     if (count) {
         // still bytes to read but no more available
