@@ -89,6 +89,8 @@ set(SRC_FILES
     adts/adtsframe.cpp
     adts/adtsstream.cpp
     aspectratio.cpp
+    av1/av1configuration.h
+    av1/av1configuration.cpp
     avc/avcconfiguration.cpp
     avc/avcinfo.cpp
     avi/bitmapinfoheader.cpp

@@ -1,0 +1,32 @@
+#include "./av1configuration.h"
+
+#include "../diagnostics.h"
+#include "../exceptions.h"
+
+#include <c++utilities/io/binaryreader.h>
+
+using namespace std;
+using namespace IoUtilities;
+
+namespace TagParser {
+
+/*!
+ * \class Av1Configuration
+ * \brief The Av1Configuration struct provides a parser for AV1 configuration found in ISOBMFF files.
+ */
+
+/*!
+ * \brief Parses the AV1 configuration using the specified \a reader.
+ * \throws Throws TruncatedDataException() when the config size exceeds the specified \a maxSize.
+ * \remarks Logging/reporting parsing errors is not implemented yet.
+ * \todo Provide implementation
+ */
+void Av1Configuration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &diag)
+{
+    VAR_UNUSED(reader)
+    VAR_UNUSED(maxSize)
+    VAR_UNUSED(diag)
+    throw NotImplementedException();
+}
+
+} // namespace TagParser

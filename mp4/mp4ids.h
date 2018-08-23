@@ -11,6 +11,7 @@ class MediaFormat;
 
 namespace Mp4AtomIds {
 enum KnownValue : uint32 {
+    Av1Configuration = 0x61763143,
     AvcConfiguration = 0x61766343,
     BitrateBox = 0x62747274,
     CleanAperature = 0x636c6170,
@@ -217,7 +218,8 @@ enum KnownValue : uint32 {
     Avc2 = 0x61766332, /**< H.264/MPEG-4 AVC video */
     Avc3 = 0x61766333, /**< H.264/MPEG-4 AVC video */
     Avc4 = 0x61766334, /**< H.264/MPEG-4 AVC video */
-    Av1 = 0x41563031, /**< AV1 video */
+    Av1_IVF = 0x41563031, /**< AV1 video (found in IVF) */
+    Av1_ISOBMFF = 0x61763031, /**< AV1 video (found in ISOBMFF) */
     Blur = 0x626C7572,
     Bps8 = 0x38627073,
     BrightnessAndContrast = 0x6272636F,

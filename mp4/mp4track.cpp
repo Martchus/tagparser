@@ -4,6 +4,8 @@
 #include "./mp4ids.h"
 #include "./mpeg4descriptor.h"
 
+#include "../av1/av1configuration.h"
+
 #include "../avc/avcconfiguration.h"
 
 #include "../mpegaudio/mpegaudioframe.h"
@@ -1045,6 +1047,17 @@ void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
 }
 
 /*!
+ * \brief Adds the information from the specified \a av1Config to the specified \a track.
+ * \todo Provide implementation
+ */
+void Mp4Track::addInfo(const Av1Configuration &av1Config, AbstractTrack &track)
+{
+    VAR_UNUSED(av1Config)
+    VAR_UNUSED(track)
+    throw NotImplementedException();
+}
+
+/*!
  * \brief Buffers all atoms required by the makeTrack() method.
  *
  * This allows to invoke makeTrack() also when the input stream is going to be
@@ -1665,6 +1678,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 case FourccIds::Drmi:
                 case FourccIds::Hevc1:
                 case FourccIds::Hevc2:
+                case FourccIds::Av1_IVF:
+                case FourccIds::Av1_ISOBMFF:
                     m_istream->seekg(6 + 2 + 16, ios_base::cur); // skip reserved bytes, data reference index, and reserved bytes (again)
                     m_pixelSize.setWidth(reader.readUInt16BE());
                     m_pixelSize.setHeight(reader.readUInt16BE());
@@ -1712,6 +1727,22 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                         diag.emplace_back(DiagLevel::Critical, "AVC configuration is truncated.", context);
                     } catch (const Failure &) {
                         diag.emplace_back(DiagLevel::Critical, "AVC configuration is invalid.", context);
+                    }
+                }
+
+                // parse AV1 configuration
+                if (auto *const av1ConfigAtom = esDescParentAtom->childById(Mp4AtomIds::Av1Configuration, diag)) {
+                    m_istream->seekg(av1ConfigAtom->dataOffset());
+                    m_av1Config = make_unique<TagParser::Av1Configuration>();
+                    try {
+                        m_av1Config->parse(reader, av1ConfigAtom->dataSize(), diag);
+                        addInfo(*m_av1Config, *this);
+                    } catch (const NotImplementedException &) {
+                        diag.emplace_back(DiagLevel::Critical, "Parsing AV1 configuration is not supported yet.", context);
+                    } catch (const TruncatedDataException &) {
+                        diag.emplace_back(DiagLevel::Critical, "AV1 configuration is truncated.", context);
+                    } catch (const Failure &) {
+                        diag.emplace_back(DiagLevel::Critical, "AV1 configuration is invalid.", context);
                     }
                 }
 

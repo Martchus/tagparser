@@ -11,6 +11,7 @@ namespace TagParser {
 class Mp4Atom;
 class Mpeg4Descriptor;
 struct AvcConfiguration;
+struct Av1Configuration;
 struct TrackHeaderInfo;
 
 class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig {
@@ -128,6 +129,7 @@ public:
     uint32 sampleToChunkEntryCount() const;
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
     const AvcConfiguration *avcConfiguration() const;
+    const Av1Configuration *av1Configuration() const;
 
     // methods to parse configuration details from the track header
     static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(
@@ -157,6 +159,7 @@ public:
     void updateChunkOffset(uint32 chunkIndex, uint64 offset);
 
     static void addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track);
+    static void addInfo(const Av1Configuration &av1Config, AbstractTrack &track);
 
 protected:
     void internalParseHeader(Diagnostics &diag) override;
@@ -185,6 +188,7 @@ private:
     uint32 m_sampleToChunkEntryCount;
     std::unique_ptr<Mpeg4ElementaryStreamInfo> m_esInfo;
     std::unique_ptr<AvcConfiguration> m_avcConfig;
+    std::unique_ptr<Av1Configuration> m_av1Config;
 };
 
 /*!
@@ -254,6 +258,17 @@ inline const Mpeg4ElementaryStreamInfo *Mp4Track::mpeg4ElementaryStreamInfo() co
 inline const AvcConfiguration *Mp4Track::avcConfiguration() const
 {
     return m_avcConfig.get();
+}
+
+/*!
+ * \brief Returns the AV1 configuration.
+ * \remarks
+ *  - The track must be parsed before this information becomes available.
+ *  - The track keeps ownership over the returned object.
+ */
+inline const Av1Configuration *Mp4Track::av1Configuration() const
+{
+    return m_av1Config.get();
 }
 
 } // namespace TagParser

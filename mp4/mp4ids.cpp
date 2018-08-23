@@ -69,7 +69,8 @@ MediaFormat fourccToMediaFormat(uint32 fourccId)
     case H264Decoder5:
     case H264Decoder6:
         return GeneralMediaFormat::Avc;
-    case Av1:
+    case Av1_IVF:
+    case Av1_ISOBMFF:
         return GeneralMediaFormat::Av1;
     case Divx4Decoder1:
     case Divx4Decoder2:
