@@ -1,5 +1,6 @@
 #include "./avcconfiguration.h"
 
+#include "../diagnostics.h"
 #include "../exceptions.h"
 #include "../mediaformat.h"
 
@@ -20,10 +21,11 @@ namespace TagParser {
 /*!
  * \brief Parses the AVC configuration using the specified \a reader.
  * \throws Throws TruncatedDataException() when the config size exceeds the specified \a maxSize.
- * \remarks Logging/reporting parsing errors is not implemented yet.
+ * \todo Implement logging/reporting parsing errors.
  */
-void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize)
+void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &diag)
 {
+    VAR_UNUSED(diag)
     if (maxSize < 7) {
         throw TruncatedDataException();
     }

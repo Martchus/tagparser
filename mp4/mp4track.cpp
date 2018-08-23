@@ -1721,7 +1721,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                     m_istream->seekg(avcConfigAtom->dataOffset());
                     m_avcConfig = make_unique<TagParser::AvcConfiguration>();
                     try {
-                        m_avcConfig->parse(reader, avcConfigAtom->dataSize());
+                        m_avcConfig->parse(reader, avcConfigAtom->dataSize(), diag);
                         addInfo(*m_avcConfig, *this);
                     } catch (const TruncatedDataException &) {
                         diag.emplace_back(DiagLevel::Critical, "AVC configuration is truncated.", context);

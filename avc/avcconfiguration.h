@@ -8,6 +8,7 @@
 namespace TagParser {
 
 class MediaFormat;
+class Diagnostics;
 
 struct TAG_PARSER_EXPORT AvcConfiguration {
     AvcConfiguration();
@@ -18,7 +19,7 @@ struct TAG_PARSER_EXPORT AvcConfiguration {
     std::vector<SpsInfo> spsInfos;
     std::vector<PpsInfo> ppsInfos;
 
-    void parse(IoUtilities::BinaryReader &reader, uint64 maxSize);
+    void parse(IoUtilities::BinaryReader &reader, uint64 maxSize, Diagnostics &diag);
 };
 
 /*!

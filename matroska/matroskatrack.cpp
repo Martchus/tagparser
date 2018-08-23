@@ -505,7 +505,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
             auto avcConfig = make_unique<TagParser::AvcConfiguration>();
             try {
                 m_istream->seekg(static_cast<streamoff>(codecPrivateElement->dataOffset()));
-                avcConfig->parse(m_reader, codecPrivateElement->dataSize());
+                avcConfig->parse(m_reader, codecPrivateElement->dataSize(), diag);
                 Mp4Track::addInfo(*avcConfig, *this);
             } catch (const TruncatedDataException &) {
                 diag.emplace_back(DiagLevel::Critical, "AVC configuration is truncated.", context);
