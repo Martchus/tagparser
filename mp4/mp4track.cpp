@@ -199,7 +199,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                 DiagLevel::Critical, "The stco atom stores more chunk offsets as denoted. The additional chunk offsets will be ignored.", context);
         } else if (calculatedTableSize > actualTableSize) {
             diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. It stores less chunk offsets as denoted.", context);
-            actualChunkCount = floor(static_cast<double>(actualTableSize) / static_cast<double>(chunkOffsetSize()));
+            actualChunkCount = static_cast<uint32>(floor(static_cast<double>(actualTableSize) / static_cast<double>(chunkOffsetSize())));
         }
         // read the table
         offsets.reserve(actualChunkCount);
@@ -978,6 +978,7 @@ void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
         for (auto offset : chunkOffsets) {
             m_writer.writeUInt64BE(offset);
         }
+        break;
     default:
         throw InvalidDataException();
     }
@@ -1512,8 +1513,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
     // read tkhd atom
     m_istream->seekg(m_tkhdAtom->startOffset() + 8); // seek to beg, skip size and name
-    byte atomVersion = reader.readByte(); // read version
-    uint32 flags = reader.readUInt24BE();
+    auto atomVersion = reader.readByte(); // read version
+    const auto flags = reader.readUInt24BE();
     m_enabled = flags & 0x000001;
     m_usedInPresentation = flags & 0x000002;
     m_usedWhenPreviewing = flags & 0x000004;
@@ -1613,7 +1614,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
     // read stsd atom
     m_istream->seekg(m_stsdAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
-    uint32 entryCount = reader.readUInt32BE();
+    const auto entryCount = reader.readUInt32BE();
     Mp4Atom *esDescParentAtom = nullptr;
     if (entryCount) {
         try {
@@ -1717,7 +1718,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
             if (esDescParentAtom) {
                 // parse AVC configuration
-                if (Mp4Atom *avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration, diag)) {
+                if (auto *const avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration, diag)) {
                     m_istream->seekg(avcConfigAtom->dataOffset());
                     m_avcConfig = make_unique<TagParser::AvcConfiguration>();
                     try {
@@ -1747,7 +1748,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 }
 
                 // parse MPEG-4 elementary stream descriptor
-                Mp4Atom *esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor, diag);
+                auto *esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor, diag);
                 if (!esDescAtom) {
                     esDescAtom = esDescParentAtom->childById(Mp4FormatExtensionIds::Mpeg4ElementaryStreamDescriptor2, diag);
                 }
@@ -1839,14 +1840,14 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             m_sampleSizes.push_back(constantSize);
             m_size = constantSize * m_sampleCount;
         } else {
-            uint64 actualSampleCount = m_sampleCount;
-            uint64 calculatedSampleSizeTableSize = ceil((0.125 * fieldSize) * m_sampleCount);
+            auto actualSampleCount = m_sampleCount;
+            const auto calculatedSampleSizeTableSize = static_cast<uint64>(ceil((0.125 * fieldSize) * m_sampleCount));
             if (calculatedSampleSizeTableSize < actualSampleSizeTableSize) {
                 diag.emplace_back(
                     DiagLevel::Critical, "The stsz atom stores more entries as denoted. The additional entries will be ignored.", context);
             } else if (calculatedSampleSizeTableSize > actualSampleSizeTableSize) {
                 diag.emplace_back(DiagLevel::Critical, "The stsz atom is truncated. It stores less entries as denoted.", context);
-                actualSampleCount = floor(static_cast<double>(actualSampleSizeTableSize) / (0.125 * fieldSize));
+                actualSampleCount = static_cast<uint64>(floor(static_cast<double>(actualSampleSizeTableSize) / (0.125 * fieldSize)));
             }
             m_sampleSizes.reserve(actualSampleCount);
             uint32 i = 1;
