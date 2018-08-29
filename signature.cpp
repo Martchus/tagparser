@@ -46,6 +46,7 @@ enum Sig32 : uint32 {
     Ivf = 0x444B4946u,
     JavaClassFile = 0xCAFEBABEu,
     Ebml = 0x1A45DFA3u,
+    Midi = 0x4D546864u,
     MonkeysAudio = 0x4D414320u,
     Mp4 = 0x66747970u,
     Ogg = 0x4F676753u,
@@ -166,6 +167,8 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
         return ContainerFormat::JavaClassFile;
     case Ebml:
         return ContainerFormat::Ebml;
+    case Midi:
+        return ContainerFormat::Midi;
     case MonkeysAudio:
         return ContainerFormat::MonkeysAudio;
     case Ogg:
@@ -353,6 +356,8 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
         return "wv";
     case ContainerFormat::MonkeysAudio:
         return "ape";
+    case ContainerFormat::Midi:
+        return "mid";
     default:
         return "";
     }
@@ -456,6 +461,8 @@ const char *containerFormatName(ContainerFormat containerFormat)
         return "ZIP archive";
     case ContainerFormat::MonkeysAudio:
         return "Monkey's Audio";
+    case ContainerFormat::Midi:
+        return "MIDI";
     default:
         return "unknown";
     }
@@ -528,6 +535,8 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
         default:
             return "video/x-matroska";
         }
+    case ContainerFormat::Midi:
+        return "audio/midi";
     case ContainerFormat::Bzip2:
         return "application/x-bzip";
     case ContainerFormat::Gzip:

@@ -37,6 +37,7 @@ enum class ContainerFormat : unsigned int {
     Lzip, /**< lz compressed file */
     Lzw, /**< LZW */
     Matroska, /**< Matroska (subset of EBML) */
+    Midi, /**< Musical Instrument Digital Interface (MIDI) */
     MonkeysAudio, /**< Monkey's Audio */
     Mp4, /**< MPEG-4 Part 14 (subset of QuickTime container) */
     MpegAudioFrames, /**< MPEG-1 Layer 1/2/3 frames */
