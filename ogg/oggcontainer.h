@@ -32,8 +32,8 @@ struct TAG_PARSER_EXPORT OggParameter {
     std::size_t firstSegmentIndex;
     std::size_t lastPageIndex;
     std::size_t lastSegmentIndex;
-    bool lastMetaDataBlock;
     GeneralMediaFormat streamFormat;
+    bool lastMetaDataBlock;
     bool removed;
 };
 
@@ -46,8 +46,8 @@ constexpr OggParameter::OggParameter()
     , firstSegmentIndex(0)
     , lastPageIndex(0)
     , lastSegmentIndex(0)
-    , lastMetaDataBlock(false)
     , streamFormat(GeneralMediaFormat::Vorbis)
+    , lastMetaDataBlock(false)
     , removed(false)
 {
 }
