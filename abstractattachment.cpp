@@ -113,6 +113,16 @@ FileDataBlock::FileDataBlock(const string &path, Diagnostics &diag)
 }
 
 /*!
+ * \brief Destroys the FileDataBlock.
+ * \remarks This method is needed although it is empty. Otherwise the default d'tor would be
+ *          inlined where FileDataBlock is used creating a dependency to MediaFileInfo which
+ *          therefore couldn't be opaque anymore.
+ */
+FileDataBlock::~FileDataBlock()
+{
+}
+
+/*!
  * \class TagParser::AbstractAttachment
  * \brief The AbstractAttachment class parses and stores attachment information.
  */

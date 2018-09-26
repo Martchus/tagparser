@@ -90,6 +90,7 @@ inline void StreamDataBlock::discardBuffer()
 class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock {
 public:
     FileDataBlock(const std::string &path, Diagnostics &diag);
+    ~FileDataBlock();
     const MediaFileInfo *fileInfo() const;
 
 private:
