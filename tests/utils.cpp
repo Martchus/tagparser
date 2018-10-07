@@ -95,7 +95,7 @@ void UtilitiesTests::testTagTarget()
 {
     TagTarget target;
     CPPUNIT_ASSERT(target.isEmpty());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("default level is 50", 50ul, target.level());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("default level is 50", 50ull, target.level());
     CPPUNIT_ASSERT_EQUAL("level 50"s, target.toString(TagTargetLevel::Unspecified));
     target = TagTarget(30, { 1, 2, 3 }, { 4 }, { 5, 6 }, { 7, 8, 9 });
     CPPUNIT_ASSERT(!target.isEmpty());
