@@ -46,9 +46,7 @@ class UtilitiesTests : public TestFixture {
     CPPUNIT_TEST(testProgressFeedback);
     CPPUNIT_TEST(testAbortableProgressFeedback);
     CPPUNIT_TEST(testDiagnostics);
-#ifdef PLATFORM_UNIX
     CPPUNIT_TEST(testBackupFile);
-#endif
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -66,9 +64,7 @@ public:
     void testProgressFeedback();
     void testAbortableProgressFeedback();
     void testDiagnostics();
-#ifdef PLATFORM_UNIX
     void testBackupFile();
-#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UtilitiesTests);
@@ -295,7 +291,6 @@ void UtilitiesTests::testDiagnostics()
     CPPUNIT_ASSERT(diag.has(DiagLevel::Critical));
 }
 
-#ifdef PLATFORM_UNIX
 void UtilitiesTests::testBackupFile()
 {
     using namespace BackupHelper;
@@ -402,4 +397,3 @@ void UtilitiesTests::testBackupFile()
 
     CPPUNIT_ASSERT_EQUAL(0, remove(file.path().data()));
 }
-#endif

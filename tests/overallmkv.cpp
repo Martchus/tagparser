@@ -647,7 +647,6 @@ void OverallTests::testMkvParsing()
     parseFile(testFilePath("mkv/nested-tags.mkv"), &OverallTests::checkMkvTestfileNestedTags);
 }
 
-#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the Matroska maker via MediaFileInfo.
  *
@@ -748,4 +747,3 @@ void OverallTests::testMkvMakingNestedTags()
     m_fileInfo.setIndexPosition(ElementPosition::BeforeData);
     makeFile(workingCopyPath("mkv/nested-tags.mkv"), &OverallTests::noop, &OverallTests::checkMkvTestfileNestedTags);
 }
-#endif

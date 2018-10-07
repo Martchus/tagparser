@@ -355,7 +355,6 @@ void OverallTests::testMp3Parsing()
     parseFile(TestUtilities::testFilePath("misc/multiple_id3v2_4_values.mp3"), &OverallTests::checkMp3Testfile2);
 }
 
-#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the MP3 maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -416,4 +415,3 @@ void OverallTests::testMp3Making()
             (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setMp3TestMetaData2, &OverallTests::checkMp3Testfile2);
     }
 }
-#endif

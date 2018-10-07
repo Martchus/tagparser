@@ -533,7 +533,6 @@ void OverallTests::testMp4Parsing()
     parseFile(TestUtilities::testFilePath("mp4/android-8.1-camera-recoding.mp4"), &OverallTests::checkMp4Testfile7);
 }
 
-#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the MP4 maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -603,4 +602,3 @@ void OverallTests::testMp4Making()
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile6);
     }
 }
-#endif

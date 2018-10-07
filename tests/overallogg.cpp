@@ -137,7 +137,6 @@ void OverallTests::testOggParsing()
     parseFile(TestUtilities::testFilePath("mtx-test-data/opus/v-opus.ogg"), &OverallTests::checkOggTestfile2);
 }
 
-#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the Ogg maker via MediaFileInfo.
  * \remarks
@@ -172,4 +171,3 @@ void OverallTests::testOggMaking()
         makeFile(TestUtilities::workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
     }
 }
-#endif

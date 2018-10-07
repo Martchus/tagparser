@@ -48,14 +48,12 @@ class OverallTests : public TestFixture {
     CPPUNIT_TEST(testOggParsing);
     CPPUNIT_TEST(testFlacParsing);
     CPPUNIT_TEST(testMkvParsing);
-#ifdef PLATFORM_UNIX
     CPPUNIT_TEST(testMp4Making);
     CPPUNIT_TEST(testMp3Making);
     CPPUNIT_TEST(testOggMaking);
     CPPUNIT_TEST(testFlacMaking);
     CPPUNIT_TEST(testMkvMakingWithDifferentSettings);
     CPPUNIT_TEST(testMkvMakingNestedTags);
-#endif
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -119,14 +117,12 @@ public:
     void testMp3Parsing();
     void testOggParsing();
     void testFlacParsing();
-#ifdef PLATFORM_UNIX
     void testMkvMakingWithDifferentSettings();
     void testMkvMakingNestedTags();
     void testMp4Making();
     void testMp3Making();
     void testOggMaking();
     void testFlacMaking();
-#endif
 
 private:
     MediaFileInfo m_fileInfo;

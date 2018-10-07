@@ -107,7 +107,6 @@ void OverallTests::testFlacParsing()
     parseFile(TestUtilities::testFilePath("flac/test.ogg"), &OverallTests::checkFlacTestfile2);
 }
 
-#ifdef PLATFORM_UNIX
 /*!
  * \brief Tests the FLAC maker via MediaFileInfo.
  * \remarks Relies on the parser to check results.
@@ -139,4 +138,3 @@ void OverallTests::testFlacMaking()
         makeFile(TestUtilities::workingCopyPath("flac/test.ogg"), modifyRoutine, &OverallTests::checkFlacTestfile2);
     }
 }
-#endif
