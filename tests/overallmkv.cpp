@@ -446,7 +446,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         switch (chapter->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL("Kapitel 01"s, static_cast<const string &>(chapter->names().at(0)));
-            CPPUNIT_ASSERT_EQUAL(0ll, chapter->startTime().totalTicks());
+            CPPUNIT_ASSERT_EQUAL(static_cast<int64>(0), chapter->startTime().totalTicks());
             CPPUNIT_ASSERT_EQUAL(15, chapter->endTime().seconds());
             break;
         case 2:
