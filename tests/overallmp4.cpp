@@ -453,7 +453,7 @@ void OverallTests::checkMp4Constraints()
     CPPUNIT_ASSERT(m_fileInfo.container());
     if (m_mode & PaddingConstraints) {
         if (m_mode & ForceRewring) {
-            CPPUNIT_ASSERT_EQUAL(4096_st, m_fileInfo.paddingSize());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(4096), m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
