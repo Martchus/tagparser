@@ -465,7 +465,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         CPPUNIT_ASSERT(tags[0]->target().isEmpty());
         CPPUNIT_ASSERT_EQUAL(""s, static_cast<MatroskaTag *>(tags[0])->value("CREATION_TIME").toString());
         CPPUNIT_ASSERT_EQUAL("Lavf55.12.0"s, tags[0]->value(KnownField::Encoder).toString());
-        CPPUNIT_ASSERT_EQUAL(2_st, tags[1]->target().tracks().at(0));
+        CPPUNIT_ASSERT_EQUAL(static_cast<TagTarget::IdType>(2), tags[1]->target().tracks().at(0));
         CPPUNIT_ASSERT_EQUAL("eng"s, tags[1]->value(KnownField::Language).toString());
         break;
     case TagStatus::TestMetaDataPresent:
@@ -535,7 +535,7 @@ void OverallTests::checkMkvTestMetaData()
     CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), tags.front()->value(KnownField::Title).toString());
     CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
     CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), tags.front()->value(KnownField::Comment).toString());
-    CPPUNIT_ASSERT_EQUAL(30_st, tags[1]->target().level());
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(30), tags[1]->target().level());
     CPPUNIT_ASSERT_EQUAL(tracks.at(0)->id(), tags[1]->target().tracks().at(0));
     CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(), tags[1]->value(KnownField::Album).toString());
     CPPUNIT_ASSERT_EQUAL(m_testPartNumber.toInteger(), tags[1]->value(KnownField::PartNumber).toInteger());
@@ -569,7 +569,7 @@ void OverallTests::checkMkvConstraints()
     CPPUNIT_ASSERT(m_fileInfo.container());
     if (m_mode & PaddingConstraints) {
         if (m_mode & ForceRewring) {
-            CPPUNIT_ASSERT_EQUAL(4096_st, m_fileInfo.paddingSize());
+            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(4096), m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));
