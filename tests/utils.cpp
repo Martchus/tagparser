@@ -23,6 +23,8 @@ using namespace TestUtilities;
 
 #include <cstdio>
 
+#include <unistd.h>
+
 using namespace std;
 using namespace TagParser;
 using namespace ConversionUtilities;
@@ -336,8 +338,9 @@ void UtilitiesTests::testBackupFile()
 
     // get rid of 2nd backup (again)
     backupStream2.close();
-    CPPUNIT_ASSERT_EQUAL(0, remove(backupPath2.data()));
-    CPPUNIT_ASSERT_EQUAL(0, remove((workingDir + "/bak").data()));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("remove " + backupPath2, 0, remove(backupPath2.data()));
+    const auto backupDir(workingDir + "/bak");
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("remove " + backupDir, 0, rmdir(backupDir.data()));
 
     // should be able to use backup stream, eg. seek to the end
     backupStream1.seekg(0, ios_base::end);
