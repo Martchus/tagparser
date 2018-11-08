@@ -1739,7 +1739,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                         m_av1Config->parse(reader, av1ConfigAtom->dataSize(), diag);
                         addInfo(*m_av1Config, *this);
                     } catch (const NotImplementedException &) {
-                        diag.emplace_back(DiagLevel::Critical, "Parsing AV1 configuration is not supported yet.", context);
+                        diag.emplace_back(DiagLevel::Information, "Parsing AV1 configuration is not supported yet.", context);
                     } catch (const TruncatedDataException &) {
                         diag.emplace_back(DiagLevel::Critical, "AV1 configuration is truncated.", context);
                     } catch (const Failure &) {
