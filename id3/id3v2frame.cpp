@@ -145,7 +145,6 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         } else {
             // padding reached
             m_padding = true;
-            diag.emplace_back(DiagLevel::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
             throw NoDataFoundException();
         }
 
@@ -173,7 +172,6 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
         } else {
             // padding reached
             m_padding = true;
-            diag.emplace_back(DiagLevel::Debug, "Frame ID starts with null-byte -> padding reached.", defaultContext);
             throw NoDataFoundException();
         }
 
