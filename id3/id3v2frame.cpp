@@ -198,7 +198,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
 
     // frame size mustn't be 0
     if (m_dataSize <= 0) {
-        diag.emplace_back(DiagLevel::Critical, "The frame size is 0.", context);
+        diag.emplace_back(DiagLevel::Warning, "The frame size is 0.", context);
         throw InvalidDataException();
     }
 
