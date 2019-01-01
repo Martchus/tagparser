@@ -10,6 +10,7 @@ public:
     constexpr WaveFormatHeader();
 
     void parse(IoUtilities::BinaryReader &reader);
+    std::pair<MediaFormat, uint64> parseExt(IoUtilities::BinaryReader &reader, uint64 maxSize, Diagnostics &diag);
     MediaFormat format() const;
     constexpr uint32 bitrate() const;
 
