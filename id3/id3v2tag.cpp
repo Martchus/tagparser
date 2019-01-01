@@ -44,6 +44,7 @@ bool Id3v2Tag::supportsMultipleValues(KnownField field) const
     case KnownField::Grouping:
     case KnownField::RecordLabel:
     case KnownField::Composer:
+    case KnownField::AlbumArtist:
         return m_majorVersion > 3;
     case KnownField::Rating:
     case KnownField::Comment:
@@ -166,13 +167,15 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::SynchronizedLyrics:
             return lSynchronizedLyrics;
         case KnownField::Grouping:
-            return lGrouping;
+            return lContentGroupDescription;
         case KnownField::RecordLabel:
             return lRecordLabel;
         case KnownField::Composer:
             return lComposer;
         case KnownField::Rating:
             return lRating;
+        case KnownField::AlbumArtist:
+            return lGrouping;
         default:;
         }
     } else {
@@ -214,13 +217,15 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::SynchronizedLyrics:
             return sSynchronizedLyrics;
         case KnownField::Grouping:
-            return sGrouping;
+            return sContentGroupDescription;
         case KnownField::RecordLabel:
             return sRecordLabel;
         case KnownField::Composer:
             return sComposer;
         case KnownField::Rating:
             return sRating;
+        case KnownField::AlbumArtist:
+            return sGrouping;
         default:;
         }
     }
@@ -268,6 +273,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case lSynchronizedLyrics:
         return KnownField::SynchronizedLyrics;
     case lGrouping:
+        return KnownField::AlbumArtist;
+    case lContentGroupDescription:
         return KnownField::Grouping;
     case lRecordLabel:
         return KnownField::RecordLabel;

@@ -38,6 +38,14 @@ constexpr TAG_PARSER_EXPORT const char *artist()
 {
     return "ARTIST";
 }
+constexpr TAG_PARSER_EXPORT const char *albumArtist()
+{
+    return "ALBUMARTIST";
+}
+constexpr TAG_PARSER_EXPORT const char *grouping()
+{
+    return "GROUPING";
+}
 constexpr TAG_PARSER_EXPORT const char *album()
 {
     return "ALBUM";

@@ -27,7 +27,8 @@ enum KnownValue : uint32 {
     lEncoderSettings = 0x54535345,
     lUnsynchronizedLyrics = 0x55534c54,
     lSynchronizedLyrics = 0x53594C54,
-    lGrouping = 0x54504532,
+    lGrouping = 0x54504532, // FIXME: rename to lAlbumArtist in v9
+    lContentGroupDescription = 0x54495431,
     lRecordLabel = 0x54505542,
     lUniqueFileId = 0x55464944,
     lComposer = 0x54434f4d,
@@ -52,7 +53,8 @@ enum KnownValue : uint32 {
     sEncoderSettings = 0x545353,
     sUnsynchronizedLyrics = 0x554C54,
     sSynchronizedLyrics = 0x534C54,
-    sGrouping = 0x545032,
+    sGrouping = 0x545032, // FIXME: rename to sAlbumArtist in v9
+    sContentGroupDescription = 0x545431,
     sRecordLabel = 0x545042,
     sUniqueFileId = 0x554649,
     sComposer = 0x54434d,

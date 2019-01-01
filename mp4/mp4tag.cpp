@@ -159,6 +159,8 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return Performers;
     case KnownField::Lyricist:
         return Lyricist;
+    case KnownField::AlbumArtist:
+        return AlbumArtist;
     default:
         return 0;
     }
@@ -207,6 +209,8 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Performers;
     case Lyricist:
         return KnownField::Lyricist;
+    case AlbumArtist:
+        return KnownField::AlbumArtist;
     default:
         return KnownField::Invalid;
     }

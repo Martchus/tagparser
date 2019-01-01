@@ -35,6 +35,8 @@ enum class TagType : unsigned int {
  *
  * Not all fields are supported by all tag types (see Tag::supportsField()).
  *
+ * Mapping proposed by HAK: https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping
+ *
  * \sa Tag::type()
  */
 enum class KnownField : unsigned int {
@@ -66,7 +68,8 @@ enum class KnownField : unsigned int {
     Composer, /**< composer */
     Rating, /**< rating */
     Description, /**< description */
-    Vendor /**< vendor */
+    Vendor, /**< vendor */
+    AlbumArtist, /**< album artist */
 };
 
 /*!

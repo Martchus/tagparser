@@ -77,6 +77,8 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return encoderSettings();
     case KnownField::Description:
         return description();
+    case KnownField::Grouping:
+        return grouping();
     case KnownField::RecordLabel:
         return label();
     case KnownField::Performers:
@@ -85,6 +87,8 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return language();
     case KnownField::Lyricist:
         return lyricist();
+    case KnownField::AlbumArtist:
+        return albumArtist();
     default:
         return string();
     }
@@ -93,12 +97,29 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
 KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace VorbisCommentIds;
-    static const map<string, KnownField, CaseInsensitiveStringComparer> fieldMap({ { album(), KnownField::Album }, { artist(), KnownField::Artist },
-        { comment(), KnownField::Comment }, { cover(), KnownField::Cover }, { date(), KnownField::Year }, { title(), KnownField::Title },
-        { genre(), KnownField::Genre }, { trackNumber(), KnownField::TrackPosition }, { diskNumber(), KnownField::DiskPosition },
-        { partNumber(), KnownField::PartNumber }, { composer(), KnownField::Composer }, { encoder(), KnownField::Encoder },
-        { encoderSettings(), KnownField::EncoderSettings }, { description(), KnownField::Description }, { label(), KnownField::RecordLabel },
-        { performer(), KnownField::Performers }, { lyricist(), KnownField::Lyricist } });
+    // clang-format off
+    static const map<string, KnownField, CaseInsensitiveStringComparer> fieldMap({
+         { album(), KnownField::Album },
+         { artist(), KnownField::Artist },
+         { comment(), KnownField::Comment },
+         { cover(), KnownField::Cover },
+         { date(), KnownField::Year },
+         { title(), KnownField::Title },
+         { genre(), KnownField::Genre },
+         { trackNumber(), KnownField::TrackPosition },
+         { diskNumber(), KnownField::DiskPosition },
+         { partNumber(), KnownField::PartNumber },
+         { composer(), KnownField::Composer },
+         { encoder(), KnownField::Encoder },
+         { encoderSettings(), KnownField::EncoderSettings },
+         { description(), KnownField::Description },
+         { grouping(), KnownField::Grouping },
+         { label(), KnownField::RecordLabel },
+         { performer(), KnownField::Performers },
+         { lyricist(), KnownField::Lyricist },
+         { albumArtist(), KnownField::AlbumArtist },
+    });
+    // clang-format on
     const auto knownField(fieldMap.find(id));
     return knownField != fieldMap.cend() ? knownField->second : KnownField::Invalid;
 }
