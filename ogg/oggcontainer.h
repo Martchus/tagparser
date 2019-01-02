@@ -69,6 +69,9 @@ class TAG_PARSER_EXPORT OggVorbisComment : public VorbisComment {
 
 public:
     OggVorbisComment();
+
+    static constexpr TagType tagType = TagType::OggVorbisComment;
+    static constexpr const char *tagName = "OGG Vorbis comment";
     TagType type() const override;
     const char *typeName() const override;
     bool supportsTarget() const override;
