@@ -169,6 +169,7 @@ set(TEST_SRC_FILES
 
 set(DOC_FILES
     README.md
+    doc/adding-new-fields.md
 )
 
 # meta data
