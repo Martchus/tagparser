@@ -80,7 +80,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the TagParser::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::Vendor;
+constexpr KnownField lastKnownField = KnownField::AlbumArtist;
 
 /*!
  * \brief The number of valid entries in the TagParser::KnownField enum.
