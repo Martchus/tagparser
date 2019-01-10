@@ -7,15 +7,15 @@ one can also deduce what places need to be adjusted when amending support for a 
 1. Check whether https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping contains
    a recommendation for the specific field to be added.
 2. Add the field to the enum `KnownField`.
-3. Adjust `lastKnownField` accordingly.
-4. Adjust `Tag::proposedDataType(KnownField field)` if it is not a text field.
+3. Adjust `TagParser::lastKnownField` accordingly.
+4. Adjust `TagParser::Tag::proposedDataType()` if it is not a text field.
    Consider that this method might be overwritten in format-specific implementations
    which might need adjustment as well.
 5. Add the format-specific IDs to the corresponding header files, e.g. `vorbiscommentids.h`
    for Vorbis Comments.
-6. Add the field mapping to the `internallyGetFieldId(KnownField field)` and
-   `internallyGetKnownField(const IdentifierType &id)` methods of all formats which
-   should be supported.
+6. Add the field mapping to the `internallyGetFieldId()` and
+   `internallyGetKnownField()` methods of all formats which
+   should be supported, e.g. `TagParser::Id3v2Tag::internallyGetFieldId()`.
 7. For ID3v2 tags add the mapping `convertToShortId()` and `convertToLongId()` if
    possible.
 
