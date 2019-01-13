@@ -153,7 +153,6 @@ set(TEST_HEADER_FILES
     tests/overall.h
 )
 set(TEST_SRC_FILES
-    tests/cppunit.cpp
     tests/helper.cpp
     tests/mediafileinfo.cpp
     tests/overallflac.cpp
@@ -185,9 +184,10 @@ set(META_VERSION_PATCH 0)
 set(META_PUBLIC_SHARED_LIB_DEPENDS c++utilities)
 set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 set(META_REQUIRED_CPP_UNIT_VERSION 1.14.0)
+set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
 
 # find c++utilities
-find_package(c++utilities 4.9.0 REQUIRED)
+find_package(c++utilities 4.17.0 REQUIRED)
 use_cpp_utilities()
 
 # find 3rd party libraries
