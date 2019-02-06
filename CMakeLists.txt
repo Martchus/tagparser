@@ -77,8 +77,7 @@ set(HEADER_FILES
     vorbis/vorbiscommentids.h
     vorbis/vorbisidentificationheader.h
     vorbis/vorbispackagetypes.h
-    wav/waveaudiostream.h
-)
+    wav/waveaudiostream.h)
 set(SRC_FILES
     aac/aaccodebook.cpp
     aac/aacframe.cpp
@@ -146,12 +145,8 @@ set(SRC_FILES
     vorbis/vorbiscomment.cpp
     vorbis/vorbiscommentfield.cpp
     vorbis/vorbisidentificationheader.cpp
-    wav/waveaudiostream.cpp
-)
-set(TEST_HEADER_FILES
-    tests/helper.h
-    tests/overall.h
-)
+    wav/waveaudiostream.cpp)
+set(TEST_HEADER_FILES tests/helper.h tests/overall.h)
 set(TEST_SRC_FILES
     tests/helper.cpp
     tests/mediafileinfo.cpp
@@ -163,13 +158,9 @@ set(TEST_SRC_FILES
     tests/overallogg.cpp
     tests/tagvalue.cpp
     tests/testfilecheck.cpp
-    tests/utils.cpp
-)
+    tests/utils.cpp)
 
-set(DOC_FILES
-    README.md
-    doc/adding-new-fields.md
-)
+set(DOC_FILES README.md doc/adding-new-fields.md)
 
 # meta data
 set(META_PROJECT_NAME tagparser)
@@ -193,30 +184,20 @@ use_cpp_utilities()
 # find 3rd party libraries
 include(3rdParty)
 # zlib
-use_external_library_from_package(
-    z
-    ZLIB ANY_VERSION
-    ZLIB_INCLUDE_DIRS
-    ZLIB_LIBRARIES
-    AUTO_LINKAGE
-    REQUIRED
-)
+use_external_library_from_package(z ZLIB ANY_VERSION ZLIB_INCLUDE_DIRS ZLIB_LIBRARIES AUTO_LINKAGE REQUIRED)
 # crypto (optional for testing integrity of testfiles)
-find_external_library_from_package(
-    crypto
-    OpenSSL ANY_VERSION
-    OPENSSL_INCLUDE_DIR
-    OPENSSL_CRYPTO_LIBRARY
-    AUTO_LINKAGE
-    OPTIONAL
-)
-link_tests_against_library(
-    crypto AUTO_LINKAGE OPTIONAL
-)
-if(NOT USE_crypto)
+find_external_library_from_package(crypto
+                                   OpenSSL
+                                   ANY_VERSION
+                                   OPENSSL_INCLUDE_DIR
+                                   OPENSSL_CRYPTO_LIBRARY
+                                   AUTO_LINKAGE
+                                   OPTIONAL)
+link_tests_against_library(crypto AUTO_LINKAGE OPTIONAL)
+if (NOT USE_crypto)
     list(REMOVE_ITEM TEST_SRC_FILES tests/testfilecheck.cpp)
     message(WARNING "Unable to check testfile integrity because OpenSSL is not available.")
-endif()
+endif ()
 
 # include modules to apply configuration
 include(BasicConfig)
