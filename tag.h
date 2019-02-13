@@ -219,6 +219,8 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
         return TagDataType::PositionInSet;
     case KnownField::Genre:
         return TagDataType::StandardGenreIndex;
+    case KnownField::SynchronizedLyrics:
+        return TagDataType::Undefined; // not supported so far
     default:
         return TagDataType::Text;
     }
