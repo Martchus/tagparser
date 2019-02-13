@@ -977,6 +977,8 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
  * \param bufferSize Specifies the size of \a buffer.
  * \param value Specifies the string to make.
  * \param encoding Specifies the encoding of the string to make.
+ * \deprecated No longer used.
+ * \todo Remove in v9.
  */
 void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding)
 {
@@ -990,6 +992,8 @@ void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize,
  * \param encoding Specifies the data encoding.
  * \param data Specifies the data.
  * \param dataSize Specifies size of \a data.
+ * \deprecated No longer used.
+ * \todo Remove in v9.
  */
 void Id3v2Frame::makeEncodingAndData(
     std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t dataSize)
