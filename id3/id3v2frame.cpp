@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <limits>
 #include <memory>
 
 using namespace std;
@@ -997,20 +998,23 @@ void Id3v2Frame::makeEncodingAndData(
     if (!data) {
         dataSize = 0;
     }
+    if (dataSize > numeric_limits<uint32>::max() - 5) {
+        throw InvalidDataException();
+    }
     char *bufferDataAddress;
     switch (encoding) {
     case TagTextEncoding::Latin1:
     case TagTextEncoding::Utf8:
     case TagTextEncoding::Unspecified: // assumption
         // allocate buffer
-        buffer = make_unique<char[]>(bufferSize = 1 + dataSize + 1);
+        buffer = make_unique<char[]>(bufferSize = static_cast<uint32>(1 + dataSize + 1));
         buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
         bufferDataAddress = buffer.get() + 1;
         break;
     case TagTextEncoding::Utf16LittleEndian:
     case TagTextEncoding::Utf16BigEndian:
         // allocate buffer
-        buffer = make_unique<char[]>(bufferSize = 1 + 2 + dataSize + 2);
+        buffer = make_unique<char[]>(bufferSize = static_cast<uint32>(1 + 2 + dataSize + 2));
         buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
         ConversionUtilities::LE::getBytes(
             encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<uint16>(0xFEFF) : static_cast<uint16>(0xFFFE), buffer.get() + 1);
@@ -1063,15 +1067,21 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
         convertedDescription = convertUtf8ToUtf16LE(picture.description().data(), descriptionSize);
         descriptionSize = convertedDescription.second;
     }
+
     // calculate needed buffer size and create buffer
-    const uint32 dataSize = picture.dataSize();
-    buffer = make_unique<char[]>(bufferSize = 1 + 3 + 1 + descriptionSize
-            + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
-            + dataSize);
-    // note:                                  encoding byte + image format + picture type byte + description size + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
+    // note: encoding byte + image format + picture type byte + description size + 1 or 2 null bytes (depends on encoding)                                                                                       + data size
+    const auto requiredBufferSize = 1 + 3 + 1 + descriptionSize
+        + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
+        + picture.dataSize();
+    if (requiredBufferSize > numeric_limits<uint32>::max()) {
+        throw InvalidDataException();
+    }
+    buffer = make_unique<char[]>(bufferSize = static_cast<uint32>(requiredBufferSize));
     char *offset = buffer.get();
+
     // write encoding byte
     *offset = static_cast<char>(makeTextEncodingByte(descriptionEncoding));
+
     // write mime type
     const char *imageFormat;
     if (picture.mimeType() == "image/jpeg") {
@@ -1086,8 +1096,10 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
         imageFormat = "UND";
     }
     strncpy(++offset, imageFormat, 3);
+
     // write picture type
     *(offset += 3) = static_cast<char>(typeInfo);
+
     // write description
     offset += makeBom(offset + 1, descriptionEncoding);
     if (convertedDescription.first) {
@@ -1099,6 +1111,7 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     if (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;
     }
+
     // write actual data
     copy(picture.dataPointer(), picture.dataPointer() + picture.dataSize(), ++offset);
 }
