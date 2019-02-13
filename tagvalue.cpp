@@ -212,7 +212,7 @@ int32 TagValue::toInteger() const
 int TagValue::toStandardGenreIndex() const
 {
     if (isEmpty()) {
-        return 0;
+        return Id3Genres::emptyGenreIndex();
     }
     int index = 0;
     switch (m_type) {
@@ -470,13 +470,17 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
     case TagDataType::PositionInSet:
         result = toPositionInSet().toString();
         break;
-    case TagDataType::StandardGenreIndex:
-        if (const char *genreName = Id3Genres::stringFromIndex(toInteger())) {
+    case TagDataType::StandardGenreIndex: {
+        const auto genreIndex = toInteger();
+        if (Id3Genres::isEmptyGenre(genreIndex)) {
+            result.clear();
+        } else if (const char *genreName = Id3Genres::stringFromIndex(genreIndex)) {
             result.assign(genreName);
-            break;
         } else {
             throw ConversionException("No string representation for the assigned standard genre index available.");
         }
+        break;
+    }
     case TagDataType::TimeSpan:
         result = toTimeSpan().toString();
         break;
@@ -547,12 +551,17 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
     case TagDataType::PositionInSet:
         regularStrRes = toPositionInSet().toString();
         break;
-    case TagDataType::StandardGenreIndex:
-        if (const char *const genreName = Id3Genres::stringFromIndex(toInteger())) {
+    case TagDataType::StandardGenreIndex: {
+        const auto genreIndex = toInteger();
+        if (Id3Genres::isEmptyGenre(genreIndex)) {
+            regularStrRes.clear();
+        } else if (const char *genreName = Id3Genres::stringFromIndex(genreIndex)) {
             regularStrRes.assign(genreName);
-            break;
+        } else {
+            throw ConversionException("No string representation for the assigned standard genre index available.");
         }
-        throw ConversionException("No string representation for the assigned standard genre index available.");
+        break;
+    }
     case TagDataType::TimeSpan:
         regularStrRes = toTimeSpan().toString();
         break;

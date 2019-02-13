@@ -11,6 +11,7 @@ namespace TagParser {
 
 /*!
  * \brief Returns all known genre names.
+ * \todo Fix const-correctness in v9.
  */
 const char **Id3Genres::genreNames()
 {
@@ -37,9 +38,13 @@ const char **Id3Genres::genreNames()
 
 /*!
  * \brief Returns the numerical denotation of the specified \a genre or -1 if \a genre is unknown.
+ * \remarks If \a string is empty, the non-standard Id3Genres::emptyGenreIndex() is returned.
  */
 int Id3Genres::indexFromString(const string &genre)
 {
+    if (genre.empty()) {
+        return emptyGenreIndex();
+    }
     const char *const *ptr = genreNames();
     for (int index = 0; index < genreCount(); ++ptr, ++index) {
         if (genre == *ptr) {
