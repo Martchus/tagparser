@@ -430,23 +430,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
 {
     const string context("making " % m_frame.idToString() + " frame");
 
-    // get non-empty, assigned values
-    vector<const TagValue *> values;
-    values.reserve(1 + frame.additionalValues().size());
-    if (!frame.value().isEmpty()) {
-        values.emplace_back(&frame.value());
-    }
-    for (const auto &value : frame.additionalValues()) {
-        if (!value.isEmpty()) {
-            values.emplace_back(&value);
-        }
-    }
-
-    // validate assigned data
-    if (values.empty()) {
-        diag.emplace_back(DiagLevel::Critical, "Cannot make an empty frame.", context);
-        throw InvalidDataException();
-    }
+    // validate frame's configuration
     if (m_frame.isEncrypted()) {
         diag.emplace_back(DiagLevel::Critical, "Cannot make an encrypted frame (isn't supported by this tagging library).", context);
         throw InvalidDataException();
@@ -461,6 +445,25 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
     if (version < 3 && (m_frame.flag() || m_frame.group())) {
         diag.emplace_back(DiagLevel::Warning,
             "The existing flag and group information is not supported by the version of ID3v2 and will be ignored/discarted.", context);
+    }
+
+    // get non-empty, assigned values
+    vector<const TagValue *> values;
+    values.reserve(1 + frame.additionalValues().size());
+    if (!frame.value().isEmpty()) {
+        values.emplace_back(&frame.value());
+    }
+    for (const auto &value : frame.additionalValues()) {
+        if (!value.isEmpty()) {
+            values.emplace_back(&value);
+        }
+    }
+
+    // validate assigned values
+    if (values.empty()) {
+        throw NoDataProvidedException();
+        // note: This is not really an issue because in the case we're not provided with any value here just means that the field
+        //       is supposed to be removed. So don't add any diagnostic messages here.
     }
     const bool isTextFrame = Id3v2FrameIds::isTextFrame(m_frameId);
     if (values.size() != 1) {

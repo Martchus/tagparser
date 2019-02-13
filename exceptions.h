@@ -29,6 +29,13 @@ public:
     virtual const char *what() const USE_NOTHROW;
 };
 
+class TAG_PARSER_EXPORT NoDataProvidedException : public Failure {
+public:
+    NoDataProvidedException() USE_NOTHROW;
+    virtual ~NoDataProvidedException() USE_NOTHROW;
+    virtual const char *what() const USE_NOTHROW;
+};
+
 class TAG_PARSER_EXPORT TruncatedDataException : public InvalidDataException {
 public:
     TruncatedDataException() USE_NOTHROW;

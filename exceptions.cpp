@@ -35,7 +35,8 @@ const char *Failure::what() const USE_NOTHROW
 /*!
  * \class TagParser::NoDataFoundException
  * \brief The exception that is thrown when the data to be parsed holds no
- *        parsable information.
+ *        parsable information (e.g. relevant section in the file does not exist or
+ *        has size of zero).
  */
 
 /*!
@@ -86,6 +87,34 @@ InvalidDataException::~InvalidDataException() USE_NOTHROW
 const char *InvalidDataException::what() const USE_NOTHROW
 {
     return "data to be parsed or to be made seems to be invalid";
+}
+
+/*!
+ * \class TagParser::NoDataException
+ * \brief The exception that is thrown when the value to be written is empty but that
+ *        is not allowed in that context (e.g. an empty ID3v2 frame is not allowed).
+ */
+
+/*!
+ * \brief Constructs a new exception.
+ */
+NoDataProvidedException::NoDataProvidedException() USE_NOTHROW
+{
+}
+
+/*!
+ * \brief Destroys the exception.
+ */
+NoDataProvidedException::~NoDataProvidedException() USE_NOTHROW
+{
+}
+
+/*!
+ * \brief Returns a C-style character string describing the cause of the exception.
+ */
+const char *NoDataProvidedException::what() const USE_NOTHROW
+{
+    return "can not write empty value";
 }
 
 /*!
