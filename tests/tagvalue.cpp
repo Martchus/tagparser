@@ -84,8 +84,10 @@ void TagValueTests::testInteger()
     CPPUNIT_ASSERT_EQUAL("42"s, integer.toString());
     integer.assignInteger(2);
     CPPUNIT_ASSERT_EQUAL("Country"s, string(Id3Genres::stringFromIndex(integer.toStandardGenreIndex())));
-    integer.assignInteger(255);
-    CPPUNIT_ASSERT_EQUAL(string(), string(Id3Genres::stringFromIndex(integer.toStandardGenreIndex())));
+    integer.assignInteger(Id3Genres::emptyGenreIndex());
+    CPPUNIT_ASSERT_EQUAL(Id3Genres::emptyGenreIndex(), integer.toStandardGenreIndex());
+    integer.clearData();
+    CPPUNIT_ASSERT_EQUAL(Id3Genres::emptyGenreIndex(), integer.toStandardGenreIndex());
 
     // negative number
     integer.assignInteger(-25);

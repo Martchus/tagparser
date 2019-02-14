@@ -239,7 +239,7 @@ int TagValue::toStandardGenreIndex() const
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to genre index."));
     }
-    if (!Id3Genres::isIndexSupported(index)) {
+    if (!Id3Genres::isEmptyGenre(index) && !Id3Genres::isIndexSupported(index)) {
         throw ConversionException("The assigned number is not a valid standard genre index.");
     }
     return index;
