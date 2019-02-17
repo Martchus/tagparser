@@ -10,58 +10,58 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT Failure : public std::exception {
 public:
-    Failure() USE_NOTHROW;
-    virtual ~Failure() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    Failure() noexcept;
+    virtual ~Failure() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT NoDataFoundException : public Failure {
 public:
-    NoDataFoundException() USE_NOTHROW;
-    virtual ~NoDataFoundException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    NoDataFoundException() noexcept;
+    virtual ~NoDataFoundException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT InvalidDataException : public Failure {
 public:
-    InvalidDataException() USE_NOTHROW;
-    virtual ~InvalidDataException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    InvalidDataException() noexcept;
+    virtual ~InvalidDataException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT NoDataProvidedException : public Failure {
 public:
-    NoDataProvidedException() USE_NOTHROW;
-    virtual ~NoDataProvidedException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    NoDataProvidedException() noexcept;
+    virtual ~NoDataProvidedException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT TruncatedDataException : public InvalidDataException {
 public:
-    TruncatedDataException() USE_NOTHROW;
-    virtual ~TruncatedDataException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    TruncatedDataException() noexcept;
+    virtual ~TruncatedDataException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT OperationAbortedException : public Failure {
 public:
-    OperationAbortedException() USE_NOTHROW;
-    virtual ~OperationAbortedException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    OperationAbortedException() noexcept;
+    virtual ~OperationAbortedException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT VersionNotSupportedException : public Failure {
 public:
-    VersionNotSupportedException() USE_NOTHROW;
-    virtual ~VersionNotSupportedException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    VersionNotSupportedException() noexcept;
+    virtual ~VersionNotSupportedException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 class TAG_PARSER_EXPORT NotImplementedException : public Failure {
 public:
-    NotImplementedException() USE_NOTHROW;
-    virtual ~NotImplementedException() USE_NOTHROW;
-    virtual const char *what() const USE_NOTHROW;
+    NotImplementedException() noexcept;
+    virtual ~NotImplementedException() noexcept;
+    virtual const char *what() const noexcept;
 };
 
 /*!

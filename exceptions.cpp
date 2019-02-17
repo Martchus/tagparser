@@ -13,21 +13,21 @@ namespace TagParser {
 /*!
  * \brief Constructs a new exception.
  */
-Failure::Failure() USE_NOTHROW
+Failure::Failure() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-Failure::~Failure() USE_NOTHROW
+Failure::~Failure() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *Failure::what() const USE_NOTHROW
+const char *Failure::what() const noexcept
 {
     return "unable to parse given data";
 }
@@ -42,21 +42,21 @@ const char *Failure::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-NoDataFoundException::NoDataFoundException() USE_NOTHROW
+NoDataFoundException::NoDataFoundException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-NoDataFoundException::~NoDataFoundException() USE_NOTHROW
+NoDataFoundException::~NoDataFoundException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *NoDataFoundException::what() const USE_NOTHROW
+const char *NoDataFoundException::what() const noexcept
 {
     return "no parsable data has been found";
 }
@@ -70,21 +70,21 @@ const char *NoDataFoundException::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-InvalidDataException::InvalidDataException() USE_NOTHROW
+InvalidDataException::InvalidDataException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-InvalidDataException::~InvalidDataException() USE_NOTHROW
+InvalidDataException::~InvalidDataException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *InvalidDataException::what() const USE_NOTHROW
+const char *InvalidDataException::what() const noexcept
 {
     return "data to be parsed or to be made seems to be invalid";
 }
@@ -98,21 +98,21 @@ const char *InvalidDataException::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-NoDataProvidedException::NoDataProvidedException() USE_NOTHROW
+NoDataProvidedException::NoDataProvidedException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-NoDataProvidedException::~NoDataProvidedException() USE_NOTHROW
+NoDataProvidedException::~NoDataProvidedException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *NoDataProvidedException::what() const USE_NOTHROW
+const char *NoDataProvidedException::what() const noexcept
 {
     return "can not write empty value";
 }
@@ -126,21 +126,21 @@ const char *NoDataProvidedException::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-TruncatedDataException::TruncatedDataException() USE_NOTHROW
+TruncatedDataException::TruncatedDataException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-TruncatedDataException::~TruncatedDataException() USE_NOTHROW
+TruncatedDataException::~TruncatedDataException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *TruncatedDataException::what() const USE_NOTHROW
+const char *TruncatedDataException::what() const noexcept
 {
     return "data to be parsed seems to be truncated";
 }
@@ -154,21 +154,21 @@ const char *TruncatedDataException::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-OperationAbortedException::OperationAbortedException() USE_NOTHROW
+OperationAbortedException::OperationAbortedException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-OperationAbortedException::~OperationAbortedException() USE_NOTHROW
+OperationAbortedException::~OperationAbortedException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *OperationAbortedException::what() const USE_NOTHROW
+const char *OperationAbortedException::what() const noexcept
 {
     return "operation has been aborted";
 }
@@ -182,21 +182,21 @@ const char *OperationAbortedException::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-VersionNotSupportedException::VersionNotSupportedException() USE_NOTHROW
+VersionNotSupportedException::VersionNotSupportedException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-VersionNotSupportedException::~VersionNotSupportedException() USE_NOTHROW
+VersionNotSupportedException::~VersionNotSupportedException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *VersionNotSupportedException::what() const USE_NOTHROW
+const char *VersionNotSupportedException::what() const noexcept
 {
     return "the version of the data to be parsed is not supported";
 }
@@ -210,21 +210,21 @@ const char *VersionNotSupportedException::what() const USE_NOTHROW
 /*!
  * \brief Constructs a new exception.
  */
-NotImplementedException::NotImplementedException() USE_NOTHROW
+NotImplementedException::NotImplementedException() noexcept
 {
 }
 
 /*!
  * \brief Destroys the exception.
  */
-NotImplementedException::~NotImplementedException() USE_NOTHROW
+NotImplementedException::~NotImplementedException() noexcept
 {
 }
 
 /*!
  * \brief Returns a C-style character string describing the cause of the exception.
  */
-const char *NotImplementedException::what() const USE_NOTHROW
+const char *NotImplementedException::what() const noexcept
 {
     return "the operation has not been implemented yet";
 }
