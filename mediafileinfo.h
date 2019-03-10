@@ -86,6 +86,7 @@ public:
     std::vector<AbstractTrack *> tracks() const;
     bool hasTracksOfType(TagParser::MediaType type) const;
     ChronoUtilities::TimeSpan duration() const;
+    double overallAverageBitrate() const;
     std::unordered_set<std::string> availableLanguages(TagParser::MediaType type = TagParser::MediaType::Audio) const;
     std::string technicalSummary() const;
     bool areTracksSupported() const;

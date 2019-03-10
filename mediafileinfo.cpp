@@ -853,7 +853,7 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
 }
 
 /*!
- * \brief Returns the overall duration of the file is known; otherwise
+ * \brief Returns the overall duration of the file if known; otherwise
  *        returns a TimeSpan with zero ticks.
  *
  * parseTracks() needs to be called before. Otherwise this
@@ -869,6 +869,24 @@ ChronoUtilities::TimeSpan MediaFileInfo::duration() const
         return m_singleTrack->duration();
     }
     return TimeSpan();
+}
+
+/*!
+ * \brief Returns the overall average bitrate in kbit/s of the file if known; otherwise
+ *        returns 0.0.
+ *
+ * parseTracks() needs to be called before. Otherwise this
+ * method always returns false.
+ *
+ * \sa parseTracks()
+ */
+double MediaFileInfo::overallAverageBitrate() const
+{
+    const auto duration = this->duration();
+    if (duration.isNull()) {
+        return 0.0;
+    }
+    return 0.0078125 * size() / duration.totalSeconds();
 }
 
 /*!
