@@ -291,6 +291,8 @@ MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
     case PrivateOgg:
     case PrivateOgg2:
         return GeneralMediaFormat::Vorbis;
+    case PrivateVobSub:
+        return GeneralMediaFormat::VobSub;
     case PrivateQcelp:
         return GeneralMediaFormat::Qcelp;
     default:

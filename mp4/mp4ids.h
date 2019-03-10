@@ -474,7 +474,8 @@ enum KnownValue : byte {
     PrivateDts, /**< DTS */
     PrivateOgg = 0xDD, /**< Ogg */
     PrivateOgg2, /**< Ogg */
-    PrivateQcelp = 0xE1 /**< QCELP */
+    PrivateVobSub = 0xE0, /**< VobSub */
+    PrivateQcelp = 0xE1, /**< QCELP */
 };
 
 TAG_PARSER_EXPORT MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
