@@ -32,7 +32,7 @@ public:
 
     std::iostream &stream();
     void setStream(std::iostream &stream);
-    uint64 startOffset() const;
+    std::uint64_t startOffset() const;
     IoUtilities::BinaryReader &reader();
     IoUtilities::BinaryWriter &writer();
 
@@ -70,11 +70,11 @@ public:
     virtual AbstractAttachment *attachment(std::size_t index);
     virtual std::size_t attachmentCount() const;
 
-    uint64 version() const;
-    uint64 readVersion() const;
+    std::uint64_t version() const;
+    std::uint64_t readVersion() const;
     const std::string &documentType() const;
-    uint64 doctypeVersion() const;
-    uint64 doctypeReadVersion() const;
+    std::uint64_t doctypeVersion() const;
+    std::uint64_t doctypeReadVersion() const;
     const std::vector<std::string> &titles() const;
     void setTitle(const std::string &title, std::size_t segmentIndex = 0);
     virtual bool supportsTitle() const;
@@ -82,12 +82,12 @@ public:
     ChronoUtilities::TimeSpan duration() const;
     ChronoUtilities::DateTime creationTime() const;
     ChronoUtilities::DateTime modificationTime() const;
-    uint32 timeScale() const;
+    std::uint32_t timeScale() const;
 
     virtual void reset();
 
 protected:
-    AbstractContainer(std::iostream &stream, uint64 startOffset);
+    AbstractContainer(std::iostream &stream, std::uint64_t startOffset);
 
     virtual void internalParseHeader(Diagnostics &diag);
     virtual void internalParseTags(Diagnostics &diag);
@@ -96,16 +96,16 @@ protected:
     virtual void internalParseAttachments(Diagnostics &diag);
     virtual void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
 
-    uint64 m_version;
-    uint64 m_readVersion;
+    std::uint64_t m_version;
+    std::uint64_t m_readVersion;
     std::string m_doctype;
-    uint64 m_doctypeVersion;
-    uint64 m_doctypeReadVersion;
+    std::uint64_t m_doctypeVersion;
+    std::uint64_t m_doctypeReadVersion;
     std::vector<std::string> m_titles;
     ChronoUtilities::TimeSpan m_duration;
     ChronoUtilities::DateTime m_creationTime;
     ChronoUtilities::DateTime m_modificationTime;
-    uint32 m_timeScale;
+    std::uint32_t m_timeScale;
 
     bool m_headerParsed;
     bool m_tagsParsed;
@@ -115,7 +115,7 @@ protected:
     bool m_attachmentsParsed;
 
 private:
-    uint64 m_startOffset;
+    std::uint64_t m_startOffset;
     std::iostream *m_stream;
     IoUtilities::BinaryReader m_reader;
     IoUtilities::BinaryWriter m_writer;
@@ -142,7 +142,7 @@ inline void AbstractContainer::setStream(std::iostream &stream)
 /*!
  * \brief Returns the start offset in the related stream.
  */
-inline uint64 AbstractContainer::startOffset() const
+inline std::uint64_t AbstractContainer::startOffset() const
 {
     return m_startOffset;
 }
@@ -206,7 +206,7 @@ inline bool AbstractContainer::areTracksParsed() const
 /*!
  * \brief Returns the version if known; otherwise returns 0.
  */
-inline uint64 AbstractContainer::version() const
+inline std::uint64_t AbstractContainer::version() const
 {
     return m_version;
 }
@@ -216,7 +216,7 @@ inline uint64 AbstractContainer::version() const
  *
  * This is the minimum version a parser has to support to read the file.
  */
-inline uint64 AbstractContainer::readVersion() const
+inline std::uint64_t AbstractContainer::readVersion() const
 {
     return m_readVersion;
 }
@@ -232,7 +232,7 @@ inline const std::string &AbstractContainer::documentType() const
 /*!
  * \brief Returns the document type version if known; otherwise returns 0.
  */
-inline uint64 AbstractContainer::doctypeVersion() const
+inline std::uint64_t AbstractContainer::doctypeVersion() const
 {
     return m_doctypeVersion;
 }
@@ -242,7 +242,7 @@ inline uint64 AbstractContainer::doctypeVersion() const
  *
  * This is the minimum version an interpreter has to support to read the file.
  */
-inline uint64 AbstractContainer::doctypeReadVersion() const
+inline std::uint64_t AbstractContainer::doctypeReadVersion() const
 {
     return m_doctypeReadVersion;
 }
@@ -297,7 +297,7 @@ inline ChronoUtilities::DateTime AbstractContainer::modificationTime() const
 /*!
  * \brief Returns the time scale of the file if known; otherwise returns 0.
  */
-inline uint32 AbstractContainer::timeScale() const
+inline std::uint32_t AbstractContainer::timeScale() const
 {
     return m_timeScale;
 }

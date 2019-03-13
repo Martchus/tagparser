@@ -62,7 +62,7 @@ void BasicFileInfo::reopen(bool readOnly)
     m_file.open(startsWith(m_path, "file:/") ? m_path.data() + 6 : m_path.data(),
         (m_readOnly = readOnly) ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
     m_file.seekg(0, ios_base::end);
-    m_size = static_cast<uint64>(m_file.tellg());
+    m_size = static_cast<std::uint64_t>(m_file.tellg());
     m_file.seekg(0, ios_base::beg);
 }
 

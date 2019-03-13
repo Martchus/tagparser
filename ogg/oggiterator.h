@@ -10,13 +10,13 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT OggIterator {
 public:
-    OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize);
+    OggIterator(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize);
 
-    void clear(std::istream &stream, uint64 startOffset, uint64 streamSize);
+    void clear(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize);
     std::istream &stream();
     void setStream(std::istream &stream);
-    uint64 startOffset() const;
-    uint64 streamSize() const;
+    std::uint64_t startOffset() const;
+    std::uint64_t streamSize() const;
     void reset();
     void nextPage();
     void nextSegment();
@@ -24,23 +24,23 @@ public:
     void previousSegment();
     const std::vector<OggPage> &pages() const;
     const OggPage &currentPage() const;
-    uint64 currentPageOffset() const;
+    std::uint64_t currentPageOffset() const;
     std::vector<OggPage>::size_type currentPageIndex() const;
     void setPageIndex(std::vector<OggPage>::size_type index);
-    void setSegmentIndex(std::vector<uint32>::size_type index);
-    std::vector<uint32>::size_type currentSegmentIndex() const;
-    uint64 currentSegmentOffset() const;
-    uint64 currentCharacterOffset() const;
-    uint64 tellg() const;
-    uint32 currentSegmentSize() const;
-    void setFilter(uint32 streamSerialId);
+    void setSegmentIndex(std::vector<std::uint32_t>::size_type index);
+    std::vector<std::uint32_t>::size_type currentSegmentIndex() const;
+    std::uint64_t currentSegmentOffset() const;
+    std::uint64_t currentCharacterOffset() const;
+    std::uint64_t tellg() const;
+    std::uint32_t currentSegmentSize() const;
+    void setFilter(std::uint32_t streamSerialId);
     void removeFilter();
     bool isLastPageFetched() const;
     void read(char *buffer, std::size_t count);
     size_t readAll(char *buffer, std::size_t max);
     void ignore(std::size_t count = 1);
     bool bytesRemaining(std::size_t atLeast) const;
-    bool resyncAt(uint64 offset);
+    bool resyncAt(std::uint64_t offset);
 
     operator bool() const;
     OggIterator &operator++();
@@ -53,21 +53,21 @@ private:
     bool matchesFilter(const OggPage &page);
 
     std::istream *m_stream;
-    uint64 m_startOffset;
-    uint64 m_streamSize;
+    std::uint64_t m_startOffset;
+    std::uint64_t m_streamSize;
     std::vector<OggPage> m_pages;
     std::vector<OggPage>::size_type m_page;
-    std::vector<uint32>::size_type m_segment;
-    uint64 m_offset;
-    uint32 m_bytesRead;
+    std::vector<std::uint32_t>::size_type m_segment;
+    std::uint64_t m_offset;
+    std::uint32_t m_bytesRead;
     bool m_hasIdFilter;
-    uint32 m_idFilter;
+    std::uint32_t m_idFilter;
 };
 
 /*!
  * \brief Constructs a new iterator for the specified \a stream of \a streamSize bytes at the specified \a startOffset.
  */
-inline OggIterator::OggIterator(std::istream &stream, uint64 startOffset, uint64 streamSize)
+inline OggIterator::OggIterator(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize)
     : m_stream(&stream)
     , m_startOffset(startOffset)
     , m_streamSize(streamSize)
@@ -103,7 +103,7 @@ inline void OggIterator::setStream(std::istream &stream)
 /*!
  * \brief Returns the start offset (which has been specified when constructing the iterator).
  */
-inline uint64 OggIterator::startOffset() const
+inline std::uint64_t OggIterator::startOffset() const
 {
     return m_startOffset;
 }
@@ -111,7 +111,7 @@ inline uint64 OggIterator::startOffset() const
 /*!
  * \brief Returns the stream size (which has been specified when constructing the iterator).
  */
-inline uint64 OggIterator::streamSize() const
+inline std::uint64_t OggIterator::streamSize() const
 {
     return m_streamSize;
 }
@@ -137,7 +137,7 @@ inline const OggPage &OggIterator::currentPage() const
  * \brief Returns the start offset of the current OGG page.
  * \remarks Calling this method when the iterator is invalid causes undefined behaviour.
  */
-inline uint64 OggIterator::currentPageOffset() const
+inline std::uint64_t OggIterator::currentPageOffset() const
 {
     return m_pages[m_page].startOffset();
 }
@@ -181,7 +181,7 @@ inline void OggIterator::setPageIndex(std::vector<OggPage>::size_type index)
  *
  * This method should never be called with an \a index out of range (which is defined by the number of segments in the current page), since this causes undefined behaviour.
  */
-inline void OggIterator::setSegmentIndex(std::vector<uint32>::size_type index)
+inline void OggIterator::setSegmentIndex(std::vector<std::uint32_t>::size_type index)
 {
     const OggPage &page = m_pages[m_page];
     m_offset = page.dataOffset(m_segment = index);
@@ -190,7 +190,7 @@ inline void OggIterator::setSegmentIndex(std::vector<uint32>::size_type index)
 /*!
  * \brief Returns the index of the current segment (in the current page) if the iterator is valid; otherwise an undefined index is returned.
  */
-inline std::vector<uint32>::size_type OggIterator::currentSegmentIndex() const
+inline std::vector<std::uint32_t>::size_type OggIterator::currentSegmentIndex() const
 {
     return m_segment;
 }
@@ -199,7 +199,7 @@ inline std::vector<uint32>::size_type OggIterator::currentSegmentIndex() const
  * \brief Returns the start offset of the current segment in the input stream if the iterator is valid; otherwise an undefined offset is returned.
  * \sa currentCharacterOffset()
  */
-inline uint64 OggIterator::currentSegmentOffset() const
+inline std::uint64_t OggIterator::currentSegmentOffset() const
 {
     return m_offset;
 }
@@ -208,7 +208,7 @@ inline uint64 OggIterator::currentSegmentOffset() const
  * \brief Returns the offset of the current character in the input stream if the iterator is valid; otherwise an undefined offset is returned.
  * \sa currentSegmentOffset()
  */
-inline uint64 OggIterator::currentCharacterOffset() const
+inline std::uint64_t OggIterator::currentCharacterOffset() const
 {
     return m_offset + m_bytesRead;
 }
@@ -216,7 +216,7 @@ inline uint64 OggIterator::currentCharacterOffset() const
 /*!
  * \brief Same as currentCharacterOffset(); only provided for compliance with std::istream.
  */
-inline uint64 OggIterator::tellg() const
+inline std::uint64_t OggIterator::tellg() const
 {
     return currentCharacterOffset();
 }
@@ -226,7 +226,7 @@ inline uint64 OggIterator::tellg() const
  *
  * This method should never be called on an invalid iterator, since this causes undefined behaviour.
  */
-inline uint32 OggIterator::currentSegmentSize() const
+inline std::uint32_t OggIterator::currentSegmentSize() const
 {
     return m_pages[m_page].segmentSizes()[m_segment];
 }
@@ -239,7 +239,7 @@ inline uint32 OggIterator::currentSegmentSize() const
  *
  * \sa removeFilter()
  */
-inline void OggIterator::setFilter(uint32 streamSerialId)
+inline void OggIterator::setFilter(std::uint32_t streamSerialId)
 {
     m_hasIdFilter = true;
     m_idFilter = streamSerialId;

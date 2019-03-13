@@ -3,7 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 namespace IoUtilities {
 class BinaryReader;
@@ -16,17 +16,17 @@ class Diagnostics;
 
 struct TAG_PARSER_EXPORT Av1Configuration {
     Av1Configuration();
-    uint64 markerAndVersion;
-    uint64 profileAndLevel;
-    byte tier;
-    byte highBitdepth;
-    byte twelveBit;
-    byte monochrome;
-    byte chromaSubsamplingX;
-    byte chromaSubsamplingY;
-    uint16 chromaSamplePosition;
+    std::uint64_t markerAndVersion;
+    std::uint64_t profileAndLevel;
+    std::uint8_t tier;
+    std::uint8_t highBitdepth;
+    std::uint8_t twelveBit;
+    std::uint8_t monochrome;
+    std::uint8_t chromaSubsamplingX;
+    std::uint8_t chromaSubsamplingY;
+    std::uint16_t chromaSamplePosition;
 
-    void parse(IoUtilities::BinaryReader &reader, uint64 maxSize, Diagnostics &diag);
+    void parse(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
 };
 
 /*!

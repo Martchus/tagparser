@@ -4,46 +4,47 @@
 // NOTE: The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
 
 #include <c++utilities/application/global.h>
-#include <c++utilities/conversion/types.h>
+
+#include <cstdint>
 
 namespace TagParser {
 
 /// \cond
 
 struct LIB_EXPORT AacHcb {
-    byte offset;
-    byte extraBits;
+    std::uint8_t offset;
+    std::uint8_t extraBits;
 };
 
 struct LIB_EXPORT AacHcb2Pair {
-    byte bits;
-    sbyte x;
-    sbyte y;
+    std::uint8_t bits;
+    std::int8_t x;
+    std::int8_t y;
 };
 
 struct LIB_EXPORT AacHcb2Quad {
-    byte bits;
-    sbyte x;
-    sbyte y;
-    sbyte v;
-    sbyte w;
+    std::uint8_t bits;
+    std::int8_t x;
+    std::int8_t y;
+    std::int8_t v;
+    std::int8_t w;
 };
 
 struct LIB_EXPORT AacHcbBinPair {
-    byte isLeaf;
-    sbyte data[2];
+    std::uint8_t isLeaf;
+    std::int8_t data[2];
 };
 
 struct LIB_EXPORT AacHcbBinQuad {
-    byte isLeaf;
-    sbyte data[4];
+    std::uint8_t isLeaf;
+    std::int8_t data[4];
 };
 
 extern const AacHcb *const aacHcbTable[];
 extern const AacHcb2Pair *const aacHcb2PairTable[];
 extern const AacHcb2Quad *const aacHcb2QuadTable[];
 extern const AacHcbBinPair *const aacHcbBinTable[];
-extern const byte aacHcbN[];
+extern const std::uint8_t aacHcbN[];
 extern const int aacHcb2QuadTableSize[];
 extern const int aacHcb2PairTableSize[];
 extern const int aacHcbBinTableSize[];
@@ -66,18 +67,18 @@ extern const AacHcb aacHcb10Step1[];
 extern const AacHcb2Pair aacHcb10Step2[];
 extern const AacHcb aacHcb11Step1[];
 extern const AacHcb2Pair aacHcb11Step2[];
-extern const byte aacHcbSf[][2];
+extern const std::uint8_t aacHcbSf[][2];
 
-extern const sbyte tHuffmanEnv15dB[120][2];
-extern const sbyte fHuffmanEnv15dB[120][2];
-extern const sbyte tHuffmanEnvBal15dB[48][2];
-extern const sbyte fHuffmanEnvBal15dB[48][2];
-extern const sbyte tHuffmanEnv30dB[62][2];
-extern const sbyte fHuffmanEnv30dB[62][2];
-extern const sbyte tHuffmanEnvBal30dB[24][2];
-extern const sbyte fHuffmanEnvBal30dB[24][2];
-extern const sbyte tHuffmanNoise30dB[62][2];
-extern const sbyte tHuffmanNoiseBal30dB[24][2];
+extern const std::int8_t tHuffmanEnv15dB[120][2];
+extern const std::int8_t fHuffmanEnv15dB[120][2];
+extern const std::int8_t tHuffmanEnvBal15dB[48][2];
+extern const std::int8_t fHuffmanEnvBal15dB[48][2];
+extern const std::int8_t tHuffmanEnv30dB[62][2];
+extern const std::int8_t fHuffmanEnv30dB[62][2];
+extern const std::int8_t tHuffmanEnvBal30dB[24][2];
+extern const std::int8_t fHuffmanEnvBal30dB[24][2];
+extern const std::int8_t tHuffmanNoise30dB[62][2];
+extern const std::int8_t tHuffmanNoiseBal30dB[24][2];
 
 /// \endcond
 

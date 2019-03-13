@@ -227,7 +227,7 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
     char buff[8];
     // write header of "SimpleTag" element
     writer.writeUInt16BE(MatroskaIds::SimpleTag);
-    byte sizeDenotationLen = EbmlElement::makeSizeDenotation(m_simpleTagSize, buff);
+    std::uint8_t sizeDenotationLen = EbmlElement::makeSizeDenotation(m_simpleTagSize, buff);
     stream.write(buff, sizeDenotationLen);
     // write header of "TagName" element
     writer.writeUInt16BE(MatroskaIds::TagName);

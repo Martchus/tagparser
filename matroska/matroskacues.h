@@ -10,53 +10,53 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT MatroskaOffsetStates {
 public:
-    constexpr MatroskaOffsetStates(uint64 initialValue);
-    constexpr uint64 currentValue() const;
-    void update(uint64 newValue);
-    constexpr uint64 initialValue() const;
+    constexpr MatroskaOffsetStates(std::uint64_t initialValue);
+    constexpr std::uint64_t currentValue() const;
+    void update(std::uint64_t newValue);
+    constexpr std::uint64_t initialValue() const;
 
 private:
-    uint64 m_initialValue;
-    uint64 m_currentValue;
+    std::uint64_t m_initialValue;
+    std::uint64_t m_currentValue;
 };
 
-constexpr MatroskaOffsetStates::MatroskaOffsetStates(uint64 initialValue)
+constexpr MatroskaOffsetStates::MatroskaOffsetStates(std::uint64_t initialValue)
     : m_initialValue(initialValue)
     , m_currentValue(initialValue)
 {
 }
 
-constexpr uint64 MatroskaOffsetStates::currentValue() const
+constexpr std::uint64_t MatroskaOffsetStates::currentValue() const
 {
     return m_currentValue;
 }
 
-inline void MatroskaOffsetStates::update(uint64 newValue)
+inline void MatroskaOffsetStates::update(std::uint64_t newValue)
 {
     m_currentValue = newValue;
 }
 
-constexpr uint64 MatroskaOffsetStates::initialValue() const
+constexpr std::uint64_t MatroskaOffsetStates::initialValue() const
 {
     return m_initialValue;
 }
 
 class TAG_PARSER_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates {
 public:
-    constexpr MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue);
-    constexpr uint64 referenceOffset() const;
+    constexpr MatroskaReferenceOffsetPair(std::uint64_t referenceOffset, std::uint64_t initialValue);
+    constexpr std::uint64_t referenceOffset() const;
 
 private:
-    uint64 m_referenceOffset;
+    std::uint64_t m_referenceOffset;
 };
 
-constexpr MatroskaReferenceOffsetPair::MatroskaReferenceOffsetPair(uint64 referenceOffset, uint64 initialValue)
+constexpr MatroskaReferenceOffsetPair::MatroskaReferenceOffsetPair(std::uint64_t referenceOffset, std::uint64_t initialValue)
     : MatroskaOffsetStates(initialValue)
     , m_referenceOffset(referenceOffset)
 {
 }
 
-constexpr uint64 MatroskaReferenceOffsetPair::referenceOffset() const
+constexpr std::uint64_t MatroskaReferenceOffsetPair::referenceOffset() const
 {
     return m_referenceOffset;
 }
@@ -66,11 +66,11 @@ public:
     MatroskaCuePositionUpdater();
 
     EbmlElement *cuesElement() const;
-    uint64 totalSize() const;
+    std::uint64_t totalSize() const;
 
     void parse(EbmlElement *cuesElement, Diagnostics &diag);
-    bool updateOffsets(uint64 originalOffset, uint64 newOffset);
-    bool updateRelativeOffsets(uint64 referenceOffset, uint64 originalRelativeOffset, uint64 newRelativeOffset);
+    bool updateOffsets(std::uint64_t originalOffset, std::uint64_t newOffset);
+    bool updateRelativeOffsets(std::uint64_t referenceOffset, std::uint64_t originalRelativeOffset, std::uint64_t newRelativeOffset);
     void make(std::ostream &stream, Diagnostics &diag);
     void clear();
 
@@ -80,7 +80,7 @@ private:
     EbmlElement *m_cuesElement;
     std::unordered_map<EbmlElement *, MatroskaOffsetStates> m_offsets;
     std::unordered_map<EbmlElement *, MatroskaReferenceOffsetPair> m_relativeOffsets;
-    std::unordered_map<EbmlElement *, uint64> m_sizes;
+    std::unordered_map<EbmlElement *, std::uint64_t> m_sizes;
 };
 
 /*!

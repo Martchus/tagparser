@@ -30,7 +30,7 @@ namespace TagParser {
  *
  * The stream of the \a mediaFileInfo instance is used as input stream.
  */
-FlacStream::FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset)
+FlacStream::FlacStream(MediaFileInfo &mediaFileInfo, std::uint64_t startOffset)
     : AbstractTrack(mediaFileInfo.stream(), startOffset)
     , m_mediaFileInfo(mediaFileInfo)
     , m_paddingSize(0)
@@ -159,7 +159,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag)
         // TODO: check first FLAC frame
     }
 
-    m_streamOffset = static_cast<uint32>(m_istream->tellg());
+    m_streamOffset = static_cast<std::uint32_t>(m_istream->tellg());
 }
 
 /*!
@@ -180,7 +180,7 @@ std::streamoff FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     CopyHelper<512> copy;
 
     // write signature
-    BE::getBytes(static_cast<uint32>(0x664C6143u), copy.buffer());
+    BE::getBytes(static_cast<std::uint32_t>(0x664C6143u), copy.buffer());
     outputStream.write(copy.buffer(), 4);
 
     std::streamoff lastStartOffset = -1;
@@ -236,12 +236,12 @@ std::streamoff FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     // write "METADATA_BLOCK_HEADER"
     const auto endOffset = outputStream.tellp();
     header.setType(FlacMetaDataBlockType::VorbisComment);
-    auto dataSize(static_cast<uint64>(endOffset) - static_cast<uint64>(lastStartOffset) - 4);
+    auto dataSize(static_cast<std::uint64_t>(endOffset) - static_cast<std::uint64_t>(lastStartOffset) - 4);
     if (dataSize > 0xFFFFFF) {
         dataSize = 0xFFFFFF;
         diag.emplace_back(DiagLevel::Critical, "Vorbis Comment is too big and will be truncated.", "write Vorbis Comment to FLAC stream");
     }
-    header.setDataSize(static_cast<uint32>(dataSize));
+    header.setDataSize(static_cast<std::uint32_t>(dataSize));
     header.setLast(!m_vorbisComment->hasField(coverId));
     outputStream.seekp(lastStartOffset);
     header.makeHeader(outputStream);
@@ -295,7 +295,7 @@ std::streamoff FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
  * \brief Writes padding of the specified \a size to the specified \a stream.
  * \remarks Size must be at least 4 bytes.
  */
-void FlacStream::makePadding(ostream &stream, uint32 size, bool isLast, Diagnostics &diag)
+void FlacStream::makePadding(ostream &stream, std::uint32_t size, bool isLast, Diagnostics &diag)
 {
     VAR_UNUSED(diag)
 

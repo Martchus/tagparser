@@ -3,8 +3,7 @@
 
 #include "./global.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <vector>
@@ -20,14 +19,14 @@ TAG_PARSER_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
 
 class TAG_PARSER_EXPORT TagTarget {
 public:
-    using IdType = uint64;
+    using IdType = std::uint64_t;
     using IdContainerType = std::vector<IdType>;
 
-    TagTarget(uint64 level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
+    TagTarget(std::uint64_t level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
         IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());
 
-    uint64 level() const;
-    void setLevel(uint64 level);
+    std::uint64_t level() const;
+    void setLevel(std::uint64_t level);
     const std::string &levelName() const;
     void setLevelName(const std::string &levelName);
     const IdContainerType &tracks() const;
@@ -40,12 +39,12 @@ public:
     IdContainerType &attachments();
     bool isEmpty() const;
     void clear();
-    std::string toString(const std::function<TagTargetLevel(uint64)> &tagTargetMapping) const;
+    std::string toString(const std::function<TagTargetLevel(std::uint64_t)> &tagTargetMapping) const;
     std::string toString(TagTargetLevel tagTargetLevel) const;
     bool operator==(const TagTarget &other) const;
 
 private:
-    uint64 m_level;
+    std::uint64_t m_level;
     std::string m_levelName;
     IdContainerType m_tracks;
     IdContainerType m_chapters;
@@ -57,7 +56,8 @@ private:
  * \brief Constructs a new TagTarget with the specified \a level, \a track, \a chapter,
  *        \a edition and \a attachment.
  */
-inline TagTarget::TagTarget(uint64 level, IdContainerType tracks, IdContainerType chapters, IdContainerType editions, IdContainerType attachments)
+inline TagTarget::TagTarget(
+    std::uint64_t level, IdContainerType tracks, IdContainerType chapters, IdContainerType editions, IdContainerType attachments)
     : m_level(level)
     , m_tracks(tracks)
     , m_chapters(chapters)
@@ -69,7 +69,7 @@ inline TagTarget::TagTarget(uint64 level, IdContainerType tracks, IdContainerTyp
 /*!
  * \brief Returns the level.
  */
-inline uint64 TagTarget::level() const
+inline std::uint64_t TagTarget::level() const
 {
     return m_level ? m_level : 50;
 }
@@ -77,7 +77,7 @@ inline uint64 TagTarget::level() const
 /*!
  * \brief Sets the level.
  */
-inline void TagTarget::setLevel(uint64 level)
+inline void TagTarget::setLevel(std::uint64_t level)
 {
     m_level = level;
 }
@@ -198,7 +198,7 @@ inline bool TagTarget::operator==(const TagTarget &other) const
  * \remarks Uses the specified \a tagTargetMapping function to map the assigned level()
  *          to a TagTargetLevel if no levelName() is assigned.
  */
-inline std::string TagTarget::toString(const std::function<TagTargetLevel(uint64)> &tagTargetMapping) const
+inline std::string TagTarget::toString(const std::function<TagTargetLevel(std::uint64_t)> &tagTargetMapping) const
 {
     return toString(tagTargetMapping ? tagTargetMapping(this->level()) : TagTargetLevel::Unspecified);
 }

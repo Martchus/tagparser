@@ -26,9 +26,9 @@ const AacHcbBinPair *const aacHcbBinTable[] = {
     nullptr, nullptr, nullptr, nullptr, nullptr, aacHcb5, nullptr, aacHcb7, nullptr, aacHcb9, nullptr, nullptr
 };
 
-const byte aacHcbN[] = { 0, 5, 5, 0, 5, 0, 5, 0, 5, 0, 6, 5 };
+const std::uint8_t aacHcbN[] = { 0, 5, 5, 0, 5, 0, 5, 0, 5, 0, 6, 5 };
 
-//const byte unsignedCb[] = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+//const std::uint8_t unsignedCb[] = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0,
 //  /* codebook 16 to 31 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 //};
 
@@ -2199,7 +2199,7 @@ const AacHcb2Pair aacHcb11Step2[] = {
     { 12, 15, 15 }
 };
 
-const byte aacHcbSf[][2] = {
+const std::uint8_t aacHcbSf[][2] = {
     { /*  0 */  1, 2 },
     { /*  1 */  60, 0 },
     { /*  2 */  1, 2 },
@@ -2443,7 +2443,7 @@ const byte aacHcbSf[][2] = {
     { /* 40 */   13, 0 }
 };
 
-const sbyte tHuffmanEnv15dB[120][2] = {
+const std::int8_t tHuffmanEnv15dB[120][2] = {
     {   1,   2 },    { -64, -65 },    {   3,   4 },    { -63, -66 },
     {   5,   6 },    { -62, -67 },    {   7,   8 },    { -61, -68 },
     {   9,  10 },    { -60, -69 },    {  11,  12 },    { -59, -70 },
@@ -2476,7 +2476,7 @@ const sbyte tHuffmanEnv15dB[120][2] = {
     {  -9,  -8 },    { 118, 119 },    {  -7,  -6 },    {  -5,  -4 }
 };
 
-const sbyte fHuffmanEnv15dB[120][2] = {
+const std::int8_t fHuffmanEnv15dB[120][2] = {
     {   1,   2 },    { -64, -65 },    {   3,   4 },    { -63, -66 },
     {   5,   6 },    { -67, -62 },    {   7,   8 },    { -68, -61 },
     {   9,  10 },    { -69, -60 },    {  11,  13 },    { -70,  12 },
@@ -2509,7 +2509,7 @@ const sbyte fHuffmanEnv15dB[120][2] = {
     {  -9,  -8 },    { 118, 119 },    {  -7,  -6 },    {  -5,  -4 }
 };
 
-const sbyte tHuffmanEnvBal15dB[48][2] = {
+const std::int8_t tHuffmanEnvBal15dB[48][2] = {
     { -64,   1 },    { -63,   2 },    { -65,   3 },    { -62,   4 },
     { -66,   5 },    { -61,   6 },    { -67,   7 },    { -60,   8 },
     { -68,   9 },    {  10,  11 },    { -69, -59 },    {  12,  13 },
@@ -2524,7 +2524,7 @@ const sbyte tHuffmanEnvBal15dB[48][2] = {
     { -45, -44 },    {  46,  47 },    { -43, -42 },    { -41, -40 }
 };
 
-const sbyte fHuffmanEnvBal15dB[48][2] = {
+const std::int8_t fHuffmanEnvBal15dB[48][2] = {
     { -64,   1 },    { -65,   2 },    { -63,   3 },    { -66,   4 },
     { -62,   5 },    { -61,   6 },    { -67,   7 },    { -68,   8 },
     { -60,   9 },    {  10,  11 },    { -69, -59 },    { -70,  12 },
@@ -2539,7 +2539,7 @@ const sbyte fHuffmanEnvBal15dB[48][2] = {
     {  45,  46 },    { -44, -43 },    { -42,  47 },    { -41, -40 }
 };
 
-const sbyte tHuffmanEnv30dB[62][2] = {
+const std::int8_t tHuffmanEnv30dB[62][2] = {
     { -64,   1 },    { -65,   2 },    { -63,   3 },    { -66,   4 },
     { -62,   5 },    { -67,   6 },    { -61,   7 },    { -68,   8 },
     { -60,   9 },    {  10,  11 },    { -69, -59 },    {  12,  14 },
@@ -2558,7 +2558,7 @@ const sbyte tHuffmanEnv30dB[62][2] = {
     { -36, -35 },    { -34, -33 }
 };
 
-const sbyte fHuffmanEnv30dB[62][2] = {
+const std::int8_t fHuffmanEnv30dB[62][2] = {
     { -64,   1 },    { -65,   2 },    { -63,   3 },    { -66,   4 },
     { -62,   5 },    { -67,   6 },    {   7,   8 },    { -61, -68 },
     {   9,  10 },    { -60, -69 },    {  11,  12 },    { -59, -70 },
@@ -2577,7 +2577,7 @@ const sbyte fHuffmanEnv30dB[62][2] = {
     { -36, -35 },    { -34, -33 }
 };
 
-const sbyte tHuffmanEnvBal30dB[24][2] = {
+const std::int8_t tHuffmanEnvBal30dB[24][2] = {
     { -64,   1 },    { -63,   2 },    { -65,   3 },    { -66,   4 },
     { -62,   5 },    { -61,   6 },    { -67,   7 },    { -68,   8 },
     { -60,   9 },    {  10,  16 },    {  11,  13 },    { -69,  12 },
@@ -2586,7 +2586,7 @@ const sbyte tHuffmanEnvBal30dB[24][2] = {
     {  21,  22 },    { -56, -55 },    { -54,  23 },    { -53, -52 }
 };
 
-const sbyte fHuffmanEnvBal30dB[24][2] = {
+const std::int8_t fHuffmanEnvBal30dB[24][2] = {
     { -64,   1 },    { -65,   2 },    { -63,   3 },    { -66,   4 },
     { -62,   5 },    { -61,   6 },    { -67,   7 },    { -68,   8 },
     { -60,   9 },    {  10,  13 },    { -69,  11 },    { -59,  12 },
@@ -2595,7 +2595,7 @@ const sbyte fHuffmanEnvBal30dB[24][2] = {
     { -57, -56 },    {  22,  23 },    { -55, -54 },    { -53, -52 }
 };
 
-const sbyte tHuffmanNoise30dB[62][2] = {
+const std::int8_t tHuffmanNoise30dB[62][2] = {
     { -64,   1 },    { -63,   2 },    { -65,   3 },    { -66,   4 },
     { -62,   5 },    { -67,   6 },    {   7,   8 },    { -61, -68 },
     {   9,  30 },    {  10,  15 },    { -60,  11 },    { -69,  12 },
@@ -2614,7 +2614,7 @@ const sbyte tHuffmanNoise30dB[62][2] = {
     { -35,  61 },    { -34, -33 }
 };
 
-const sbyte tHuffmanNoiseBal30dB[24][2] = {
+const std::int8_t tHuffmanNoiseBal30dB[24][2] = {
     { -64,   1 },    { -65,   2 },    { -63,   3 },    {   4,   9 },
     { -66,   5 },    { -62,   6 },    {   7,   8 },    { -76, -75 },
     { -74, -73 },    {  10,  17 },    {  11,  14 },    {  12,  13 },

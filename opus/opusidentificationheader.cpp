@@ -29,12 +29,12 @@ void OpusIdentificationHeader::parseHeader(OggIterator &iterator)
         throw InvalidDataException(); // not Opus identification header
     }
     iterator.read(buff, sizeof(buff));
-    m_version = static_cast<byte>(*(buff));
-    m_channels = static_cast<byte>(*(buff + 1));
+    m_version = static_cast<std::uint8_t>(*(buff));
+    m_channels = static_cast<std::uint8_t>(*(buff + 1));
     m_preSkip = LE::toUInt16(buff + 2);
     m_sampleRate = LE::toUInt32(buff + 4);
     m_outputGain = LE::toUInt16(buff + 8);
-    m_channelMap = static_cast<byte>(*(buff + 10));
+    m_channelMap = static_cast<std::uint8_t>(*(buff + 10));
 }
 
 } // namespace TagParser

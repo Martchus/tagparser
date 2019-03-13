@@ -4,8 +4,8 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/conversion/types.h>
 
+#include <cstdint>
 #include <string>
 
 namespace TagParser {
@@ -15,29 +15,29 @@ namespace TagParser {
  */
 class TAG_PARSER_EXPORT Margin {
 public:
-    constexpr Margin(uint32 top = 0, uint32 left = 0, uint32 bottom = 0, uint32 right = 0);
-    constexpr uint32 top() const;
-    void setTop(uint32 top);
-    constexpr uint32 left() const;
-    void setLeft(uint32 left);
-    constexpr uint32 bottom() const;
-    void setBottom(uint32 bottom);
-    constexpr uint32 right() const;
-    void setRight(uint32 right);
+    constexpr Margin(std::uint32_t top = 0, std::uint32_t left = 0, std::uint32_t bottom = 0, std::uint32_t right = 0);
+    constexpr std::uint32_t top() const;
+    void setTop(std::uint32_t top);
+    constexpr std::uint32_t left() const;
+    void setLeft(std::uint32_t left);
+    constexpr std::uint32_t bottom() const;
+    void setBottom(std::uint32_t bottom);
+    constexpr std::uint32_t right() const;
+    void setRight(std::uint32_t right);
     constexpr bool isNull() const;
     std::string toString() const;
 
 private:
-    uint32 m_top;
-    uint32 m_left;
-    uint32 m_bottom;
-    uint32 m_right;
+    std::uint32_t m_top;
+    std::uint32_t m_left;
+    std::uint32_t m_bottom;
+    std::uint32_t m_right;
 };
 
 /*!
  * \brief Constructs a Margin.
  */
-constexpr Margin::Margin(uint32 top, uint32 left, uint32 bottom, uint32 right)
+constexpr Margin::Margin(std::uint32_t top, std::uint32_t left, std::uint32_t bottom, std::uint32_t right)
     : m_top(top)
     , m_left(left)
     , m_bottom(bottom)
@@ -48,7 +48,7 @@ constexpr Margin::Margin(uint32 top, uint32 left, uint32 bottom, uint32 right)
 /*!
  * \brief Returns the top margin.
  */
-constexpr uint32 Margin::top() const
+constexpr std::uint32_t Margin::top() const
 {
     return m_top;
 }
@@ -56,7 +56,7 @@ constexpr uint32 Margin::top() const
 /*!
  * \brief Sets the top margin to \a top.
  */
-inline void Margin::setTop(uint32 top)
+inline void Margin::setTop(std::uint32_t top)
 {
     m_top = top;
 }
@@ -64,7 +64,7 @@ inline void Margin::setTop(uint32 top)
 /*!
  * \brief Returns the left margin.
  */
-constexpr uint32 Margin::left() const
+constexpr std::uint32_t Margin::left() const
 {
     return m_left;
 }
@@ -72,7 +72,7 @@ constexpr uint32 Margin::left() const
 /*!
  * \brief Sets the left margin to \a left.
  */
-inline void Margin::setLeft(uint32 left)
+inline void Margin::setLeft(std::uint32_t left)
 {
     m_left = left;
 }
@@ -80,7 +80,7 @@ inline void Margin::setLeft(uint32 left)
 /*!
  * \brief Returns the bottom margin.
  */
-constexpr uint32 Margin::bottom() const
+constexpr std::uint32_t Margin::bottom() const
 {
     return m_bottom;
 }
@@ -88,7 +88,7 @@ constexpr uint32 Margin::bottom() const
 /*!
  * \brief Sets the bottom margin to \a bottom.
  */
-inline void Margin::setBottom(uint32 bottom)
+inline void Margin::setBottom(std::uint32_t bottom)
 {
     m_bottom = bottom;
 }
@@ -96,7 +96,7 @@ inline void Margin::setBottom(uint32 bottom)
 /*!
  * \brief Returns the right margin.
  */
-constexpr uint32 Margin::right() const
+constexpr std::uint32_t Margin::right() const
 {
     return m_right;
 }
@@ -104,7 +104,7 @@ constexpr uint32 Margin::right() const
 /*!
  * \brief Sets the right margin to \a right.
  */
-inline void Margin::setRight(uint32 right)
+inline void Margin::setRight(std::uint32_t right)
 {
     m_right = right;
 }

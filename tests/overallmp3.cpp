@@ -31,8 +31,8 @@ void OverallTests::checkMp3Testfile1()
         CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
         CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
         CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::Mpeg1Layer3), track->format().sub);
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
-        CPPUNIT_ASSERT_EQUAL(static_cast<byte>(MpegChannelMode::JointStereo), track->channelConfig());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(MpegChannelMode::JointStereo), track->channelConfig());
         CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
         CPPUNIT_ASSERT_EQUAL(3, track->duration().seconds());
     }
@@ -95,8 +95,8 @@ void OverallTests::checkMp3Testfile2()
         CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
         CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
         CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::Mpeg1Layer3), track->format().sub);
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
-        CPPUNIT_ASSERT_EQUAL(static_cast<byte>(MpegChannelMode::Stereo), track->channelConfig());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(MpegChannelMode::Stereo), track->channelConfig());
         CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
         CPPUNIT_ASSERT_EQUAL(20, track->duration().seconds());
     }
@@ -276,7 +276,7 @@ void OverallTests::checkMp3PaddingConstraints()
     if (!(m_mode & Id3v1Only)) {
         if (m_mode & PaddingConstraints) {
             if (m_mode & ForceRewring) {
-                CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(4096), m_fileInfo.paddingSize());
+                CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(4096), m_fileInfo.paddingSize());
             } else {
                 CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
                 CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));

@@ -13,18 +13,18 @@ class VorbisComment;
 
 class TAG_PARSER_EXPORT FlacStream : public AbstractTrack {
 public:
-    FlacStream(MediaFileInfo &mediaFileInfo, uint64 startOffset);
+    FlacStream(MediaFileInfo &mediaFileInfo, std::uint64_t startOffset);
     ~FlacStream() override;
 
     TrackType type() const override;
     VorbisComment *vorbisComment() const;
     VorbisComment *createVorbisComment();
     bool removeVorbisComment();
-    uint32 paddingSize() const;
-    uint32 streamOffset() const;
+    std::uint32_t paddingSize() const;
+    std::uint32_t streamOffset() const;
 
     std::streamoff makeHeader(std::ostream &stream, Diagnostics &diag);
-    static void makePadding(std::ostream &stream, uint32 size, bool isLast, Diagnostics &diag);
+    static void makePadding(std::ostream &stream, std::uint32_t size, bool isLast, Diagnostics &diag);
 
 protected:
     void internalParseHeader(Diagnostics &diag) override;
@@ -32,8 +32,8 @@ protected:
 private:
     MediaFileInfo &m_mediaFileInfo;
     std::unique_ptr<VorbisComment> m_vorbisComment;
-    uint32 m_paddingSize;
-    uint32 m_streamOffset;
+    std::uint32_t m_paddingSize;
+    std::uint32_t m_streamOffset;
 };
 
 inline FlacStream::~FlacStream()
@@ -56,7 +56,7 @@ inline VorbisComment *FlacStream::vorbisComment() const
 /*!
  * \brief Returns the padding size.
  */
-inline uint32 FlacStream::paddingSize() const
+inline std::uint32_t FlacStream::paddingSize() const
 {
     return m_paddingSize;
 }
@@ -65,7 +65,7 @@ inline uint32 FlacStream::paddingSize() const
  * \brief Returns the start offset of the actual FLAC frames.
  * \remarks This equals the size of the metadata header blocks.
  */
-inline uint32 FlacStream::streamOffset() const
+inline std::uint32_t FlacStream::streamOffset() const
 {
     return m_streamOffset;
 }

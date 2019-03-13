@@ -14,15 +14,15 @@ class TAG_PARSER_EXPORT MatroskaAttachmentMaker {
 public:
     void make(std::ostream &stream, Diagnostics &diag) const;
     const MatroskaAttachment &attachment() const;
-    uint64 requiredSize() const;
+    std::uint64_t requiredSize() const;
     void bufferCurrentAttachments(Diagnostics &diag);
 
 private:
     MatroskaAttachmentMaker(MatroskaAttachment &attachment, Diagnostics &diag);
 
     MatroskaAttachment &m_attachment;
-    uint64 m_attachedFileElementSize;
-    uint64 m_totalSize;
+    std::uint64_t m_attachedFileElementSize;
+    std::uint64_t m_totalSize;
 };
 
 /*!
@@ -36,7 +36,7 @@ inline const MatroskaAttachment &MatroskaAttachmentMaker::attachment() const
 /*!
  * \brief Returns the number of bytes which will be written when making the attachment.
  */
-inline uint64 MatroskaAttachmentMaker::requiredSize() const
+inline std::uint64_t MatroskaAttachmentMaker::requiredSize() const
 {
     return m_totalSize;
 }

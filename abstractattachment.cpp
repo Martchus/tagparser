@@ -3,7 +3,6 @@
 #include "./exceptions.h"
 #include "./mediafileinfo.h"
 
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/copy.h>
 
 #include <memory>
@@ -53,7 +52,7 @@ StreamDataBlock::StreamDataBlock(const std::function<std::istream &()> &stream, 
     m_endOffset = s.tellg();
     s.seekg(currentPos);
     if (m_endOffset < m_startOffset) {
-        IoUtilities::throwIoFailure("End offset is less than start offset.");
+        throw std::ios_base::failure("End offset is less than start offset.");
     }
 }
 

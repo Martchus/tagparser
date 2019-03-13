@@ -127,11 +127,11 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
 /*!
  * \brief Internal implementation for parsing.
  */
-template <class StreamType> void VorbisComment::internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
+template <class StreamType> void VorbisComment::internalParse(StreamType &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag)
 {
     // prepare parsing
     static const string context("parsing Vorbis comment");
-    uint64 startOffset = static_cast<uint64>(stream.tellg());
+    std::uint64_t startOffset = static_cast<std::uint64_t>(stream.tellg());
     try {
         // read signature: 0x3 + "vorbis"
         char sig[8];
@@ -161,8 +161,8 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             // read field count
             CHECK_MAX_SIZE(4);
             stream.read(sig, 4);
-            uint32 fieldCount = LE::toUInt32(sig);
-            for (uint32 i = 0; i < fieldCount; ++i) {
+            std::uint32_t fieldCount = LE::toUInt32(sig);
+            for (std::uint32_t i = 0; i < fieldCount; ++i) {
                 // read fields
                 VorbisCommentField field;
                 try {
@@ -177,13 +177,13 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             if (!(flags & VorbisCommentFlags::NoFramingByte)) {
                 stream.ignore(); // skip framing byte
             }
-            m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
+            m_size = static_cast<std::uint32_t>(static_cast<std::uint64_t>(stream.tellg()) - startOffset);
         } else {
             diag.emplace_back(DiagLevel::Critical, "Signature is invalid.", context);
             throw InvalidDataException();
         }
     } catch (const TruncatedDataException &) {
-        m_size = static_cast<uint32>(static_cast<uint64>(stream.tellg()) - startOffset);
+        m_size = static_cast<std::uint32_t>(static_cast<std::uint64_t>(stream.tellg()) - startOffset);
         diag.emplace_back(DiagLevel::Critical, "Vorbis comment is truncated.", context);
         throw;
     }
@@ -208,7 +208,7 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagn
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisComment::parse(istream &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag)
+void VorbisComment::parse(istream &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag)
 {
     internalParse(stream, maxSize, flags, diag);
 }
@@ -243,7 +243,7 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
     const auto fieldCountOffset = stream.tellp();
     writer.writeUInt32LE(0);
     // write fields
-    uint32 fieldsWritten = 0;
+    std::uint32_t fieldsWritten = 0;
     for (auto i : fields()) {
         VorbisCommentField &field = i.second;
         if (!field.value().isEmpty()) {

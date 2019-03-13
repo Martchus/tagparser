@@ -16,11 +16,11 @@ class TAG_PARSER_EXPORT AbstractChapter {
 public:
     virtual ~AbstractChapter();
 
-    uint64 id() const;
+    std::uint64_t id() const;
     const std::vector<LocaleAwareString> &names() const;
     ChronoUtilities::TimeSpan startTime() const;
     ChronoUtilities::TimeSpan endTime() const;
-    const std::vector<uint64> &tracks() const;
+    const std::vector<std::uint64_t> &tracks() const;
     bool isHidden() const;
     bool isEnabled() const;
     std::string label() const;
@@ -35,11 +35,11 @@ protected:
     AbstractChapter();
     virtual void internalParse(Diagnostics &diag) = 0;
 
-    uint64 m_id;
+    std::uint64_t m_id;
     std::vector<LocaleAwareString> m_names;
     ChronoUtilities::TimeSpan m_startTime;
     ChronoUtilities::TimeSpan m_endTime;
-    std::vector<uint64> m_tracks;
+    std::vector<std::uint64_t> m_tracks;
     bool m_hidden;
     bool m_enabled;
 };
@@ -47,7 +47,7 @@ protected:
 /*!
  * \brief Returns the chapter ID if known; otherwise returns zero.
  */
-inline uint64 AbstractChapter::id() const
+inline std::uint64_t AbstractChapter::id() const
 {
     return m_id;
 }
@@ -79,7 +79,7 @@ inline ChronoUtilities::TimeSpan AbstractChapter::endTime() const
 /*!
  * \brief Returns a list of tracks on which the chapter applies.
  */
-inline const std::vector<uint64> &AbstractChapter::tracks() const
+inline const std::vector<std::uint64_t> &AbstractChapter::tracks() const
 {
     return m_tracks;
 }

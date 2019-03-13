@@ -3,8 +3,7 @@
 
 #include "../diagnostics.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <iostream>
 
 namespace IoUtilities {
@@ -44,34 +43,34 @@ public:
     double mpegVersion() const;
     int layer() const;
     constexpr bool isProtectedByCrc() const;
-    uint16 bitrate() const;
-    uint32 samplingFrequency() const;
-    constexpr uint32 paddingSize() const;
+    std::uint16_t bitrate() const;
+    std::uint32_t samplingFrequency() const;
+    constexpr std::uint32_t paddingSize() const;
     MpegChannelMode channelMode() const;
     constexpr bool hasCopyright() const;
     constexpr bool isOriginal() const;
-    uint32 sampleCount() const;
-    uint32 size() const;
+    std::uint32_t sampleCount() const;
+    std::uint32_t size() const;
     constexpr bool isXingHeaderAvailable() const;
     constexpr XingHeaderFlags xingHeaderFlags() const;
     constexpr bool isXingFramefieldPresent() const;
     constexpr bool isXingBytesfieldPresent() const;
     constexpr bool isXingTocFieldPresent() const;
     constexpr bool isXingQualityIndicatorFieldPresent() const;
-    constexpr uint32 xingFrameCount() const;
-    constexpr uint32 xingBytesfield() const;
-    constexpr uint32 xingQualityIndicator() const;
+    constexpr std::uint32_t xingFrameCount() const;
+    constexpr std::uint32_t xingBytesfield() const;
+    constexpr std::uint32_t xingQualityIndicator() const;
 
 private:
-    static constexpr uint64 s_xingHeaderOffset = 0x24;
-    static constexpr uint32 s_sync = 0xFFE00000u;
-    static const uint16 s_bitrateTable[0x2][0x3][0xF];
-    uint32 m_header;
-    uint64 m_xingHeader;
+    static constexpr std::uint64_t s_xingHeaderOffset = 0x24;
+    static constexpr std::uint32_t s_sync = 0xFFE00000u;
+    static const std::uint16_t s_bitrateTable[0x2][0x3][0xF];
+    std::uint32_t m_header;
+    std::uint64_t m_xingHeader;
     XingHeaderFlags m_xingHeaderFlags;
-    uint32 m_xingFramefield;
-    uint32 m_xingBytesfield;
-    uint32 m_xingQualityIndicator;
+    std::uint32_t m_xingFramefield;
+    std::uint32_t m_xingBytesfield;
+    std::uint32_t m_xingQualityIndicator;
 };
 
 /*!
@@ -106,7 +105,7 @@ constexpr bool MpegAudioFrame::isProtectedByCrc() const
 /*!
  * \brief Returns the bitrate of the frame if known; otherwise returns 0.
  */
-inline uint16 MpegAudioFrame::bitrate() const
+inline std::uint16_t MpegAudioFrame::bitrate() const
 {
     if (mpegVersion() > 0.0 && layer() > 0) {
         return s_bitrateTable[mpegVersion() == 1.0 ? 0 : 1][layer() - 1][(m_header & 0xf000u) >> 12];
@@ -118,7 +117,7 @@ inline uint16 MpegAudioFrame::bitrate() const
 /*!
  * \brief Returns the padding size if known; otherwise returns 0.
  */
-constexpr uint32 MpegAudioFrame::paddingSize() const
+constexpr std::uint32_t MpegAudioFrame::paddingSize() const
 {
     if (isValid()) {
         return (m_header & 0x60000u) == 0x60000u ? 4u : 1u * (m_header & 0x200u);
@@ -204,7 +203,7 @@ constexpr bool MpegAudioFrame::isXingQualityIndicatorFieldPresent() const
 /*!
  * \brief Returns an indication whether the Xing frame count is present.
  */
-constexpr uint32 MpegAudioFrame::xingFrameCount() const
+constexpr std::uint32_t MpegAudioFrame::xingFrameCount() const
 {
     return m_xingFramefield;
 }
@@ -212,7 +211,7 @@ constexpr uint32 MpegAudioFrame::xingFrameCount() const
 /*!
  * \brief Returns the Xing bytes field if known; otherwise returns 0.
  */
-constexpr uint32 MpegAudioFrame::xingBytesfield() const
+constexpr std::uint32_t MpegAudioFrame::xingBytesfield() const
 {
     return m_xingBytesfield;
 }
@@ -220,7 +219,7 @@ constexpr uint32 MpegAudioFrame::xingBytesfield() const
 /*!
  * \brief Returns the Xing quality indicator if known; otherwise returns 0.
  */
-constexpr uint32 MpegAudioFrame::xingQualityIndicator() const
+constexpr std::uint32_t MpegAudioFrame::xingQualityIndicator() const
 {
     return m_xingQualityIndicator;
 }

@@ -483,7 +483,7 @@ constexpr TAG_PARSER_EXPORT const char *statisticsTags()
 /*!
  * \brief Returns the general TagTargetLevel for the Matroska specific \a targetLevelValue.
  */
-constexpr TAG_PARSER_EXPORT TagTargetLevel matroskaTagTargetLevel(uint64 targetLevelValue)
+constexpr TAG_PARSER_EXPORT TagTargetLevel matroskaTagTargetLevel(std::uint64_t targetLevelValue)
 {
     return targetLevelValue > 70 ? TagTargetLevel::Collection : static_cast<TagTargetLevel>(targetLevelValue / 10);
 }
@@ -491,9 +491,9 @@ constexpr TAG_PARSER_EXPORT TagTargetLevel matroskaTagTargetLevel(uint64 targetL
 /*!
  * \brief Returns the Matroska specific target level value for the specified general \a targetLevel.
  */
-constexpr TAG_PARSER_EXPORT uint64 matroskaTagTargetLevelValue(TagTargetLevel targetLevel)
+constexpr TAG_PARSER_EXPORT std::uint64_t matroskaTagTargetLevelValue(TagTargetLevel targetLevel)
 {
-    return static_cast<uint64>(targetLevel) * 10;
+    return static_cast<std::uint64_t>(targetLevel) * 10;
 }
 
 } // namespace TagParser

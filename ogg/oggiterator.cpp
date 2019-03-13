@@ -29,7 +29,7 @@ namespace TagParser {
  * \brief Sets the stream and related parameters and clears all available pages.
  * \remarks Invalidates the iterator. Use reset() to continue iteration.
  */
-void OggIterator::clear(istream &stream, uint64 startOffset, uint64 streamSize)
+void OggIterator::clear(istream &stream, std::uint64_t startOffset, std::uint64_t streamSize)
 {
     m_stream = &stream;
     m_startOffset = startOffset;
@@ -169,7 +169,7 @@ size_t OggIterator::readAll(char *buffer, size_t max)
 {
     size_t bytesRead = 0;
     while (*this && max) {
-        const uint32 available = currentSegmentSize() - m_bytesRead;
+        const std::uint32_t available = currentSegmentSize() - m_bytesRead;
         stream().seekg(static_cast<streamoff>(currentCharacterOffset()));
         if (max <= available) {
             stream().read(buffer + bytesRead, static_cast<streamoff>(max));
@@ -197,7 +197,7 @@ size_t OggIterator::readAll(char *buffer, size_t max)
  */
 void OggIterator::ignore(size_t count)
 {
-    uint32 available = currentSegmentSize() - m_bytesRead;
+    std::uint32_t available = currentSegmentSize() - m_bytesRead;
     while (*this) {
         available = currentSegmentSize() - m_bytesRead;
         if (count <= available) {
@@ -234,7 +234,7 @@ void OggIterator::ignore(size_t count)
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Failure when a parsing error occurs.
  */
-bool OggIterator::resyncAt(uint64 offset)
+bool OggIterator::resyncAt(std::uint64_t offset)
 {
     // check whether offset is valid
     if (offset >= streamSize() || offset < (m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize())) {
@@ -243,8 +243,8 @@ bool OggIterator::resyncAt(uint64 offset)
 
     // find capture pattern 'OggS'
     stream().seekg(static_cast<streamoff>(offset));
-    byte lettersFound = 0;
-    for (uint64 bytesAvailable = max<uint64>(streamSize() - offset, 65307ul); bytesAvailable >= 27; --bytesAvailable) {
+    std::uint8_t lettersFound = 0;
+    for (std::uint64_t bytesAvailable = max<std::uint64_t>(streamSize() - offset, 65307ul); bytesAvailable >= 27; --bytesAvailable) {
         switch (static_cast<char>(stream().get())) {
         case 'O':
             lettersFound = 1;
@@ -258,8 +258,9 @@ bool OggIterator::resyncAt(uint64 offset)
                 const auto currentOffset = stream().tellg();
                 // -> try to parse an OGG page at this position
                 try {
-                    m_pages.emplace_back(stream(), static_cast<uint64>(stream().tellg()) - 4,
-                        bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
+                    m_pages.emplace_back(stream(), static_cast<std::uint64_t>(stream().tellg()) - 4,
+                        bytesAvailable > numeric_limits<std::int32_t>::max() ? numeric_limits<std::int32_t>::max()
+                                                                             : static_cast<std::int32_t>(bytesAvailable));
                     setPageIndex(m_pages.size() - 1);
                     return true;
                 } catch (const Failure &) {
@@ -289,9 +290,10 @@ bool OggIterator::fetchNextPage()
     if (m_page == m_pages.size()) { // can only fetch the next page if the current page is the last page
         m_offset = m_pages.empty() ? m_startOffset : m_pages.back().startOffset() + m_pages.back().totalSize();
         if (m_offset < m_streamSize) {
-            const uint64 bytesAvailable = m_streamSize - m_offset;
+            const std::uint64_t bytesAvailable = m_streamSize - m_offset;
             m_pages.emplace_back(*m_stream, m_offset,
-                bytesAvailable > numeric_limits<int32>::max() ? numeric_limits<int32>::max() : static_cast<int32>(bytesAvailable));
+                bytesAvailable > numeric_limits<std::int32_t>::max() ? numeric_limits<std::int32_t>::max()
+                                                                     : static_cast<std::int32_t>(bytesAvailable));
             return true;
         }
     }

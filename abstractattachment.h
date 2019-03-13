@@ -110,8 +110,8 @@ public:
     void setName(const std::string &name);
     const std::string &mimeType() const;
     void setMimeType(const std::string &mimeType);
-    uint64 id() const;
-    void setId(const uint64 &id);
+    std::uint64_t id() const;
+    void setId(const std::uint64_t &id);
     const StreamDataBlock *data() const;
     void setData(std::unique_ptr<StreamDataBlock> &&data);
     void setFile(const std::string &path, Diagnostics &diag);
@@ -129,7 +129,7 @@ private:
     std::string m_description;
     std::string m_name;
     std::string m_mimeType;
-    uint64 m_id;
+    std::uint64_t m_id;
     std::unique_ptr<StreamDataBlock> m_data;
     bool m_isDataFromFile;
     bool m_ignored;
@@ -196,7 +196,7 @@ inline void AbstractAttachment::setMimeType(const std::string &mimeType)
 /*!
  * \brief Returns the ID of the attachment.
  */
-inline uint64 AbstractAttachment::id() const
+inline std::uint64_t AbstractAttachment::id() const
 {
     return m_id;
 }
@@ -204,7 +204,7 @@ inline uint64 AbstractAttachment::id() const
 /*!
  * \brief Sets the ID of the attachment.
  */
-inline void AbstractAttachment::setId(const uint64 &id)
+inline void AbstractAttachment::setId(const std::uint64_t &id)
 {
     m_id = id;
 }

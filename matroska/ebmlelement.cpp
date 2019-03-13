@@ -7,10 +7,10 @@
 #include "../mediafileinfo.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <sstream>
@@ -30,12 +30,12 @@ namespace TagParser {
 /*!
  * \brief Specifies the number of bytes to be skipped till a valid EBML element is found in the stream.
  */
-uint64 EbmlElement::bytesToBeSkipped = 0x4000;
+std::uint64_t EbmlElement::bytesToBeSkipped = 0x4000;
 
 /*!
  * \brief Constructs a new top level element with the specified \a container at the specified \a startOffset.
  */
-EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset)
+EbmlElement::EbmlElement(MatroskaContainer &container, std::uint64_t startOffset)
     : GenericFileElement<EbmlElement>(container, startOffset)
 {
 }
@@ -43,7 +43,7 @@ EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset)
 /*!
  * \brief Constructs a new top level element with the specified \a container at the specified \a startOffset.
  */
-EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize)
+EbmlElement::EbmlElement(MatroskaContainer &container, std::uint64_t startOffset, std::uint64_t maxSize)
     : GenericFileElement<EbmlElement>(container, startOffset, maxSize)
 {
 }
@@ -51,7 +51,7 @@ EbmlElement::EbmlElement(MatroskaContainer &container, uint64 startOffset, uint6
 /*!
  * \brief Constructs a new sub level element with the specified \a parent at the specified \a startOffset.
  */
-EbmlElement::EbmlElement(EbmlElement &parent, uint64 startOffset)
+EbmlElement::EbmlElement(EbmlElement &parent, std::uint64_t startOffset)
     : GenericFileElement<EbmlElement>(parent, startOffset)
 {
 }
@@ -71,7 +71,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
 {
     static const string context("parsing EBML element header");
 
-    for (uint64 skipped = 0; skipped < bytesToBeSkipped; ++m_startOffset, --m_maxSize, ++skipped) {
+    for (std::uint64_t skipped = 0; skipped < bytesToBeSkipped; ++m_startOffset, --m_maxSize, ++skipped) {
         // check whether max size is valid
         if (maxTotalSize() < 2) {
             diag.emplace_back(DiagLevel::Critical, argsToString("The EBML element at ", startOffset(), " is truncated or does not exist."), context);
@@ -81,7 +81,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
 
         // read ID
         char buf[maximumIdLengthSupported() > maximumSizeLengthSupported() ? maximumIdLengthSupported() : maximumSizeLengthSupported()] = { 0 };
-        byte beg = static_cast<byte>(stream().peek()), mask = 0x80;
+        std::uint8_t beg = static_cast<std::uint8_t>(stream().peek()), mask = 0x80;
         m_idLength = 1;
         while (m_idLength <= maximumIdLengthSupported() && (beg & mask) == 0) {
             ++m_idLength;
@@ -109,10 +109,10 @@ void EbmlElement::internalParse(Diagnostics &diag)
             // check at which level in the hierarchy the element is supposed to occour using its ID
             // (the only chance to find out whether the element belongs higher up in the hierarchy)
             const MatroskaElementLevel supposedLevel = matroskaIdLevel(m_id);
-            const byte actualLevel = level();
+            const std::uint8_t actualLevel = level();
             if (actualLevel > supposedLevel) {
                 // the file belongs higher up in the hierarchy so find a better parent
-                if (EbmlElement *betterParent = m_parent->parent(actualLevel - static_cast<byte>(supposedLevel))) {
+                if (EbmlElement *betterParent = m_parent->parent(actualLevel - static_cast<std::uint8_t>(supposedLevel))) {
                     // recompute the parent size (assumption - which was rest of the available space - was wrong)
                     m_parent->m_dataSize = m_startOffset - m_parent->m_startOffset - m_parent->headerSize();
                     m_parent->m_sizeUnknown = false;
@@ -144,7 +144,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
         }
 
         // read size
-        beg = static_cast<byte>(stream().peek());
+        beg = static_cast<std::uint8_t>(stream().peek());
         mask = 0x80;
         m_sizeLength = 1;
         if ((m_sizeUnknown = (beg == 0xFF))) {
@@ -190,7 +190,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
         }
 
         // check if there's a first child
-        const uint64 firstChildOffset = this->firstChildOffset();
+        const std::uint64_t firstChildOffset = this->firstChildOffset();
         if (firstChildOffset && firstChildOffset < totalSize()) {
             m_firstChild.reset(new EbmlElement(static_cast<EbmlElement &>(*this), startOffset() + firstChildOffset));
         } else {
@@ -236,7 +236,7 @@ std::string EbmlElement::readString()
  * Reads up to 8 bytes. If the element stores more data the
  * additional bytes are ignored.
  */
-uint64 EbmlElement::readUInteger()
+std::uint64_t EbmlElement::readUInteger()
 {
     constexpr DataSizeType maxBytesToRead = 8;
     char buff[maxBytesToRead] = { 0 };
@@ -250,13 +250,13 @@ uint64 EbmlElement::readUInteger()
  * \brief Reads the content of the element as float.
  * \remarks Reads exactly 4 or 8 bytes. If the element stores more or less data zero is returned.
  */
-float64 EbmlElement::readFloat()
+double EbmlElement::readFloat()
 {
     stream().seekg(static_cast<streamoff>(dataOffset()));
     switch (dataSize()) {
-    case sizeof(float32):
-        return static_cast<float64>(reader().readFloat32BE());
-    case sizeof(float64):
+    case sizeof(float):
+        return static_cast<double>(reader().readFloat32BE());
+    case sizeof(double):
         return reader().readFloat64BE();
     default:
         return 0.0;
@@ -267,7 +267,7 @@ float64 EbmlElement::readFloat()
  * \brief Returns the length of the specified \a id in byte.
  * \throws Throws InvalidDataException() if \a id can not be represented.
  */
-byte EbmlElement::calculateIdLength(GenericFileElement::IdentifierType id)
+std::uint8_t EbmlElement::calculateIdLength(GenericFileElement::IdentifierType id)
 {
     if (id <= 0xFF) {
         return 1;
@@ -286,7 +286,7 @@ byte EbmlElement::calculateIdLength(GenericFileElement::IdentifierType id)
  * \brief Returns the length of the size denotation for the specified \a size in byte.
  * \throws Throws InvalidDataException() if \a size can not be represented.
  */
-byte EbmlElement::calculateSizeDenotationLength(uint64 size)
+std::uint8_t EbmlElement::calculateSizeDenotationLength(std::uint64_t size)
 {
     if (size < 126) {
         return 1;
@@ -315,19 +315,19 @@ byte EbmlElement::calculateSizeDenotationLength(uint64 size)
  * \returns Returns the number of bytes written to \a buff.
  * \throws Throws InvalidDataException() if \a id can not be represented.
  */
-byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
+std::uint8_t EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
 {
     if (id <= 0xFF) {
         *buff = static_cast<char>(id);
         return 1;
     } else if (id <= 0x7FFF) {
-        BE::getBytes(static_cast<uint16>(id), buff);
+        BE::getBytes(static_cast<std::uint16_t>(id), buff);
         return 2;
     } else if (id <= 0x3FFFFF) {
-        BE::getBytes(static_cast<uint32>(id << 0x8), buff);
+        BE::getBytes(static_cast<std::uint32_t>(id << 0x8), buff);
         return 3;
     } else if (id <= 0x1FFFFFFF) {
-        BE::getBytes(static_cast<uint32>(id), buff);
+        BE::getBytes(static_cast<std::uint32_t>(id), buff);
         return 4;
     } else {
         throw InvalidDataException();
@@ -341,31 +341,31 @@ byte EbmlElement::makeId(GenericFileElement::IdentifierType id, char *buff)
  * \returns Returns the number of bytes written to \a buff.
  * \throws Throws InvalidDataException() if \a size can not be represented.
  */
-byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
+std::uint8_t EbmlElement::makeSizeDenotation(std::uint64_t size, char *buff)
 {
     if (size < 126) {
         *buff = static_cast<char>(size | 0x80);
         return 1;
     } else if (size <= 16382ul) {
-        BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
+        BE::getBytes(static_cast<std::uint16_t>(size | 0x4000), buff);
         return 2;
     } else if (size <= 2097150ul) {
-        BE::getBytes(static_cast<uint32>((size | 0x200000) << 0x08), buff);
+        BE::getBytes(static_cast<std::uint32_t>((size | 0x200000) << 0x08), buff);
         return 3;
     } else if (size <= 268435454ul) {
-        BE::getBytes(static_cast<uint32>(size | 0x10000000), buff);
+        BE::getBytes(static_cast<std::uint32_t>(size | 0x10000000), buff);
         return 4;
     } else if (size <= 34359738366ul) {
-        BE::getBytes(static_cast<uint64>((size | 0x800000000) << 0x18), buff);
+        BE::getBytes(static_cast<std::uint64_t>((size | 0x800000000) << 0x18), buff);
         return 5;
     } else if (size <= 4398046511102ul) {
-        BE::getBytes(static_cast<uint64>((size | 0x40000000000) << 0x10), buff);
+        BE::getBytes(static_cast<std::uint64_t>((size | 0x40000000000) << 0x10), buff);
         return 6;
     } else if (size <= 562949953421310ul) {
-        BE::getBytes(static_cast<uint64>((size | 0x2000000000000) << 0x08), buff);
+        BE::getBytes(static_cast<std::uint64_t>((size | 0x2000000000000) << 0x08), buff);
         return 7;
     } else if (size <= 72057594037927934ul) {
-        BE::getBytes(static_cast<uint64>(size | 0x100000000000000), buff);
+        BE::getBytes(static_cast<std::uint64_t>(size | 0x100000000000000), buff);
         return 8;
     }
     throw InvalidDataException();
@@ -379,31 +379,31 @@ byte EbmlElement::makeSizeDenotation(uint64 size, char *buff)
  * \returns Returns the number of bytes written to \a buff. Always in the range of \a minBytes and 8.
  * \throws Throws InvalidDataException() if \a size can not be represented.
  */
-byte EbmlElement::makeSizeDenotation(uint64 size, char *buff, byte minBytes)
+std::uint8_t EbmlElement::makeSizeDenotation(std::uint64_t size, char *buff, std::uint8_t minBytes)
 {
     if (minBytes <= 1 && size < 126) {
         *buff = static_cast<char>(size | 0x80);
         return 1;
     } else if (minBytes <= 2 && size <= 16382ul) {
-        BE::getBytes(static_cast<uint16>(size | 0x4000), buff);
+        BE::getBytes(static_cast<std::uint16_t>(size | 0x4000), buff);
         return 2;
     } else if (minBytes <= 3 && size <= 2097150ul) {
-        BE::getBytes(static_cast<uint32>((size | 0x200000) << 0x08), buff);
+        BE::getBytes(static_cast<std::uint32_t>((size | 0x200000) << 0x08), buff);
         return 3;
     } else if (minBytes <= 4 && size <= 268435454ul) {
-        BE::getBytes(static_cast<uint32>(size | 0x10000000), buff);
+        BE::getBytes(static_cast<std::uint32_t>(size | 0x10000000), buff);
         return 4;
     } else if (minBytes <= 5 && size <= 34359738366ul) {
-        BE::getBytes(static_cast<uint64>((size | 0x800000000) << 0x18), buff);
+        BE::getBytes(static_cast<std::uint64_t>((size | 0x800000000) << 0x18), buff);
         return 5;
     } else if (minBytes <= 6 && size <= 4398046511102ul) {
-        BE::getBytes(static_cast<uint64>((size | 0x40000000000) << 0x10), buff);
+        BE::getBytes(static_cast<std::uint64_t>((size | 0x40000000000) << 0x10), buff);
         return 6;
     } else if (minBytes <= 7 && size <= 562949953421310ul) {
-        BE::getBytes(static_cast<uint64>((size | 0x2000000000000) << 0x08), buff);
+        BE::getBytes(static_cast<std::uint64_t>((size | 0x2000000000000) << 0x08), buff);
         return 7;
     } else if (minBytes <= 8 && size <= 72057594037927934ul) {
-        BE::getBytes(static_cast<uint64>(size | 0x100000000000000), buff);
+        BE::getBytes(static_cast<std::uint64_t>(size | 0x100000000000000), buff);
         return 8;
     }
     throw InvalidDataException();
@@ -413,7 +413,7 @@ byte EbmlElement::makeSizeDenotation(uint64 size, char *buff, byte minBytes)
  * \brief Returns the length of the specified unsigned \a integer in byte.
  * \throws Throws InvalidDataException() if \a integer can not be represented.
  */
-byte EbmlElement::calculateUIntegerLength(uint64 integer)
+std::uint8_t EbmlElement::calculateUIntegerLength(std::uint64_t integer)
 {
     if (integer <= 0xFFul) {
         return 1;
@@ -438,31 +438,31 @@ byte EbmlElement::calculateUIntegerLength(uint64 integer)
  * \brief Writes \a value to \a buff.
  * \returns Returns the number of bytes written to \a buff.
  */
-byte EbmlElement::makeUInteger(uint64 value, char *buff)
+std::uint8_t EbmlElement::makeUInteger(std::uint64_t value, char *buff)
 {
     if (value <= 0xFFul) {
         *buff = static_cast<char>(value);
         return 1;
     } else if (value <= 0xFFFFul) {
-        BE::getBytes(static_cast<uint16>(value), buff);
+        BE::getBytes(static_cast<std::uint16_t>(value), buff);
         return 2;
     } else if (value <= 0xFFFFFFul) {
-        BE::getBytes(static_cast<uint32>(value << 0x08), buff);
+        BE::getBytes(static_cast<std::uint32_t>(value << 0x08), buff);
         return 3;
     } else if (value <= 0xFFFFFFFFul) {
-        BE::getBytes(static_cast<uint32>(value), buff);
+        BE::getBytes(static_cast<std::uint32_t>(value), buff);
         return 4;
     } else if (value <= 0xFFFFFFFFFFul) {
-        BE::getBytes(static_cast<uint64>(value << 0x18), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value << 0x18), buff);
         return 5;
     } else if (value <= 0xFFFFFFFFFFFFul) {
-        BE::getBytes(static_cast<uint64>(value << 0x10), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value << 0x10), buff);
         return 6;
     } else if (value <= 0xFFFFFFFFFFFFFFul) {
-        BE::getBytes(static_cast<uint64>(value << 0x08), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value << 0x08), buff);
         return 7;
     } else {
-        BE::getBytes(static_cast<uint64>(value), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value), buff);
         return 8;
     }
 }
@@ -476,31 +476,31 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff)
  * \remarks Regardless of \a minBytes, this function will never make
  *          more than 8 bytes.
  */
-byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
+std::uint8_t EbmlElement::makeUInteger(std::uint64_t value, char *buff, std::uint8_t minBytes)
 {
     if (minBytes <= 1 && value <= 0xFFul) {
         *buff = static_cast<char>(value);
         return 1;
     } else if (minBytes <= 2 && value <= 0xFFFFul) {
-        BE::getBytes(static_cast<uint16>(value), buff);
+        BE::getBytes(static_cast<std::uint16_t>(value), buff);
         return 2;
     } else if (minBytes <= 3 && value <= 0xFFFFFFul) {
-        BE::getBytes(static_cast<uint32>(value << 0x08), buff);
+        BE::getBytes(static_cast<std::uint32_t>(value << 0x08), buff);
         return 3;
     } else if (minBytes <= 4 && value <= 0xFFFFFFFFul) {
-        BE::getBytes(static_cast<uint32>(value), buff);
+        BE::getBytes(static_cast<std::uint32_t>(value), buff);
         return 4;
     } else if (minBytes <= 5 && value <= 0xFFFFFFFFFFul) {
-        BE::getBytes(static_cast<uint64>(value << 0x18), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value << 0x18), buff);
         return 5;
     } else if (minBytes <= 6 && value <= 0xFFFFFFFFFFFFul) {
-        BE::getBytes(static_cast<uint64>(value << 0x10), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value << 0x10), buff);
         return 6;
     } else if (minBytes <= 7 && value <= 0xFFFFFFFFFFFFFFul) {
-        BE::getBytes(static_cast<uint64>(value << 0x08), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value << 0x08), buff);
         return 7;
     } else {
-        BE::getBytes(static_cast<uint64>(value), buff);
+        BE::getBytes(static_cast<std::uint64_t>(value), buff);
         return 8;
     }
 }
@@ -511,13 +511,13 @@ byte EbmlElement::makeUInteger(uint64 value, char *buff, byte minBytes)
  * \param id Specifies the element ID.
  * \param content Specifies the value of the element as unsigned integer.
  */
-void EbmlElement::makeSimpleElement(ostream &stream, IdentifierType id, uint64 content)
+void EbmlElement::makeSimpleElement(ostream &stream, IdentifierType id, std::uint64_t content)
 {
     char buff1[8];
     char buff2[8];
-    byte sizeLength = EbmlElement::makeId(id, buff1);
+    std::uint8_t sizeLength = EbmlElement::makeId(id, buff1);
     stream.write(buff1, sizeLength);
-    byte elementSize = EbmlElement::makeUInteger(content, buff2);
+    std::uint8_t elementSize = EbmlElement::makeUInteger(content, buff2);
     sizeLength = EbmlElement::makeSizeDenotation(elementSize, buff1);
     stream.write(buff1, sizeLength);
     stream.write(buff2, elementSize);
@@ -532,7 +532,7 @@ void EbmlElement::makeSimpleElement(ostream &stream, IdentifierType id, uint64 c
 void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::IdentifierType id, const std::string &content)
 {
     char buff1[8];
-    byte sizeLength = EbmlElement::makeId(id, buff1);
+    std::uint8_t sizeLength = EbmlElement::makeId(id, buff1);
     stream.write(buff1, sizeLength);
     sizeLength = EbmlElement::makeSizeDenotation(content.size(), buff1);
     stream.write(buff1, sizeLength);
@@ -549,7 +549,7 @@ void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::Id
 void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::IdentifierType id, const char *data, std::size_t dataSize)
 {
     char buff1[8];
-    byte sizeLength = EbmlElement::makeId(id, buff1);
+    std::uint8_t sizeLength = EbmlElement::makeId(id, buff1);
     stream.write(buff1, sizeLength);
     sizeLength = EbmlElement::makeSizeDenotation(dataSize, buff1);
     stream.write(buff1, sizeLength);

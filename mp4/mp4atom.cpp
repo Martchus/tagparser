@@ -27,7 +27,7 @@ namespace TagParser {
 /*!
  * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset)
+Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, std::uint64_t startOffset)
     : GenericFileElement<Mp4Atom>(container, startOffset)
 {
 }
@@ -35,7 +35,7 @@ Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffse
 /*!
  * \brief Constructs a new top level atom with the specified \a container at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffset, uint64 maxSize)
+Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, std::uint64_t startOffset, std::uint64_t maxSize)
     : GenericFileElement<Mp4Atom>(container, startOffset, maxSize)
 {
 }
@@ -43,7 +43,7 @@ Mp4Atom::Mp4Atom(GenericFileElement::ContainerType &container, uint64 startOffse
 /*!
  * \brief Constructs a new sub level atom with the specified \a parent at the specified \a startOffset.
  */
-Mp4Atom::Mp4Atom(Mp4Atom &parent, uint64 startOffset)
+Mp4Atom::Mp4Atom(Mp4Atom &parent, std::uint64_t startOffset)
     : GenericFileElement<Mp4Atom>(parent, startOffset)
 {
 }
@@ -101,7 +101,7 @@ void Mp4Atom::internalParse(Diagnostics &diag)
     // currently m_dataSize holds data size plus header size!
     m_dataSize -= headerSize();
     Mp4Atom *child = nullptr;
-    if (uint64 firstChildOffset = this->firstChildOffset()) {
+    if (std::uint64_t firstChildOffset = this->firstChildOffset()) {
         if (firstChildOffset + minimumElementSize() <= totalSize()) {
             child = new Mp4Atom(static_cast<Mp4Atom &>(*this), startOffset() + firstChildOffset);
         }
@@ -135,13 +135,13 @@ void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_
 {
     ostream::pos_type currentOffset = stream.tellp();
     const auto atomSize(currentOffset - startOffset);
-    if (atomSize > numeric_limits<uint32>::max()) {
+    if (atomSize > numeric_limits<std::uint32_t>::max()) {
         diag.emplace_back(DiagLevel::Fatal, argsToString(atomSize, " exceeds maximum."), "write 32-bit atom size");
         throw Failure();
     }
     stream.seekp(startOffset);
     BinaryWriter writer(&stream);
-    writer.writeUInt32BE(static_cast<uint32>(atomSize));
+    writer.writeUInt32BE(static_cast<std::uint32_t>(atomSize));
     stream.seekp(currentOffset);
 }
 
@@ -162,17 +162,17 @@ void Mp4Atom::seekBackAndWriteAtomSize64(std::ostream &stream, const ostream::po
     BinaryWriter writer(&stream);
     writer.writeUInt32BE(1);
     stream.seekp(4, ios_base::cur);
-    writer.writeUInt64BE(static_cast<uint64>(currentOffset - startOffset));
+    writer.writeUInt64BE(static_cast<std::uint64_t>(currentOffset - startOffset));
     stream.seekp(currentOffset);
 }
 
 /*!
  * \brief Writes an MP4 atom header to the specified \a stream.
  */
-void Mp4Atom::makeHeader(uint64 size, uint32 id, BinaryWriter &writer)
+void Mp4Atom::makeHeader(std::uint64_t size, std::uint32_t id, BinaryWriter &writer)
 {
-    if (size < numeric_limits<uint32>::max()) {
-        writer.writeUInt32BE(static_cast<uint32>(size));
+    if (size < numeric_limits<std::uint32_t>::max()) {
+        writer.writeUInt32BE(static_cast<std::uint32_t>(size));
         writer.writeUInt32BE(id);
     } else {
         writer.writeUInt32BE(1);
@@ -262,7 +262,7 @@ bool Mp4Atom::isPadding() const
  * \remarks This method returns zero for non-parent atoms which have no childs.
  * \remarks Childs with variable offset such as the "esds"-atom must be denoted!
  */
-uint64 Mp4Atom::firstChildOffset() const
+std::uint64_t Mp4Atom::firstChildOffset() const
 {
     using namespace Mp4AtomIds;
     using namespace FourccIds;

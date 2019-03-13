@@ -29,7 +29,7 @@ namespace TagParser {
  *                     as updating or making header information.
  * \param startOffset The start offset of the track in the specified \a stream.
  */
-AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64 startOffset)
+AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, std::uint64_t startOffset)
     : m_istream(&inputStream)
     , m_ostream(&outputStream)
     , m_reader(BinaryReader(&inputStream))
@@ -76,7 +76,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, uint64
  *               information.
  * \param startOffset The start offset of the track in the specified \a stream.
  */
-AbstractTrack::AbstractTrack(std::iostream &stream, uint64 startOffset)
+AbstractTrack::AbstractTrack(std::iostream &stream, std::uint64_t startOffset)
     : AbstractTrack(stream, stream, startOffset)
 {
 }
@@ -107,7 +107,7 @@ const char *AbstractTrack::channelConfigString() const
 /*!
  * \brief Returns the extension channel configuration if available; otherwise returns nullptr.
  */
-byte AbstractTrack::extensionChannelConfig() const
+std::uint8_t AbstractTrack::extensionChannelConfig() const
 {
     return m_extensionChannelConfig;
 }

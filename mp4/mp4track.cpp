@@ -18,7 +18,6 @@
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/bitreader.h>
-#include <c++utilities/io/catchiofailure.h>
 
 #include <cmath>
 #include <locale>
@@ -43,17 +42,17 @@ private:
     constexpr TrackHeaderInfo();
 
     /// \brief Specifies the size which is required for <i>making a new</i> track header based one the existing one.
-    uint64 requiredSize;
+    std::uint64_t requiredSize;
     /// \brief Specifies whether there actually a track header exists and whether it can be used as basis for a new one.
     bool canUseExisting;
     /// \brief Specifies whether the existing track header is truncated.
     bool truncated;
     /// \brief Specifies the version of the existing track header.
-    byte version;
+    std::uint8_t version;
     /// \brief Specifies whether the version of the existing track header is unknown (and assumed to be 1).
     bool versionUnknown;
     /// \brief Specifies the additional data offset of the existing header. Unspecified if canUseExisting is false.
-    byte additionalDataOffset;
+    std::uint8_t additionalDataOffset;
     /// \brief Specifies whether the buffered header data should be discarded when making a new track header.
     bool discardBuffer;
 };
@@ -172,43 +171,43 @@ TrackType Mp4Track::type() const
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \sa readChunkSizes();
  */
-std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics &diag)
+std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics &diag)
 {
     static const string context("reading chunk offset table of MP4 track");
     if (!isHeaderValid() || !m_istream) {
         diag.emplace_back(DiagLevel::Critical, "Track has not been parsed.", context);
         throw InvalidDataException();
     }
-    vector<uint64> offsets;
+    vector<std::uint64_t> offsets;
     if (m_stcoAtom) {
         // verify integrity of the chunk offset table
-        uint64 actualTableSize = m_stcoAtom->dataSize();
+        std::uint64_t actualTableSize = m_stcoAtom->dataSize();
         if (actualTableSize < (8 + chunkOffsetSize())) {
             diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. There are no chunk offsets present.", context);
             throw InvalidDataException();
         } else {
             actualTableSize -= 8;
         }
-        uint32 actualChunkCount = chunkCount();
-        uint64 calculatedTableSize = chunkCount() * chunkOffsetSize();
+        std::uint32_t actualChunkCount = chunkCount();
+        std::uint64_t calculatedTableSize = chunkCount() * chunkOffsetSize();
         if (calculatedTableSize < actualTableSize) {
             diag.emplace_back(
                 DiagLevel::Critical, "The stco atom stores more chunk offsets as denoted. The additional chunk offsets will be ignored.", context);
         } else if (calculatedTableSize > actualTableSize) {
             diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. It stores less chunk offsets as denoted.", context);
-            actualChunkCount = static_cast<uint32>(floor(static_cast<double>(actualTableSize) / static_cast<double>(chunkOffsetSize())));
+            actualChunkCount = static_cast<std::uint32_t>(floor(static_cast<double>(actualTableSize) / static_cast<double>(chunkOffsetSize())));
         }
         // read the table
         offsets.reserve(actualChunkCount);
         m_istream->seekg(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8));
         switch (chunkOffsetSize()) {
         case 4:
-            for (uint32 i = 0; i < actualChunkCount; ++i) {
+            for (std::uint32_t i = 0; i < actualChunkCount; ++i) {
                 offsets.push_back(reader().readUInt32BE());
             }
             break;
         case 8:
-            for (uint32 i = 0; i < actualChunkCount; ++i) {
+            for (std::uint32_t i = 0; i < actualChunkCount; ++i) {
                 offsets.push_back(reader().readUInt64BE());
             }
             break;
@@ -219,7 +218,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
     }
     // read sample offsets of fragments
     if (parseFragments) {
-        uint64 totalDuration = 0;
+        std::uint64_t totalDuration = 0;
         for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(Mp4AtomIds::MovieFragment, diag); moofAtom;
              moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
@@ -229,7 +228,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                 for (Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom;
                      tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                     tfhdAtom->parse(diag);
-                    uint32 calculatedDataSize = 0;
+                    std::uint32_t calculatedDataSize = 0;
                     if (tfhdAtom->dataSize() < calculatedDataSize) {
                         diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated.", context);
                     } else {
@@ -254,8 +253,8 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                             // some variables are currently skipped because they are currently not interesting
                             //uint64 baseDataOffset = moofAtom->startOffset();
                             //uint32 defaultSampleDescriptionIndex = 0;
-                            uint32 defaultSampleDuration = 0;
-                            uint32 defaultSampleSize = 0;
+                            std::uint32_t defaultSampleDuration = 0;
+                            std::uint32_t defaultSampleSize = 0;
                             //uint32 defaultSampleFlags = 0;
                             if (tfhdAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
@@ -282,7 +281,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                             }
                             for (Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun, diag); trunAtom;
                                  trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag)) {
-                                uint32 calculatedDataSize = 8;
+                                std::uint32_t calculatedDataSize = 8;
                                 if (trunAtom->dataSize() < calculatedDataSize) {
                                     diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
                                 } else {
@@ -296,7 +295,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                                     if (flags & 0x000004) { // first-sample-flags present
                                         calculatedDataSize += 4;
                                     }
-                                    uint32 entrySize = 0;
+                                    std::uint32_t entrySize = 0;
                                     if (flags & 0x000100) { // sample-duration present
                                         entrySize += 4;
                                     }
@@ -320,7 +319,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                                         if (flags & 0x000004) { // first-sample-flags present
                                             inputStream().seekg(4, ios_base::cur);
                                         }
-                                        for (uint32 i = 0; i < sampleCount; ++i) {
+                                        for (std::uint32_t i = 0; i < sampleCount; ++i) {
                                             if (flags & 0x000100) { // sample-duration present
                                                 totalDuration += reader().readUInt32BE();
                                             } else {
@@ -358,17 +357,17 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
  * \brief Accumulates \a count sample sizes from the specified \a sampleSizeTable starting at the specified \a sampleIndex.
  * \remarks This helper function is used by the addChunkSizeEntries() method.
  */
-uint64 Mp4Track::accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagnostics &diag)
+std::uint64_t Mp4Track::accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagnostics &diag)
 {
     if (sampleIndex + count <= m_sampleSizes.size()) {
-        uint64 sum = 0;
+        std::uint64_t sum = 0;
         for (size_t end = sampleIndex + count; sampleIndex < end; ++sampleIndex) {
             sum += m_sampleSizes[sampleIndex];
         }
         return sum;
     } else if (m_sampleSizes.size() == 1) {
         sampleIndex += count;
-        return static_cast<uint64>(m_sampleSizes.front()) * count;
+        return static_cast<std::uint64_t>(m_sampleSizes.front()) * count;
     } else {
         diag.emplace_back(DiagLevel::Critical, "There are not as many sample size entries as samples.", "reading chunk sizes of MP4 track");
         throw InvalidDataException();
@@ -383,7 +382,8 @@ uint64 Mp4Track::accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagno
  * \param sampleSizeTable Specifies the table holding the sample sizes.
  * \remarks This helper function is used by the readChunkSizes() method.
  */
-void Mp4Track::addChunkSizeEntries(std::vector<uint64> &chunkSizeTable, size_t count, size_t &sampleIndex, uint32 sampleCount, Diagnostics &diag)
+void Mp4Track::addChunkSizeEntries(
+    std::vector<std::uint64_t> &chunkSizeTable, size_t count, size_t &sampleIndex, std::uint32_t sampleCount, Diagnostics &diag)
 {
     for (size_t i = 0; i < count; ++i) {
         chunkSizeTable.push_back(accumulateSampleSizes(sampleIndex, sampleCount, diag));
@@ -410,7 +410,7 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
     }
 
     // check the version of the existing tkhd atom to determine where additional data starts
-    switch (info.version = static_cast<byte>(m_tkhdAtom->buffer()[m_tkhdAtom->headerSize()])) {
+    switch (info.version = static_cast<std::uint8_t>(m_tkhdAtom->buffer()[m_tkhdAtom->headerSize()])) {
     case 0:
         info.additionalDataOffset = 32;
         break;
@@ -456,7 +456,7 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
  *          The second value is sample cound and the third value the sample description index.
  * \remarks The table is not validated.
  */
-vector<tuple<uint32, uint32, uint32>> Mp4Track::readSampleToChunkTable(Diagnostics &diag)
+vector<tuple<std::uint32_t, std::uint32_t, std::uint32_t>> Mp4Track::readSampleToChunkTable(Diagnostics &diag)
 {
     static const string context("reading sample to chunk table of MP4 track");
     if (!isHeaderValid() || !m_istream || !m_stscAtom) {
@@ -464,7 +464,7 @@ vector<tuple<uint32, uint32, uint32>> Mp4Track::readSampleToChunkTable(Diagnosti
         throw InvalidDataException();
     }
     // verify integrity of the sample to chunk table
-    uint64 actualTableSize = m_stscAtom->dataSize();
+    std::uint64_t actualTableSize = m_stscAtom->dataSize();
     if (actualTableSize < 20) {
         diag.emplace_back(DiagLevel::Critical, "The stsc atom is truncated. There are no \"sample to chunk\" entries present.", context);
         throw InvalidDataException();
@@ -480,14 +480,14 @@ vector<tuple<uint32, uint32, uint32>> Mp4Track::readSampleToChunkTable(Diagnosti
         actualSampleToChunkEntryCount = actualTableSize / 12;
     }
     // prepare reading
-    vector<tuple<uint32, uint32, uint32>> sampleToChunkTable;
+    vector<tuple<std::uint32_t, std::uint32_t, std::uint32_t>> sampleToChunkTable;
     sampleToChunkTable.reserve(actualSampleToChunkEntryCount);
     m_istream->seekg(static_cast<streamoff>(m_stscAtom->dataOffset() + 8));
     for (std::uint32_t i = 0; i < actualSampleToChunkEntryCount; ++i) {
         // read entry
-        uint32 firstChunk = reader().readUInt32BE();
-        uint32 samplesPerChunk = reader().readUInt32BE();
-        uint32 sampleDescriptionIndex = reader().readUInt32BE();
+        std::uint32_t firstChunk = reader().readUInt32BE();
+        std::uint32_t samplesPerChunk = reader().readUInt32BE();
+        std::uint32_t sampleDescriptionIndex = reader().readUInt32BE();
         sampleToChunkTable.emplace_back(firstChunk, samplesPerChunk, sampleDescriptionIndex);
     }
     return sampleToChunkTable;
@@ -505,7 +505,7 @@ vector<tuple<uint32, uint32, uint32>> Mp4Track::readSampleToChunkTable(Diagnosti
  *
  * \sa readChunkOffsets();
  */
-vector<uint64> Mp4Track::readChunkSizes(Diagnostics &diag)
+vector<std::uint64_t> Mp4Track::readChunkSizes(Diagnostics &diag)
 {
     static const string context("reading chunk sizes of MP4 track");
     if (!isHeaderValid() || !m_istream || !m_stcoAtom) {
@@ -515,23 +515,23 @@ vector<uint64> Mp4Track::readChunkSizes(Diagnostics &diag)
     // read sample to chunk table
     const auto sampleToChunkTable = readSampleToChunkTable(diag);
     // accumulate chunk sizes from the table
-    vector<uint64> chunkSizes;
+    vector<std::uint64_t> chunkSizes;
     if (!sampleToChunkTable.empty()) {
         // prepare reading
         auto tableIterator = sampleToChunkTable.cbegin();
         chunkSizes.reserve(m_chunkCount);
         // read first entry
         size_t sampleIndex = 0;
-        uint32 previousChunkIndex = get<0>(*tableIterator); // the first chunk has the index 1 and not zero!
+        std::uint32_t previousChunkIndex = get<0>(*tableIterator); // the first chunk has the index 1 and not zero!
         if (previousChunkIndex != 1) {
             diag.emplace_back(DiagLevel::Critical, "The first chunk of the first \"sample to chunk\" entry must be 1.", context);
             previousChunkIndex = 1; // try to read the entry anyway
         }
-        uint32 samplesPerChunk = get<1>(*tableIterator);
+        std::uint32_t samplesPerChunk = get<1>(*tableIterator);
         // read the following entries
         ++tableIterator;
         for (const auto tableEnd = sampleToChunkTable.cend(); tableIterator != tableEnd; ++tableIterator) {
-            uint32 firstChunkIndex = get<0>(*tableIterator);
+            std::uint32_t firstChunkIndex = get<0>(*tableIterator);
             if (firstChunkIndex > previousChunkIndex && firstChunkIndex <= m_chunkCount) {
                 addChunkSizeEntries(chunkSizes, firstChunkIndex - previousChunkIndex, sampleIndex, samplesPerChunk, diag);
             } else {
@@ -650,7 +650,8 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream &stream, uint64 startOffset, uint64 size, Diagnostics &diag)
+unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(
+    istream &stream, std::uint64_t startOffset, std::uint64_t size, Diagnostics &diag)
 {
     static const string context("parsing MPEG-4 audio specific config from elementary stream descriptor");
     using namespace Mpeg4AudioObjectIds;
@@ -663,30 +664,30 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
     try {
         // read audio object type
         auto getAudioObjectType = [&bitReader] {
-            byte objType = bitReader.readBits<byte>(5);
+            std::uint8_t objType = bitReader.readBits<std::uint8_t>(5);
             if (objType == 31) {
-                objType = 32 + bitReader.readBits<byte>(6);
+                objType = 32 + bitReader.readBits<std::uint8_t>(6);
             }
             return objType;
         };
         audioCfg->audioObjectType = getAudioObjectType();
         // read sampling frequency
-        if ((audioCfg->sampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
-            audioCfg->sampleFrequency = bitReader.readBits<uint32>(24);
+        if ((audioCfg->sampleFrequencyIndex = bitReader.readBits<std::uint8_t>(4)) == 0xF) {
+            audioCfg->sampleFrequency = bitReader.readBits<std::uint32_t>(24);
         }
         // read channel config
-        audioCfg->channelConfiguration = bitReader.readBits<byte>(4);
+        audioCfg->channelConfiguration = bitReader.readBits<std::uint8_t>(4);
         // read extension header
         switch (audioCfg->audioObjectType) {
         case Sbr:
         case Ps:
             audioCfg->extensionAudioObjectType = audioCfg->audioObjectType;
             audioCfg->sbrPresent = true;
-            if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
-                audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
+            if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<std::uint8_t>(4)) == 0xF) {
+                audioCfg->extensionSampleFrequency = bitReader.readBits<std::uint32_t>(24);
             }
             if ((audioCfg->audioObjectType = getAudioObjectType()) == ErBsac) {
-                audioCfg->extensionChannelConfiguration = bitReader.readBits<byte>(4);
+                audioCfg->extensionChannelConfiguration = bitReader.readBits<std::uint8_t>(4);
             }
             break;
         }
@@ -709,9 +710,9 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
         case ErTwinVq:
         case ErBsac:
         case ErAacLd:
-            audioCfg->frameLengthFlag = bitReader.readBits<byte>(1);
+            audioCfg->frameLengthFlag = bitReader.readBits<std::uint8_t>(1);
             if ((audioCfg->dependsOnCoreCoder = bitReader.readBit())) {
-                audioCfg->coreCoderDelay = bitReader.readBits<byte>(14);
+                audioCfg->coreCoderDelay = bitReader.readBits<std::uint8_t>(14);
             }
             audioCfg->extensionFlag = bitReader.readBit();
             if (audioCfg->channelConfiguration == 0) {
@@ -720,21 +721,21 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
             switch (audioCfg->audioObjectType) {
             case AacScalable:
             case ErAacScalable:
-                audioCfg->layerNr = bitReader.readBits<byte>(3);
+                audioCfg->layerNr = bitReader.readBits<std::uint8_t>(3);
                 break;
             default:;
             }
             if (audioCfg->extensionFlag == 1) {
                 switch (audioCfg->audioObjectType) {
                 case ErBsac:
-                    audioCfg->numOfSubFrame = bitReader.readBits<byte>(5);
-                    audioCfg->layerLength = bitReader.readBits<uint16>(11);
+                    audioCfg->numOfSubFrame = bitReader.readBits<std::uint8_t>(5);
+                    audioCfg->layerLength = bitReader.readBits<std::uint16_t>(11);
                     break;
                 case ErAacLc:
                 case ErAacLtp:
                 case ErAacScalable:
                 case ErAacLd:
-                    audioCfg->resilienceFlags = bitReader.readBits<byte>(3);
+                    audioCfg->resilienceFlags = bitReader.readBits<std::uint8_t>(3);
                     break;
                 default:;
                 }
@@ -759,7 +760,7 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
         case ErHiln:
         case ErParametric:
         case ErAacEld:
-            switch (audioCfg->epConfig = bitReader.readBits<byte>(2)) {
+            switch (audioCfg->epConfig = bitReader.readBits<std::uint8_t>(2)) {
             case 2:
                 break;
             case 3:
@@ -771,26 +772,26 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
             break;
         }
         if (audioCfg->extensionAudioObjectType != Sbr && audioCfg->extensionAudioObjectType != Ps && bitReader.bitsAvailable() >= 16) {
-            uint16 syncExtensionType = bitReader.readBits<uint16>(11);
+            std::uint16_t syncExtensionType = bitReader.readBits<std::uint16_t>(11);
             if (syncExtensionType == 0x2B7) {
                 if ((audioCfg->extensionAudioObjectType = getAudioObjectType()) == Sbr) {
                     if ((audioCfg->sbrPresent = bitReader.readBit())) {
-                        if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
-                            audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
+                        if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<std::uint8_t>(4)) == 0xF) {
+                            audioCfg->extensionSampleFrequency = bitReader.readBits<std::uint32_t>(24);
                         }
                         if (bitReader.bitsAvailable() >= 12) {
-                            if ((syncExtensionType = bitReader.readBits<uint16>(11)) == 0x548) {
-                                audioCfg->psPresent = bitReader.readBits<byte>(1);
+                            if ((syncExtensionType = bitReader.readBits<std::uint16_t>(11)) == 0x548) {
+                                audioCfg->psPresent = bitReader.readBits<std::uint8_t>(1);
                             }
                         }
                     }
                 } else if (audioCfg->extensionAudioObjectType == ErBsac) {
                     if ((audioCfg->sbrPresent = bitReader.readBit())) {
-                        if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<byte>(4)) == 0xF) {
-                            audioCfg->extensionSampleFrequency = bitReader.readBits<uint32>(24);
+                        if ((audioCfg->extensionSampleFrequencyIndex = bitReader.readBits<std::uint8_t>(4)) == 0xF) {
+                            audioCfg->extensionSampleFrequency = bitReader.readBits<std::uint32_t>(24);
                         }
                     }
-                    audioCfg->extensionChannelConfiguration = bitReader.readBits<byte>(4);
+                    audioCfg->extensionChannelConfiguration = bitReader.readBits<std::uint8_t>(4);
                 }
             } else if (syncExtensionType == 0x548) {
                 audioCfg->psPresent = bitReader.readBit();
@@ -798,11 +799,10 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
         }
     } catch (const NotImplementedException &) {
         diag.emplace_back(DiagLevel::Information, "Not implemented for the format of audio track.", context);
-    } catch (...) {
-        const char *what = catchIoFailure();
+    } catch (const std::ios_base::failure &) {
         if (stream.fail()) {
             // IO error caused by input stream
-            throwIoFailure(what);
+            throw;
         } else {
             // IO error caused by bitReader
             diag.emplace_back(DiagLevel::Critical, "Audio specific configuration is truncated.", context);
@@ -817,7 +817,8 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
  *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
-std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(BinaryReader &reader, uint64 startOffset, uint64 size, Diagnostics &diag)
+std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(
+    BinaryReader &reader, std::uint64_t startOffset, std::uint64_t size, Diagnostics &diag)
 {
     static const string context("parsing MPEG-4 video specific config from elementary stream descriptor");
     using namespace Mpeg4AudioObjectIds;
@@ -826,7 +827,7 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
     reader.stream()->seekg(static_cast<streamoff>(startOffset));
     if (size > 3 && (reader.readUInt24BE() == 1)) {
         size -= 3;
-        uint32 buff1;
+        std::uint32_t buff1;
         while (size) {
             --size;
             switch (reader.readByte()) { // read start code
@@ -892,7 +893,7 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
  *
  * \remarks This method needs to be fixed.
  */
-void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vector<int64> &newMdatOffsets)
+void Mp4Track::updateChunkOffsets(const vector<std::int64_t> &oldMdatOffsets, const vector<std::int64_t> &newMdatOffsets)
 {
     if (!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
         throw InvalidDataException();
@@ -910,11 +911,11 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
     auto currentPos = static_cast<std::uint64_t>(m_istream->tellg());
     switch (m_stcoAtom->id()) {
     case Mp4AtomIds::ChunkOffset: {
-        uint32 off;
+        std::uint32_t off;
         while ((currentPos + 4) <= endPos) {
             off = m_reader.readUInt32BE();
             for (i = 0, size = oldMdatOffsets.size(); i < size; ++i) {
-                if (off > static_cast<uint64>(oldMdatOffsets[i])) {
+                if (off > static_cast<std::uint64_t>(oldMdatOffsets[i])) {
                     off += (newMdatOffsets[i] - oldMdatOffsets[i]);
                     break;
                 }
@@ -926,11 +927,11 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
         break;
     }
     case Mp4AtomIds::ChunkOffset64: {
-        uint64 off;
+        std::uint64_t off;
         while ((currentPos + 8) <= endPos) {
             off = m_reader.readUInt64BE();
             for (i = 0, size = oldMdatOffsets.size(); i < size; ++i) {
-                if (off > static_cast<uint64>(oldMdatOffsets[i])) {
+                if (off > static_cast<std::uint64_t>(oldMdatOffsets[i])) {
                     off += (newMdatOffsets[i] - oldMdatOffsets[i]);
                     break;
                 }
@@ -959,7 +960,7 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
  *          - there is no atom holding these offsets.
  *          - the ID of the atom holding these offsets is not "stco" or "co64".
  */
-void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
+void Mp4Track::updateChunkOffsets(const std::vector<std::uint64_t> &chunkOffsets)
 {
     if (!isHeaderValid() || !m_ostream || !m_istream || !m_stcoAtom) {
         throw InvalidDataException();
@@ -997,7 +998,7 @@ void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
  *          - there is no atom holding these offsets.
  *          - the ID of the atom holding these offsets is not "stco" or "co64".
  */
-void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
+void Mp4Track::updateChunkOffset(std::uint32_t chunkIndex, std::uint64_t offset)
 {
     if (!isHeaderValid() || !m_istream || !m_stcoAtom || chunkIndex >= m_chunkCount) {
         throw InvalidDataException();
@@ -1088,7 +1089,7 @@ void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
 /*!
  * \brief Returns the number of bytes written when calling makeTrack().
  */
-uint64 Mp4Track::requiredSize(Diagnostics &diag) const
+std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
 {
     VAR_UNUSED(diag)
 
@@ -1187,12 +1188,12 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     }
 
     // make size and element ID
-    if (info.requiredSize > numeric_limits<uint32>::max()) {
+    if (info.requiredSize > numeric_limits<std::uint32_t>::max()) {
         writer().writeUInt32BE(1);
         writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
         writer().writeUInt64BE(info.requiredSize);
     } else {
-        writer().writeUInt32BE(static_cast<uint32>(info.requiredSize));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.requiredSize));
         writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
     }
 
@@ -1228,7 +1229,7 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     }
 
     // make track ID and duration
-    writer().writeUInt32BE(static_cast<uint32>(m_id));
+    writer().writeUInt32BE(static_cast<std::uint32_t>(m_id));
     writer().writeUInt32BE(0); // reserved
     if (version != 0) {
         writer().writeUInt64BE(duration);
@@ -1254,7 +1255,7 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
         writer().writeInt16BE(0); // alternate group
         writer().writeFixed8BE(1.0); // volume (fixed 8.8 - 2 byte)
         writer().writeUInt16BE(0); // reserved
-        for (const int32 value : { 0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000 }) { // unity matrix
+        for (const std::int32_t value : { 0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000 }) { // unity matrix
             writer().writeInt32BE(value);
         }
         writer().writeFixed16BE(1.0); // width
@@ -1296,7 +1297,7 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         writer().writeUInt32BE(static_cast<std::uint32_t>(duration));
     }
     // convert and write language
-    uint16 language = 0;
+    std::uint16_t language = 0;
     for (size_t charIndex = 0; charIndex != 3; ++charIndex) {
         const char langChar = charIndex < m_language.size() ? m_language[charIndex] : 0;
         if (langChar >= 'a' && langChar <= 'z') {
@@ -1583,7 +1584,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
         m_timeScale = 0;
         m_duration = TimeSpan();
     }
-    uint16 tmp = reader.readUInt16BE();
+    std::uint16_t tmp = reader.readUInt16BE();
     if (tmp) {
         const char buff[] = {
             static_cast<char>(((tmp & 0x7C00) >> 0xA) + 0x60),
@@ -1645,7 +1646,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                  codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
                 codecConfigContainerAtom->parse(diag);
                 // parse FOURCC
-                m_formatId = interpretIntegerAsString<uint32>(codecConfigContainerAtom->id());
+                m_formatId = interpretIntegerAsString<std::uint32_t>(codecConfigContainerAtom->id());
                 m_format = FourccIds::fourccToMediaFormat(codecConfigContainerAtom->id());
                 // parse codecConfigContainerAtom
                 m_istream->seekg(static_cast<streamoff>(codecConfigContainerAtom->dataOffset()));
@@ -1707,8 +1708,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                     m_istream->seekg(6 + 2 + 16, ios_base::cur); // skip reserved bytes, data reference index, and reserved bytes (again)
                     m_pixelSize.setWidth(reader.readUInt16BE());
                     m_pixelSize.setHeight(reader.readUInt16BE());
-                    m_resolution.setWidth(static_cast<uint32>(reader.readFixed16BE()));
-                    m_resolution.setHeight(static_cast<uint32>(reader.readFixed16BE()));
+                    m_resolution.setWidth(static_cast<std::uint32_t>(reader.readFixed16BE()));
+                    m_resolution.setHeight(static_cast<std::uint32_t>(reader.readFixed16BE()));
                     m_istream->seekg(4, ios_base::cur); // skip reserved bytes
                     m_framesPerSample = reader.readUInt16BE();
                     tmp = reader.readByte();
@@ -1840,7 +1841,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     // read stsz atom which holds the sample size table
     m_sampleSizes.clear();
     m_size = m_sampleCount = 0;
-    uint64 actualSampleSizeTableSize = m_stszAtom->dataSize();
+    std::uint64_t actualSampleSizeTableSize = m_stszAtom->dataSize();
     if (actualSampleSizeTableSize < 12) {
         diag.emplace_back(DiagLevel::Critical,
             "The stsz atom is truncated. There are no sample sizes present. The size of the track can not be determined.", context);
@@ -1864,20 +1865,20 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             m_size = constantSize * m_sampleCount;
         } else {
             auto actualSampleCount = m_sampleCount;
-            const auto calculatedSampleSizeTableSize = static_cast<uint64>(ceil((0.125 * fieldSize) * m_sampleCount));
+            const auto calculatedSampleSizeTableSize = static_cast<std::uint64_t>(ceil((0.125 * fieldSize) * m_sampleCount));
             if (calculatedSampleSizeTableSize < actualSampleSizeTableSize) {
                 diag.emplace_back(
                     DiagLevel::Critical, "The stsz atom stores more entries as denoted. The additional entries will be ignored.", context);
             } else if (calculatedSampleSizeTableSize > actualSampleSizeTableSize) {
                 diag.emplace_back(DiagLevel::Critical, "The stsz atom is truncated. It stores less entries as denoted.", context);
-                actualSampleCount = static_cast<uint64>(floor(static_cast<double>(actualSampleSizeTableSize) / (0.125 * fieldSize)));
+                actualSampleCount = static_cast<std::uint64_t>(floor(static_cast<double>(actualSampleSizeTableSize) / (0.125 * fieldSize)));
             }
             m_sampleSizes.reserve(actualSampleCount);
-            uint32 i = 1;
+            std::uint32_t i = 1;
             switch (fieldSize) {
             case 4:
                 for (; i <= actualSampleCount; i += 2) {
-                    byte val = reader.readByte();
+                    std::uint8_t val = reader.readByte();
                     m_sampleSizes.push_back(val >> 4);
                     m_sampleSizes.push_back(val & 0xF0);
                     m_size += (val >> 4) + (val & 0xF0);
@@ -1914,7 +1915,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     }
 
     // no sample sizes found, search for trun atoms
-    uint64 totalDuration = 0;
+    std::uint64_t totalDuration = 0;
     for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(MovieFragment, diag); moofAtom;
          moofAtom = moofAtom->siblingById(MovieFragment, diag)) {
         moofAtom->parse(diag);
@@ -1923,7 +1924,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             for (Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader, diag); tfhdAtom;
                  tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag)) {
                 tfhdAtom->parse(diag);
-                uint32 calculatedDataSize = 0;
+                std::uint32_t calculatedDataSize = 0;
                 if (tfhdAtom->dataSize() < calculatedDataSize) {
                     diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated.", context);
                 } else {
@@ -1947,8 +1948,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                         }
                         //uint64 baseDataOffset = moofAtom->startOffset();
                         //uint32 defaultSampleDescriptionIndex = 0;
-                        uint32 defaultSampleDuration = 0;
-                        uint32 defaultSampleSize = 0;
+                        std::uint32_t defaultSampleDuration = 0;
+                        std::uint32_t defaultSampleSize = 0;
                         //uint32 defaultSampleFlags = 0;
                         if (tfhdAtom->dataSize() < calculatedDataSize) {
                             diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
@@ -1975,7 +1976,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                         }
                         for (Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun, diag); trunAtom;
                              trunAtom = trunAtom->siblingById(TrackFragmentRun, diag)) {
-                            uint32 calculatedDataSize = 8;
+                            std::uint32_t calculatedDataSize = 8;
                             if (trunAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
                             } else {
@@ -1989,7 +1990,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                                 if (flags & 0x000004) { // first-sample-flags present
                                     calculatedDataSize += 4;
                                 }
-                                uint32 entrySize = 0;
+                                std::uint32_t entrySize = 0;
                                 if (flags & 0x000100) { // sample-duration present
                                     entrySize += 4;
                                 }
@@ -2013,7 +2014,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                                     if (flags & 0x000004) { // first-sample-flags present
                                         m_istream->seekg(4, ios_base::cur);
                                     }
-                                    for (uint32 i = 0; i < sampleCount; ++i) {
+                                    for (std::uint32_t i = 0; i < sampleCount; ++i) {
                                         if (flags & 0x000100) { // sample-duration present
                                             totalDuration += reader.readUInt32BE();
                                         } else {
@@ -2046,7 +2047,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
     // set duration from "trun-information" if the duration has not been determined yet
     if (m_duration.isNull() && totalDuration) {
-        uint32 timeScale = m_timeScale;
+        std::uint32_t timeScale = m_timeScale;
         if (!timeScale) {
             timeScale = trakAtom().container().timeScale();
         }

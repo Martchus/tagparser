@@ -30,13 +30,13 @@ void VorbisIdentificationHeader::parseHeader(OggIterator &iterator)
     }
     iterator.read(buff, sizeof(buff));
     m_version = LE::toUInt32(buff);
-    m_channels = static_cast<byte>(*(buff + 4));
+    m_channels = static_cast<std::uint8_t>(*(buff + 4));
     m_sampleRate = LE::toUInt32(buff + 5);
     m_maxBitrate = LE::toUInt32(buff + 9);
     m_nominalBitrate = LE::toUInt32(buff + 13);
     m_minBitrate = LE::toUInt32(buff + 17);
-    m_blockSize = static_cast<byte>(*(buff + 21));
-    m_framingFlag = static_cast<byte>(*(buff + 22));
+    m_blockSize = static_cast<std::uint8_t>(*(buff + 21));
+    m_framingFlag = static_cast<std::uint8_t>(*(buff + 22));
 }
 
 } // namespace TagParser

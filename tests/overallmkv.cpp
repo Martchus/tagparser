@@ -182,7 +182,7 @@ void OverallTests::checkMkvTestfile4()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Vorbis, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2u), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2u), track->channelCount());
             switch (m_tagStatus) {
             case TagStatus::Original:
             case TagStatus::Removed:
@@ -240,7 +240,7 @@ void OverallTests::checkMkvTestfile5()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         case 3554194305:
             CPPUNIT_ASSERT_EQUAL(MediaType::Text, track->mediaType());
@@ -288,7 +288,7 @@ void OverallTests::checkMkvTestfile6()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(MpegChannelMode::Stereo), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(MpegChannelMode::Stereo), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -333,7 +333,7 @@ void OverallTests::checkMkvTestfile7()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -387,7 +387,7 @@ void OverallTests::checkMkvTestfile8()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -434,7 +434,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL(argsToString("unknown track ID ", track->id()));
@@ -446,7 +446,7 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
         switch (chapter->id()) {
         case 1:
             CPPUNIT_ASSERT_EQUAL("Kapitel 01"s, static_cast<const string &>(chapter->names().at(0)));
-            CPPUNIT_ASSERT_EQUAL(static_cast<int64>(0), chapter->startTime().totalTicks());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::int64_t>(0), chapter->startTime().totalTicks());
             CPPUNIT_ASSERT_EQUAL(15, chapter->endTime().seconds());
             break;
         case 2:
@@ -535,7 +535,7 @@ void OverallTests::checkMkvTestMetaData()
     CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), tags.front()->value(KnownField::Title).toString());
     CPPUNIT_ASSERT(tags.front()->value(KnownField::Artist).isEmpty());
     CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), tags.front()->value(KnownField::Comment).toString());
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(30), tags[1]->target().level());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(30), tags[1]->target().level());
     CPPUNIT_ASSERT_EQUAL(tracks.at(0)->id(), tags[1]->target().tracks().at(0));
     CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(), tags[1]->value(KnownField::Album).toString());
     CPPUNIT_ASSERT_EQUAL(m_testPartNumber.toInteger(), tags[1]->value(KnownField::PartNumber).toInteger());
@@ -569,7 +569,7 @@ void OverallTests::checkMkvConstraints()
     CPPUNIT_ASSERT(m_fileInfo.container());
     if (m_mode & PaddingConstraints) {
         if (m_mode & ForceRewring) {
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(4096), m_fileInfo.paddingSize());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(4096), m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));

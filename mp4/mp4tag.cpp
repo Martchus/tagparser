@@ -312,11 +312,11 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
     static const string context("parsing MP4 tag");
     istream &stream = metaAtom.container().stream();
     BinaryReader &reader = metaAtom.container().reader();
-    if (metaAtom.totalSize() > numeric_limits<uint32>::max()) {
+    if (metaAtom.totalSize() > numeric_limits<std::uint32_t>::max()) {
         diag.emplace_back(DiagLevel::Critical, "Can't handle such big \"meta\" atoms.", context);
         throw NotImplementedException();
     }
-    m_size = static_cast<uint32>(metaAtom.totalSize());
+    m_size = static_cast<std::uint32_t>(metaAtom.totalSize());
     Mp4Atom *subAtom = nullptr;
     try {
         metaAtom.childById(Mp4AtomIds::HandlerReference, diag);
@@ -335,7 +335,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
         if (reader.readInt32BE()) {
             diag.emplace_back(DiagLevel::Warning, "Predefined 32-bit integer (hdlr atom) ins't set to 0.", context);
         }
-        uint64 handlerType = reader.readUInt64BE();
+        std::uint64_t handlerType = reader.readUInt64BE();
         if (/*(((handlerType & 0xFFFFFFFF00000000) >> 32) != 0x6D647461) && */ (handlerType != 0x6d6469726170706c)) {
             diag.emplace_back(DiagLevel::Warning, "Handler type (value in hdlr atom) is unknown. Trying to parse meta information anyhow.", context);
         }
@@ -425,7 +425,7 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag)
     if (m_ilstSize != 8) {
         m_metaSize += m_ilstSize;
     }
-    if (m_metaSize >= numeric_limits<uint32>::max()) {
+    if (m_metaSize >= numeric_limits<std::uint32_t>::max()) {
         diag.emplace_back(DiagLevel::Critical, "Making such big tags is not implemented.", "making MP4 tag");
         throw NotImplementedException();
     }
@@ -442,15 +442,15 @@ void Mp4TagMaker::make(ostream &stream, Diagnostics &diag)
 {
     // write meta head
     BinaryWriter writer(&stream);
-    writer.writeUInt32BE(static_cast<uint32>(m_metaSize));
+    writer.writeUInt32BE(static_cast<std::uint32_t>(m_metaSize));
     writer.writeUInt32BE(Mp4AtomIds::Meta);
     // write hdlr atom
-    static const byte hdlrData[37] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x68, 0x64, 0x6C, 0x72, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x6D, 0x64, 0x69, 0x72, 0x61, 0x70, 0x70, 0x6C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    static const std::uint8_t hdlrData[37] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x68, 0x64, 0x6C, 0x72, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x6D, 0x64, 0x69, 0x72, 0x61, 0x70, 0x70, 0x6C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     stream.write(reinterpret_cast<const char *>(hdlrData), sizeof(hdlrData));
     if (m_ilstSize != 8) {
         // write ilst head
-        writer.writeUInt32BE(static_cast<uint32>(m_ilstSize));
+        writer.writeUInt32BE(static_cast<std::uint32_t>(m_ilstSize));
         writer.writeUInt32BE(Mp4AtomIds::ItunesList);
         // write fields
         for (auto &maker : m_maker) {

@@ -4,7 +4,6 @@
 #include "../mediafileinfo.h"
 #include "../tag.h"
 
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/tests/testutils.h>
 using namespace TestUtilities;
 
@@ -77,12 +76,12 @@ void MediaFileInfoTests::testFileSystemMethods()
     CPPUNIT_ASSERT_EQUAL("unsupported"s, file.fileName(true));
     CPPUNIT_ASSERT_EQUAL("/usr/bin/unsupported"s, file.pathWithoutExtension());
     CPPUNIT_ASSERT_EQUAL(".bin"s, file.extension());
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(0), file.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(0), file.size());
     file.reportPathChanged(testFilePath("unsupported.bin"));
     file.open(true);
     CPPUNIT_ASSERT(file.isOpen());
     CPPUNIT_ASSERT(file.isReadOnly());
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(41), file.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(41), file.size());
 }
 
 void MediaFileInfoTests::testParsingUnsupportedFile()
@@ -109,12 +108,7 @@ void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
     file.parseTags(diag);
     file.parseAttachments(diag);
     file.close();
-    try {
-        file.parseTracks(diag);
-        CPPUNIT_FAIL("expected std::ios_base::failure because file has been closed");
-    } catch (...) {
-        catchIoFailure();
-    }
+    CPPUNIT_ASSERT_THROW_MESSAGE("std::ios_base::failure thrown if file closed", file.parseTracks(diag), std::ios_base::failure);
     CPPUNIT_ASSERT(file.areTagsSupported());
     CPPUNIT_ASSERT(file.areTracksSupported());
     CPPUNIT_ASSERT(!file.areChaptersSupported());

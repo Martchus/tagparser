@@ -1,7 +1,6 @@
 #include "../caseinsensitivecomparer.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/tests/testutils.h>
 
 #include <cppunit/TestFixture.h>
@@ -13,7 +12,6 @@
 
 using namespace std;
 using namespace ConversionUtilities;
-using namespace IoUtilities;
 using namespace TestUtilities;
 using namespace TagParser;
 
@@ -103,8 +101,7 @@ Sha256Checksum TestFile::computeSha256Sum() const
                 file.read(readBuffer, sizeof(readBuffer));
                 SHA256_Update(&sha256, readBuffer, static_cast<size_t>(file.gcount()));
             }
-        } catch (...) {
-            catchIoFailure();
+        } catch (const std::ios_base::failure &) {
             if (file.eof() && !file.bad()) {
                 SHA256_Update(&sha256, readBuffer, static_cast<size_t>(file.gcount()));
             } else {

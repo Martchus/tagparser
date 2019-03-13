@@ -4,23 +4,23 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/conversion/types.h>
 
+#include <cstdint>
 #include <string>
 
 namespace TagParser {
 
 struct TAG_PARSER_EXPORT AspectRatio {
     constexpr AspectRatio();
-    AspectRatio(byte aspectRatioType);
-    constexpr AspectRatio(uint16 numerator, uint16 denominator);
+    AspectRatio(std::uint8_t aspectRatioType);
+    constexpr AspectRatio(std::uint16_t numerator, std::uint16_t denominator);
     constexpr bool isValid() const;
     constexpr bool isExtended() const;
     std::string toString() const;
 
-    byte type;
-    uint16 numerator;
-    uint16 denominator;
+    std::uint8_t type;
+    std::uint16_t numerator;
+    std::uint16_t denominator;
 };
 
 /*!
@@ -37,7 +37,7 @@ constexpr AspectRatio::AspectRatio()
  * \brief Constructs a aspect ratio with the specified \a numerator and \a denominator.
  * \remarks Allows defining a custom aspect ratio, hence counts as "extended" (see isExtended()).
  */
-constexpr AspectRatio::AspectRatio(uint16 numerator, uint16 denominator)
+constexpr AspectRatio::AspectRatio(std::uint16_t numerator, std::uint16_t denominator)
     : type(0xFF)
     , numerator(numerator)
     , denominator(denominator)

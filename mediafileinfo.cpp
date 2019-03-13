@@ -36,7 +36,6 @@
 
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/stringconversion.h>
-#include <c++utilities/io/catchiofailure.h>
 
 #include <unistd.h>
 
@@ -394,7 +393,7 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
         auto id3v2Tag = make_unique<Id3v2Tag>();
         stream().seekg(offset, ios_base::beg);
         try {
-            id3v2Tag->parse(stream(), size() - static_cast<uint64>(offset), diag);
+            id3v2Tag->parse(stream(), size() - static_cast<std::uint64_t>(offset), diag);
             m_paddingSize += id3v2Tag->paddingSize();
         } catch (const NoDataFoundException &) {
             continue;
@@ -1521,7 +1520,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 reportSizeChanged(size() - 128);
             } else {
                 diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
-                throwIoFailure("Unable to truncate file to remove ID3v1 tag.");
+                throw std::ios_base::failure("Unable to truncate file to remove ID3v1 tag.");
             }
             return;
         } else {
@@ -1558,7 +1557,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     // prepare ID3v2 tags
     vector<Id3v2TagMaker> makers;
     makers.reserve(m_id3v2Tags.size());
-    uint32 tagsSize = 0;
+    std::uint32_t tagsSize = 0;
     for (auto &tag : m_id3v2Tags) {
         try {
             makers.emplace_back(tag->prepareMaking(diag));
@@ -1568,7 +1567,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     }
 
     // determine stream offset and make track/format specific metadata
-    uint32 streamOffset; // where the actual stream starts
+    std::uint32_t streamOffset; // where the actual stream starts
     stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
     flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
     std::streamoff startOfLastMetaDataBlock;
@@ -1579,7 +1578,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         streamOffset = flacStream->streamOffset();
     } else {
         // make no further metadata, just use the container offset as stream offset
-        streamOffset = static_cast<uint32>(m_containerOffset);
+        streamOffset = static_cast<std::uint32_t>(m_containerOffset);
     }
 
     // check whether rewrite is required
@@ -1632,10 +1631,10 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 BackupHelper::createBackupFile(backupDirectory(), path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
                 outputStream.open(path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch (...) {
-                const char *const what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                throwIoFailure(what);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(
+                    DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
+                throw;
             }
         } else {
             // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -1644,10 +1643,9 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 backupStream.exceptions(ios_base::badbit | ios_base::failbit);
                 backupStream.open(path(), ios_base::in | ios_base::binary);
                 outputStream.open(m_saveFilePath, ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch (...) {
-                const char *const what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
-                throwIoFailure(what);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
+                throw;
             }
         }
 
@@ -1656,18 +1654,17 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         try {
             close();
             outputStream.open(path(), ios_base::in | ios_base::out | ios_base::binary);
-        } catch (...) {
-            const char *const what = catchIoFailure();
-            diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
-            throwIoFailure(what);
+        } catch (const std::ios_base::failure &failure) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Opening the file with write permissions failed: ", failure.what()), context);
+            throw;
         }
     }
 
     // start actual writing
     try {
         // ensure we can cast padding safely to uint32
-        if (padding > numeric_limits<uint32>::max()) {
-            padding = numeric_limits<uint32>::max();
+        if (padding > numeric_limits<std::uint32_t>::max()) {
+            padding = numeric_limits<std::uint32_t>::max();
             diag.emplace_back(
                 DiagLevel::Critical, argsToString("Preferred padding is not supported. Setting preferred padding to ", padding, '.'), context);
         }
@@ -1679,7 +1676,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 i->make(outputStream, 0, diag);
             }
             // include padding into the last ID3v2 tag
-            makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : static_cast<uint32>(padding), diag);
+            makers.back().make(outputStream, (flacStream && padding && padding < 4) ? 0 : static_cast<std::uint32_t>(padding), diag);
         }
 
         if (flacStream) {
@@ -1687,7 +1684,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 // if appending padding, ensure the last flag of the last "METADATA_BLOCK_HEADER" is not set
                 flacMetaData.seekg(startOfLastMetaDataBlock);
                 flacMetaData.seekp(startOfLastMetaDataBlock);
-                flacMetaData.put(static_cast<byte>(flacMetaData.peek()) & (0x80u - 1));
+                flacMetaData.put(static_cast<std::uint8_t>(flacMetaData.peek()) & (0x80u - 1));
                 flacMetaData.seekg(0);
             }
 
@@ -1696,7 +1693,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
 
             // write padding
             if (padding) {
-                flacStream->makePadding(outputStream, static_cast<uint32>(padding), true, diag);
+                flacStream->makePadding(outputStream, static_cast<std::uint32_t>(padding), true, diag);
             }
         }
 
@@ -1709,7 +1706,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
 
         // copy / skip actual stream data
         // -> determine media data size
-        uint64 mediaDataSize = size() - streamOffset;
+        std::uint64_t mediaDataSize = size() - streamOffset;
         if (m_actualExistingId3v1Tag) {
             mediaDataSize -= 128;
         }
@@ -1745,7 +1742,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         // handle streams
         if (rewriteRequired) {
             // report new size
-            reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
+            reportSizeChanged(static_cast<std::uint64_t>(outputStream.tellp()));
             // "save as path" is now the regular path
             if (!saveFilePath().empty()) {
                 reportPathChanged(saveFilePath());
@@ -1754,7 +1751,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             // stream is useless for further usage because it is write-only
             outputStream.close();
         } else {
-            const auto newSize = static_cast<uint64>(outputStream.tellp());
+            const auto newSize = static_cast<std::uint64_t>(outputStream.tellp());
             if (newSize < size()) {
                 // file is smaller after the modification -> truncate
                 // -> close stream before truncating

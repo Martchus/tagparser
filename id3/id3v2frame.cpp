@@ -11,6 +11,7 @@
 #include <zlib.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <memory>
@@ -23,11 +24,11 @@ using namespace IoUtilities;
 namespace TagParser {
 
 namespace Id3v2TextEncodingBytes {
-enum Id3v2TextEncodingByte : byte { Ascii, Utf16WithBom, Utf16BigEndianWithoutBom, Utf8 };
+enum Id3v2TextEncodingByte : std::uint8_t { Ascii, Utf16WithBom, Utf16BigEndianWithoutBom, Utf8 };
 }
 
 /// \brief The maximum (supported) size of an ID3v2Frame.
-constexpr auto maxId3v2FrameDataSize(numeric_limits<uint32>::max() - 15);
+constexpr auto maxId3v2FrameDataSize(numeric_limits<std::uint32_t>::max() - 15);
 
 /*!
  * \class TagParser::Id3v2Frame
@@ -50,7 +51,7 @@ Id3v2Frame::Id3v2Frame()
 /*!
  * \brief Constructs a new Id3v2Frame with the specified \a id, \a value, \a group and \a flag.
  */
-Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, byte group, uint16 flag)
+Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, std::uint8_t group, std::uint16_t flag)
     : TagField<Id3v2Frame>(id, value)
     , m_parsedVersion(0)
     , m_dataSize(0)
@@ -131,7 +132,7 @@ u16string wideStringFromSubstring(tuple<const char *, size_t, const char *> subs
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize, Diagnostics &diag)
+void Id3v2Frame::parse(BinaryReader &reader, std::uint32_t version, std::uint32_t maximalSize, Diagnostics &diag)
 {
     static const string defaultContext("parsing ID3v2 frame");
     string context;
@@ -237,7 +238,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
             diag.emplace_back(DiagLevel::Critical, "The decompressed data exceeds the maximum supported frame size.", context);
             throw InvalidDataException();
         }
-        m_dataSize = static_cast<uint32>(decompressedSize);
+        m_dataSize = static_cast<std::uint32_t>(decompressedSize);
     } else {
         buffer = make_unique<char[]>(m_dataSize);
         reader.read(buffer.get(), m_dataSize);
@@ -246,7 +247,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
     // read tag value depending on frame ID/type
     if (Id3v2FrameIds::isTextFrame(id())) {
         // parse text encoding byte
-        TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer.get()), diag);
+        TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<std::uint8_t>(*buffer.get()), diag);
 
         // parse string values (since ID3v2.4 a text frame may contain multiple strings)
         const char *currentOffset = buffer.get() + 1;
@@ -339,13 +340,13 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
 
     } else if (version >= 3 && id() == Id3v2FrameIds::lCover) {
         // parse picture frame
-        byte type;
+        std::uint8_t type;
         parsePicture(buffer.get(), m_dataSize, value(), type, diag);
         setTypeInfo(type);
 
     } else if (version < 3 && id() == Id3v2FrameIds::sCover) {
         // parse legacy picutre
-        byte type;
+        std::uint8_t type;
         parseLegacyPicture(buffer.get(), m_dataSize, value(), type, diag);
         setTypeInfo(type);
 
@@ -370,7 +371,7 @@ void Id3v2Frame::parse(BinaryReader &reader, uint32 version, uint32 maximalSize,
  *
  * This method might be useful when it is necessary to know the size of the field before making it.
  */
-Id3v2FrameMaker Id3v2Frame::prepareMaking(byte version, Diagnostics &diag)
+Id3v2FrameMaker Id3v2Frame::prepareMaking(std::uint8_t version, Diagnostics &diag)
 {
     return Id3v2FrameMaker(*this, version, diag);
 }
@@ -383,7 +384,7 @@ Id3v2FrameMaker Id3v2Frame::prepareMaking(byte version, Diagnostics &diag)
  * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Frame::make(BinaryWriter &writer, byte version, Diagnostics &diag)
+void Id3v2Frame::make(BinaryWriter &writer, std::uint8_t version, Diagnostics &diag)
 {
     prepareMaking(version, diag).make(writer);
 }
@@ -424,7 +425,7 @@ std::string Id3v2Frame::ignoreAdditionalValuesDiagMsg() const
  * \brief Prepares making the specified \a frame.
  * \sa See Id3v2Frame::prepareMaking() for more information.
  */
-Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &diag)
+Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagnostics &diag)
     : m_frame(frame)
     , m_frameId(m_frame.id())
     , m_version(version)
@@ -536,7 +537,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
                         diag.emplace_back(DiagLevel::Critical, argsToString("Assigned duration \"", duration.toString(), "\" is negative."), context);
                         throw InvalidDataException();
                     }
-                    substrings.emplace_back(ConversionUtilities::numberToString(static_cast<uint64>(duration.totalMilliseconds())));
+                    substrings.emplace_back(ConversionUtilities::numberToString(static_cast<std::uint64_t>(duration.totalMilliseconds())));
                 }
 
             } else {
@@ -596,7 +597,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
             const auto concatenatedSubstrings = joinStrings(substrings, string(), false, byteOrderMark, string(terminationLength, '\0'));
 
             // write text encoding byte and concatenated strings to data buffer
-            m_data = make_unique<char[]>(m_decompressedSize = static_cast<uint32>(1 + concatenatedSubstrings.size()));
+            m_data = make_unique<char[]>(m_decompressedSize = static_cast<std::uint32_t>(1 + concatenatedSubstrings.size()));
             m_data[0] = static_cast<char>(Id3v2Frame::makeTextEncodingByte(encoding));
             concatenatedSubstrings.copy(&m_data[1], concatenatedSubstrings.size());
 
@@ -617,7 +618,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
                 diag.emplace_back(DiagLevel::Critical, "Assigned value exceeds maximum size.", context);
                 throw InvalidDataException();
             }
-            m_data = make_unique<char[]>(m_decompressedSize = static_cast<uint32>(value.dataSize()));
+            m_data = make_unique<char[]>(m_decompressedSize = static_cast<std::uint32_t>(value.dataSize()));
             copy(value.dataPointer(), value.dataPointer() + m_decompressedSize, m_data.get());
         }
     } catch (const ConversionException &) {
@@ -650,7 +651,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, byte version, Diagnostics &d
             throw InvalidDataException();
         }
         m_data.swap(compressedData);
-        m_dataSize = static_cast<uint32>(compressedSize);
+        m_dataSize = static_cast<std::uint32_t>(compressedSize);
     } else {
         m_dataSize = m_decompressedSize;
     }
@@ -715,7 +716,7 @@ void Id3v2FrameMaker::make(BinaryWriter &writer)
  * If the \a textEncodingByte doesn't match any encoding TagTextEncoding::Latin1 is
  * returned and a parsing notification is added.
  */
-TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte, Diagnostics &diag)
+TagTextEncoding Id3v2Frame::parseTextEncodingByte(std::uint8_t textEncodingByte, Diagnostics &diag)
 {
     switch (textEncodingByte) {
     case Id3v2TextEncodingBytes::Ascii:
@@ -736,7 +737,7 @@ TagTextEncoding Id3v2Frame::parseTextEncodingByte(byte textEncodingByte, Diagnos
 /*!
  * \brief Returns a text encoding byte for the specified \a textEncoding.
  */
-byte Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
+std::uint8_t Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
 {
     switch (textEncoding) {
     case TagTextEncoding::Latin1:
@@ -815,9 +816,9 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
                 get<0>(res) += 2;
             }
         }
-        const uint16 *pos = reinterpret_cast<const uint16 *>(get<0>(res));
+        const std::uint16_t *pos = reinterpret_cast<const std::uint16_t *>(get<0>(res));
         for (; *pos != 0x0000; ++pos) {
-            if (pos < reinterpret_cast<const uint16 *>(get<2>(res))) {
+            if (pos < reinterpret_cast<const std::uint16_t *>(get<2>(res))) {
                 get<1>(res) += 2;
             } else {
                 if (addWarnings) {
@@ -889,7 +890,7 @@ void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &e
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag)
+void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, std::uint8_t &typeInfo, Diagnostics &diag)
 {
     static const string context("parsing ID3v2.2 picture frame");
     if (maxSize < 6) {
@@ -897,7 +898,7 @@ void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, Tag
         throw TruncatedDataException();
     }
     const char *end = buffer + maxSize;
-    auto dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer), diag); // the first byte stores the encoding
+    auto dataEncoding = parseTextEncodingByte(static_cast<std::uint8_t>(*buffer), diag); // the first byte stores the encoding
     typeInfo = static_cast<unsigned char>(*(buffer + 4));
     auto substr = parseSubstring(buffer + 5, static_cast<size_t>(end - 5 - buffer), dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
@@ -915,11 +916,11 @@ void Id3v2Frame::parseLegacyPicture(const char *buffer, std::size_t maxSize, Tag
  * \param tagValue Specifies the tag value used to store the results.
  * \param typeInfo Specifies a byte used to store the type info.
  */
-void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, byte &typeInfo, Diagnostics &diag)
+void Id3v2Frame::parsePicture(const char *buffer, std::size_t maxSize, TagValue &tagValue, std::uint8_t &typeInfo, Diagnostics &diag)
 {
     static const string context("parsing ID3v2.3 picture frame");
     const char *end = buffer + maxSize;
-    auto dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer), diag); // the first byte stores the encoding
+    auto dataEncoding = parseTextEncodingByte(static_cast<std::uint8_t>(*buffer), diag); // the first byte stores the encoding
     auto mimeTypeEncoding = TagTextEncoding::Latin1;
     auto substr = parseSubstring(buffer + 1, maxSize - 1, mimeTypeEncoding, true, diag);
     if (get<1>(substr)) {
@@ -957,7 +958,7 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
         diag.emplace_back(DiagLevel::Critical, "Comment frame is incomplete.", context);
         throw TruncatedDataException();
     }
-    TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<byte>(*buffer), diag);
+    TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<std::uint8_t>(*buffer), diag);
     if (*(++buffer)) {
         tagValue.setLanguage(string(buffer, 3));
     }
@@ -980,7 +981,7 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
  * \deprecated No longer used.
  * \todo Remove in v9.
  */
-void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const std::string &value, TagTextEncoding encoding)
+void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const std::string &value, TagTextEncoding encoding)
 {
     makeEncodingAndData(buffer, bufferSize, encoding, value.data(), value.size());
 }
@@ -996,13 +997,13 @@ void Id3v2Frame::makeString(std::unique_ptr<char[]> &buffer, uint32 &bufferSize,
  * \todo Remove in v9.
  */
 void Id3v2Frame::makeEncodingAndData(
-    std::unique_ptr<char[]> &buffer, uint32 &bufferSize, TagTextEncoding encoding, const char *data, std::size_t dataSize)
+    std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, TagTextEncoding encoding, const char *data, std::size_t dataSize)
 {
     // calculate buffer size and allocate buffer
     if (!data) {
         dataSize = 0;
     }
-    if (dataSize > numeric_limits<uint32>::max() - 5) {
+    if (dataSize > numeric_limits<std::uint32_t>::max() - 5) {
         throw InvalidDataException();
     }
     char *bufferDataAddress;
@@ -1011,17 +1012,18 @@ void Id3v2Frame::makeEncodingAndData(
     case TagTextEncoding::Utf8:
     case TagTextEncoding::Unspecified: // assumption
         // allocate buffer
-        buffer = make_unique<char[]>(bufferSize = static_cast<uint32>(1 + dataSize + 1));
+        buffer = make_unique<char[]>(bufferSize = static_cast<std::uint32_t>(1 + dataSize + 1));
         buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
         bufferDataAddress = buffer.get() + 1;
         break;
     case TagTextEncoding::Utf16LittleEndian:
     case TagTextEncoding::Utf16BigEndian:
         // allocate buffer
-        buffer = make_unique<char[]>(bufferSize = static_cast<uint32>(1 + 2 + dataSize + 2));
+        buffer = make_unique<char[]>(bufferSize = static_cast<std::uint32_t>(1 + 2 + dataSize + 2));
         buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
         ConversionUtilities::LE::getBytes(
-            encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<uint16>(0xFEFF) : static_cast<uint16>(0xFFFE), buffer.get() + 1);
+            encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<std::uint16_t>(0xFEFF) : static_cast<std::uint16_t>(0xFFFE),
+            buffer.get() + 1);
         bufferDataAddress = buffer.get() + 3;
         break;
     default:
@@ -1042,10 +1044,10 @@ size_t Id3v2Frame::makeBom(char *buffer, TagTextEncoding encoding)
 {
     switch (encoding) {
     case TagTextEncoding::Utf16LittleEndian:
-        ConversionUtilities::LE::getBytes(static_cast<uint16>(0xFEFF), buffer);
+        ConversionUtilities::LE::getBytes(static_cast<std::uint16_t>(0xFEFF), buffer);
         return 2;
     case TagTextEncoding::Utf16BigEndian:
-        ConversionUtilities::BE::getBytes(static_cast<uint16>(0xFEFF), buffer);
+        ConversionUtilities::BE::getBytes(static_cast<std::uint16_t>(0xFEFF), buffer);
         return 2;
     default:
         return 0;
@@ -1055,7 +1057,7 @@ size_t Id3v2Frame::makeBom(char *buffer, TagTextEncoding encoding)
 /*!
  * \brief Writes the specified picture to the specified buffer (ID3v2.2 compatible).
  */
-void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo)
+void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo)
 {
     // determine description
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
@@ -1077,10 +1079,10 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
     const auto requiredBufferSize = 1 + 3 + 1 + descriptionSize
         + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
         + picture.dataSize();
-    if (requiredBufferSize > numeric_limits<uint32>::max()) {
+    if (requiredBufferSize > numeric_limits<std::uint32_t>::max()) {
         throw InvalidDataException();
     }
-    buffer = make_unique<char[]>(bufferSize = static_cast<uint32>(requiredBufferSize));
+    buffer = make_unique<char[]>(bufferSize = static_cast<std::uint32_t>(requiredBufferSize));
     char *offset = buffer.get();
 
     // write encoding byte
@@ -1123,7 +1125,8 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, uint32 &bufferSiz
 /*!
  * \brief Writes the specified picture to the specified buffer.
  */
-void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &picture, byte typeInfo, byte version)
+void Id3v2Frame::makePicture(
+    std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo, std::uint8_t version)
 {
     if (version < 3) {
         makeLegacyPicture(buffer, bufferSize, picture, typeInfo);
@@ -1150,7 +1153,7 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize
         mimeTypeSize = picture.mimeType().length();
     }
     // calculate needed buffer size and create buffer
-    const uint32 dataSize = picture.dataSize();
+    const std::uint32_t dataSize = picture.dataSize();
     buffer = make_unique<char[]>(bufferSize = 1 + mimeTypeSize + 1 + 1 + descriptionSize
             + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
             + dataSize);
@@ -1181,7 +1184,7 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, uint32 &bufferSize
 /*!
  * \brief Writes the specified comment to the specified buffer.
  */
-void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, uint32 &bufferSize, const TagValue &comment, byte version, Diagnostics &diag)
+void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &comment, std::uint8_t version, Diagnostics &diag)
 {
     static const string context("making comment frame");
     // check type and other values are valid

@@ -57,15 +57,15 @@ class TAG_PARSER_EXPORT Mp4TagMaker {
 public:
     void make(std::ostream &stream, Diagnostics &diag);
     const Mp4Tag &tag() const;
-    uint64 requiredSize() const;
+    std::uint64_t requiredSize() const;
 
 private:
     Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag);
 
     Mp4Tag &m_tag;
     std::vector<Mp4TagFieldMaker> m_maker;
-    uint64 m_metaSize;
-    uint64 m_ilstSize;
+    std::uint64_t m_metaSize;
+    std::uint64_t m_ilstSize;
     bool m_omitPreDefinedGenre;
 };
 
@@ -80,7 +80,7 @@ inline const Mp4Tag &Mp4TagMaker::tag() const
 /*!
  * \brief Returns the number of bytes which will be written when making the tag.
  */
-inline uint64 Mp4TagMaker::requiredSize() const
+inline std::uint64_t Mp4TagMaker::requiredSize() const
 {
     return m_metaSize;
 }

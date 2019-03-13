@@ -3,7 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 namespace TagParser {
 
@@ -403,7 +403,7 @@ namespace MatroskaTrackType {
 enum KnownValues { Video = 0x1, Audio = 0x2, Complex = 0x3, Logo = 0x10, Subtitle = 0x11, Buttons = 0x12, Control = 0x20 };
 }
 
-enum class MatroskaElementLevel : byte {
+enum class MatroskaElementLevel : std::uint8_t {
     TopLevel = 0x0,
     Level1,
     Level2,
@@ -417,20 +417,23 @@ enum class MatroskaElementLevel : byte {
 
 constexpr bool operator>(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
 {
-    return static_cast<byte>(lhs) < static_cast<byte>(MatroskaElementLevel::Global)
-        && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global) && static_cast<byte>(lhs) > static_cast<byte>(rhs);
+    return static_cast<std::uint8_t>(lhs) < static_cast<std::uint8_t>(MatroskaElementLevel::Global)
+        && static_cast<std::uint8_t>(rhs) < static_cast<std::uint8_t>(MatroskaElementLevel::Global)
+        && static_cast<std::uint8_t>(lhs) > static_cast<std::uint8_t>(rhs);
 }
 
-constexpr bool operator>(byte lhs, MatroskaElementLevel rhs)
+constexpr bool operator>(std::uint8_t lhs, MatroskaElementLevel rhs)
 {
-    return lhs < static_cast<byte>(MatroskaElementLevel::Global) && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global)
-        && static_cast<byte>(lhs) > static_cast<byte>(rhs);
+    return lhs < static_cast<std::uint8_t>(MatroskaElementLevel::Global)
+        && static_cast<std::uint8_t>(rhs) < static_cast<std::uint8_t>(MatroskaElementLevel::Global)
+        && static_cast<std::uint8_t>(lhs) > static_cast<std::uint8_t>(rhs);
 }
 
 constexpr bool operator<(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
 {
-    return static_cast<byte>(lhs) < static_cast<byte>(MatroskaElementLevel::Global)
-        && static_cast<byte>(rhs) < static_cast<byte>(MatroskaElementLevel::Global) && static_cast<byte>(lhs) < static_cast<byte>(rhs);
+    return static_cast<std::uint8_t>(lhs) < static_cast<std::uint8_t>(MatroskaElementLevel::Global)
+        && static_cast<std::uint8_t>(rhs) < static_cast<std::uint8_t>(MatroskaElementLevel::Global)
+        && static_cast<std::uint8_t>(lhs) < static_cast<std::uint8_t>(rhs);
 }
 
 constexpr bool operator>=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
@@ -443,8 +446,8 @@ constexpr bool operator<=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
     return lhs == rhs || lhs < rhs;
 }
 
-TAG_PARSER_EXPORT const char *matroskaIdName(uint32 matroskaId);
-TAG_PARSER_EXPORT MatroskaElementLevel matroskaIdLevel(uint32 matroskaId);
+TAG_PARSER_EXPORT const char *matroskaIdName(std::uint32_t matroskaId);
+TAG_PARSER_EXPORT MatroskaElementLevel matroskaIdLevel(std::uint32_t matroskaId);
 
 } // namespace TagParser
 

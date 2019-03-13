@@ -9,7 +9,7 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT IvfStream : public AbstractTrack {
 public:
-    IvfStream(std::iostream &stream, uint64 startOffset);
+    IvfStream(std::iostream &stream, std::uint64_t startOffset);
     ~IvfStream() override;
 
     TrackType type() const override;
@@ -21,13 +21,13 @@ protected:
 
 private:
     std::vector<IvfFrame> m_frames;
-    uint16 m_headerLength;
+    std::uint16_t m_headerLength;
 };
 
 /*!
  * \brief Constructs a new track for the \a stream at the specified \a startOffset.
  */
-inline IvfStream::IvfStream(std::iostream &stream, uint64 startOffset)
+inline IvfStream::IvfStream(std::iostream &stream, std::uint64_t startOffset)
     : AbstractTrack(stream, startOffset)
 {
     m_mediaType = MediaType::Video;

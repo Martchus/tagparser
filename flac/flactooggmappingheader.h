@@ -13,15 +13,15 @@ public:
 
     void parseHeader(OggIterator &iterator);
 
-    constexpr byte majorVersion() const;
-    constexpr byte minorVersion() const;
-    constexpr uint16 headerCount() const;
+    constexpr std::uint8_t majorVersion() const;
+    constexpr std::uint8_t minorVersion() const;
+    constexpr std::uint16_t headerCount() const;
     constexpr const FlacMetaDataBlockStreamInfo &streamInfo() const;
 
 private:
-    byte m_majorVersion;
-    byte m_minorVersion;
-    uint16 m_headerCount;
+    std::uint8_t m_majorVersion;
+    std::uint8_t m_minorVersion;
+    std::uint16_t m_headerCount;
     FlacMetaDataBlockStreamInfo m_streamInfo;
 };
 
@@ -38,7 +38,7 @@ constexpr FlacToOggMappingHeader::FlacToOggMappingHeader()
 /*!
  * \brief Returns the major version for the mapping (which should be 1 currently).
  */
-constexpr byte FlacToOggMappingHeader::majorVersion() const
+constexpr std::uint8_t FlacToOggMappingHeader::majorVersion() const
 {
     return m_majorVersion;
 }
@@ -46,7 +46,7 @@ constexpr byte FlacToOggMappingHeader::majorVersion() const
 /*!
  * \brief Returns the version for the mapping (which should be 0 currently).
  */
-constexpr byte FlacToOggMappingHeader::minorVersion() const
+constexpr std::uint8_t FlacToOggMappingHeader::minorVersion() const
 {
     return m_minorVersion;
 }
@@ -54,7 +54,7 @@ constexpr byte FlacToOggMappingHeader::minorVersion() const
 /*!
  * \brief Returns the number of header (non-audio) packets, not including this one.
  */
-constexpr uint16 FlacToOggMappingHeader::headerCount() const
+constexpr std::uint16_t FlacToOggMappingHeader::headerCount() const
 {
     return m_headerCount;
 }

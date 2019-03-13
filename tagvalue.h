@@ -96,7 +96,7 @@ public:
     void toString(std::string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     void toWString(std::u16string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
-    int32 toInteger() const;
+    std::int32_t toInteger() const;
     int toStandardGenreIndex() const;
     PositionInSet toPositionInSet() const;
     ChronoUtilities::TimeSpan toTimeSpan() const;

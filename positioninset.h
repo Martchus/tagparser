@@ -20,12 +20,12 @@ namespace TagParser {
  */
 class TAG_PARSER_EXPORT PositionInSet {
 public:
-    constexpr PositionInSet(int32 position = 0, int32 total = 0);
+    constexpr PositionInSet(std::int32_t position = 0, std::int32_t total = 0);
     template <typename StringType = std::string, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
     PositionInSet(const StringType &numericString);
 
-    constexpr int32 position() const;
-    constexpr int32 total() const;
+    constexpr std::int32_t position() const;
+    constexpr std::int32_t total() const;
     constexpr bool isNull() const;
     constexpr bool operator==(const PositionInSet &other) const;
 
@@ -33,8 +33,8 @@ public:
     StringType toString() const;
 
 private:
-    int32 m_position;
-    int32 m_total;
+    std::int32_t m_position;
+    std::int32_t m_total;
 };
 
 /*!
@@ -50,12 +50,12 @@ PositionInSet::PositionInSet(const StringType &numericString)
 {
     const auto separator = numericString.find('/');
     if (separator == StringType::npos || separator == numericString.length() - 1) {
-        m_position = ConversionUtilities::stringToNumber<int32, StringType>(numericString);
+        m_position = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString);
     } else if (separator == 0) {
-        m_total = ConversionUtilities::stringToNumber<int32, StringType>(numericString.substr(1));
+        m_total = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(1));
     } else {
-        m_position = ConversionUtilities::stringToNumber<int32, StringType>(numericString.substr(0, separator));
-        m_total = ConversionUtilities::stringToNumber<int32, StringType>(numericString.substr(separator + 1));
+        m_position = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(0, separator));
+        m_total = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(separator + 1));
     }
 }
 
@@ -64,7 +64,7 @@ PositionInSet::PositionInSet(const StringType &numericString)
  * \param position
  * \param total
  */
-constexpr inline PositionInSet::PositionInSet(int32 position, int32 total)
+constexpr inline PositionInSet::PositionInSet(std::int32_t position, std::int32_t total)
     : m_position(position)
     , m_total(total)
 {
@@ -73,7 +73,7 @@ constexpr inline PositionInSet::PositionInSet(int32 position, int32 total)
 /*!
  * \brief Returns the element position of the current instance.
  */
-constexpr inline int32 PositionInSet::position() const
+constexpr inline std::int32_t PositionInSet::position() const
 {
     return m_position;
 }
@@ -81,7 +81,7 @@ constexpr inline int32 PositionInSet::position() const
 /*!
  * \brief Returns the total element count of the current instance.
  */
-constexpr inline int32 PositionInSet::total() const
+constexpr inline std::int32_t PositionInSet::total() const
 {
     return m_total;
 }

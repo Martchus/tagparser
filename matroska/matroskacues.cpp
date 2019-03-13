@@ -35,10 +35,10 @@ namespace TagParser {
  * \brief Returns how many bytes will be written when calling the make() method.
  * \remarks The returned size might change when the object is altered (eg. by calling the updatePositions() method).
  */
-uint64 MatroskaCuePositionUpdater::totalSize() const
+std::uint64_t MatroskaCuePositionUpdater::totalSize() const
 {
     if (m_cuesElement) {
-        uint64 size = m_sizes.at(m_cuesElement);
+        std::uint64_t size = m_sizes.at(m_cuesElement);
         return 4 + EbmlElement::calculateSizeDenotationLength(size) + size;
     } else {
         return 0;
@@ -53,7 +53,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
 {
     static const string context("parsing \"Cues\"-element");
     clear();
-    uint64 cuesElementSize = 0, cuePointElementSize, cueTrackPositionsElementSize, cueReferenceElementSize, pos, relPos, statePos;
+    std::uint64_t cuesElementSize = 0, cuePointElementSize, cueTrackPositionsElementSize, cueReferenceElementSize, pos, relPos, statePos;
     EbmlElement *cueRelativePositionElement, *cueClusterPositionElement;
     for (EbmlElement *cuePointElement = cuesElement->firstChild(); cuePointElement; cuePointElement = cuePointElement->nextSibling()) {
         // parse childs of "Cues"-element which must be "CuePoint"-elements
@@ -169,7 +169,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
  * \brief Sets the offset of the entries with the specified \a originalOffset to \a newOffset.
  * \returns Returns whether the size of the "Cues"-element has been altered.
  */
-bool MatroskaCuePositionUpdater::updateOffsets(uint64 originalOffset, uint64 newOffset)
+bool MatroskaCuePositionUpdater::updateOffsets(std::uint64_t originalOffset, std::uint64_t newOffset)
 {
     bool updated = false;
     for (auto &offset : m_offsets) {
@@ -188,7 +188,8 @@ bool MatroskaCuePositionUpdater::updateOffsets(uint64 originalOffset, uint64 new
  * \brief Sets the relative offset of the entries with the specified \a originalRelativeOffset and the specified \a referenceOffset to \a newRelativeOffset.
  * \returns Returns whether the size of the "Cues"-element has been altered.
  */
-bool MatroskaCuePositionUpdater::updateRelativeOffsets(uint64 referenceOffset, uint64 originalRelativeOffset, uint64 newRelativeOffset)
+bool MatroskaCuePositionUpdater::updateRelativeOffsets(
+    std::uint64_t referenceOffset, std::uint64_t originalRelativeOffset, std::uint64_t newRelativeOffset)
 {
     bool updated = false;
     for (auto &offset : m_relativeOffsets) {
@@ -221,9 +222,9 @@ bool MatroskaCuePositionUpdater::updateSize(EbmlElement *element, int shift)
     }
     try {
         // get size info
-        uint64 &size = m_sizes.at(element);
+        std::uint64_t &size = m_sizes.at(element);
         // calculate new size
-        const uint64 newSize = shift > 0 ? size + static_cast<uint64>(shift) : size - static_cast<uint64>(-shift);
+        const std::uint64_t newSize = shift > 0 ? size + static_cast<std::uint64_t>(shift) : size - static_cast<std::uint64_t>(-shift);
         // shift parent
         const bool updated = updateSize(element->parent(),
             shift + static_cast<int>(EbmlElement::calculateSizeDenotationLength(newSize))
@@ -249,10 +250,10 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
     }
     // temporary variables
     char buff[8];
-    byte len;
+    std::uint8_t len;
     // write "Cues"-element
     try {
-        BE::getBytes(static_cast<uint32>(MatroskaIds::Cues), buff);
+        BE::getBytes(static_cast<std::uint32_t>(MatroskaIds::Cues), buff);
         stream.write(buff, 4);
         len = EbmlElement::makeSizeDenotation(m_sizes[m_cuesElement], buff);
         stream.write(buff, len);

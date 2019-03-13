@@ -39,7 +39,7 @@ public:
     bool setValue(KnownField field, const TagValue &value) override;
 
     void parse(OggIterator &iterator, VorbisCommentFlags flags, Diagnostics &diag);
-    void parse(std::istream &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);
+    void parse(std::istream &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag);
     void make(std::ostream &stream, VorbisCommentFlags flags, Diagnostics &diag);
 
     const TagValue &vendor() const;
@@ -51,7 +51,7 @@ protected:
     KnownField internallyGetKnownField(const IdentifierType &id) const;
 
 private:
-    template <class StreamType> void internalParse(StreamType &stream, uint64 maxSize, VorbisCommentFlags flags, Diagnostics &diag);
+    template <class StreamType> void internalParse(StreamType &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag);
 
 private:
     TagValue m_vendor;

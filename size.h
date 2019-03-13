@@ -4,8 +4,8 @@
 #include "./global.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/conversion/types.h>
 
+#include <cstdint>
 #include <string>
 
 namespace TagParser {
@@ -16,13 +16,13 @@ namespace TagParser {
 class TAG_PARSER_EXPORT Size {
 public:
     constexpr Size();
-    constexpr Size(uint32 width, uint32 height);
+    constexpr Size(std::uint32_t width, std::uint32_t height);
 
-    constexpr uint32 width() const;
-    constexpr uint32 height() const;
-    void setWidth(uint32 value);
-    void setHeight(uint32 value);
-    constexpr uint32 resolution() const;
+    constexpr std::uint32_t width() const;
+    constexpr std::uint32_t height() const;
+    void setWidth(std::uint32_t value);
+    void setHeight(std::uint32_t value);
+    constexpr std::uint32_t resolution() const;
     const char *abbreviation() const;
 
     bool constexpr isNull() const;
@@ -31,8 +31,8 @@ public:
     std::string toString() const;
 
 private:
-    uint32 m_width;
-    uint32 m_height;
+    std::uint32_t m_width;
+    std::uint32_t m_height;
 };
 
 /*!
@@ -47,7 +47,7 @@ constexpr Size::Size()
 /*!
  * \brief Constructs a new Size of the specified \a width and \a height.
  */
-constexpr Size::Size(uint32 width, uint32 height)
+constexpr Size::Size(std::uint32_t width, std::uint32_t height)
     : m_width(width)
     , m_height(height)
 {
@@ -56,7 +56,7 @@ constexpr Size::Size(uint32 width, uint32 height)
 /*!
  * \brief Returns the width.
  */
-constexpr uint32 Size::width() const
+constexpr std::uint32_t Size::width() const
 {
     return m_width;
 }
@@ -64,7 +64,7 @@ constexpr uint32 Size::width() const
 /*!
  * \brief Returns the height.
  */
-constexpr uint32 Size::height() const
+constexpr std::uint32_t Size::height() const
 {
     return m_height;
 }
@@ -72,7 +72,7 @@ constexpr uint32 Size::height() const
 /*!
  * \brief Sets the width.
  */
-inline void Size::setWidth(uint32 value)
+inline void Size::setWidth(std::uint32_t value)
 {
     m_width = value;
 }
@@ -80,7 +80,7 @@ inline void Size::setWidth(uint32 value)
 /*!
  * \brief Sets the height.
  */
-inline void Size::setHeight(uint32 value)
+inline void Size::setHeight(std::uint32_t value)
 {
     m_height = value;
 }
@@ -88,7 +88,7 @@ inline void Size::setHeight(uint32 value)
 /*!
  * \brief Returns the resolution of the current instance (product of with and height).
  */
-constexpr uint32 Size::resolution() const
+constexpr std::uint32_t Size::resolution() const
 {
     return m_width * m_height;
 }

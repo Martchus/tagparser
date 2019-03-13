@@ -146,9 +146,9 @@ MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment,
 void MatroskaAttachmentMaker::make(ostream &stream, Diagnostics &diag) const
 {
     char buff[8];
-    BE::getBytes(static_cast<uint16>(MatroskaIds::AttachedFile), buff);
+    BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::AttachedFile), buff);
     stream.write(buff, 2);
-    byte len = EbmlElement::makeSizeDenotation(m_attachedFileElementSize, buff);
+    std::uint8_t len = EbmlElement::makeSizeDenotation(m_attachedFileElementSize, buff);
     stream.write(buff, len);
     // make elements
     EbmlElement::makeSimpleElement(stream, MatroskaIds::FileName, attachment().name());
@@ -171,9 +171,9 @@ void MatroskaAttachmentMaker::make(ostream &stream, Diagnostics &diag) const
         }
     }
     if (attachment().data() && attachment().data()->size()) {
-        BE::getBytes(static_cast<uint16>(MatroskaIds::FileData), buff);
+        BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::FileData), buff);
         stream.write(buff, 2);
-        len = EbmlElement::makeSizeDenotation(static_cast<uint64>(attachment().data()->size()), buff);
+        len = EbmlElement::makeSizeDenotation(static_cast<std::uint64_t>(attachment().data()->size()), buff);
         stream.write(buff, len);
         attachment().data()->copyTo(stream);
     }

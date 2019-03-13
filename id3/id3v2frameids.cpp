@@ -20,7 +20,7 @@ namespace Id3v2FrameIds {
  * \brief Converts the specified long frame ID to the equivalent short frame ID.
  * \returns Returns the short ID if available; otherwise returns 0.
  */
-uint32 convertToShortId(uint32 id)
+std::uint32_t convertToShortId(std::uint32_t id)
 {
     switch (id) {
     case lAlbum:
@@ -74,7 +74,7 @@ uint32 convertToShortId(uint32 id)
  * \brief Converts the specified short frame ID to the equivalent long frame ID.
  * \returns Returns the long ID if available; otherwise returns 0.
  */
-uint32 convertToLongId(uint32 id)
+std::uint32_t convertToLongId(std::uint32_t id)
 {
     switch (id) {
     case sAlbum:

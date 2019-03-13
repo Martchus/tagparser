@@ -111,12 +111,12 @@ void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
 {
     static const string context("parsing Matroska tag");
     tagElement.parse(diag);
-    if (tagElement.totalSize() > numeric_limits<uint32>::max()) {
+    if (tagElement.totalSize() > numeric_limits<std::uint32_t>::max()) {
         // FIXME: Support this? Likely not very useful in practise.
         diag.emplace_back(DiagLevel::Critical, "Matroska tag is too big.", context);
         throw NotImplementedException();
     }
-    m_size = static_cast<uint32>(tagElement.totalSize());
+    m_size = static_cast<std::uint32_t>(tagElement.totalSize());
     for (EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
         child->parse(diag);
         switch (child->id()) {
@@ -220,7 +220,7 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag)
         // size of "TargetType"
         m_targetsSize += 2 + EbmlElement::calculateSizeDenotationLength(m_tag.target().levelName().size()) + m_tag.target().levelName().size();
     }
-    for (const auto &v : initializer_list<vector<uint64>>{
+    for (const auto &v : initializer_list<vector<std::uint64_t>>{
              m_tag.target().tracks(), m_tag.target().editions(), m_tag.target().chapters(), m_tag.target().attachments() }) {
         for (auto uid : v) {
             // size of UID denotation
@@ -253,19 +253,19 @@ void MatroskaTagMaker::make(ostream &stream) const
 {
     // write header
     char buff[11];
-    BE::getBytes(static_cast<uint16>(MatroskaIds::Tag), buff);
+    BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::Tag), buff);
     stream.write(buff, 2); // ID
-    byte len = EbmlElement::makeSizeDenotation(m_tagSize, buff);
+    std::uint8_t len = EbmlElement::makeSizeDenotation(m_tagSize, buff);
     stream.write(buff, len); // size
     // write "Targets" element
-    BE::getBytes(static_cast<uint16>(MatroskaIds::Targets), buff);
+    BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::Targets), buff);
     stream.write(buff, 2);
     len = EbmlElement::makeSizeDenotation(m_targetsSize, buff);
     stream.write(buff, len);
     const TagTarget &t = m_tag.target();
     if (t.level() != 50) {
         // write "TargetTypeValue"
-        BE::getBytes(static_cast<uint16>(MatroskaIds::TargetTypeValue), buff);
+        BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::TargetTypeValue), buff);
         stream.write(buff, 2);
         len = EbmlElement::makeUInteger(t.level(), buff);
         stream.put(static_cast<char>(0x80 | len));
@@ -273,14 +273,14 @@ void MatroskaTagMaker::make(ostream &stream) const
     }
     if (!t.levelName().empty()) {
         // write "TargetType"
-        BE::getBytes(static_cast<uint16>(MatroskaIds::TargetType), buff);
+        BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::TargetType), buff);
         stream.write(buff, 2);
         len = EbmlElement::makeSizeDenotation(t.levelName().size(), buff);
         stream.write(buff, len);
         stream.write(t.levelName().c_str(), t.levelName().size());
     }
     // write UIDs
-    using p = pair<uint16, vector<uint64>>;
+    using p = pair<std::uint16_t, vector<std::uint64_t>>;
     for (const auto &pair : initializer_list<p>{ p(MatroskaIds::TagTrackUID, t.tracks()), p(MatroskaIds::TagEditionUID, t.editions()),
              p(MatroskaIds::TagChapterUID, t.chapters()), p(MatroskaIds::TagAttachmentUID, t.attachments()) }) {
         if (!pair.second.empty()) {

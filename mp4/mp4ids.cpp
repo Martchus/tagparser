@@ -43,7 +43,7 @@ namespace Mp4MediaTypeIds {
  */
 namespace FourccIds {
 
-MediaFormat fourccToMediaFormat(uint32 fourccId)
+MediaFormat fourccToMediaFormat(std::uint32_t fourccId)
 {
     switch (fourccId) {
     case Mpeg:
@@ -206,7 +206,7 @@ namespace Mpeg4ElementaryStreamObjectIds {
 /*!
  * \brief Returns the TagParser::MediaFormat denoted by the specified MPEG-4 stream ID.
  */
-MediaFormat streamObjectTypeFormat(byte streamObjectTypeId)
+MediaFormat streamObjectTypeFormat(std::uint8_t streamObjectTypeId)
 {
     switch (streamObjectTypeId) {
     case SystemsIso144961:
@@ -316,7 +316,7 @@ namespace Mpeg4ElementaryStreamTypeIds {
 /*!
  * \brief Returns the name of the stream type denoted by the specified MPEG-4 stream type ID.
  */
-const char *streamTypeName(byte streamTypeId)
+const char *streamTypeName(std::uint8_t streamTypeId)
 {
     switch (streamTypeId) {
     case ObjectDescriptor:
@@ -358,7 +358,7 @@ const char *streamTypeName(byte streamTypeId)
  */
 namespace Mpeg4AudioObjectIds {
 
-TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent, bool psPresent)
+TAG_PARSER_EXPORT MediaFormat idToMediaFormat(std::uint8_t mpeg4AudioObjectId, bool sbrPresent, bool psPresent)
 {
     MediaFormat fmt;
     switch (mpeg4AudioObjectId) {
@@ -414,7 +414,7 @@ TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrP
 
 } // namespace Mpeg4AudioObjectIds
 
-uint32 mpeg4SamplingFrequencyTable[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350 };
+std::uint32_t mpeg4SamplingFrequencyTable[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350 };
 
 /*!
  * \brief Encapsulates all supported MPEG-4 channel configurations.
@@ -424,7 +424,7 @@ namespace Mpeg4ChannelConfigs {
 /*!
  * \brief Returns the string representation for the specified MPEG-4 channel config.
  */
-const char *channelConfigString(byte config)
+const char *channelConfigString(std::uint8_t config)
 {
     switch (config) {
     case AotSpecificConfig:
@@ -451,7 +451,7 @@ const char *channelConfigString(byte config)
 /*!
  * \brief Returns the channel count for the specified MPEG-4 channel config.
  */
-byte channelCount(byte config)
+std::uint8_t channelCount(std::uint8_t config)
 {
     switch (config) {
     case FrontCenter:

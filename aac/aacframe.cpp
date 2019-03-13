@@ -25,70 +25,70 @@ namespace TagParser {
 
 /// \cond
 
-const byte maxPredictionSfb[16] = { 33, 33, 38, 40, 40, 40, 41, 41, 37, 37, 37, 34, 64, 64, 64, 64 };
+const std::uint8_t maxPredictionSfb[16] = { 33, 33, 38, 40, 40, 40, 41, 41, 37, 37, 37, 34, 64, 64, 64, 64 };
 
 const uint8_t swb512WindowCount[] = { 0, 0, 0, 36, 36, 37, 31, 31, 0, 0, 0, 0 };
 
-const byte swb480WindowCount[] = { 0, 0, 0, 35, 35, 37, 30, 30, 0, 0, 0, 0 };
+const std::uint8_t swb480WindowCount[] = { 0, 0, 0, 35, 35, 37, 30, 30, 0, 0, 0, 0 };
 
-const byte swb960WindowCount[] = { 40, 40, 45, 49, 49, 49, 46, 46, 42, 42, 42, 40 };
+const std::uint8_t swb960WindowCount[] = { 40, 40, 45, 49, 49, 49, 46, 46, 42, 42, 42, 40 };
 
-const byte swb1024WindowCount[] = { 41, 41, 47, 49, 49, 51, 47, 47, 43, 43, 43, 40 };
+const std::uint8_t swb1024WindowCount[] = { 41, 41, 47, 49, 49, 51, 47, 47, 43, 43, 43, 40 };
 
-const byte swb128WindowCount[] = { 12, 12, 12, 14, 14, 14, 15, 15, 15, 15, 15, 15 };
+const std::uint8_t swb128WindowCount[] = { 12, 12, 12, 14, 14, 14, 15, 15, 15, 15, 15, 15 };
 
-const uint16 swbOffset1024_96[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 156, 172, 188,
-    212, 240, 276, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024 };
+const std::uint16_t swbOffset1024_96[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 156, 172,
+    188, 212, 240, 276, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024 };
 
-const uint16 swbOffset128_96[] = { 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 92, 128 };
+const std::uint16_t swbOffset128_96[] = { 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 92, 128 };
 
-const uint16 swbOffset1024_64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 100, 112, 124, 140, 156, 172, 192, 216,
-    240, 268, 304, 344, 384, 424, 464, 504, 544, 584, 624, 664, 704, 744, 784, 824, 864, 904, 944, 984, 1024 };
+const std::uint16_t swbOffset1024_64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 100, 112, 124, 140, 156, 172, 192,
+    216, 240, 268, 304, 344, 384, 424, 464, 504, 544, 584, 624, 664, 704, 744, 784, 824, 864, 904, 944, 984, 1024 };
 
-const uint16 swbOffset128_64[] = { 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 92, 128 };
+const std::uint16_t swbOffset128_64[] = { 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 92, 128 };
 
-const uint16 swbOffset1024_48[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 160, 176, 196, 216, 240,
-    264, 292, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800, 832, 864, 896, 928, 1024 };
+const std::uint16_t swbOffset1024_48[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 160, 176, 196,
+    216, 240, 264, 292, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800, 832, 864, 896, 928, 1024 };
 
-const uint16 swbOffset512_48[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 68, 76, 84, 92, 100, 112, 124, 136, 148, 164, 184,
-    208, 236, 268, 300, 332, 364, 396, 428, 460, 512 };
+const std::uint16_t swbOffset512_48[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 68, 76, 84, 92, 100, 112, 124, 136, 148, 164,
+    184, 208, 236, 268, 300, 332, 364, 396, 428, 460, 512 };
 
-const uint16 swbOffset480_48[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 156, 172, 188,
-    212, 240, 272, 304, 336, 368, 400, 432, 480 };
+const std::uint16_t swbOffset480_48[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 156, 172,
+    188, 212, 240, 272, 304, 336, 368, 400, 432, 480 };
 
-const uint16 swbOffset128_48[] = { 0, 4, 8, 12, 16, 20, 28, 36, 44, 56, 68, 80, 96, 112, 128 };
+const std::uint16_t swbOffset128_48[] = { 0, 4, 8, 12, 16, 20, 28, 36, 44, 56, 68, 80, 96, 112, 128 };
 
-const uint16 swbOffset1024_32[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 160, 176, 196, 216, 240,
-    264, 292, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800, 832, 864, 896, 928, 960, 992, 1024 };
+const std::uint16_t swbOffset1024_32[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 160, 176, 196,
+    216, 240, 264, 292, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800, 832, 864, 896, 928, 960, 992, 1024 };
 
-const uint16 swbOffset512_32[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 160, 176, 192,
-    212, 236, 260, 288, 320, 352, 384, 416, 448, 480, 512 };
+const std::uint16_t swbOffset512_32[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 64, 72, 80, 88, 96, 108, 120, 132, 144, 160, 176,
+    192, 212, 236, 260, 288, 320, 352, 384, 416, 448, 480, 512 };
 
-const uint16 swbOffset480_32[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 88, 96, 104, 112, 124, 136, 148, 164, 180,
-    200, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
+const std::uint16_t swbOffset480_32[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 88, 96, 104, 112, 124, 136, 148,
+    164, 180, 200, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
 
-const uint16 swbOffset1024_24[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124, 136, 148, 160, 172, 188,
-    204, 220, 240, 260, 284, 308, 336, 364, 396, 432, 468, 508, 552, 600, 652, 704, 768, 832, 896, 960, 1024 };
+const std::uint16_t swbOffset1024_24[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124, 136, 148, 160,
+    172, 188, 204, 220, 240, 260, 284, 308, 336, 364, 396, 432, 468, 508, 552, 600, 652, 704, 768, 832, 896, 960, 1024 };
 
-const uint16 swbOffset512_24[]
+const std::uint16_t swbOffset512_24[]
     = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 52, 60, 68, 80, 92, 104, 120, 140, 164, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512 };
 
-const uint16 swbOffset480_24[]
+const std::uint16_t swbOffset480_24[]
     = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 52, 60, 68, 80, 92, 104, 120, 140, 164, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
 
-const uint16 swbOffset128_24[] = { 0, 4, 8, 12, 16, 20, 24, 28, 36, 44, 52, 64, 76, 92, 108, 128 };
+const std::uint16_t swbOffset128_24[] = { 0, 4, 8, 12, 16, 20, 24, 28, 36, 44, 52, 64, 76, 92, 108, 128 };
 
-const uint16 swbOffset1024_16[] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 100, 112, 124, 136, 148, 160, 172, 184, 196, 212, 228, 244, 260,
-    280, 300, 320, 344, 368, 396, 424, 456, 492, 532, 572, 616, 664, 716, 772, 832, 896, 960, 1024 };
+const std::uint16_t swbOffset1024_16[] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 100, 112, 124, 136, 148, 160, 172, 184, 196, 212, 228, 244,
+    260, 280, 300, 320, 344, 368, 396, 424, 456, 492, 532, 572, 616, 664, 716, 772, 832, 896, 960, 1024 };
 
-const uint16 swbOffset128_16[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 60, 72, 88, 108, 128 };
+const std::uint16_t swbOffset128_16[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 60, 72, 88, 108, 128 };
 
-const uint16 swbOffset1024_8[] = { 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 172, 188, 204, 220, 236, 252, 268, 288, 308, 328, 348,
-    372, 396, 420, 448, 476, 508, 544, 580, 620, 664, 712, 764, 820, 880, 944, 1024 };
+const std::uint16_t swbOffset1024_8[] = { 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 172, 188, 204, 220, 236, 252, 268, 288, 308,
+    328, 348, 372, 396, 420, 448, 476, 508, 544, 580, 620, 664, 712, 764, 820, 880, 944, 1024 };
 
-const uint16 swbOffset128_8[] = { 0, 4, 8, 12, 16, 20, 24, 28, 36, 44, 52, 60, 72, 88, 108, 128 };
+const std::uint16_t swbOffset128_8[] = { 0, 4, 8, 12, 16, 20, 24, 28, 36, 44, 52, 60, 72, 88, 108, 128 };
 
-static const uint16 *const swbOffset1024Window[] = {
+static const std::uint16_t *const swbOffset1024Window[] = {
     swbOffset1024_96, /* 96000 */
     swbOffset1024_96, /* 88200 */
     swbOffset1024_64, /* 64000 */
@@ -103,7 +103,7 @@ static const uint16 *const swbOffset1024Window[] = {
     swbOffset1024_8, /* 8000  */
 };
 
-static const uint16 *const swbOffset512Window[] = {
+static const std::uint16_t *const swbOffset512Window[] = {
     nullptr, /* 96000 */
     nullptr, /* 88200 */
     nullptr, /* 64000 */
@@ -118,7 +118,7 @@ static const uint16 *const swbOffset512Window[] = {
     nullptr, /* 8000  */
 };
 
-static const uint16 *const swbOffset480Window[] = {
+static const std::uint16_t *const swbOffset480Window[] = {
     nullptr, /* 96000 */
     nullptr, /* 88200 */
     nullptr, /* 64000 */
@@ -133,7 +133,7 @@ static const uint16 *const swbOffset480Window[] = {
     nullptr, /* 8000  */
 };
 
-static const uint16 *const swbOffset128Window[] = {
+static const std::uint16_t *const swbOffset128Window[] = {
     swbOffset128_96, /* 96000 */
     swbOffset128_96, /* 88200 */
     swbOffset128_64, /* 64000 */
@@ -245,7 +245,7 @@ AacDrmPsInfo::AacDrmPsInfo()
 /*!
  * \brief Constructs a new SBR info object.
  */
-AacSbrInfo::AacSbrInfo(byte sbrElementType, uint16 samplingFrequency, uint16 frameLength, bool isDrm)
+AacSbrInfo::AacSbrInfo(std::uint8_t sbrElementType, std::uint16_t samplingFrequency, std::uint16_t frameLength, bool isDrm)
     : aacElementId(sbrElementType)
     , samplingFrequency(samplingFrequency)
     ,
@@ -339,7 +339,7 @@ AacSbrInfo::AacSbrInfo(byte sbrElementType, uint16 samplingFrequency, uint16 fra
     , psiIsPrev{ 0 }
     ,
 
-    bsStartFreqPrev(numeric_limits<byte>::max())
+    bsStartFreqPrev(numeric_limits<std::uint8_t>::max())
     , bsStopFreqPrev(0)
     , bsXoverBandPrev(0)
     , bsFreqScalePrev(0)
@@ -529,28 +529,28 @@ void AacFrameElementParser::parseLtpInfo(const AacIcsInfo &ics, AacLtpInfo &ltp)
     ltp.lag = 0;
     if (m_mpeg4AudioObjectId == Mpeg4AudioObjectIds::ErAacLd) {
         if ((ltp.lagUpdate = m_reader.readBit())) {
-            ltp.lag = m_reader.readBits<uint16>(10);
+            ltp.lag = m_reader.readBits<std::uint16_t>(10);
         }
     } else {
-        ltp.lag = m_reader.readBits<uint16>(11);
+        ltp.lag = m_reader.readBits<std::uint16_t>(11);
     }
     if (ltp.lag > (m_frameLength << 1)) {
         throw InvalidDataException();
     }
-    ltp.coef = m_reader.readBits<byte>(3);
+    ltp.coef = m_reader.readBits<std::uint8_t>(3);
     switch (ics.windowSequence) {
     case AacIcsSequenceTypes::EightShortSequence:
-        for (byte w = 0; w < ics.windowCount; ++w) {
+        for (std::uint8_t w = 0; w < ics.windowCount; ++w) {
             if ((ltp.shortUsed[w] = m_reader.readBit())) {
                 if ((ltp.shortLagPresent[w] = m_reader.readBit())) {
-                    ltp.shortLag[w] = m_reader.readBits<byte>(4);
+                    ltp.shortLag[w] = m_reader.readBits<std::uint8_t>(4);
                 }
             }
         }
         break;
     default:
-        ltp.lastBand = std::min<byte>(ics.maxSfb, aacMaxLtpSfb);
-        for (byte sfb = 0; sfb < ltp.lastBand; ++sfb) {
+        ltp.lastBand = std::min<std::uint8_t>(ics.maxSfb, aacMaxLtpSfb);
+        for (std::uint8_t sfb = 0; sfb < ltp.lastBand; ++sfb) {
             ltp.longUsed[sfb] = m_reader.readBit();
         }
     }
@@ -565,16 +565,16 @@ void AacFrameElementParser::parseIcsInfo(AacIcsInfo &ics)
     if (m_reader.readBit()) { // isc reserved bit (must be 0)
         throw InvalidDataException();
     }
-    ics.windowSequence = m_reader.readBits<byte>(2);
+    ics.windowSequence = m_reader.readBits<std::uint8_t>(2);
     ics.windowShape = m_reader.readBit();
     if (m_mpeg4AudioObjectId == Mpeg4AudioObjectIds::ErAacLd && ics.windowSequence != OnlyLongSequence) {
         throw InvalidDataException(); // no block switching in LD
     }
     if (ics.windowSequence == EightShortSequence) {
-        ics.maxSfb = m_reader.readBits<byte>(4);
-        ics.scaleFactorGrouping = m_reader.readBits<byte>(7);
+        ics.maxSfb = m_reader.readBits<std::uint8_t>(4);
+        ics.scaleFactorGrouping = m_reader.readBits<std::uint8_t>(7);
     } else {
-        ics.maxSfb = m_reader.readBits<byte>(6);
+        ics.maxSfb = m_reader.readBits<std::uint8_t>(6);
     }
     calculateWindowGroupingInfo(ics);
     if (ics.windowSequence != EightShortSequence) {
@@ -583,13 +583,13 @@ void AacFrameElementParser::parseIcsInfo(AacIcsInfo &ics)
             case Mpeg4AudioObjectIds::AacMain:
                 // MPEG-2 style AAC predictor
                 if ((ics.predictor.reset = m_reader.readBit())) {
-                    ics.predictor.resetGroupNumber = m_reader.readBits<byte>(5);
+                    ics.predictor.resetGroupNumber = m_reader.readBits<std::uint8_t>(5);
                     ics.predictor.maxSfb = ics.maxSfb;
                 }
                 if (ics.predictor.maxSfb > maxPredictionSfb[m_mpeg4SamplingFrequencyIndex]) {
                     ics.predictor.maxSfb = maxPredictionSfb[m_mpeg4SamplingFrequencyIndex];
                 }
-                for (byte sfb = 0; sfb < ics.predictor.maxSfb; ++sfb) {
+                for (std::uint8_t sfb = 0; sfb < ics.predictor.maxSfb; ++sfb) {
                     ics.predictor.predictionUsed[sfb] = m_reader.readBit();
                 }
                 break;
@@ -620,20 +620,20 @@ void AacFrameElementParser::parseIcsInfo(AacIcsInfo &ics)
  */
 void AacFrameElementParser::parseSectionData(AacIcsInfo &ics)
 {
-    const byte sectionBits = ics.windowSequence == AacIcsSequenceTypes::EightShortSequence ? 3 : 5;
-    const byte sectionEscValue = static_cast<byte>((1 << sectionBits) - 1);
-    for (byte groupIndex = 0, sectionIndex = 0; groupIndex < ics.windowGroupCount; ++groupIndex, sectionIndex = 0) {
-        for (byte i = 0, sectionLength, sectionLengthIncrease; i < ics.maxSfb; i += sectionLength, ++sectionIndex) {
-            ics.sectionCb[groupIndex][sectionIndex] = m_reader.readBits<byte>(m_aacSectionDataResilienceFlag ? 5 : 4);
+    const std::uint8_t sectionBits = ics.windowSequence == AacIcsSequenceTypes::EightShortSequence ? 3 : 5;
+    const std::uint8_t sectionEscValue = static_cast<std::uint8_t>((1 << sectionBits) - 1);
+    for (std::uint8_t groupIndex = 0, sectionIndex = 0; groupIndex < ics.windowGroupCount; ++groupIndex, sectionIndex = 0) {
+        for (std::uint8_t i = 0, sectionLength, sectionLengthIncrease; i < ics.maxSfb; i += sectionLength, ++sectionIndex) {
+            ics.sectionCb[groupIndex][sectionIndex] = m_reader.readBits<std::uint8_t>(m_aacSectionDataResilienceFlag ? 5 : 4);
             sectionLength = 0;
             sectionLengthIncrease
                 = (!m_aacSectionDataResilienceFlag && (ics.sectionCb[groupIndex][sectionIndex] < 16 || ics.sectionCb[groupIndex][sectionIndex] > 32)
                       && ics.sectionCb[groupIndex][sectionIndex] != 11)
-                ? m_reader.readBits<byte>(sectionBits)
+                ? m_reader.readBits<std::uint8_t>(sectionBits)
                 : 1;
             while (sectionLengthIncrease == sectionEscValue) {
                 sectionLength += sectionLengthIncrease;
-                sectionLengthIncrease = m_reader.readBits<byte>(sectionBits);
+                sectionLengthIncrease = m_reader.readBits<std::uint8_t>(sectionBits);
             }
             sectionLength += sectionLengthIncrease;
             ics.sectionStart[groupIndex][sectionIndex] = i;
@@ -651,7 +651,7 @@ void AacFrameElementParser::parseSectionData(AacIcsInfo &ics)
                     throw InvalidDataException();
                 }
             }
-            for (byte sfb = i; sfb < i + sectionLength; ++sfb) {
+            for (std::uint8_t sfb = i; sfb < i + sectionLength; ++sfb) {
                 ics.sfbCb[groupIndex][sfb] = ics.sectionCb[groupIndex][sectionIndex];
             }
         }
@@ -664,30 +664,30 @@ void AacFrameElementParser::parseSectionData(AacIcsInfo &ics)
  */
 void AacFrameElementParser::decodeScaleFactorData(AacIcsInfo &ics)
 {
-    int16 tmp;
-    byte noisePcmFlag = 1;
-    int16 scaleFactor = ics.globalGain;
-    int16 isPosition = 0;
-    int16 noiseEnergy = ics.globalGain - 90;
+    std::int16_t tmp;
+    std::uint8_t noisePcmFlag = 1;
+    std::int16_t scaleFactor = ics.globalGain;
+    std::int16_t isPosition = 0;
+    std::int16_t noiseEnergy = ics.globalGain - 90;
     using namespace AacScaleFactorTypes;
-    for (byte group = 0; group < ics.windowGroupCount; ++group) {
-        for (byte sfb = 0; sfb < ics.maxSfb; ++sfb) {
+    for (std::uint8_t group = 0; group < ics.windowGroupCount; ++group) {
+        for (std::uint8_t sfb = 0; sfb < ics.maxSfb; ++sfb) {
             switch (ics.sfbCb[group][sfb]) {
             case ZeroHcb: // zero book
                 ics.scaleFactors[group][sfb] = 0;
                 break;
             case IntensityHcb: // intensity books
             case IntensityHcb2:
-                ics.scaleFactors[group][sfb] = static_cast<uint16>(isPosition += (parseHuffmanScaleFactor() - 60));
+                ics.scaleFactors[group][sfb] = static_cast<std::uint16_t>(isPosition += (parseHuffmanScaleFactor() - 60));
                 break;
             case NoiseHcb: // noise books
                 if (noisePcmFlag) {
                     noisePcmFlag = 0;
-                    tmp = m_reader.readBits<int16>(9);
+                    tmp = m_reader.readBits<std::int16_t>(9);
                 } else {
                     tmp = parseHuffmanScaleFactor() - 60;
                 }
-                ics.scaleFactors[group][sfb] = static_cast<uint16>(noiseEnergy += tmp);
+                ics.scaleFactors[group][sfb] = static_cast<std::uint16_t>(noiseEnergy += tmp);
                 break;
             default: // spectral books
                 scaleFactor += parseHuffmanScaleFactor() - 60;
@@ -733,14 +733,14 @@ void AacFrameElementParser::parseScaleFactorData(AacIcsInfo &ics)
 void AacFrameElementParser::parsePulseData(AacIcsInfo &ics)
 {
     AacPulseInfo &p = ics.pulse;
-    p.count = m_reader.readBits<byte>(2);
-    p.startSfb = m_reader.readBits<byte>(6);
+    p.count = m_reader.readBits<std::uint8_t>(2);
+    p.startSfb = m_reader.readBits<std::uint8_t>(6);
     if (p.startSfb > ics.swbCount) {
         throw InvalidDataException();
     }
-    for (byte i = 0; i <= p.count; ++i) {
-        p.offset[i] = m_reader.readBits<byte>(5);
-        p.amp[i] = m_reader.readBits<byte>(4);
+    for (std::uint8_t i = 0; i <= p.count; ++i) {
+        p.offset[i] = m_reader.readBits<std::uint8_t>(5);
+        p.amp[i] = m_reader.readBits<std::uint8_t>(4);
     }
 }
 
@@ -749,7 +749,7 @@ void AacFrameElementParser::parsePulseData(AacIcsInfo &ics)
  */
 void AacFrameElementParser::parseTnsData(AacIcsInfo &ics)
 {
-    byte filtBits, lengthBits, orderBits, startCoefBits, coefBits;
+    std::uint8_t filtBits, lengthBits, orderBits, startCoefBits, coefBits;
     if (ics.windowSequence == AacIcsSequenceTypes::EightShortSequence) {
         filtBits = 1;
         lengthBits = 4;
@@ -759,18 +759,18 @@ void AacFrameElementParser::parseTnsData(AacIcsInfo &ics)
         lengthBits = 6;
         orderBits = 5;
     }
-    for (byte window = 0; window < ics.windowCount; ++window) {
-        if ((ics.tns.filt[window] = m_reader.readBits<byte>(filtBits))) {
+    for (std::uint8_t window = 0; window < ics.windowCount; ++window) {
+        if ((ics.tns.filt[window] = m_reader.readBits<std::uint8_t>(filtBits))) {
             startCoefBits = (ics.tns.coefRes[window] = m_reader.readBit()) ? 4 : 3;
         }
-        for (byte filt = 0; filt < ics.tns.filt[window]; ++filt) {
-            ics.tns.length[window][filt] = m_reader.readBits<byte>(lengthBits);
-            if ((ics.tns.order[window][filt] = m_reader.readBits<byte>(orderBits))) {
+        for (std::uint8_t filt = 0; filt < ics.tns.filt[window]; ++filt) {
+            ics.tns.length[window][filt] = m_reader.readBits<std::uint8_t>(lengthBits);
+            if ((ics.tns.order[window][filt] = m_reader.readBits<std::uint8_t>(orderBits))) {
                 ics.tns.direction[window][filt] = m_reader.readBit();
                 ics.tns.coefCompress[window][filt] = m_reader.readBit();
                 coefBits = startCoefBits - ics.tns.coefCompress[window][filt];
-                for (byte i = 0; i < ics.tns.order[window][filt]; ++i) {
-                    ics.tns.coef[window][filt][i] = m_reader.readBits<byte>(coefBits);
+                for (std::uint8_t i = 0; i < ics.tns.order[window][filt]; ++i) {
+                    ics.tns.coef[window][filt][i] = m_reader.readBits<std::uint8_t>(coefBits);
                 }
             }
         }
@@ -783,49 +783,49 @@ void AacFrameElementParser::parseTnsData(AacIcsInfo &ics)
 void AacFrameElementParser::parseGainControlData(AacIcsInfo &ics)
 {
     AacSsrInfo &ssr = ics.ssr;
-    ssr.maxBand = m_reader.readBits<byte>(2);
+    ssr.maxBand = m_reader.readBits<std::uint8_t>(2);
     switch (ics.windowSequence) {
         using namespace AacIcsSequenceTypes;
     case OnlyLongSequence:
-        for (byte bd = 1; bd <= ssr.maxBand; ++bd) {
-            for (byte wd = 0; wd < 1; ++wd) {
-                ssr.adjustNum[bd][wd] = m_reader.readBits<byte>(3);
-                for (byte ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
-                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<byte>(4);
-                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<byte>(5);
+        for (std::uint8_t bd = 1; bd <= ssr.maxBand; ++bd) {
+            for (std::uint8_t wd = 0; wd < 1; ++wd) {
+                ssr.adjustNum[bd][wd] = m_reader.readBits<std::uint8_t>(3);
+                for (std::uint8_t ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
+                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(4);
+                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(5);
                 }
             }
         }
         break;
     case LongStartSequence:
-        for (byte bd = 1; bd <= ssr.maxBand; ++bd) {
-            for (byte wd = 0; wd < 2; ++wd) {
-                ssr.adjustNum[bd][wd] = m_reader.readBits<byte>(3);
-                for (byte ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
-                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<byte>(4);
-                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<byte>(wd ? 2 : 4);
+        for (std::uint8_t bd = 1; bd <= ssr.maxBand; ++bd) {
+            for (std::uint8_t wd = 0; wd < 2; ++wd) {
+                ssr.adjustNum[bd][wd] = m_reader.readBits<std::uint8_t>(3);
+                for (std::uint8_t ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
+                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(4);
+                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(wd ? 2 : 4);
                 }
             }
         }
         break;
     case EightShortSequence:
-        for (byte bd = 1; bd <= ssr.maxBand; ++bd) {
-            for (byte wd = 0; wd < 8; ++wd) {
-                ssr.adjustNum[bd][wd] = m_reader.readBits<byte>(3);
-                for (byte ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
-                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<byte>(4);
-                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<byte>(2);
+        for (std::uint8_t bd = 1; bd <= ssr.maxBand; ++bd) {
+            for (std::uint8_t wd = 0; wd < 8; ++wd) {
+                ssr.adjustNum[bd][wd] = m_reader.readBits<std::uint8_t>(3);
+                for (std::uint8_t ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
+                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(4);
+                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(2);
                 }
             }
         }
         break;
     case LongStopSequence:
-        for (byte bd = 1; bd <= ssr.maxBand; ++bd) {
-            for (byte wd = 0; wd < 2; ++wd) {
-                ssr.adjustNum[bd][wd] = m_reader.readBits<byte>(3);
-                for (byte ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
-                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<byte>(4);
-                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<byte>(wd ? 5 : 4);
+        for (std::uint8_t bd = 1; bd <= ssr.maxBand; ++bd) {
+            for (std::uint8_t wd = 0; wd < 2; ++wd) {
+                ssr.adjustNum[bd][wd] = m_reader.readBits<std::uint8_t>(3);
+                for (std::uint8_t ad = 0; ad < ssr.adjustNum[bd][wd]; ++ad) {
+                    ssr.alevcode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(4);
+                    ssr.aloccode[bd][wd][ad] = m_reader.readBits<std::uint8_t>(wd ? 5 : 4);
                 }
             }
         }
@@ -836,16 +836,16 @@ void AacFrameElementParser::parseGainControlData(AacIcsInfo &ics)
 /*!
  * \brief Parses spectral data.
  */
-void AacFrameElementParser::parseSpectralData(AacIcsInfo &ics, int16 *specData)
+void AacFrameElementParser::parseSpectralData(AacIcsInfo &ics, std::int16_t *specData)
 {
     //byte groups = 0;
     //uint16 nshort = m_frameLength / 8;
-    for (byte group = 0; group < ics.windowGroupCount; ++group) {
+    for (std::uint8_t group = 0; group < ics.windowGroupCount; ++group) {
         //byte p = groups * nshort;
-        for (byte section = 0; section < ics.sectionsPerGroup[group]; ++section) {
+        for (std::uint8_t section = 0; section < ics.sectionsPerGroup[group]; ++section) {
             using namespace AacScaleFactorTypes;
-            byte sectionCb = ics.sectionCb[group][section];
-            uint16 increment = (sectionCb >= FirstPairHcb) ? 2 : 4;
+            std::uint8_t sectionCb = ics.sectionCb[group][section];
+            std::uint16_t increment = (sectionCb >= FirstPairHcb) ? 2 : 4;
             switch (sectionCb) {
             case ZeroHcb:
             case NoiseHcb:
@@ -854,7 +854,7 @@ void AacFrameElementParser::parseSpectralData(AacIcsInfo &ics, int16 *specData)
                 //p += (ics.sectionSfbOffset[group][ics.sectionEnd[group][section]] - ics.sectionSfbOffset[group][ics.sectionStart[group][section]]);
                 break;
             default:
-                for (uint16 k = ics.sectionSfbOffset[group][ics.sectionStart[group][section]];
+                for (std::uint16_t k = ics.sectionSfbOffset[group][ics.sectionStart[group][section]];
                      k < ics.sectionSfbOffset[group][ics.sectionEnd[group][section]]; k += increment) {
                     parseHuffmanSpectralData(sectionCb, specData);
                     //p += increment;
@@ -870,7 +870,7 @@ void AacFrameElementParser::parseSpectralData(AacIcsInfo &ics, int16 *specData)
  */
 void AacFrameElementParser::parseSideInfo(AacIcsInfo &ics, bool scaleFlag)
 {
-    ics.globalGain = m_reader.readBits<byte>(8);
+    ics.globalGain = m_reader.readBits<std::uint8_t>(8);
     if (!m_commonWindow && !scaleFlag) {
         parseIcsInfo(ics);
     }
@@ -896,26 +896,26 @@ void AacFrameElementParser::parseSideInfo(AacIcsInfo &ics, bool scaleFlag)
     }
 }
 
-byte AacFrameElementParser::parseExcludedChannels()
+std::uint8_t AacFrameElementParser::parseExcludedChannels()
 {
-    for (byte i = 0; i < 7; ++i) {
+    for (std::uint8_t i = 0; i < 7; ++i) {
         m_drc.excludeMask[i] = m_reader.readBit();
     }
-    byte size = 0;
+    std::uint8_t size = 0;
     for (; (m_drc.additionalExcludedChannels[size] = m_reader.readBit()); ++size) {
-        for (byte i = 0; i < 7; ++i) {
+        for (std::uint8_t i = 0; i < 7; ++i) {
             m_drc.excludeMask[i] = m_reader.readBit();
         }
     }
     return size + 1;
 }
 
-byte AacFrameElementParser::parseDynamicRange()
+std::uint8_t AacFrameElementParser::parseDynamicRange()
 {
-    byte size = 1;
+    std::uint8_t size = 1;
     m_drc.bandCount = 1;
     if (m_reader.readBit()) { // excluded channels present
-        m_drc.pceInstanceTag = m_reader.readBits<byte>(4);
+        m_drc.pceInstanceTag = m_reader.readBits<std::uint8_t>(4);
         m_reader.skipBits(4); // skip reserved bits
         ++size;
     }
@@ -923,30 +923,30 @@ byte AacFrameElementParser::parseDynamicRange()
         size += parseExcludedChannels();
     }
     if (m_reader.readBit()) { // has bands data
-        m_drc.bandCount += m_reader.readBits<byte>(4);
+        m_drc.bandCount += m_reader.readBits<std::uint8_t>(4);
         m_reader.skipBits(4); // skip reserved bits
         ++size;
-        for (byte i = 0; i < m_drc.bandCount; ++i, ++size) {
-            m_drc.bandTop[i] = m_reader.readBits<byte>(8);
+        for (std::uint8_t i = 0; i < m_drc.bandCount; ++i, ++size) {
+            m_drc.bandTop[i] = m_reader.readBits<std::uint8_t>(8);
         }
     }
     if (m_reader.readBit()) { // has prog ref level
-        m_drc.progRefLevel = m_reader.readBits<byte>(7);
+        m_drc.progRefLevel = m_reader.readBits<std::uint8_t>(7);
         m_reader.skipBits(1); // skip reserved bit
         ++size;
     }
-    for (byte i = 0; i < m_drc.bandCount; ++i) {
+    for (std::uint8_t i = 0; i < m_drc.bandCount; ++i) {
         m_drc.dynamicRangeSign[i] = m_reader.readBit();
-        m_drc.dynamicRangeControl[i] = m_reader.readBits<byte>(7);
+        m_drc.dynamicRangeControl[i] = m_reader.readBits<std::uint8_t>(7);
         ++size;
     }
     return size;
 }
 
-int16 AacFrameElementParser::sbrHuffmanDec(SbrHuffTab table)
+std::int16_t AacFrameElementParser::sbrHuffmanDec(SbrHuffTab table)
 {
-    byte bit;
-    int16 index = 0;
+    std::uint8_t bit;
+    std::int16_t index = 0;
     while (index >= 0) {
         bit = m_reader.readBit();
         index = table[index][bit];
@@ -954,65 +954,65 @@ int16 AacFrameElementParser::sbrHuffmanDec(SbrHuffTab table)
     return index + 64;
 }
 
-void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
+void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    byte tmp, bsEnvCount;
+    std::uint8_t tmp, bsEnvCount;
     //byte bsRelCount0, bsRelCount1;
-    switch ((sbr->bsFrameClass[channel] = m_reader.readBits<byte>(2))) {
+    switch ((sbr->bsFrameClass[channel] = m_reader.readBits<std::uint8_t>(2))) {
         using namespace BsFrameClasses;
     case FixFix:
-        tmp = m_reader.readBits<byte>(2);
+        tmp = m_reader.readBits<std::uint8_t>(2);
         sbr->absBordLead[channel] = 0;
         sbr->absBordTrail[channel] = sbr->timeSlotsCount;
-        sbr->relLeadCount[channel] = (bsEnvCount = min<byte>(static_cast<byte>(1 << tmp), 5)) - 1;
+        sbr->relLeadCount[channel] = (bsEnvCount = min<std::uint8_t>(static_cast<std::uint8_t>(1 << tmp), 5)) - 1;
         sbr->relTrailCount[channel] = 0;
         tmp = m_reader.readBit();
-        for (byte env = 0; env < bsEnvCount; ++env) {
+        for (std::uint8_t env = 0; env < bsEnvCount; ++env) {
             sbr->f[channel][env] = tmp;
         }
         break;
     case FixVar:
         sbr->absBordLead[channel] = 0;
-        sbr->absBordTrail[channel] = m_reader.readBits<byte>(2) + sbr->timeSlotsCount;
+        sbr->absBordTrail[channel] = m_reader.readBits<std::uint8_t>(2) + sbr->timeSlotsCount;
         sbr->relLeadCount[channel] = 0;
-        sbr->relTrailCount[channel] = bsEnvCount = m_reader.readBits<byte>(2);
-        for (byte rel = 0; rel < bsEnvCount; ++rel) {
-            sbr->bsRelBord[channel][rel] = 2 * m_reader.readBits<byte>(2) + 2;
+        sbr->relTrailCount[channel] = bsEnvCount = m_reader.readBits<std::uint8_t>(2);
+        for (std::uint8_t rel = 0; rel < bsEnvCount; ++rel) {
+            sbr->bsRelBord[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
         }
-        sbr->bsPointer[channel] = m_reader.readBits<byte>(static_cast<byte>(sbrLog2(static_cast<sbyte>(bsEnvCount + 2))));
-        for (byte env = 0; env <= bsEnvCount; ++env) {
+        sbr->bsPointer[channel] = m_reader.readBits<std::uint8_t>(static_cast<std::uint8_t>(sbrLog2(static_cast<std::int8_t>(bsEnvCount + 2))));
+        for (std::uint8_t env = 0; env <= bsEnvCount; ++env) {
             sbr->f[channel][bsEnvCount - env] = m_reader.readBit();
         }
         break;
     case VarFix:
-        sbr->absBordLead[channel] = m_reader.readBits<byte>(2);
+        sbr->absBordLead[channel] = m_reader.readBits<std::uint8_t>(2);
         sbr->absBordTrail[channel] = sbr->timeSlotsCount;
-        sbr->relLeadCount[channel] = bsEnvCount = m_reader.readBits<byte>(2);
+        sbr->relLeadCount[channel] = bsEnvCount = m_reader.readBits<std::uint8_t>(2);
         sbr->relTrailCount[channel] = 0;
-        for (byte rel = 0; rel < bsEnvCount; ++rel) {
-            sbr->bsRelBord[channel][rel] = 2 * m_reader.readBits<byte>(2) + 2;
+        for (std::uint8_t rel = 0; rel < bsEnvCount; ++rel) {
+            sbr->bsRelBord[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
         }
-        sbr->bsPointer[channel] = m_reader.readBits<byte>(static_cast<byte>(sbrLog2(static_cast<sbyte>(bsEnvCount + 2))));
-        for (byte env = 0; env < bsEnvCount; ++env) {
+        sbr->bsPointer[channel] = m_reader.readBits<std::uint8_t>(static_cast<std::uint8_t>(sbrLog2(static_cast<std::int8_t>(bsEnvCount + 2))));
+        for (std::uint8_t env = 0; env < bsEnvCount; ++env) {
             sbr->f[channel][env] = m_reader.readBit();
         }
         break;
     case VarVar:
-        sbr->absBordLead[channel] = m_reader.readBits<byte>(2);
-        sbr->absBordTrail[channel] = m_reader.readBits<byte>(2) + sbr->timeSlotsCount;
-        //bsRelCount0 = m_reader.readBits<byte>(2);
-        //bsRelCount1 = m_reader.readBits<byte>(2);
+        sbr->absBordLead[channel] = m_reader.readBits<std::uint8_t>(2);
+        sbr->absBordTrail[channel] = m_reader.readBits<std::uint8_t>(2) + sbr->timeSlotsCount;
+        //bsRelCount0 = m_reader.readBits<std::uint8_t>(2);
+        //bsRelCount1 = m_reader.readBits<std::uint8_t>(2);
         m_reader.skipBits(4);
-        bsEnvCount = min<byte>(5, sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 1);
-        for (byte rel = 0; rel < sbr->bsRelCount0[channel]; ++rel) {
-            sbr->bsRelBord0[channel][rel] = 2 * m_reader.readBits<byte>(2) + 2;
+        bsEnvCount = min<std::uint8_t>(5, sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 1);
+        for (std::uint8_t rel = 0; rel < sbr->bsRelCount0[channel]; ++rel) {
+            sbr->bsRelBord0[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
         }
-        for (byte rel = 0; rel < sbr->bsRelCount1[channel]; ++rel) {
-            sbr->bsRelBord1[channel][rel] = 2 * m_reader.readBits<byte>(2) + 2;
+        for (std::uint8_t rel = 0; rel < sbr->bsRelCount1[channel]; ++rel) {
+            sbr->bsRelBord1[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
         }
-        sbr->bsPointer[channel]
-            = m_reader.readBits<byte>(static_cast<byte>(sbrLog2(static_cast<sbyte>(sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 2))));
-        for (byte env = 0; env < bsEnvCount; ++env) {
+        sbr->bsPointer[channel] = m_reader.readBits<std::uint8_t>(
+            static_cast<std::uint8_t>(sbrLog2(static_cast<std::int8_t>(sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 2))));
+        for (std::uint8_t env = 0; env < bsEnvCount; ++env) {
             sbr->f[channel][env] = m_reader.readBit();
         }
         sbr->relLeadCount[channel] = sbr->bsRelCount0[channel];
@@ -1020,33 +1020,33 @@ void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, byte 
         break;
     default:;
     }
-    if ((sbr->le[channel] = min<byte>(bsEnvCount, sbr->bsFrameClass[channel] == BsFrameClasses::VarVar ? 5 : 4)) <= 0) {
+    if ((sbr->le[channel] = min<std::uint8_t>(bsEnvCount, sbr->bsFrameClass[channel] == BsFrameClasses::VarVar ? 5 : 4)) <= 0) {
         throw InvalidDataException();
     }
     sbr->lq[channel] = sbr->le[channel] > 1 ? 2 : 1;
     // TODO: envelope time border vector, noise floor time border vector
 }
 
-void AacFrameElementParser::parseSbrDtdf(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
+void AacFrameElementParser::parseSbrDtdf(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    for (byte i = 0; i < sbr->le[channel]; ++i) {
+    for (std::uint8_t i = 0; i < sbr->le[channel]; ++i) {
         sbr->bsDfEnv[channel][i] = m_reader.readBit();
     }
-    for (byte i = 0; i < sbr->lq[channel]; ++i) {
+    for (std::uint8_t i = 0; i < sbr->lq[channel]; ++i) {
         sbr->bsDfNoise[channel][i] = m_reader.readBit();
     }
 }
 
-void AacFrameElementParser::parseInvfMode(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
+void AacFrameElementParser::parseInvfMode(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    for (byte i = 0; i < sbr->nq; ++i) {
-        sbr->bsInvfMode[channel][i] = m_reader.readBits<byte>(2);
+    for (std::uint8_t i = 0; i < sbr->nq; ++i) {
+        sbr->bsInvfMode[channel][i] = m_reader.readBits<std::uint8_t>(2);
     }
 }
 
-void AacFrameElementParser::parseSbrEnvelope(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
+void AacFrameElementParser::parseSbrEnvelope(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    sbyte delta;
+    std::int8_t delta;
     //SbrHuffTab tHuff;
     SbrHuffTab fHuff;
     if ((sbr->le[channel] == 1) && (sbr->bsFrameClass[channel] == BsFrameClasses::FixFix)) {
@@ -1073,36 +1073,36 @@ void AacFrameElementParser::parseSbrEnvelope(std::shared_ptr<AacSbrInfo> &sbr, b
             fHuff = fHuffmanEnv15dB;
         }
     }
-    for (byte env = 0; env < sbr->le[channel]; ++env) {
+    for (std::uint8_t env = 0; env < sbr->le[channel]; ++env) {
         if (sbr->bsDfEnv[channel][env] == 0) {
             if ((sbr->bsCoupling == 1) && (channel == 1)) {
                 if (sbr->ampRes[channel]) {
-                    sbr->e[channel][0][env] = static_cast<int16>(m_reader.readBits<uint16>(5) << delta);
+                    sbr->e[channel][0][env] = static_cast<std::int16_t>(m_reader.readBits<std::uint16_t>(5) << delta);
                 } else {
-                    sbr->e[channel][0][env] = static_cast<int16>(m_reader.readBits<uint16>(6) << delta);
+                    sbr->e[channel][0][env] = static_cast<std::int16_t>(m_reader.readBits<std::uint16_t>(6) << delta);
                 }
             } else {
                 if (sbr->ampRes[channel]) {
-                    sbr->e[channel][0][env] = static_cast<int16>(m_reader.readBits<uint16>(6) << delta);
+                    sbr->e[channel][0][env] = static_cast<std::int16_t>(m_reader.readBits<std::uint16_t>(6) << delta);
                 } else {
-                    sbr->e[channel][0][env] = static_cast<int16>(m_reader.readBits<uint16>(7) << delta);
+                    sbr->e[channel][0][env] = static_cast<std::int16_t>(m_reader.readBits<std::uint16_t>(7) << delta);
                 }
             }
-            for (byte band = 1; band < sbr->n[sbr->f[channel][env]]; ++band) {
-                sbr->e[channel][band][env] = static_cast<int16>(sbrHuffmanDec(fHuff) << delta);
+            for (std::uint8_t band = 1; band < sbr->n[sbr->f[channel][env]]; ++band) {
+                sbr->e[channel][band][env] = static_cast<std::int16_t>(sbrHuffmanDec(fHuff) << delta);
             }
         } else {
-            for (byte band = 0; band < sbr->n[sbr->f[channel][env]]; ++band) {
-                sbr->e[channel][band][env] = static_cast<int16>(sbrHuffmanDec(fHuff) << delta);
+            for (std::uint8_t band = 0; band < sbr->n[sbr->f[channel][env]]; ++band) {
+                sbr->e[channel][band][env] = static_cast<std::int16_t>(sbrHuffmanDec(fHuff) << delta);
             }
         }
     }
     // TODO: extract envelope data
 }
 
-void AacFrameElementParser::parseSbrNoise(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
+void AacFrameElementParser::parseSbrNoise(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    sbyte delta;
+    std::int8_t delta;
     //SbrHuffTab tHuff;
     SbrHuffTab fHuff;
     if ((sbr->bsCoupling == 1) && (channel == 1)) {
@@ -1114,18 +1114,18 @@ void AacFrameElementParser::parseSbrNoise(std::shared_ptr<AacSbrInfo> &sbr, byte
         //tHuff = tHuffmanNoise30dB;
         fHuff = fHuffmanEnv30dB;
     }
-    for (byte noise = 0; noise < sbr->lq[channel]; ++noise) {
+    for (std::uint8_t noise = 0; noise < sbr->lq[channel]; ++noise) {
         if (sbr->bsDfNoise[channel][noise] == 0) {
             if ((sbr->bsCoupling == 1) && (channel == 1)) {
-                sbr->q[channel][0][noise] = m_reader.readBits<byte>(5) << delta;
+                sbr->q[channel][0][noise] = m_reader.readBits<std::uint8_t>(5) << delta;
             } else {
-                sbr->q[channel][0][noise] = m_reader.readBits<byte>(5) << delta;
+                sbr->q[channel][0][noise] = m_reader.readBits<std::uint8_t>(5) << delta;
             }
-            for (byte band = 1; band < sbr->nq; ++band) {
+            for (std::uint8_t band = 1; band < sbr->nq; ++band) {
                 sbr->q[channel][band][noise] = sbrHuffmanDec(fHuff) << delta;
             }
         } else {
-            for (byte band = 0; band < sbr->nq; ++band) {
+            for (std::uint8_t band = 0; band < sbr->nq; ++band) {
                 sbr->q[channel][band][noise] = sbrHuffmanDec(fHuff) << delta;
             }
         }
@@ -1133,17 +1133,17 @@ void AacFrameElementParser::parseSbrNoise(std::shared_ptr<AacSbrInfo> &sbr, byte
     // TODO: extract noise floor data
 }
 
-void AacFrameElementParser::parseSbrSinusoidalCoding(std::shared_ptr<AacSbrInfo> &sbr, byte channel)
+void AacFrameElementParser::parseSbrSinusoidalCoding(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    for (byte i = 0; i < sbr->nHigh; ++i) {
+    for (std::uint8_t i = 0; i < sbr->nHigh; ++i) {
         sbr->bsAddHarmonic[channel][i] = m_reader.readBit();
     }
 }
 
-uint16 AacFrameElementParser::parseSbrExtension(std::shared_ptr<AacSbrInfo> &sbr, byte extensionId, byte)
+std::uint16_t AacFrameElementParser::parseSbrExtension(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t extensionId, std::uint8_t)
 {
-    byte header;
-    uint16 res;
+    std::uint8_t header;
+    std::uint16_t res;
     switch (extensionId) {
         using namespace AacSbrExtensionIds;
     case Ps:
@@ -1162,25 +1162,25 @@ uint16 AacFrameElementParser::parseSbrExtension(std::shared_ptr<AacSbrInfo> &sbr
         sbr->psUsed = 1;
         return parseDrmPsData(sbr->drmPs);
     default:
-        sbr->bsExtendedData = m_reader.readBits<byte>(6);
+        sbr->bsExtendedData = m_reader.readBits<std::uint8_t>(6);
         return 6;
     }
 }
 
-uint16 AacFrameElementParser::parsePsData(std::shared_ptr<AacPsInfo> &ps, byte &header)
+std::uint16_t AacFrameElementParser::parsePsData(std::shared_ptr<AacPsInfo> &ps, std::uint8_t &header)
 {
     if (m_reader.readBit()) {
         header = 1;
         ps->headerRead = 1;
         ps->use34HybridBands = 0;
         if ((ps->enableIID = m_reader.readBit())) {
-            ps->iidMode = m_reader.readBits<byte>(3);
+            ps->iidMode = m_reader.readBits<std::uint8_t>(3);
         }
     }
     throw NotImplementedException(); // TODO
 }
 
-uint16 AacFrameElementParser::parseDrmPsData(std::shared_ptr<AacDrmPsInfo> &drmPs)
+std::uint16_t AacFrameElementParser::parseDrmPsData(std::shared_ptr<AacDrmPsInfo> &drmPs)
 {
     VAR_UNUSED(drmPs)
     throw NotImplementedException(); // TODO
@@ -1204,14 +1204,14 @@ void AacFrameElementParser::parseSbrSingleChannelElement(std::shared_ptr<AacSbrI
         parseSbrSinusoidalCoding(sbr, 0);
     }
     if ((sbr->bsExtendedData = m_reader.readBit())) {
-        uint16 cnt = m_reader.readBits<uint16>(4);
+        std::uint16_t cnt = m_reader.readBits<std::uint16_t>(4);
         if (cnt == 0xF) {
-            cnt += m_reader.readBits<uint16>(8);
+            cnt += m_reader.readBits<std::uint16_t>(8);
         }
-        uint16 bitsLeft = 8 * cnt;
+        std::uint16_t bitsLeft = 8 * cnt;
         while (bitsLeft > 7) {
-            sbr->bsExtensionId = m_reader.readBits<byte>(2);
-            uint16 tmpBitCount = 2 + parseSbrExtension(sbr, sbr->bsExtensionId, static_cast<byte>(bitsLeft));
+            sbr->bsExtensionId = m_reader.readBits<std::uint8_t>(2);
+            std::uint16_t tmpBitCount = 2 + parseSbrExtension(sbr, sbr->bsExtensionId, static_cast<std::uint8_t>(bitsLeft));
             if (tmpBitCount > bitsLeft) {
                 throw InvalidDataException();
             } else {
@@ -1236,17 +1236,17 @@ void AacFrameElementParser::parseSbrChannelPairElement(std::shared_ptr<AacSbrInf
         sbr->le[1] = sbr->le[0];
         sbr->lq[1] = sbr->lq[0];
         sbr->bsPointer[1] = sbr->bsPointer[0];
-        for (byte n = 0; n < sbr->le[0]; ++n) {
+        for (std::uint8_t n = 0; n < sbr->le[0]; ++n) {
             sbr->te[1][n] = sbr->te[0][n];
             sbr->f[1][n] = sbr->f[0][n];
         }
-        for (byte n = 0; n < sbr->lq[0]; ++n) {
+        for (std::uint8_t n = 0; n < sbr->lq[0]; ++n) {
             sbr->tq[1][n] = sbr->tq[0][n];
         }
         parseSbrDtdf(sbr, 0);
         parseSbrDtdf(sbr, 1);
         parseInvfMode(sbr, 0);
-        for (byte n = 0; n < sbr->nq; ++n) {
+        for (std::uint8_t n = 0; n < sbr->nq; ++n) {
             sbr->bsInvfMode[1][n] = sbr->bsInvfMode[0][n];
         }
         parseSbrEnvelope(sbr, 0);
@@ -1276,14 +1276,14 @@ void AacFrameElementParser::parseSbrChannelPairElement(std::shared_ptr<AacSbrInf
         // TODO: unmap envelope noise
     }
     if ((sbr->bsExtendedData = m_reader.readBit())) {
-        uint16 cnt = m_reader.readBits<uint16>(4);
+        std::uint16_t cnt = m_reader.readBits<std::uint16_t>(4);
         if (cnt == 0xF) {
-            cnt += m_reader.readBits<uint16>(8);
+            cnt += m_reader.readBits<std::uint16_t>(8);
         }
-        uint16 bitsLeft = 8 * cnt;
+        std::uint16_t bitsLeft = 8 * cnt;
         while (bitsLeft > 7) {
-            sbr->bsExtensionId = m_reader.readBits<byte>(2);
-            uint16 tmpBitCount = 2 + parseSbrExtension(sbr, sbr->bsExtensionId, static_cast<byte>(bitsLeft));
+            sbr->bsExtensionId = m_reader.readBits<std::uint8_t>(2);
+            std::uint16_t tmpBitCount = 2 + parseSbrExtension(sbr, sbr->bsExtensionId, static_cast<std::uint8_t>(bitsLeft));
             if (tmpBitCount > bitsLeft) {
                 throw InvalidDataException();
             } else {
@@ -1296,7 +1296,7 @@ void AacFrameElementParser::parseSbrChannelPairElement(std::shared_ptr<AacSbrInf
     }
 }
 
-shared_ptr<AacSbrInfo> AacFrameElementParser::makeSbrInfo(byte sbrElement, bool isDrm)
+shared_ptr<AacSbrInfo> AacFrameElementParser::makeSbrInfo(std::uint8_t sbrElement, bool isDrm)
 {
     if (m_mpeg4ExtensionSamplingFrequencyIndex >= sizeof(mpeg4SamplingFrequencyTable)
         && m_mpeg4SamplingFrequencyIndex >= sizeof(mpeg4SamplingFrequencyTable)) {
@@ -1309,7 +1309,7 @@ shared_ptr<AacSbrInfo> AacFrameElementParser::makeSbrInfo(byte sbrElement, bool 
         m_frameLength, isDrm);
 }
 
-void AacFrameElementParser::parseSbrExtensionData(byte sbrElement, uint16 count, bool crcFlag)
+void AacFrameElementParser::parseSbrExtensionData(std::uint8_t sbrElement, std::uint16_t count, bool crcFlag)
 {
     VAR_UNUSED(count);
     //uint16 alignBitCount = 0;
@@ -1319,7 +1319,7 @@ void AacFrameElementParser::parseSbrExtensionData(byte sbrElement, uint16 count,
     }
     if (!sbr->isDrmSbr) {
         if (crcFlag) {
-            sbr->bsSbrCrcBits = m_reader.readBits<uint16>(10);
+            sbr->bsSbrCrcBits = m_reader.readBits<std::uint16_t>(10);
         }
     }
     //auto startFrequ = sbr->bsStartFreq;
@@ -1329,24 +1329,24 @@ void AacFrameElementParser::parseSbrExtensionData(byte sbrElement, uint16 count,
     //auto alterScale = sbr->bsAlterScale;
     //auto xoverBand = sbr->bsXoverBand;
     if ((sbr->bsHeaderFlag = m_reader.readBit())) {
-        sbr->bsStartFreq = m_reader.readBits<byte>(4);
-        sbr->bsStopFreq = m_reader.readBits<byte>(4);
-        sbr->bsXoverBand = m_reader.readBits<byte>(3);
+        sbr->bsStartFreq = m_reader.readBits<std::uint8_t>(4);
+        sbr->bsStopFreq = m_reader.readBits<std::uint8_t>(4);
+        sbr->bsXoverBand = m_reader.readBits<std::uint8_t>(3);
         m_reader.skipBits(2);
-        byte bsExtraHeader1 = m_reader.readBit();
-        byte bsExtraHeader2 = m_reader.readBit();
+        std::uint8_t bsExtraHeader1 = m_reader.readBit();
+        std::uint8_t bsExtraHeader2 = m_reader.readBit();
         if (bsExtraHeader1) {
-            sbr->bsFreqScale = m_reader.readBits<byte>(2);
+            sbr->bsFreqScale = m_reader.readBits<std::uint8_t>(2);
             sbr->bsAlterScale = m_reader.readBit();
-            sbr->bsNoiseBands = m_reader.readBits<byte>(2);
+            sbr->bsNoiseBands = m_reader.readBits<std::uint8_t>(2);
         } else {
             sbr->bsFreqScale = 2;
             sbr->bsAlterScale = 1;
             sbr->bsNoiseBands = 2;
         }
         if (bsExtraHeader2) {
-            sbr->bsLimiterBands = m_reader.readBits<byte>(2);
-            sbr->bsLimiterGains = m_reader.readBits<byte>(2);
+            sbr->bsLimiterBands = m_reader.readBits<std::uint8_t>(2);
+            sbr->bsLimiterGains = m_reader.readBits<std::uint8_t>(2);
             sbr->bsInterpolFreq = m_reader.readBit();
             sbr->bsSmoothingMode = m_reader.readBit();
         } else {
@@ -1373,9 +1373,9 @@ void AacFrameElementParser::parseSbrExtensionData(byte sbrElement, uint16 count,
     }
 }
 
-byte AacFrameElementParser::parseHuffmanScaleFactor()
+std::uint8_t AacFrameElementParser::parseHuffmanScaleFactor()
 {
-    uint16 offset = 0;
+    std::uint16_t offset = 0;
     while (aacHcbSf[offset][1]) {
         offset += aacHcbSf[offset][m_reader.readBit()];
         if (offset > 240) {
@@ -1385,7 +1385,7 @@ byte AacFrameElementParser::parseHuffmanScaleFactor()
     return aacHcbSf[offset][0];
 }
 
-void AacFrameElementParser::parseHuffmanSpectralData(byte cb, int16 *sp)
+void AacFrameElementParser::parseHuffmanSpectralData(std::uint8_t cb, std::int16_t *sp)
 {
     switch (cb) {
     case 1:
@@ -1467,9 +1467,9 @@ void AacFrameElementParser::parseHuffmanSpectralData(byte cb, int16 *sp)
     }
 }
 
-void AacFrameElementParser::huffmanSignBits(int16 *sp, byte len)
+void AacFrameElementParser::huffmanSignBits(std::int16_t *sp, std::uint8_t len)
 {
-    for (int16 *end = sp + len; sp < end; ++sp) {
+    for (std::int16_t *end = sp + len; sp < end; ++sp) {
         if (*sp) {
             if (m_reader.readBit()) {
                 *sp = -(*sp);
@@ -1478,14 +1478,14 @@ void AacFrameElementParser::huffmanSignBits(int16 *sp, byte len)
     }
 }
 
-void AacFrameElementParser::huffman2StepQuad(byte cb, int16 *sp)
+void AacFrameElementParser::huffman2StepQuad(std::uint8_t cb, std::int16_t *sp)
 {
-    uint32 cw = m_reader.showBits<uint32>(aacHcbN[cb]);
-    uint16 offset = aacHcbTable[cb][cw].offset;
+    std::uint32_t cw = m_reader.showBits<std::uint32_t>(aacHcbN[cb]);
+    std::uint16_t offset = aacHcbTable[cb][cw].offset;
     uint8_t extraBits = aacHcbTable[cb][cw].extraBits;
     if (extraBits) {
         m_reader.skipBits(aacHcbN[cb]);
-        offset += m_reader.showBits<uint16>(extraBits);
+        offset += m_reader.showBits<std::uint16_t>(extraBits);
         m_reader.skipBits(aacHcb2QuadTable[cb][offset].bits - aacHcbN[cb]);
     } else {
         m_reader.skipBits(aacHcb2QuadTable[cb][offset].bits);
@@ -1499,7 +1499,7 @@ void AacFrameElementParser::huffman2StepQuad(byte cb, int16 *sp)
     sp[3] = aacHcb2QuadTable[cb][offset].w;
 }
 
-void AacFrameElementParser::huffmanBinaryQuadSign(byte cb, int16 *sp)
+void AacFrameElementParser::huffmanBinaryQuadSign(std::uint8_t cb, std::int16_t *sp)
 {
     try {
         huffman2StepQuad(cb, sp);
@@ -1510,9 +1510,9 @@ void AacFrameElementParser::huffmanBinaryQuadSign(byte cb, int16 *sp)
     huffmanSignBits(sp, 4);
 }
 
-void AacFrameElementParser::huffmanBinaryPair(byte cb, int16 *sp)
+void AacFrameElementParser::huffmanBinaryPair(std::uint8_t cb, std::int16_t *sp)
 {
-    uint16 offset = 0;
+    std::uint16_t offset = 0;
     while (!aacHcbBinTable[cb][offset].isLeaf) {
         offset += aacHcbBinTable[cb][offset].data[m_reader.readBit()];
     }
@@ -1523,14 +1523,14 @@ void AacFrameElementParser::huffmanBinaryPair(byte cb, int16 *sp)
     sp[1] = aacHcbBinTable[cb][offset].data[1];
 }
 
-void AacFrameElementParser::huffman2StepPair(byte cb, int16 *sp)
+void AacFrameElementParser::huffman2StepPair(std::uint8_t cb, std::int16_t *sp)
 {
-    uint32 cw = m_reader.showBits<uint32>(aacHcbN[cb]);
-    uint16 offset = aacHcbTable[cb][cw].offset;
+    std::uint32_t cw = m_reader.showBits<std::uint32_t>(aacHcbN[cb]);
+    std::uint16_t offset = aacHcbTable[cb][cw].offset;
     uint8_t extraBits = aacHcbTable[cb][cw].extraBits;
     if (extraBits) {
         m_reader.skipBits(aacHcbN[cb]);
-        offset += m_reader.showBits<uint16>(extraBits);
+        offset += m_reader.showBits<std::uint16_t>(extraBits);
         m_reader.skipBits(aacHcb2PairTable[cb][offset].bits - aacHcbN[cb]);
     } else {
         m_reader.skipBits(aacHcb2PairTable[cb][offset].bits);
@@ -1542,7 +1542,7 @@ void AacFrameElementParser::huffman2StepPair(byte cb, int16 *sp)
     sp[1] = aacHcb2PairTable[cb][offset].y;
 }
 
-void AacFrameElementParser::huffmanBinaryPairSign(byte cb, int16 *sp)
+void AacFrameElementParser::huffmanBinaryPairSign(std::uint8_t cb, std::int16_t *sp)
 {
     try {
         huffmanBinaryPair(cb, sp);
@@ -1553,7 +1553,7 @@ void AacFrameElementParser::huffmanBinaryPairSign(byte cb, int16 *sp)
     huffmanSignBits(sp, 2);
 }
 
-void AacFrameElementParser::huffman2StepPairSign(byte cb, int16 *sp)
+void AacFrameElementParser::huffman2StepPairSign(std::uint8_t cb, std::int16_t *sp)
 {
     try {
         huffman2StepPair(cb, sp);
@@ -1564,9 +1564,9 @@ void AacFrameElementParser::huffman2StepPairSign(byte cb, int16 *sp)
     huffmanSignBits(sp, 2);
 }
 
-int16 AacFrameElementParser::huffmanGetEscape(int16 sp)
+std::int16_t AacFrameElementParser::huffmanGetEscape(std::int16_t sp)
 {
-    byte neg;
+    std::uint8_t neg;
     if (sp < 0) {
         if (sp != -16)
             return sp;
@@ -1576,17 +1576,17 @@ int16 AacFrameElementParser::huffmanGetEscape(int16 sp)
             return sp;
         neg = 0;
     }
-    byte size;
+    std::uint8_t size;
     for (size = 4; m_reader.readBit(); ++size) {
     }
-    const int16 off = m_reader.readBits<int16>(size);
-    return static_cast<int16>(neg ? -(off | (1 << size)) : (off | (1 << size)));
+    const std::int16_t off = m_reader.readBits<std::int16_t>(size);
+    return static_cast<std::int16_t>(neg ? -(off | (1 << size)) : (off | (1 << size)));
 }
 
-void AacFrameElementParser::vcb11CheckLav(byte cb, int16 *sp)
+void AacFrameElementParser::vcb11CheckLav(std::uint8_t cb, std::int16_t *sp)
 {
     static const uint16_t vcb11LavTab[] = { 16, 31, 47, 63, 95, 127, 159, 191, 223, 255, 319, 383, 511, 767, 1023, 2047 };
-    uint16 max = 0;
+    std::uint16_t max = 0;
     if (cb < 16 || cb > 31)
         return;
     max = vcb11LavTab[cb - 16];
@@ -1625,18 +1625,18 @@ void AacFrameElementParser::calculateWindowGroupingInfo(AacIcsInfo &ics)
         }
         if (m_mpeg4AudioObjectId == Mpeg4AudioObjectIds::ErAacLd) {
             if (m_frameLength == 512) {
-                for (byte i = 0; i <= ics.swbCount; ++i) {
+                for (std::uint8_t i = 0; i <= ics.swbCount; ++i) {
                     ics.sectionSfbOffset[0][i] = swbOffset512Window[m_mpeg4SamplingFrequencyIndex][i];
                     ics.swbOffset[i] = swbOffset512Window[m_mpeg4SamplingFrequencyIndex][i];
                 }
             } else {
-                for (byte i = 0; i <= ics.swbCount; ++i) {
+                for (std::uint8_t i = 0; i <= ics.swbCount; ++i) {
                     ics.sectionSfbOffset[0][i] = swbOffset480Window[m_mpeg4SamplingFrequencyIndex][i];
                     ics.swbOffset[i] = swbOffset480Window[m_mpeg4SamplingFrequencyIndex][i];
                 }
             }
         } else {
-            for (byte i = 0; i <= ics.swbCount; ++i) {
+            for (std::uint8_t i = 0; i <= ics.swbCount; ++i) {
                 ics.sectionSfbOffset[0][i] = swbOffset1024Window[m_mpeg4SamplingFrequencyIndex][i];
                 ics.swbOffset[i] = swbOffset1024Window[m_mpeg4SamplingFrequencyIndex][i];
             }
@@ -1650,11 +1650,11 @@ void AacFrameElementParser::calculateWindowGroupingInfo(AacIcsInfo &ics)
         if (ics.maxSfb > ics.swbCount) {
             throw InvalidDataException();
         }
-        for (byte i = 0; i < ics.swbCount; ++i) {
+        for (std::uint8_t i = 0; i < ics.swbCount; ++i) {
             ics.swbOffset[i] = swbOffset128Window[m_mpeg4SamplingFrequencyIndex][i];
         }
         ics.swbOffset[ics.swbCount] = ics.maxSwbOffset = m_frameLength / 8;
-        for (byte i = 0; i < ics.windowCount - 1; ++i) {
+        for (std::uint8_t i = 0; i < ics.windowCount - 1; ++i) {
             if (!(ics.scaleFactorGrouping & (1 << (6 - i)))) {
                 ics.windowGroupLengths[ics.windowGroupCount] = 1;
                 ++ics.windowGroupCount;
@@ -1662,10 +1662,10 @@ void AacFrameElementParser::calculateWindowGroupingInfo(AacIcsInfo &ics)
                 ++(ics.windowGroupLengths[ics.windowGroupCount - 1]);
             }
         }
-        for (byte g = 0; g < ics.windowGroupCount; ++g) {
-            byte sectionSfb = 0;
-            uint16 offset = 0, width;
-            for (byte i = 0; i < ics.swbCount; ++i) {
+        for (std::uint8_t g = 0; g < ics.windowGroupCount; ++g) {
+            std::uint8_t sectionSfb = 0;
+            std::uint16_t offset = 0, width;
+            for (std::uint8_t i = 0; i < ics.swbCount; ++i) {
                 if (i + 1 == ics.swbCount) {
                     width = (m_frameLength / 8) - swbOffset128Window[m_mpeg4SamplingFrequencyIndex][i];
                 } else {
@@ -1686,7 +1686,7 @@ void AacFrameElementParser::calculateWindowGroupingInfo(AacIcsInfo &ics)
 /*!
  * \brief Parses "individual channel stream" (basic audio unit).
  */
-void AacFrameElementParser::parseIndividualChannelStream(AacIcsInfo &ics, int16 *specData, bool scaleFlag)
+void AacFrameElementParser::parseIndividualChannelStream(AacIcsInfo &ics, std::int16_t *specData, bool scaleFlag)
 {
     parseSideInfo(ics, scaleFlag);
     if (m_mpeg4AudioObjectId >= Mpeg4AudioObjectIds::ErAacLc) {
@@ -1724,9 +1724,9 @@ void AacFrameElementParser::parseSingleChannelElement()
     }
     // TODO: check whether limit of channels is exceeded
 
-    int16 specData[1024] = { 0 };
+    std::int16_t specData[1024] = { 0 };
     m_elementId[m_elementCount] = AacSyntaxElementTypes::SingleChannelElement;
-    m_elementInstanceTag[m_elementCount] = m_reader.readBits<byte>(4);
+    m_elementInstanceTag[m_elementCount] = m_reader.readBits<std::uint8_t>(4);
     //m_channel = channel;
     //m_pairedChannel = -1;
     parseIndividualChannelStream(m_ics1, specData);
@@ -1734,7 +1734,7 @@ void AacFrameElementParser::parseSingleChannelElement()
         throw InvalidDataException(); // IS not allowed in single channel
     }
     // check wheter next bitstream element is a fill element (for SBR decoding)
-    if (m_reader.showBits<byte>(3) == AacSyntaxElementTypes::FillElement) {
+    if (m_reader.showBits<std::uint8_t>(3) == AacSyntaxElementTypes::FillElement) {
         parseFillElement(m_elementCount);
     }
     // TODO: reconstruct single channel element
@@ -1755,17 +1755,17 @@ void AacFrameElementParser::parseChannelPairElement()
     m_elementId[m_elementCount] = AacSyntaxElementTypes::ChannelPairElement;
     m_elementChannelCount[m_elementCount] = 2; // number of output channels in CPE is always 2
 
-    int16 specData1[1024] = { 0 };
-    int16 specData2[1024] = { 0 };
+    std::int16_t specData1[1024] = { 0 };
+    std::int16_t specData2[1024] = { 0 };
     //m_channel = channels;
     //m_pairedChannel = channels + 1;
-    m_elementInstanceTag[m_elementCount] = m_reader.readBits<byte>(4);
+    m_elementInstanceTag[m_elementCount] = m_reader.readBits<std::uint8_t>(4);
     if ((m_commonWindow = m_reader.readBit())) {
         // both channels have common ics data
         parseIcsInfo(m_ics1);
-        if ((m_ics1.midSideCodingMaskPresent = m_reader.readBits<byte>(2) == 1)) { // ms mask present
-            for (byte g = 0; g < m_ics1.windowGroupCount; ++g) {
-                for (byte sfb = 0; sfb < m_ics1.maxSfb; ++sfb) {
+        if ((m_ics1.midSideCodingMaskPresent = m_reader.readBits<std::uint8_t>(2) == 1)) { // ms mask present
+            for (std::uint8_t g = 0; g < m_ics1.windowGroupCount; ++g) {
+                for (std::uint8_t sfb = 0; sfb < m_ics1.maxSfb; ++sfb) {
                     m_ics1.midSideCodingUsed[g][sfb] = m_reader.readBit();
                 }
             }
@@ -1788,7 +1788,7 @@ void AacFrameElementParser::parseChannelPairElement()
     }
     parseIndividualChannelStream(m_ics2, specData2);
     // check if next bitstream element is a fill element (for SBR decoding)
-    if (m_reader.showBits<byte>(3) == AacSyntaxElementTypes::FillElement) {
+    if (m_reader.showBits<std::uint8_t>(3) == AacSyntaxElementTypes::FillElement) {
         parseFillElement(m_elementCount);
     }
     // TODO: reconstruct channel pair
@@ -1803,12 +1803,12 @@ void AacFrameElementParser::parseChannelPairElement()
 void AacFrameElementParser::parseCouplingChannelElement()
 {
     m_reader.skipBits(4); // element instance tag
-    byte swCceFlag = m_reader.readBit();
-    byte coupledElementCount = m_reader.readBits<byte>(3);
-    byte gainElementLists = 0;
-    for (byte c = 0; c < coupledElementCount; ++c) {
+    std::uint8_t swCceFlag = m_reader.readBit();
+    std::uint8_t coupledElementCount = m_reader.readBits<std::uint8_t>(3);
+    std::uint8_t gainElementLists = 0;
+    for (std::uint8_t c = 0; c < coupledElementCount; ++c) {
         ++gainElementLists;
-        byte ccTargetIsCpe = m_reader.readBit();
+        std::uint8_t ccTargetIsCpe = m_reader.readBit();
         //byte ccTargetTagSelect = m_reader.readBits<byte>(4);
         m_reader.skipBits(4); // cc target tag select
         if (ccTargetIsCpe) {
@@ -1820,14 +1820,14 @@ void AacFrameElementParser::parseCouplingChannelElement()
     }
     m_reader.skipBits(4); // 1 bit cc domain, 1 bit gain element sign, 2 bits gain element scale
     AacIcsInfo ics;
-    int16 specData[1024];
+    std::int16_t specData[1024];
     parseIndividualChannelStream(ics, specData);
-    for (byte c = 1; c < gainElementLists; ++c) {
+    for (std::uint8_t c = 1; c < gainElementLists; ++c) {
         if (swCceFlag || m_reader.readBit()) {
             parseHuffmanScaleFactor();
         } else {
-            for (byte group = 0; group < ics.windowCount; ++group) {
-                for (byte sfb = 0; sfb < ics.maxSfb; ++sfb) {
+            for (std::uint8_t group = 0; group < ics.windowCount; ++group) {
+                for (std::uint8_t sfb = 0; sfb < ics.maxSfb; ++sfb) {
                     if (ics.sfbCb[group][sfb] != AacScaleFactorTypes::ZeroHcb) {
                         parseHuffmanScaleFactor();
                     }
@@ -1850,10 +1850,10 @@ void AacFrameElementParser::parseLowFrequencyElement()
  */
 void AacFrameElementParser::parseDataStreamElement()
 {
-    byte byteAligned = m_reader.readBit();
-    uint16 count = m_reader.readBits<uint16>(8);
+    std::uint8_t byteAligned = m_reader.readBit();
+    std::uint16_t count = m_reader.readBits<std::uint16_t>(8);
     if (count == 0xFF) {
-        count += m_reader.readBits<uint16>(8);
+        count += m_reader.readBits<std::uint16_t>(8);
     }
     if (byteAligned) {
         m_reader.align();
@@ -1866,29 +1866,29 @@ void AacFrameElementParser::parseDataStreamElement()
  */
 void AacFrameElementParser::parseProgramConfigElement()
 {
-    m_pce.elementInstanceTag = m_reader.readBits<byte>(4);
-    m_pce.objectType = m_reader.readBits<byte>(2);
-    m_pce.samplingFrequencyIndex = m_reader.readBits<byte>(4);
-    m_pce.frontChannelElementCount = m_reader.readBits<byte>(4);
-    m_pce.sideChannelElementCount = m_reader.readBits<byte>(4);
-    m_pce.backChannelElementCount = m_reader.readBits<byte>(4);
-    m_pce.lfeChannelElementCount = m_reader.readBits<byte>(2);
-    m_pce.assocDataElementCount = m_reader.readBits<byte>(3);
-    m_pce.validCcElementCount = m_reader.readBits<byte>(4);
+    m_pce.elementInstanceTag = m_reader.readBits<std::uint8_t>(4);
+    m_pce.objectType = m_reader.readBits<std::uint8_t>(2);
+    m_pce.samplingFrequencyIndex = m_reader.readBits<std::uint8_t>(4);
+    m_pce.frontChannelElementCount = m_reader.readBits<std::uint8_t>(4);
+    m_pce.sideChannelElementCount = m_reader.readBits<std::uint8_t>(4);
+    m_pce.backChannelElementCount = m_reader.readBits<std::uint8_t>(4);
+    m_pce.lfeChannelElementCount = m_reader.readBits<std::uint8_t>(2);
+    m_pce.assocDataElementCount = m_reader.readBits<std::uint8_t>(3);
+    m_pce.validCcElementCount = m_reader.readBits<std::uint8_t>(4);
     if ((m_pce.monoMixdownPresent = m_reader.readBit())) {
-        m_pce.monoMixdownElementNumber = m_reader.readBits<byte>(4);
+        m_pce.monoMixdownElementNumber = m_reader.readBits<std::uint8_t>(4);
     }
     if ((m_pce.stereoMixdownPresent = m_reader.readBit())) {
-        m_pce.stereoMixdownElementNumber = m_reader.readBits<byte>(4);
+        m_pce.stereoMixdownElementNumber = m_reader.readBits<std::uint8_t>(4);
     }
     if ((m_pce.matrixMixdownIdxPresent = m_reader.readBit())) {
-        m_pce.matrixMixdownIdx = m_reader.readBits<byte>(2);
+        m_pce.matrixMixdownIdx = m_reader.readBits<std::uint8_t>(2);
         m_pce.pseudoSurroundEnable = m_reader.readBit();
     }
-    byte i;
+    std::uint8_t i;
     for (i = 0; i < m_pce.frontChannelElementCount; ++i) {
         m_pce.frontElementIsCpe[i] = m_reader.readBit();
-        m_pce.frontElementTagSelect[i] = m_reader.readBits<byte>(4);
+        m_pce.frontElementTagSelect[i] = m_reader.readBits<std::uint8_t>(4);
         if (m_pce.frontElementIsCpe[i]) { // channel coupling element
             m_pce.cpeChannel[m_pce.frontElementTagSelect[i]] = m_pce.channels;
             m_pce.frontChannelCount += 2;
@@ -1901,7 +1901,7 @@ void AacFrameElementParser::parseProgramConfigElement()
     }
     for (i = 0; i < m_pce.sideChannelElementCount; ++i) {
         m_pce.sideElementIsCpe[i] = m_reader.readBit();
-        m_pce.sideElementTagSelect[i] = m_reader.readBits<byte>(4);
+        m_pce.sideElementTagSelect[i] = m_reader.readBits<std::uint8_t>(4);
         if (m_pce.sideElementIsCpe[i]) { // channel coupling element
             m_pce.cpeChannel[m_pce.sideElementTagSelect[i]] = m_pce.channels;
             m_pce.sideChannelCount += 2;
@@ -1914,7 +1914,7 @@ void AacFrameElementParser::parseProgramConfigElement()
     }
     for (i = 0; i < m_pce.backChannelElementCount; ++i) {
         m_pce.backElementIsCpe[i] = m_reader.readBit();
-        m_pce.backElementTagSelect[i] = m_reader.readBits<byte>(4);
+        m_pce.backElementTagSelect[i] = m_reader.readBits<std::uint8_t>(4);
         if (m_pce.backElementIsCpe[i]) { // channel coupling element
             m_pce.cpeChannel[m_pce.backElementTagSelect[i]] = m_pce.channels;
             m_pce.backChannelCount += 2;
@@ -1926,22 +1926,22 @@ void AacFrameElementParser::parseProgramConfigElement()
         }
     }
     for (i = 0; i < m_pce.lfeChannelElementCount; ++i) {
-        m_pce.lfeElementTagSelect[i] = m_reader.readBits<byte>(4);
+        m_pce.lfeElementTagSelect[i] = m_reader.readBits<std::uint8_t>(4);
         m_pce.sceChannel[m_pce.lfeElementTagSelect[i]] = m_pce.channels;
         ++m_pce.lfeChannelCount;
         ++m_pce.channels;
     }
     for (i = 0; i < m_pce.assocDataElementCount; ++i) {
-        m_pce.assocDataElementTagSelect[i] = m_reader.readBits<byte>(4);
+        m_pce.assocDataElementTagSelect[i] = m_reader.readBits<std::uint8_t>(4);
     }
     for (i = 0; i < m_pce.validCcElementCount; ++i) {
         m_pce.ccElementIsIndSw[i] = m_reader.readBit();
-        m_pce.validCcElementTagSelect[i] = m_reader.readBits<byte>(4);
+        m_pce.validCcElementTagSelect[i] = m_reader.readBits<std::uint8_t>(4);
     }
     m_reader.align();
-    m_pce.commentFieldBytes = m_reader.readBits<byte>(8);
+    m_pce.commentFieldBytes = m_reader.readBits<std::uint8_t>(8);
     for (i = 0; i < m_pce.commentFieldBytes; ++i) {
-        m_pce.commentFieldData[i] = m_reader.readBits<byte>(8);
+        m_pce.commentFieldData[i] = m_reader.readBits<std::uint8_t>(8);
     }
     m_pce.commentFieldData[i] = 0;
     if (m_pce.channels > aacMaxChannels) {
@@ -1952,16 +1952,16 @@ void AacFrameElementParser::parseProgramConfigElement()
 /*!
  * \brief Parses "fill element".
  */
-void AacFrameElementParser::parseFillElement(byte sbrElement)
+void AacFrameElementParser::parseFillElement(std::uint8_t sbrElement)
 {
-    uint16 count = m_reader.readBits<byte>(4);
+    std::uint16_t count = m_reader.readBits<std::uint8_t>(4);
     bool crcFlag = 0;
     if (count == 0xF) {
-        count += m_reader.readBits<byte>(8);
+        count += m_reader.readBits<std::uint8_t>(8);
     }
     while (count > 0) {
     continueWhile:
-        switch (m_reader.readBits<byte>(4)) { // extension type
+        switch (m_reader.readBits<std::uint8_t>(4)) { // extension type
             using namespace AacExtensionTypes;
         case DynamicRange:
             count -= parseDynamicRange();
@@ -1992,16 +1992,16 @@ void AacFrameElementParser::parseFillElement(byte sbrElement)
             break;
         case DataElement:
             // data element version
-            if (m_reader.readBits<byte>(4) == 0) {
+            if (m_reader.readBits<std::uint8_t>(4) == 0) {
                 // ANC data
-                byte dataElementLength = 0, loopCounter = 0;
-                uint16 dataElementLengthPart;
+                std::uint8_t dataElementLength = 0, loopCounter = 0;
+                std::uint16_t dataElementLengthPart;
                 do {
-                    dataElementLengthPart = m_reader.readBits<byte>(8);
+                    dataElementLengthPart = m_reader.readBits<std::uint8_t>(8);
                     dataElementLength += dataElementLengthPart;
                     ++loopCounter;
                 } while (dataElementLengthPart == 0xFF);
-                for (uint16 i = 0; i < dataElementLength; ++i) {
+                for (std::uint16_t i = 0; i < dataElementLength; ++i) {
                     m_reader.skipBits(8); // data element byte
                     count -= dataElementLength + loopCounter + 1;
                     goto continueWhile;
@@ -2029,7 +2029,7 @@ void AacFrameElementParser::parseRawDataBlock()
 {
     if (m_mpeg4AudioObjectId < Mpeg4AudioObjectIds::ErAacLc) {
         for (;;) {
-            switch (m_reader.readBits<byte>(3)) { // parse element type
+            switch (m_reader.readBits<std::uint8_t>(3)) { // parse element type
                 using namespace AacSyntaxElementTypes;
             case SingleChannelElement:
                 parseSingleChannelElement();

@@ -23,7 +23,7 @@ namespace TagParser {
  * \throws Throws TruncatedDataException() when the config size exceeds the specified \a maxSize.
  * \todo Implement logging/reporting parsing errors.
  */
-void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &diag)
+void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
     VAR_UNUSED(diag)
     if (maxSize < 7) {
@@ -38,7 +38,7 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &
     naluSizeLength = (reader.readByte() & 0x03) + 1;
 
     // read SPS info entries
-    byte entryCount = reader.readByte() & 0x0f;
+    std::uint8_t entryCount = reader.readByte() & 0x0f;
     spsInfos.reserve(entryCount);
     for (; entryCount; --entryCount) {
         if (maxSize < 2) {
@@ -46,9 +46,9 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &
         }
         spsInfos.emplace_back();
         try {
-            spsInfos.back().parse(reader, maxSize > numeric_limits<uint32>::max() ? numeric_limits<uint32>::max() : static_cast<uint32>(maxSize));
+            spsInfos.back().parse(
+                reader, maxSize > numeric_limits<std::uint32_t>::max() ? numeric_limits<std::uint32_t>::max() : static_cast<std::uint32_t>(maxSize));
         } catch (const TruncatedDataException &) {
-            // TODO: log parsing error
             if (spsInfos.back().size > maxSize - 2) {
                 throw;
             }
@@ -69,9 +69,9 @@ void AvcConfiguration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &
         }
         ppsInfos.emplace_back();
         try {
-            ppsInfos.back().parse(reader, maxSize > numeric_limits<uint32>::max() ? numeric_limits<uint32>::max() : static_cast<uint32>(maxSize));
+            ppsInfos.back().parse(
+                reader, maxSize > numeric_limits<std::uint32_t>::max() ? numeric_limits<std::uint32_t>::max() : static_cast<std::uint32_t>(maxSize));
         } catch (const TruncatedDataException &) {
-            // TODO: log parsing error
             if (ppsInfos.back().size > maxSize - 2) {
                 throw;
             }

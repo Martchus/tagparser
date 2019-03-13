@@ -105,7 +105,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 }
                 setTypeInfo(m_parsedRawDataType = reader.readUInt24BE());
                 try { // try to show warning if parsed raw data type differs from expected raw data type for this atom id
-                    const vector<uint32> expectedRawDataTypes = this->expectedRawDataTypes();
+                    const vector<std::uint32_t> expectedRawDataTypes = this->expectedRawDataTypes();
                     if (find(expectedRawDataTypes.cbegin(), expectedRawDataTypes.cend(), m_parsedRawDataType) == expectedRawDataTypes.cend()) {
                         diag.emplace_back(DiagLevel::Warning, "Unexpected data type indicator found.", context);
                     }
@@ -196,7 +196,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                         if (dataAtom->dataSize() < (8 + 6)) {
                             diag.emplace_back(DiagLevel::Warning, "Track/disk position is truncated. Trying to read data anyways.", context);
                         }
-                        uint16 pos = 0, total = 0;
+                        std::uint16_t pos = 0, total = 0;
                         if (dataAtom->dataSize() >= (8 + 4)) {
                             stream.seekg(2, ios_base::cur);
                             pos = reader.readUInt16BE();
@@ -296,10 +296,10 @@ void Mp4TagField::make(ostream &stream, Diagnostics &diag)
 /*!
  * \brief Returns the expected raw data types for the ID of the field.
  */
-std::vector<uint32> Mp4TagField::expectedRawDataTypes() const
+std::vector<std::uint32_t> Mp4TagField::expectedRawDataTypes() const
 {
     using namespace Mp4TagAtomIds;
-    std::vector<uint32> res;
+    std::vector<std::uint32_t> res;
     switch (id()) {
     case Album:
     case Artist:
@@ -355,7 +355,7 @@ std::vector<uint32> Mp4TagField::expectedRawDataTypes() const
  * an raw data type considered as appropriate for the ID
  * of the field.
  */
-uint32 Mp4TagField::appropriateRawDataType() const
+std::uint32_t Mp4TagField::appropriateRawDataType() const
 {
     using namespace Mp4TagAtomIds;
     if (isTypeInfoAssigned()) {
@@ -489,8 +489,8 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                 break;
             case RawDataType::BeSignedInt: {
                 int number = m_field.value().toInteger();
-                if (number <= numeric_limits<int16>::max() && number >= numeric_limits<int16>::min()) {
-                    m_writer.writeInt16BE(static_cast<int16>(number));
+                if (number <= numeric_limits<std::int16_t>::max() && number >= numeric_limits<std::int16_t>::min()) {
+                    m_writer.writeInt16BE(static_cast<std::int16_t>(number));
                 } else {
                     m_writer.writeInt32BE(number);
                 }
@@ -498,13 +498,14 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
             }
             case RawDataType::BeUnsignedInt: {
                 int number = m_field.value().toInteger();
-                if (number <= numeric_limits<uint16>::max() && number >= numeric_limits<uint16>::min()) {
-                    m_writer.writeUInt16BE(static_cast<uint16>(number));
+                if (number <= numeric_limits<std::uint16_t>::max() && number >= numeric_limits<std::uint16_t>::min()) {
+                    m_writer.writeUInt16BE(static_cast<std::uint16_t>(number));
                 } else if (number > 0) {
-                    m_writer.writeUInt32BE(static_cast<uint32>(number));
+                    m_writer.writeUInt32BE(static_cast<std::uint32_t>(number));
                 } else {
                     throw ConversionException(
-                        "Negative integer can not be assigned to the field with the ID \"" % interpretIntegerAsString<uint32>(m_field.id()) + "\".");
+                        "Negative integer can not be assigned to the field with the ID \"" % interpretIntegerAsString<std::uint32_t>(m_field.id())
+                        + "\".");
                 }
                 break;
             }
@@ -520,18 +521,18 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                 case Mp4TagAtomIds::DiskPosition: {
                     PositionInSet pos = m_field.value().toPositionInSet();
                     m_writer.writeInt32BE(pos.position());
-                    if (pos.total() <= numeric_limits<int16>::max()) {
-                        m_writer.writeInt16BE(static_cast<int16>(pos.total()));
+                    if (pos.total() <= numeric_limits<std::int16_t>::max()) {
+                        m_writer.writeInt16BE(static_cast<std::int16_t>(pos.total()));
                     } else {
                         throw ConversionException(
-                            "Integer can not be assigned to the field with the id \"" % interpretIntegerAsString<uint32>(m_field.id())
+                            "Integer can not be assigned to the field with the id \"" % interpretIntegerAsString<std::uint32_t>(m_field.id())
                             + "\" because it is to big.");
                     }
                     m_writer.writeUInt16BE(0);
                     break;
                 }
                 case Mp4TagAtomIds::PreDefinedGenre:
-                    m_writer.writeUInt16BE(static_cast<uint16>(m_field.value().toStandardGenreIndex()));
+                    m_writer.writeUInt16BE(static_cast<std::uint16_t>(m_field.value().toStandardGenreIndex()));
                     break;
                 default:; // leave converted data empty to write original data later
                 }
@@ -553,7 +554,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
     m_totalSize = 8 // calculate entire size
         + (m_field.name().empty() ? 0 : (12 + m_field.name().length())) + (m_field.mean().empty() ? 0 : (12 + m_field.mean().length()))
         + (m_dataSize ? (16 + m_dataSize) : 0);
-    if (m_totalSize > numeric_limits<uint32>::max()) {
+    if (m_totalSize > numeric_limits<std::uint32_t>::max()) {
         diag.emplace_back(DiagLevel::Critical, "Making a such big MP4 tag field is not supported.", context);
         throw NotImplementedException();
     }
@@ -570,25 +571,25 @@ void Mp4TagFieldMaker::make(ostream &stream)
 {
     m_writer.setStream(&stream);
     // size of entire tag atom
-    m_writer.writeUInt32BE(static_cast<uint32>(m_totalSize));
+    m_writer.writeUInt32BE(static_cast<std::uint32_t>(m_totalSize));
     // id of tag atom
     m_writer.writeUInt32BE(m_field.id());
     if (!m_field.mean().empty()) {
         // write "mean"
-        m_writer.writeUInt32BE(static_cast<uint32>(12 + m_field.mean().size()));
+        m_writer.writeUInt32BE(static_cast<std::uint32_t>(12 + m_field.mean().size()));
         m_writer.writeUInt32BE(Mp4AtomIds::Mean);
         m_writer.writeUInt32BE(0);
         m_writer.writeString(m_field.mean());
     }
     if (!m_field.name().empty()) {
         // write "name"
-        m_writer.writeUInt32BE(static_cast<uint32>(12 + m_field.name().length()));
+        m_writer.writeUInt32BE(static_cast<std::uint32_t>(12 + m_field.name().length()));
         m_writer.writeUInt32BE(Mp4AtomIds::Name);
         m_writer.writeUInt32BE(0);
         m_writer.writeString(m_field.name());
     }
     if (!m_field.value().isEmpty()) { // write data
-        m_writer.writeUInt32BE(static_cast<uint32>(16 + m_dataSize)); // size of data atom
+        m_writer.writeUInt32BE(static_cast<std::uint32_t>(16 + m_dataSize)); // size of data atom
         m_writer.writeUInt32BE(Mp4AtomIds::Data); // id of data atom
         m_writer.writeByte(0); // version
         m_writer.writeUInt24BE(m_rawDataType);

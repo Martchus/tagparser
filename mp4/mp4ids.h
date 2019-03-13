@@ -3,14 +3,14 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 namespace TagParser {
 
 class MediaFormat;
 
 namespace Mp4AtomIds {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     Av1Configuration = 0x61763143,
     AvcConfiguration = 0x61766343,
     BitrateBox = 0x62747274,
@@ -82,7 +82,7 @@ enum KnownValue : uint32 {
 }
 
 namespace Mp4TagAtomIds {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     Album = 0xA9616c62,
     AlbumArtist = 0x61415254,
     Artist = 0xA9415254,
@@ -133,7 +133,7 @@ extern const char *label;
 } // namespace Mp4TagExtendedNameIds
 
 namespace Mp4MediaTypeIds {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     Sound = 0x736f756e, /**< Sound/Audio */
     Video = 0x76696465, /**< Video */
     Hint = 0x68696e74, /**< Hint */
@@ -142,7 +142,7 @@ enum KnownValue : uint32 {
 }
 
 namespace FourccIds {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     Ac3 = 0x61632d33, /**< Dolby Digital */
     Ac4 = 0x61632d34, /**< ? */
     AdpcmAcm = 0x6D730002, /**< ? */
@@ -413,12 +413,12 @@ enum KnownValue : uint32 {
     Zoom = 0x7A6F6F6D
 };
 
-TAG_PARSER_EXPORT MediaFormat fourccToMediaFormat(uint32 fourccId);
+TAG_PARSER_EXPORT MediaFormat fourccToMediaFormat(std::uint32_t fourccId);
 
 } // namespace FourccIds
 
 namespace Mp4FormatExtensionIds {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     GammaLevel
     = 0x67616D61, /**< A 32-bit fixed-point number indicating the gamma level at which the image was captured. The decompressor can use this value to gamma-correct at display time. */
     FieldHandling = 0x6669656C, /**< Two 8-bit integers that define field handling. */
@@ -434,7 +434,7 @@ enum KnownValue : uint32 {
 }
 
 namespace Mpeg4ElementaryStreamObjectIds {
-enum KnownValue : byte {
+enum KnownValue : std::uint8_t {
     SystemsIso144961 = 0x01, /**< Systems */
     SystemsIso144961v2, /**< Systems (version 2) */
     InteractionStream, /**< Interaction Stream */
@@ -482,12 +482,12 @@ enum KnownValue : byte {
     PrivateQcelp = 0xE1, /**< QCELP */
 };
 
-TAG_PARSER_EXPORT MediaFormat streamObjectTypeFormat(byte streamObjectTypeId);
+TAG_PARSER_EXPORT MediaFormat streamObjectTypeFormat(std::uint8_t streamObjectTypeId);
 
 } // namespace Mpeg4ElementaryStreamObjectIds
 
 namespace Mpeg4ElementaryStreamTypeIds {
-enum KnownValue : byte {
+enum KnownValue : std::uint8_t {
     ObjectDescriptor = 0x01,
     ClockReference,
     SceneDescriptor,
@@ -503,12 +503,12 @@ enum KnownValue : byte {
     StreamingText
 };
 
-TAG_PARSER_EXPORT const char *streamTypeName(byte streamTypeId);
+TAG_PARSER_EXPORT const char *streamTypeName(std::uint8_t streamTypeId);
 
 } // namespace Mpeg4ElementaryStreamTypeIds
 
 namespace Mpeg4DescriptorIds {
-enum KnownValue : byte {
+enum KnownValue : std::uint8_t {
     ObjectDescr = 0x01,
     InitialObjectDescr,
     ElementaryStreamDescr,
@@ -555,7 +555,7 @@ enum KnownValue : byte {
 }
 
 namespace Mpeg4AudioObjectIds {
-enum KnownValue : byte {
+enum KnownValue : std::uint8_t {
     Null = 0,
     AacMain,
     AacLc, /**< low complexity */
@@ -600,14 +600,14 @@ enum KnownValue : byte {
     Usac /**< unified speech and audio coding */
 };
 
-TAG_PARSER_EXPORT MediaFormat idToMediaFormat(byte mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
+TAG_PARSER_EXPORT MediaFormat idToMediaFormat(std::uint8_t mpeg4AudioObjectId, bool sbrPresent = false, bool psPresent = false);
 
 } // namespace Mpeg4AudioObjectIds
 
-extern uint32 mpeg4SamplingFrequencyTable[13];
+extern std::uint32_t mpeg4SamplingFrequencyTable[13];
 
 namespace Mpeg4ChannelConfigs {
-enum Mpeg4ChannelConfig : byte {
+enum Mpeg4ChannelConfig : std::uint8_t {
     AotSpecificConfig = 0,
     FrontCenter,
     FrontLeftFrontRight,
@@ -618,13 +618,13 @@ enum Mpeg4ChannelConfig : byte {
     FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel
 };
 
-TAG_PARSER_EXPORT const char *channelConfigString(byte config);
-TAG_PARSER_EXPORT byte channelCount(byte config);
+TAG_PARSER_EXPORT const char *channelConfigString(std::uint8_t config);
+TAG_PARSER_EXPORT std::uint8_t channelCount(std::uint8_t config);
 
 } // namespace Mpeg4ChannelConfigs
 
 namespace Mpeg4VideoCodes {
-enum KnownValue : byte {
+enum KnownValue : std::uint8_t {
     VideoObjectStart = 0x00,
     VideoObjectLayerStart = 0x20,
     VisualObjectSequenceStart = 0xB0,
@@ -648,13 +648,13 @@ enum KnownValue : byte {
 }
 
 namespace Mpeg2VideoCodes {
-enum KnownValue : byte { Pic = 0x00, Seq = 0xB3, Ext = 0xB5, Gop = 0xB8 };
+enum KnownValue : std::uint8_t { Pic = 0x00, Seq = 0xB3, Ext = 0xB5, Gop = 0xB8 };
 }
 
 /*!
  * \brief Specifies the tag type.
  */
-enum class Mp4TagMediaType : byte {
+enum class Mp4TagMediaType : std::uint8_t {
     Movie = 0, /**< Movie */
     Music = 1, /**< Music */
     Audiobook = 2, /**< Audiobook */
@@ -668,7 +668,7 @@ enum class Mp4TagMediaType : byte {
 /*!
  * \brief Specifies the tag content rating.
  */
-enum class Mp4TagContentRating : byte {
+enum class Mp4TagContentRating : std::uint8_t {
     None = 0, /**< None */
     Clean = 2, /**< Clean */
     Explicit = 4 /**< Explicit */
@@ -677,7 +677,7 @@ enum class Mp4TagContentRating : byte {
 /*!
  * \brief Specifies the account type.
  */
-enum class AccountType : byte { Itunes = 0, Aol = 1, Undefined = 255 };
+enum class AccountType : std::uint8_t { Itunes = 0, Aol = 1, Undefined = 255 };
 
 /*!
  * \brief Specifies the country.

@@ -13,7 +13,7 @@ namespace TagParser {
 /*!
  * \brief The VorbisCommentFlags enum specifies flags which controls parsing and making of Vorbis comments.
  */
-enum class VorbisCommentFlags : byte {
+enum class VorbisCommentFlags : std::uint8_t {
     None = 0x0, /**< Regular parsing/making. */
     NoSignature = 0x1, /**< Skips the signature when parsing and making. */
     NoFramingByte = 0x2, /**< Doesn't expect the framing bit to be present when parsing; does not make the framing bit when making. */
@@ -22,12 +22,12 @@ enum class VorbisCommentFlags : byte {
 
 constexpr bool operator&(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
 {
-    return static_cast<byte>(lhs) & static_cast<byte>(rhs);
+    return static_cast<std::uint8_t>(lhs) & static_cast<std::uint8_t>(rhs);
 }
 
 constexpr VorbisCommentFlags operator|(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
 {
-    return static_cast<VorbisCommentFlags>(static_cast<byte>(lhs) | static_cast<byte>(rhs));
+    return static_cast<VorbisCommentFlags>(static_cast<std::uint8_t>(lhs) | static_cast<std::uint8_t>(rhs));
 }
 
 class VorbisCommentField;
@@ -39,7 +39,7 @@ class Diagnostics;
 template <> class TAG_PARSER_EXPORT TagFieldTraits<VorbisCommentField> {
 public:
     using IdentifierType = std::string;
-    using TypeInfoType = uint32;
+    using TypeInfoType = std::uint32_t;
 };
 
 class OggIterator;
@@ -52,8 +52,8 @@ public:
     VorbisCommentField(const IdentifierType &id, const TagValue &value);
 
     void parse(OggIterator &iterator, Diagnostics &diag);
-    void parse(OggIterator &iterator, uint64 &maxSize, Diagnostics &diag);
-    void parse(std::istream &stream, uint64 &maxSize, Diagnostics &diag);
+    void parse(OggIterator &iterator, std::uint64_t &maxSize, Diagnostics &diag);
+    void parse(std::istream &stream, std::uint64_t &maxSize, Diagnostics &diag);
     bool make(IoUtilities::BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag);
     bool isAdditionalTypeInfoUsed() const;
     bool supportsNestedFields() const;
@@ -63,7 +63,7 @@ public:
 
 private:
     void reset();
-    template <class StreamType> void internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag);
+    template <class StreamType> void internalParse(StreamType &stream, std::uint64_t &maxSize, Diagnostics &diag);
 };
 
 /*!

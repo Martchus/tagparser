@@ -10,16 +10,16 @@ public:
     constexpr WaveFormatHeader();
 
     void parse(IoUtilities::BinaryReader &reader);
-    std::pair<MediaFormat, uint64> parseExt(IoUtilities::BinaryReader &reader, uint64 maxSize, Diagnostics &diag);
+    std::pair<MediaFormat, std::uint64_t> parseExt(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
     MediaFormat format() const;
-    constexpr uint32 bitrate() const;
+    constexpr std::uint32_t bitrate() const;
 
-    uint16 formatTag;
-    uint16 channelCount;
-    uint16 sampleRate;
-    uint16 bytesPerSecond;
-    uint16 chunkSize;
-    uint16 bitsPerSample;
+    std::uint16_t formatTag;
+    std::uint16_t channelCount;
+    std::uint16_t sampleRate;
+    std::uint16_t bytesPerSecond;
+    std::uint16_t chunkSize;
+    std::uint16_t bitsPerSample;
 };
 
 /*!
@@ -38,14 +38,14 @@ constexpr WaveFormatHeader::WaveFormatHeader()
 /*!
  * \brief Calculates the bitrate from the header data.
  */
-constexpr uint32 WaveFormatHeader::bitrate() const
+constexpr std::uint32_t WaveFormatHeader::bitrate() const
 {
     return bitsPerSample * sampleRate * channelCount;
 }
 
 class TAG_PARSER_EXPORT WaveAudioStream : public AbstractTrack {
 public:
-    WaveAudioStream(std::iostream &stream, uint64 startOffset);
+    WaveAudioStream(std::iostream &stream, std::uint64_t startOffset);
     ~WaveAudioStream() override;
 
     TrackType type() const override;
@@ -56,7 +56,7 @@ protected:
     void internalParseHeader(Diagnostics &diag) override;
 
 private:
-    uint64 m_dataOffset;
+    std::uint64_t m_dataOffset;
 };
 
 } // namespace TagParser

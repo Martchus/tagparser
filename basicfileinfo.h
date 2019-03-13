@@ -3,9 +3,9 @@
 
 #include "./global.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/nativefilestream.h>
 
+#include <cstdint>
 #include <string>
 
 namespace TagParser {
@@ -41,8 +41,8 @@ public:
     std::string containingDirectory() const;
 
     // methods to get, set the file size
-    uint64 size() const;
-    void reportSizeChanged(uint64 newSize);
+    std::uint64_t size() const;
+    void reportSizeChanged(std::uint64_t newSize);
     void reportPathChanged(const std::string &newPath);
 
 protected:
@@ -51,7 +51,7 @@ protected:
 private:
     std::string m_path;
     IoUtilities::NativeFileStream m_file;
-    uint64 m_size;
+    std::uint64_t m_size;
     bool m_readOnly;
 };
 
@@ -106,7 +106,7 @@ inline const std::string &BasicFileInfo::path() const
  *          The size is not automatically updated when the file is modified.
  *          You might update the size using the reportSizeChanged() method.
  */
-inline uint64 BasicFileInfo::size() const
+inline std::uint64_t BasicFileInfo::size() const
 {
     return m_size;
 }
@@ -115,7 +115,7 @@ inline uint64 BasicFileInfo::size() const
  * \brief Call this function to report that the size changed.
  * \remarks Should be called after writing/truncating the stream().
  */
-inline void BasicFileInfo::reportSizeChanged(uint64 newSize)
+inline void BasicFileInfo::reportSizeChanged(std::uint64_t newSize)
 {
     m_size = newSize;
 }

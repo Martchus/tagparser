@@ -321,7 +321,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     }
 }
 
-TagDataType Id3v2Tag::internallyGetProposedDataType(const uint32 &id) const
+TagDataType Id3v2Tag::internallyGetProposedDataType(const std::uint32_t &id) const
 {
     using namespace Id3v2FrameIds;
     switch (id) {
@@ -354,12 +354,12 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const uint32 &id) const
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &diag)
+void Id3v2Tag::parse(istream &stream, const std::uint64_t maximalSize, Diagnostics &diag)
 {
     // prepare parsing
     static const string context("parsing ID3v2 tag");
     BinaryReader reader(&stream);
-    const auto startOffset = static_cast<uint64>(stream.tellg());
+    const auto startOffset = static_cast<std::uint64_t>(stream.tellg());
 
     // check whether the header is truncated
     if (maximalSize && maximalSize < 10) {
@@ -373,8 +373,8 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
         throw InvalidDataException();
     }
     // read header data
-    byte majorVersion = reader.readByte();
-    byte revisionVersion = reader.readByte();
+    std::uint8_t majorVersion = reader.readByte();
+    std::uint8_t revisionVersion = reader.readByte();
     setVersion(majorVersion, revisionVersion);
     m_flags = reader.readByte();
     m_sizeExcludingHeader = reader.readSynchsafeUInt32BE();
@@ -405,14 +405,14 @@ void Id3v2Tag::parse(istream &stream, const uint64 maximalSize, Diagnostics &dia
     }
 
     // how many bytes remain for frames and padding?
-    uint32 bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
+    std::uint32_t bytesRemaining = m_sizeExcludingHeader - m_extendedHeaderSize;
     if (maximalSize && bytesRemaining > maximalSize) {
-        bytesRemaining = static_cast<uint32>(maximalSize);
+        bytesRemaining = static_cast<std::uint32_t>(maximalSize);
         diag.emplace_back(DiagLevel::Critical, "Frames are truncated.", context);
     }
 
     // read frames
-    auto pos = static_cast<uint64>(stream.tellg());
+    auto pos = static_cast<std::uint64_t>(stream.tellg());
     while (bytesRemaining) {
         // seek to next frame
         stream.seekg(static_cast<streamoff>(pos));
@@ -482,7 +482,7 @@ Id3v2TagMaker Id3v2Tag::prepareMaking(Diagnostics &diag)
  * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
-void Id3v2Tag::make(ostream &stream, uint32 padding, Diagnostics &diag)
+void Id3v2Tag::make(ostream &stream, std::uint32_t padding, Diagnostics &diag)
 {
     prepareMaking(diag).make(stream, padding, diag);
 }
@@ -491,7 +491,7 @@ void Id3v2Tag::make(ostream &stream, uint32 padding, Diagnostics &diag)
  * \brief Sets the version to the specified \a majorVersion and
  *        the specified \a revisionVersion.
  */
-void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
+void Id3v2Tag::setVersion(std::uint8_t majorVersion, std::uint8_t revisionVersion)
 {
     m_majorVersion = majorVersion;
     m_revisionVersion = revisionVersion;
@@ -510,7 +510,7 @@ void Id3v2Tag::setVersion(byte majorVersion, byte revisionVersion)
  * \remarks Long and short IDs are treated equal if the short ID can be converted to
  *          the corresponding long ID. Otherwise short IDs go before long IDs.
  */
-bool FrameComparer::operator()(uint32 lhs, uint32 rhs) const
+bool FrameComparer::operator()(std::uint32_t lhs, std::uint32_t rhs) const
 {
     if (lhs == rhs) {
         return false;
@@ -609,7 +609,7 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag)
  * \throws Throws Assumes the data is already validated and thus does NOT
  *                throw TagParser::Failure or a derived exception.
  */
-void Id3v2TagMaker::make(std::ostream &stream, uint32 padding, Diagnostics &diag)
+void Id3v2TagMaker::make(std::ostream &stream, std::uint32_t padding, Diagnostics &diag)
 {
     VAR_UNUSED(diag)
 

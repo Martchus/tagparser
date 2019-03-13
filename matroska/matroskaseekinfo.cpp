@@ -22,14 +22,14 @@ namespace TagParser {
 /*!
  * \brief Shifts all offsets greather or equal than \a start by \a amount bytes.
  */
-void MatroskaSeekInfo::shift(uint64 start, int64 amount)
+void MatroskaSeekInfo::shift(std::uint64_t start, std::int64_t amount)
 {
     for (auto &info : m_info) {
         if (get<1>(info) >= start) {
             if (amount > 0) {
-                get<1>(info) += static_cast<uint64>(amount);
+                get<1>(info) += static_cast<std::uint64_t>(amount);
             } else {
-                get<1>(info) -= static_cast<uint64>(-amount);
+                get<1>(info) -= static_cast<std::uint64_t>(-amount);
             }
         }
     }
@@ -112,18 +112,18 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
 {
     VAR_UNUSED(diag)
 
-    uint64 totalSize = 0;
+    std::uint64_t totalSize = 0;
     char buff0[8];
     char buff1[8];
     char buff2[2];
-    byte sizeLength0, sizeLength1;
+    std::uint8_t sizeLength0, sizeLength1;
     // calculate size
     for (const auto &info : m_info) {
         // "Seek" element + "SeekID" element + "SeekPosition" element
         totalSize += 2 + 1 + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2 + 1 + EbmlElement::calculateUIntegerLength(get<1>(info)));
     }
     // write ID and size
-    BE::getBytes(static_cast<uint32>(MatroskaIds::SeekHead), buff0);
+    BE::getBytes(static_cast<std::uint32_t>(MatroskaIds::SeekHead), buff0);
     stream.write(buff0, 4);
     sizeLength0 = EbmlElement::makeSizeDenotation(totalSize, buff0);
     stream.write(buff0, sizeLength0);
@@ -133,16 +133,16 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
         sizeLength0 = EbmlElement::makeId(get<0>(info), buff0);
         sizeLength1 = EbmlElement::makeUInteger(get<1>(info), buff1);
         // "Seek" header
-        BE::getBytes(static_cast<uint16>(MatroskaIds::Seek), buff2);
+        BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::Seek), buff2);
         stream.write(buff2, 2);
         stream.put(static_cast<char>(0x80 | (2 + 1 + sizeLength0 + 2 + 1 + sizeLength1)));
         // "SeekID" element
-        BE::getBytes(static_cast<uint16>(MatroskaIds::SeekID), buff2);
+        BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::SeekID), buff2);
         stream.write(buff2, 2);
         stream.put(static_cast<char>(0x80 | sizeLength0));
         stream.write(buff0, sizeLength0);
         // "SeekPosition" element
-        BE::getBytes(static_cast<uint16>(MatroskaIds::SeekPosition), buff2);
+        BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::SeekPosition), buff2);
         stream.write(buff2, 2);
         stream.put(static_cast<char>(0x80 | sizeLength1));
         stream.write(buff1, sizeLength1);
@@ -153,9 +153,9 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
  * \brief Returns the minimal number of bytes written when calling the make() method.
  * \remarks The returned value gets invalidated when the object is mutated.
  */
-uint64 MatroskaSeekInfo::minSize() const
+std::uint64_t MatroskaSeekInfo::minSize() const
 {
-    uint64 maxTotalSize = m_info.size() * (2 + 1 + 2 + 1 + 1 + 2 + 1 + 1);
+    std::uint64_t maxTotalSize = m_info.size() * (2 + 1 + 2 + 1 + 1 + 2 + 1 + 1);
     return 4 + EbmlElement::calculateSizeDenotationLength(maxTotalSize) + maxTotalSize;
 }
 
@@ -163,9 +163,9 @@ uint64 MatroskaSeekInfo::minSize() const
  * \brief Returns the maximal number of bytes written when calling the make() method.
  * \remarks The returned value gets invalidated when the object is mutated.
  */
-uint64 MatroskaSeekInfo::maxSize() const
+std::uint64_t MatroskaSeekInfo::maxSize() const
 {
-    uint64 maxTotalSize = m_info.size() * (2 + 1 + 2 + 1 + 4 + 2 + 1 + 8);
+    std::uint64_t maxTotalSize = m_info.size() * (2 + 1 + 2 + 1 + 4 + 2 + 1 + 8);
     return 4 + EbmlElement::calculateSizeDenotationLength(maxTotalSize) + maxTotalSize;
 }
 
@@ -173,9 +173,9 @@ uint64 MatroskaSeekInfo::maxSize() const
  * \brief Returns the number of bytes which will be written when calling the make() method.
  * \remarks The returned value gets invalidated when the object is mutated.
  */
-uint64 MatroskaSeekInfo::actualSize() const
+std::uint64_t MatroskaSeekInfo::actualSize() const
 {
-    uint64 totalSize = 0;
+    std::uint64_t totalSize = 0;
     for (const auto &info : m_info) {
         // "Seek" element + "SeekID" element + "SeekPosition" element
         totalSize += 2 + 1 + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2 + 1 + EbmlElement::calculateUIntegerLength(get<1>(info)));
@@ -191,7 +191,7 @@ uint64 MatroskaSeekInfo::actualSize() const
  *
  * \returns Returns an indication whether the actualSize() has changed.
  */
-bool MatroskaSeekInfo::push(unsigned int index, EbmlElement::IdentifierType id, uint64 offset)
+bool MatroskaSeekInfo::push(unsigned int index, EbmlElement::IdentifierType id, std::uint64_t offset)
 {
     unsigned int currentIndex = 0;
     for (auto &entry : info()) {
@@ -220,7 +220,7 @@ void MatroskaSeekInfo::clear()
 /*!
  * \brief Returns a pointer to the first pair with the specified \a offset or nullptr if no such pair could be found.
  */
-std::pair<EbmlElement::IdentifierType, uint64> *MatroskaSeekInfo::findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, uint64 offset)
+std::pair<EbmlElement::IdentifierType, std::uint64_t> *MatroskaSeekInfo::findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, std::uint64_t offset)
 {
     for (auto &seekInfo : seekInfos) {
         for (auto &entry : seekInfo.info()) {
@@ -237,7 +237,7 @@ std::pair<EbmlElement::IdentifierType, uint64> *MatroskaSeekInfo::findSeekInfo(s
  * \returns Returns an indication whether the update altered the offset length.
  */
 bool MatroskaSeekInfo::updateSeekInfo(
-    const std::vector<MatroskaSeekInfo> &oldSeekInfos, std::vector<MatroskaSeekInfo> &newSeekInfos, uint64 oldOffset, uint64 newOffset)
+    const std::vector<MatroskaSeekInfo> &oldSeekInfos, std::vector<MatroskaSeekInfo> &newSeekInfos, std::uint64_t oldOffset, std::uint64_t newOffset)
 {
     bool updated = false;
     auto oldIterator0 = oldSeekInfos.cbegin(), oldEnd0 = oldSeekInfos.cend();
@@ -262,7 +262,7 @@ bool MatroskaSeekInfo::updateSeekInfo(
  * \brief Sets the offset of all entires in \a newSeekInfos to \a newOffset where the offset is \a oldOffset.
  * \returns Returns an whether at least one offset has been updated.
  */
-bool MatroskaSeekInfo::updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfos, uint64 oldOffset, uint64 newOffset)
+bool MatroskaSeekInfo::updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfos, std::uint64_t oldOffset, std::uint64_t newOffset)
 {
     if (oldOffset == newOffset) {
         return false;

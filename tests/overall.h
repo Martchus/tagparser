@@ -138,7 +138,7 @@ private:
     string m_testCover;
     queue<TagValue> m_preservedMetaData;
     TagStatus m_tagStatus;
-    uint16 m_mode;
+    std::uint16_t m_mode;
     ElementPosition m_expectedTagPos;
     ElementPosition m_expectedIndexPos;
 };

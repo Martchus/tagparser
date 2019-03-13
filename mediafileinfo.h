@@ -6,6 +6,7 @@
 #include "./settings.h"
 #include "./signature.h"
 
+#include <cstdint>
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -34,7 +35,7 @@ DECLARE_ENUM_CLASS(TagType, unsigned int);
  * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
  *        been parsed yet and if what the parsing result is.
  */
-enum class ParsingStatus : byte {
+enum class ParsingStatus : std::uint8_t {
     NotParsedYet, /**< the part has not been parsed yet */
     Ok, /**< the part has been parsed and no critical errors occurred */
     NotSupported, /**< tried to parse the part, but the format is not supported */
@@ -68,8 +69,8 @@ public:
     const char *containerFormatAbbreviation() const;
     const char *containerFormatSubversion() const;
     const char *mimeType() const;
-    uint64 containerOffset() const;
-    uint64 paddingSize() const;
+    std::uint64_t containerOffset() const;
+    std::uint64_t paddingSize() const;
     AbstractContainer *container() const;
     ParsingStatus containerParsingStatus() const;
     // ... the capters
@@ -160,7 +161,7 @@ private:
     ParsingStatus m_containerParsingStatus;
     ContainerFormat m_containerFormat;
     std::streamoff m_containerOffset;
-    uint64 m_paddingSize;
+    std::uint64_t m_paddingSize;
     bool m_actualExistingId3v1Tag;
     std::vector<std::streamoff> m_actualId3v2TagOffsets;
     std::unique_ptr<AbstractContainer> m_container;
@@ -245,15 +246,15 @@ inline const char *MediaFileInfo::containerFormatSubversion() const
 /*!
  * \brief Returns the actual container start offset.
  */
-inline uint64 MediaFileInfo::containerOffset() const
+inline std::uint64_t MediaFileInfo::containerOffset() const
 {
-    return static_cast<uint64>(m_containerOffset);
+    return static_cast<std::uint64_t>(m_containerOffset);
 }
 
 /*!
  * \brief Returns the padding size. Container format and tags should have been parsed yet.
  */
-inline uint64 MediaFileInfo::paddingSize() const
+inline std::uint64_t MediaFileInfo::paddingSize() const
 {
     return m_paddingSize;
 }

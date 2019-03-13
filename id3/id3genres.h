@@ -3,8 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <string>
 
 namespace TagParser {

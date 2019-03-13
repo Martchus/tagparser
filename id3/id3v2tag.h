@@ -12,23 +12,23 @@ namespace TagParser {
 class Id3v2Tag;
 
 struct TAG_PARSER_EXPORT FrameComparer {
-    bool operator()(uint32 lhs, uint32 rhs) const;
+    bool operator()(std::uint32_t lhs, std::uint32_t rhs) const;
 };
 
 class TAG_PARSER_EXPORT Id3v2TagMaker {
     friend class Id3v2Tag;
 
 public:
-    void make(std::ostream &stream, uint32 padding, Diagnostics &diag);
+    void make(std::ostream &stream, std::uint32_t padding, Diagnostics &diag);
     const Id3v2Tag &tag() const;
-    uint64 requiredSize() const;
+    std::uint64_t requiredSize() const;
 
 private:
     Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag);
 
     Id3v2Tag &m_tag;
-    uint32 m_framesSize;
-    uint32 m_requiredSize;
+    std::uint32_t m_framesSize;
+    std::uint32_t m_requiredSize;
     std::vector<Id3v2FrameMaker> m_maker;
 };
 
@@ -44,7 +44,7 @@ inline const Id3v2Tag &Id3v2TagMaker::tag() const
  * \brief Returns the number of bytes which will be written when making the tag.
  * \remarks Excludes padding!
  */
-inline uint64 Id3v2TagMaker::requiredSize() const
+inline std::uint64_t Id3v2TagMaker::requiredSize() const
 {
     return m_requiredSize;
 }
@@ -73,36 +73,36 @@ public:
     bool supportsMimeType(KnownField field) const override;
     bool supportsMultipleValues(KnownField field) const override;
 
-    void parse(std::istream &sourceStream, const uint64 maximalSize, Diagnostics &diag);
+    void parse(std::istream &sourceStream, const std::uint64_t maximalSize, Diagnostics &diag);
     Id3v2TagMaker prepareMaking(Diagnostics &diag);
-    void make(std::ostream &targetStream, uint32 padding, Diagnostics &diag);
+    void make(std::ostream &targetStream, std::uint32_t padding, Diagnostics &diag);
 
-    byte majorVersion() const;
-    byte revisionVersion() const;
-    void setVersion(byte majorVersion, byte revisionVersion);
+    std::uint8_t majorVersion() const;
+    std::uint8_t revisionVersion() const;
+    void setVersion(std::uint8_t majorVersion, std::uint8_t revisionVersion);
     bool isVersionSupported() const;
-    byte flags() const;
+    std::uint8_t flags() const;
     bool isUnsynchronisationUsed() const;
     bool hasExtendedHeader() const;
     bool isExperimental() const;
     bool hasFooter() const;
-    uint32 extendedHeaderSize() const;
-    uint32 paddingSize() const;
+    std::uint32_t extendedHeaderSize() const;
+    std::uint32_t paddingSize() const;
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
     KnownField internallyGetKnownField(const IdentifierType &id) const;
-    TagDataType internallyGetProposedDataType(const uint32 &id) const;
+    TagDataType internallyGetProposedDataType(const std::uint32_t &id) const;
     std::vector<const TagValue *> internallyGetValues(const IdentifierType &id) const;
     bool internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values);
 
 private:
-    byte m_majorVersion;
-    byte m_revisionVersion;
-    byte m_flags;
-    uint32 m_sizeExcludingHeader;
-    uint32 m_extendedHeaderSize;
-    uint32 m_paddingSize;
+    std::uint8_t m_majorVersion;
+    std::uint8_t m_revisionVersion;
+    std::uint8_t m_flags;
+    std::uint32_t m_sizeExcludingHeader;
+    std::uint32_t m_extendedHeaderSize;
+    std::uint32_t m_paddingSize;
 };
 
 /*!
@@ -149,7 +149,7 @@ inline bool Id3v2Tag::supportsMimeType(KnownField field) const
 /*!
  * \brief Returns the major version if known; otherwise returns 0.
  */
-inline byte Id3v2Tag::majorVersion() const
+inline std::uint8_t Id3v2Tag::majorVersion() const
 {
     return m_majorVersion;
 }
@@ -157,7 +157,7 @@ inline byte Id3v2Tag::majorVersion() const
 /*!
  * \brief Returns the revision version if known; otherwise returns 0.
  */
-inline byte Id3v2Tag::revisionVersion() const
+inline std::uint8_t Id3v2Tag::revisionVersion() const
 {
     return m_revisionVersion;
 }
@@ -176,7 +176,7 @@ inline bool Id3v2Tag::isVersionSupported() const
 /*!
  * \brief Returns the flags read from the ID3v2 header.
  */
-inline byte Id3v2Tag::flags() const
+inline std::uint8_t Id3v2Tag::flags() const
 {
     return m_flags;
 }
@@ -216,7 +216,7 @@ inline bool Id3v2Tag::hasFooter() const
 /*!
  * \brief Returns the size of the extended header if one is present; otherwise returns 0.
  */
-inline uint32 Id3v2Tag::extendedHeaderSize() const
+inline std::uint32_t Id3v2Tag::extendedHeaderSize() const
 {
     return m_extendedHeaderSize;
 }
@@ -225,7 +225,7 @@ inline uint32 Id3v2Tag::extendedHeaderSize() const
  * \brief Returns the size of the padding between the tag and the first MPEG frame
  *        if one is present; otherwise returns 0.
  */
-inline uint32 Id3v2Tag::paddingSize() const
+inline std::uint32_t Id3v2Tag::paddingSize() const
 {
     return m_paddingSize;
 }

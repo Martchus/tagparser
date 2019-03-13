@@ -33,9 +33,9 @@ const char *mpegChannelModeString(MpegChannelMode channelMode)
  * \brief The MpegAudioFrame class is used to parse MPEG audio frames.
  */
 
-const uint16 MpegAudioFrame::s_bitrateTable[0x2][0x3][0xF] = { { { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448 },
-                                                                   { 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384 },
-                                                                   { 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320 } },
+const std::uint16_t MpegAudioFrame::s_bitrateTable[0x2][0x3][0xF] = { { { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448 },
+                                                                          { 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384 },
+                                                                          { 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320 } },
     { { 0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256 }, { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 },
         { 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 } } };
 
@@ -107,7 +107,7 @@ int MpegAudioFrame::layer() const
 /*!
  * \brief Returns the sampeling frequency of the frame if known; otherwise returns 0.
  */
-uint32 MpegAudioFrame::samplingFrequency() const
+std::uint32_t MpegAudioFrame::samplingFrequency() const
 {
     switch (m_header & 0xc00u) {
     case 0xc00u:
@@ -170,7 +170,7 @@ MpegChannelMode MpegAudioFrame::channelMode() const
 /*!
  * \brief Returns the sample count if known; otherwise returns 0.
  */
-uint32 MpegAudioFrame::sampleCount() const
+std::uint32_t MpegAudioFrame::sampleCount() const
 {
     switch (m_header & 0x60000u) {
     case 0x60000u:
@@ -193,16 +193,16 @@ uint32 MpegAudioFrame::sampleCount() const
 /*!
  * \brief Returns the size if known; otherwise retruns 0.
  */
-uint32 MpegAudioFrame::size() const
+std::uint32_t MpegAudioFrame::size() const
 {
     switch (m_header & 0x60000u) {
     case 0x60000u:
-        return static_cast<uint32>(
+        return static_cast<std::uint32_t>(
             ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
             + static_cast<double>(paddingSize()));
     case 0x40000u:
     case 0x20000u:
-        return static_cast<uint32>(
+        return static_cast<std::uint32_t>(
             ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
             + static_cast<double>(paddingSize()));
     default:

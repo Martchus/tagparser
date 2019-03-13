@@ -7,7 +7,6 @@
 #include "../progressfeedback.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/copy.h>
 
 #include <memory>
@@ -45,7 +44,7 @@ const char *OggVorbisComment::typeName() const
 /*!
  * \brief Constructs a new container for the specified \a stream at the specified \a startOffset.
  */
-OggContainer::OggContainer(MediaFileInfo &fileInfo, uint64 startOffset)
+OggContainer::OggContainer(MediaFileInfo &fileInfo, std::uint64_t startOffset)
     : GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage>(fileInfo, startOffset)
     , m_iterator(fileInfo.stream(), startOffset, fileInfo.size())
     , m_validateChecksums(false)
@@ -202,7 +201,7 @@ void OggContainer::internalParseHeader(Diagnostics &diag)
                     context);
             }
             OggStream *stream;
-            uint64 lastNewStreamOffset = 0;
+            std::uint64_t lastNewStreamOffset = 0;
             try {
                 stream = m_tracks[m_streamsBySerialNo.at(page.streamSerialNumber())].get();
                 stream->m_size += page.dataSize();
@@ -325,7 +324,7 @@ void OggContainer::internalParseTracks(Diagnostics &diag)
  * \brief Writes the specified \a comment with the given \a params to the specified \a buffer and
  *        adds the number of bytes written to \a newSegmentSizes.
  */
-void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<uint32> &newSegmentSizes,
+void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<65307> &copyHelper, vector<std::uint32_t> &newSegmentSizes,
     VorbisComment *comment, OggParameter *params, Diagnostics &diag)
 {
     const auto offset = buffer.tellp();
@@ -334,7 +333,7 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
         comment->make(buffer, VorbisCommentFlags::None, diag);
         break;
     case GeneralMediaFormat::Opus:
-        ConversionUtilities::BE::getBytes(static_cast<uint64>(0x4F70757354616773u), copyHelper.buffer());
+        ConversionUtilities::BE::getBytes(static_cast<std::uint64_t>(0x4F70757354616773u), copyHelper.buffer());
         buffer.write(copyHelper.buffer(), 8);
         comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
         break;
@@ -350,7 +349,7 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
         comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
 
         // finally make the header
-        header.setDataSize(static_cast<uint32>(buffer.tellp() - offset - 4));
+        header.setDataSize(static_cast<std::uint32_t>(buffer.tellp() - offset - 4));
         if (header.dataSize() > 0xFFFFFF) {
             diag.emplace_back(
                 DiagLevel::Critical, "Size of Vorbis comment exceeds size limit for FLAC \"METADATA_BLOCK_HEADER\".", "making Vorbis Comment");
@@ -362,7 +361,7 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
     }
     default:;
     }
-    newSegmentSizes.push_back(static_cast<uint32>(buffer.tellp() - offset));
+    newSegmentSizes.push_back(static_cast<std::uint32_t>(buffer.tellp() - offset));
 }
 
 void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
@@ -379,10 +378,10 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
             // recreate original file, define buffer variables
             fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-        } catch (...) {
-            const char *what = catchIoFailure();
-            diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-            throwIoFailure(what);
+        } catch (const std::ios_base::failure &failure) {
+            diag.emplace_back(
+                DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
+            throw;
         }
     } else {
         // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -391,10 +390,9 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
             fileInfo().close();
             fileInfo().stream().open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
-        } catch (...) {
-            const char *what = catchIoFailure();
-            diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
-            throwIoFailure(what);
+        } catch (const std::ios_base::failure &failure) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
+            throw;
         }
     }
 
@@ -412,24 +410,24 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
         // define misc variables
         CopyHelper<65307> copyHelper;
-        vector<uint64> updatedPageOffsets;
-        unordered_map<uint32, uint32> pageSequenceNumberBySerialNo;
+        vector<std::uint64_t> updatedPageOffsets;
+        unordered_map<std::uint32_t, std::uint32_t> pageSequenceNumberBySerialNo;
 
         // iterate through all pages of the original file
         for (m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const OggPage &currentPage = m_iterator.currentPage();
             const auto pageSize = currentPage.totalSize();
-            uint32 &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
+            std::uint32_t &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
             // check whether the Vorbis Comment is present in this Ogg page
             if (currentComment && m_iterator.currentPageIndex() >= currentParams->firstPageIndex
                 && m_iterator.currentPageIndex() <= currentParams->lastPageIndex && !currentPage.segmentSizes().empty()) {
                 // page needs to be rewritten (not just copied)
                 // -> write segments to a buffer first
                 stringstream buffer(ios_base::in | ios_base::out | ios_base::binary);
-                vector<uint32> newSegmentSizes;
+                vector<std::uint32_t> newSegmentSizes;
                 newSegmentSizes.reserve(currentPage.segmentSizes().size());
-                uint64 segmentOffset = m_iterator.currentSegmentOffset();
-                vector<uint32>::size_type segmentIndex = 0;
+                std::uint64_t segmentOffset = m_iterator.currentSegmentOffset();
+                vector<std::uint32_t>::size_type segmentIndex = 0;
                 for (const auto segmentSize : currentPage.segmentSizes()) {
                     if (!segmentSize) {
                         ++segmentIndex;
@@ -484,12 +482,12 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 auto newSegmentSizesIterator = newSegmentSizes.cbegin(), newSegmentSizesEnd = newSegmentSizes.cend();
                 bool continuePreviousSegment = false;
                 if (newSegmentSizesIterator != newSegmentSizesEnd) {
-                    uint32 bytesLeft = *newSegmentSizesIterator;
+                    std::uint32_t bytesLeft = *newSegmentSizesIterator;
                     // write pages until all data in the buffer is written
                     while (newSegmentSizesIterator != newSegmentSizesEnd) {
                         // write header
                         backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
-                        updatedPageOffsets.push_back(static_cast<uint64>(stream().tellp())); // memorize offset to update checksum later
+                        updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp())); // memorize offset to update checksum later
                         copyHelper.copy(backupStream, stream(), 27); // just copy header from original file
                         // set continue flag
                         stream().seekp(-22, ios_base::cur);
@@ -499,10 +497,10 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         stream().seekp(12, ios_base::cur);
                         writer().writeUInt32LE(pageSequenceNumber);
                         stream().seekp(5, ios_base::cur);
-                        int16 segmentSizesWritten = 0; // in the current page header only
+                        std::int16_t segmentSizesWritten = 0; // in the current page header only
                         // write segment sizes as long as there are segment sizes to be written and
                         // the max number of segment sizes (255) is not exceeded
-                        uint32 currentSize = 0;
+                        std::uint32_t currentSize = 0;
                         while (bytesLeft && segmentSizesWritten < 0xFF) {
                             while (bytesLeft >= 0xFF && segmentSizesWritten < 0xFF) {
                                 stream().put(static_cast<char>(0xFF));
@@ -549,7 +547,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 if (pageSequenceNumber != m_iterator.currentPageIndex()) {
                     // just update page sequence number
                     backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
-                    updatedPageOffsets.push_back(static_cast<uint64>(stream().tellp())); // memorize offset to update checksum later
+                    updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp())); // memorize offset to update checksum later
                     copyHelper.copy(backupStream, stream(), 27);
                     stream().seekp(-9, ios_base::cur);
                     writer().writeUInt32LE(pageSequenceNumber);
@@ -565,7 +563,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
 
         // report new size
-        fileInfo().reportSizeChanged(static_cast<uint64>(stream().tellp()));
+        fileInfo().reportSizeChanged(static_cast<std::uint64_t>(stream().tellp()));
 
         // "save as path" is now the regular path
         if (!fileInfo().saveFilePath().empty()) {

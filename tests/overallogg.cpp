@@ -22,7 +22,7 @@ void OverallTests::checkOggTestfile1()
         case 1755441791:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Vorbis, track->format().general);
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
             CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(4, track->duration().minutes());
             break;
@@ -62,7 +62,7 @@ void OverallTests::checkOggTestfile2()
         case 1375632254:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Opus, track->format().general);
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(1, track->duration().minutes());
             break;

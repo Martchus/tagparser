@@ -7,8 +7,7 @@
 
 #include "../genericcontainer.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -18,7 +17,7 @@ class MediaFileInfo;
 
 class TAG_PARSER_EXPORT Mp4Container : public GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom> {
 public:
-    Mp4Container(MediaFileInfo &fileInfo, uint64 startOffset);
+    Mp4Container(MediaFileInfo &fileInfo, std::uint64_t startOffset);
     ~Mp4Container() override;
 
     bool supportsTrackModifications() const override;
@@ -34,7 +33,7 @@ protected:
     void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
-    void updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets, Diagnostics &diag);
+    void updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets, const std::vector<std::int64_t> &newMdatOffsets, Diagnostics &diag);
 
     bool m_fragmented;
 };

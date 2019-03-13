@@ -16,7 +16,7 @@ namespace TagParser {
 /*!
  * \brief Constructs a new container for the specified file \a stream at the specified \a startOffset.
  */
-AbstractContainer::AbstractContainer(iostream &stream, uint64 startOffset)
+AbstractContainer::AbstractContainer(iostream &stream, std::uint64_t startOffset)
     : m_version(0)
     , m_readVersion(0)
     , m_doctypeVersion(0)

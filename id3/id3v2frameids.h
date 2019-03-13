@@ -1,14 +1,14 @@
 #ifndef TAG_PARSER_ID3V2FRAMEIDS_H
 #define TAG_PARSER_ID3V2FRAMEIDS_H
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 #include <string>
 
 namespace TagParser {
 
 namespace Id3v2FrameIds {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     lAlbum = 0x54414c42,
     lArtist = 0x54504531,
     lComment = 0x434f4d4d,
@@ -62,13 +62,13 @@ enum KnownValue : uint32 {
     sUserDefinedText = 0x545858,
 };
 
-uint32 convertToShortId(uint32 id);
-uint32 convertToLongId(uint32 id);
+std::uint32_t convertToShortId(std::uint32_t id);
+std::uint32_t convertToLongId(std::uint32_t id);
 
 /*!
  * \brief Returns an indication whether the specified \a id is a long frame id.
  */
-constexpr bool isLongId(uint32 id)
+constexpr bool isLongId(std::uint32_t id)
 {
     return (id & 0x00ffffff) != id;
 }
@@ -76,7 +76,7 @@ constexpr bool isLongId(uint32 id)
 /*!
  * \brief Returns an indication whether the specified \a id is a short frame id.
  */
-constexpr bool isShortId(uint32 id)
+constexpr bool isShortId(std::uint32_t id)
 {
     return (id & 0x00ffffff) == id;
 }
@@ -84,7 +84,7 @@ constexpr bool isShortId(uint32 id)
 /*!
  * \brief Returns an indication whether the specified \a id is a text frame id.
  */
-constexpr bool isTextFrame(uint32 id)
+constexpr bool isTextFrame(std::uint32_t id)
 {
     if (isShortId(id)) {
         return ((id & 0x00FF0000u) == 0x00540000u) && (id != Id3v2FrameIds::sUserDefinedText);

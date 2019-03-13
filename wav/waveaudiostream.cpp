@@ -36,9 +36,9 @@ void WaveFormatHeader::parse(IoUtilities::BinaryReader &reader)
  * - Make GUID a field of WaveFormatHeader instead of returning the MediaFormat in v9.
  * - Replace parse() function with this.
  */
-pair<MediaFormat, uint64> WaveFormatHeader::parseExt(IoUtilities::BinaryReader &reader, uint64 maxSize, Diagnostics &diag)
+pair<MediaFormat, std::uint64_t> WaveFormatHeader::parseExt(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
-    auto result = make_pair<MediaFormat, uint64>(GeneralMediaFormat::Unknown, 0);
+    auto result = make_pair<MediaFormat, std::uint64_t>(GeneralMediaFormat::Unknown, 0);
     if (maxSize < 16) {
         diag.emplace_back(DiagLevel::Warning, "\"fmt \" segment is truncated.", "parsing WAVE format header");
         return result;
@@ -128,7 +128,7 @@ MediaFormat WaveFormatHeader::format() const
 /*!
  * \brief Constructs a new track for the \a stream at the specified \a startOffset.
  */
-WaveAudioStream::WaveAudioStream(iostream &stream, uint64 startOffset)
+WaveAudioStream::WaveAudioStream(iostream &stream, std::uint64_t startOffset)
     : AbstractTrack(stream, startOffset)
     , m_dataOffset(0)
 {
@@ -180,13 +180,13 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
         switch (segmentId) {
         case 0x666D7420u: { // format segment
             WaveFormatHeader waveHeader;
-            uint64 bytesRead;
+            std::uint64_t bytesRead;
             tie(m_format, bytesRead) = waveHeader.parseExt(m_reader, restHeaderLen, diag);
             addInfo(waveHeader, *this);
             restHeaderLen -= bytesRead;
         } break;
         case 0x64617461u: // data segment
-            m_dataOffset = static_cast<uint64>(m_istream->tellg());
+            m_dataOffset = static_cast<std::uint64_t>(m_istream->tellg());
             m_size = restHeaderLen;
             m_sampleCount = m_size / m_chunkSize;
             m_duration = TimeSpan::fromSeconds(static_cast<double>(m_sampleCount) / static_cast<double>(m_samplingFrequency));
@@ -206,7 +206,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
         ? ((static_cast<double>(m_size) * 8.0)
               / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samplingFrequency())) / 1024.0)
         : frame.bitrate();
-    m_bytesPerSecond = static_cast<uint32>(m_bitrate * 125);
+    m_bytesPerSecond = static_cast<std::uint32_t>(m_bitrate * 125);
     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 128.0));
 }
 

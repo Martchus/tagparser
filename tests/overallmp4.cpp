@@ -34,7 +34,7 @@ void OverallTests::checkMp4Testfile1()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(2012, track->creationTime().year());
             CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -190,8 +190,8 @@ void OverallTests::checkMp4Testfile4()
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Alac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(2008, track->creationTime().year());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(16), track->bitsPerSample());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -241,12 +241,12 @@ void OverallTests::checkMp4Testfile5()
             CPPUNIT_ASSERT(track->format().extension & ExtensionFormats::SpectralBandReplication);
             CPPUNIT_ASSERT(track->format().extension & ExtensionFormats::ParametricStereo);
             CPPUNIT_ASSERT_EQUAL(2014, track->creationTime().year());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontCenter), track->channelConfig());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->extensionChannelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontCenter), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->extensionChannelConfig());
             CPPUNIT_ASSERT_EQUAL(24000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(48000u, track->extensionSamplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(16), track->bitsPerSample());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -320,7 +320,7 @@ void OverallTests::checkMp4Testfile6()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(2012, track->creationTime().year());
             CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
             CPPUNIT_ASSERT_EQUAL("new track"s, track->name());
             break;
         case 6:
@@ -363,13 +363,13 @@ void OverallTests::checkMp4Testfile7()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AvcBaselineProfile), track->format().sub);
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(0), track->format().extension);
             CPPUNIT_ASSERT_EQUAL(4.0, track->version());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(0), track->channelCount());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(0), track->channelConfig());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(0), track->extensionChannelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(0), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(0), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(0), track->extensionChannelConfig());
             CPPUNIT_ASSERT_EQUAL(0u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(0u, track->extensionSamplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(24), track->depth());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(51), track->sampleCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(24), track->depth());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(51), track->sampleCount());
             CPPUNIT_ASSERT_EQUAL(1920u, track->pixelSize().width());
             CPPUNIT_ASSERT_EQUAL(1080u, track->pixelSize().height());
             CPPUNIT_ASSERT_EQUAL(72u, track->resolution().width());
@@ -385,13 +385,13 @@ void OverallTests::checkMp4Testfile7()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(0), track->format().extension);
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
-            CPPUNIT_ASSERT_EQUAL(static_cast<byte>(0), track->extensionChannelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(0), track->extensionChannelConfig());
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(0u, track->extensionSamplingFrequency());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(76), track->sampleCount());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(16), track->bitsPerSample());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(76), track->sampleCount());
             CPPUNIT_ASSERT_EQUAL(DateTime::fromDateAndTime(2018, 7, 8, 20, 3, 52), track->creationTime());
             CPPUNIT_ASSERT_EQUAL(DateTime::fromDateAndTime(2018, 7, 8, 20, 3, 52), track->modificationTime());
             CPPUNIT_ASSERT_EQUAL(1, track->duration().seconds());
@@ -453,7 +453,7 @@ void OverallTests::checkMp4Constraints()
     CPPUNIT_ASSERT(m_fileInfo.container());
     if (m_mode & PaddingConstraints) {
         if (m_mode & ForceRewring) {
-            CPPUNIT_ASSERT_EQUAL(static_cast<uint64>(4096), m_fileInfo.paddingSize());
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(4096), m_fileInfo.paddingSize());
         } else {
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() >= 1024);
             CPPUNIT_ASSERT(m_fileInfo.paddingSize() <= (4096 + 1024));

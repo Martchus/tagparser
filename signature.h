@@ -3,11 +3,11 @@
 
 #include "./mediaformat.h"
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 namespace TagParser {
 
-DECLARE_ENUM_CLASS(TagTargetLevel, byte);
+DECLARE_ENUM_CLASS(TagTargetLevel, std::uint8_t);
 
 /*!
  * \brief Specifies the container format.
@@ -72,8 +72,8 @@ TAG_PARSER_EXPORT const char *containerFormatAbbreviation(
     ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
 TAG_PARSER_EXPORT const char *containerFormatSubversion(ContainerFormat containerFormat);
 TAG_PARSER_EXPORT const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
-TAG_PARSER_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue);
-TAG_PARSER_EXPORT uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
+TAG_PARSER_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, std::uint64_t targetLevelValue);
+TAG_PARSER_EXPORT std::uint64_t containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
 
 } // namespace TagParser
 

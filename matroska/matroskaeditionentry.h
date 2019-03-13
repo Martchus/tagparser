@@ -13,7 +13,7 @@ public:
     ~MatroskaEditionEntry();
 
     EbmlElement *editionEntryElement() const;
-    uint64 id() const;
+    std::uint64_t id() const;
     bool isHidden() const;
     bool isDefault() const;
     bool isOrdered() const;
@@ -26,7 +26,7 @@ public:
 
 private:
     EbmlElement *m_editionEntryElement;
-    uint64 m_id;
+    std::uint64_t m_id;
     bool m_hidden;
     bool m_default;
     bool m_ordered;
@@ -44,7 +44,7 @@ inline EbmlElement *MatroskaEditionEntry::editionEntryElement() const
 /*!
  * \brief Returns the edition ID.
  */
-inline uint64 MatroskaEditionEntry::id() const
+inline std::uint64_t MatroskaEditionEntry::id() const
 {
     return m_id;
 }

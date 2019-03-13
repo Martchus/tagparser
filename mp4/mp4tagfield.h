@@ -6,6 +6,7 @@
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/binarywriter.h>
 
+#include <cstdint>
 #include <sstream>
 #include <vector>
 
@@ -15,7 +16,7 @@ namespace TagParser {
  * \brief Encapsulates the most common data type IDs of MP4 tag fields.
  */
 namespace RawDataType {
-enum KnownValue : uint32 {
+enum KnownValue : std::uint32_t {
     Reserved = 0, /**< reserved for use where no type needs to be indicated */
     Utf8 = 1, /**< without any count or NULL terminator */
     Utf16 = 2, /**< also known as UTF-16BE */
@@ -53,8 +54,8 @@ class Diagnostics;
  */
 template <> class TAG_PARSER_EXPORT TagFieldTraits<Mp4TagField> {
 public:
-    using IdentifierType = uint32;
-    using TypeInfoType = uint32;
+    using IdentifierType = std::uint32_t;
+    using TypeInfoType = std::uint32_t;
 };
 
 class Mp4Atom;
@@ -65,7 +66,7 @@ class TAG_PARSER_EXPORT Mp4TagFieldMaker {
 public:
     void make(std::ostream &stream);
     const Mp4TagField &field() const;
-    uint64 requiredSize() const;
+    std::uint64_t requiredSize() const;
 
 private:
     Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag);
@@ -73,9 +74,9 @@ private:
     Mp4TagField &m_field;
     std::stringstream m_convertedData;
     IoUtilities::BinaryWriter m_writer;
-    uint32 m_rawDataType;
-    uint64 m_dataSize;
-    uint64 m_totalSize;
+    std::uint32_t m_rawDataType;
+    std::uint64_t m_dataSize;
+    std::uint64_t m_totalSize;
 };
 
 /*!
@@ -89,7 +90,7 @@ inline const Mp4TagField &Mp4TagFieldMaker::field() const
 /*!
  * \brief Returns number of bytes which will be written when making the field.
  */
-inline uint64 Mp4TagFieldMaker::requiredSize() const
+inline std::uint64_t Mp4TagFieldMaker::requiredSize() const
 {
     return m_totalSize;
 }
@@ -111,12 +112,12 @@ public:
     void setName(const std::string &name);
     const std::string &mean() const;
     void setMean(const std::string &mean);
-    uint32 parsedRawDataType() const;
-    uint16 countryIndicator() const;
-    uint16 languageIndicator() const;
+    std::uint32_t parsedRawDataType() const;
+    std::uint16_t countryIndicator() const;
+    std::uint16_t languageIndicator() const;
     bool supportsNestedFields() const;
-    std::vector<uint32> expectedRawDataTypes() const;
-    uint32 appropriateRawDataType() const;
+    std::vector<std::uint32_t> expectedRawDataTypes() const;
+    std::uint32_t appropriateRawDataType() const;
 
     static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(IdentifierType id);
@@ -125,9 +126,9 @@ private:
     void reset();
     std::string m_name;
     std::string m_mean;
-    uint32 m_parsedRawDataType;
-    uint16 m_countryIndicator;
-    uint16 m_langIndicator;
+    std::uint32_t m_parsedRawDataType;
+    std::uint16_t m_countryIndicator;
+    std::uint16_t m_langIndicator;
 };
 
 /*!
@@ -173,7 +174,7 @@ inline void Mp4TagField::setMean(const std::string &mean)
 /*!
  * \brief Returns the raw data type which has been determined when parsing.
  */
-inline uint32 Mp4TagField::parsedRawDataType() const
+inline std::uint32_t Mp4TagField::parsedRawDataType() const
 {
     return m_parsedRawDataType;
 }
@@ -181,7 +182,7 @@ inline uint32 Mp4TagField::parsedRawDataType() const
 /*!
  * \brief Returns the country indicator.
  */
-inline uint16 Mp4TagField::countryIndicator() const
+inline std::uint16_t Mp4TagField::countryIndicator() const
 {
     return m_countryIndicator;
 }
@@ -189,7 +190,7 @@ inline uint16 Mp4TagField::countryIndicator() const
 /*!
  * \brief Returns the language indicator.
  */
-inline uint16 Mp4TagField::languageIndicator() const
+inline std::uint16_t Mp4TagField::languageIndicator() const
 {
     return m_langIndicator;
 }
@@ -225,7 +226,7 @@ inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(const char *id
  */
 inline std::string Mp4TagField::fieldIdToString(Mp4TagField::IdentifierType id)
 {
-    const auto utf8 = ConversionUtilities::convertLatin1ToUtf8(ConversionUtilities::interpretIntegerAsString<uint32>(id).data(), 4);
+    const auto utf8 = ConversionUtilities::convertLatin1ToUtf8(ConversionUtilities::interpretIntegerAsString<std::uint32_t>(id).data(), 4);
     return std::string(utf8.first.get(), utf8.second);
 }
 

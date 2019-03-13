@@ -269,8 +269,8 @@ void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<Mat
         if (find(target.tracks().cbegin(), target.tracks().cend(), id()) == target.tracks().cend()) {
             continue;
         }
-        assignPropertyFromTagValue(tag, numberOfBytes(), m_size, &tagValueToNumber<uint64>, diag);
-        assignPropertyFromTagValue(tag, numberOfFrames(), m_sampleCount, &tagValueToNumber<uint64>, diag);
+        assignPropertyFromTagValue(tag, numberOfBytes(), m_size, &tagValueToNumber<std::uint64_t>, diag);
+        assignPropertyFromTagValue(tag, numberOfFrames(), m_sampleCount, &tagValueToNumber<std::uint64_t>, diag);
         assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::duration(), m_duration, bind(&TagValue::toTimeSpan, _1), diag);
         assignPropertyFromTagValue(tag, MatroskaTagIds::TrackSpecific::bitrate(), m_bitrate, &tagValueToBitrate<double>, diag);
         assignPropertyFromTagValue(tag, writingDate(), m_modificationTime, bind(&TagValue::toDateTime, _1), diag);
@@ -298,7 +298,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
             diag.emplace_back(DiagLevel::Critical, "Unable to parse track information element.", context);
             break;
         }
-        uint32 defaultDuration = 0;
+        std::uint32_t defaultDuration = 0;
         switch (trackInfoElement->id()) {
         case MatroskaIds::TrackType:
             switch (trackInfoElement->readUInteger()) {

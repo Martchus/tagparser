@@ -8,7 +8,6 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/io/copy.h>
 
 #include <unistd.h>
@@ -32,7 +31,7 @@ namespace TagParser {
 /*!
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
-Mp4Container::Mp4Container(MediaFileInfo &fileInfo, uint64 startOffset)
+Mp4Container::Mp4Container(MediaFileInfo &fileInfo, std::uint64_t startOffset)
     : GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom>(fileInfo, startOffset)
     , m_fragmented(false)
 {
@@ -127,7 +126,7 @@ void Mp4Container::internalParseTracks(Diagnostics &diag)
             if (Mp4Atom *mvhdAtom = moovAtom->childById(Mp4AtomIds::MovieHeader, diag)) {
                 if (mvhdAtom->dataSize() > 0) {
                     stream().seekg(static_cast<iostream::off_type>(mvhdAtom->dataOffset()));
-                    byte version = reader().readByte();
+                    std::uint8_t version = reader().readByte();
                     if ((version == 1 && mvhdAtom->dataSize() >= 32) || (mvhdAtom->dataSize() >= 20)) {
                         stream().seekg(3, ios_base::cur); // skip flags
                         switch (version) {
@@ -244,19 +243,19 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     // -> current tag position (determined later)
     ElementPosition currentTagPos;
     // -> holds new padding (before actual data)
-    uint64 newPadding;
+    std::uint64_t newPadding;
     // -> holds new padding (after actual data)
-    uint64 newPaddingEnd;
+    std::uint64_t newPaddingEnd;
     // -> holds current offset
-    uint64 currentOffset;
+    std::uint64_t currentOffset;
     // -> holds track information, used when writing chunk-by-chunk
-    vector<tuple<istream *, vector<uint64>, vector<uint64>>> trackInfos;
+    vector<tuple<istream *, vector<std::uint64_t>, vector<std::uint64_t>>> trackInfos;
     // -> holds offsets of media data atoms in original file, used when simply copying mdat
-    vector<int64> origMediaDataOffsets;
+    vector<std::int64_t> origMediaDataOffsets;
     // -> holds offsets of media data atoms in new file, used when simply copying mdat
-    vector<int64> newMediaDataOffsets;
+    vector<std::int64_t> newMediaDataOffsets;
     // -> new size of movie atom and user data atom
-    uint64 movieAtomSize, userDataAtomSize;
+    std::uint64_t movieAtomSize, userDataAtomSize;
     // -> track count of original file
     const auto trackCount = this->trackCount();
 
@@ -353,7 +352,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     // calculate sizes
     // -> size of tags
     vector<Mp4TagMaker> tagMaker;
-    uint64 tagsSize = 0;
+    std::uint64_t tagsSize = 0;
     tagMaker.reserve(m_tags.size());
     for (auto &tag : m_tags) {
         try {
@@ -426,7 +425,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     // check whether there are atoms to be voided after movie next sibling (only relevant when not rewriting)
     if (!rewriteRequired) {
         newPaddingEnd = 0;
-        uint64 currentSum = 0;
+        std::uint64_t currentSum = 0;
         for (Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
             level0Atom->parse(diag);
             switch (level0Atom->id()) {
@@ -520,10 +519,10 @@ calculatePadding:
                 BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
                 outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch (...) {
-                const char *what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                throwIoFailure(what);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(
+                    DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
+                throw;
             }
         } else {
             // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -532,10 +531,9 @@ calculatePadding:
                 backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
                 fileInfo().close();
                 outputStream.open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch (...) {
-                const char *what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
-                throwIoFailure(what);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
+                throw;
             }
         }
 
@@ -554,10 +552,9 @@ calculatePadding:
         try {
             fileInfo().close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
-        } catch (...) {
-            const char *what = catchIoFailure();
-            diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
-            throwIoFailure(what);
+        } catch (const std::ios_base::failure &failure) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Opening the file with write permissions failed: ", failure.what()), context);
+            throw;
         }
     }
 
@@ -585,7 +582,7 @@ calculatePadding:
         }
 
         // write movie atom / padding and media data
-        for (byte pass = 0; pass != 2; ++pass) {
+        for (std::uint8_t pass = 0; pass != 2; ++pass) {
             if (newTagPos == (pass ? ElementPosition::AfterData : ElementPosition::BeforeData)) {
                 // define function to write tracks
                 bool tracksWritten = false;
@@ -673,8 +670,8 @@ calculatePadding:
                 // write padding
                 if (newPadding) {
                     // write free atom header
-                    if (newPadding < numeric_limits<uint32>::max()) {
-                        outputWriter.writeUInt32BE(static_cast<uint32>(newPadding));
+                    if (newPadding < numeric_limits<std::uint32_t>::max()) {
+                        outputWriter.writeUInt32BE(static_cast<std::uint32_t>(newPadding));
                         outputWriter.writeUInt32BE(Mp4AtomIds::Free);
                         newPadding -= 8;
                     } else {
@@ -707,7 +704,7 @@ calculatePadding:
                                 break;
                             } else {
                                 // store media data offsets when not writing chunk-by-chunk to be able to update chunk offset table
-                                origMediaDataOffsets.push_back(static_cast<int64>(level0Atom->startOffset()));
+                                origMediaDataOffsets.push_back(static_cast<std::int64_t>(level0Atom->startOffset()));
                                 newMediaDataOffsets.push_back(outputStream.tellp());
                             }
                             FALLTHROUGH;
@@ -724,8 +721,8 @@ calculatePadding:
                         // read chunk offset and chunk size table from the old file which are required to get chunks
                         progress.updateStep("Reading chunk offsets and sizes from the original file ...");
                         trackInfos.reserve(trackCount);
-                        uint64 totalChunkCount = 0;
-                        uint64 totalMediaDataSize = 0;
+                        std::uint64_t totalChunkCount = 0;
+                        std::uint64_t totalMediaDataSize = 0;
                         for (auto &track : tracks()) {
                             progress.stopIfAborted();
 
@@ -734,11 +731,12 @@ calculatePadding:
                                 &track->inputStream(), track->readChunkOffsets(fileInfo().isForcingFullParse(), diag), track->readChunkSizes(diag));
 
                             // check whether the chunks could be parsed correctly
-                            const vector<uint64> &chunkOffsetTable = get<1>(trackInfos.back());
-                            const vector<uint64> &chunkSizesTable = get<2>(trackInfos.back());
+                            const vector<std::uint64_t> &chunkOffsetTable = get<1>(trackInfos.back());
+                            const vector<std::uint64_t> &chunkSizesTable = get<2>(trackInfos.back());
                             if (track->chunkCount() != chunkOffsetTable.size() || track->chunkCount() != chunkSizesTable.size()) {
                                 diag.emplace_back(DiagLevel::Critical,
-                                    "Chunks of track " % numberToString<uint64, string>(track->id()) + " could not be parsed correctly.", context);
+                                    "Chunks of track " % numberToString<std::uint64_t, string>(track->id()) + " could not be parsed correctly.",
+                                    context);
                             }
 
                             // increase total chunk count and size
@@ -753,7 +751,7 @@ calculatePadding:
 
                         // -> copy chunks
                         CopyHelper<0x2000> copyHelper;
-                        uint64 chunkIndexWithinTrack = 0, totalChunksCopied = 0;
+                        std::uint64_t chunkIndexWithinTrack = 0, totalChunksCopied = 0;
                         bool anyChunksCopied;
                         do {
                             progress.stopIfAborted();
@@ -764,14 +762,14 @@ calculatePadding:
                                 // get source stream and tables for current track
                                 auto &trackInfo = trackInfos[trackIndex];
                                 istream &sourceStream = *get<0>(trackInfo);
-                                vector<uint64> &chunkOffsetTable = get<1>(trackInfo);
-                                const vector<uint64> &chunkSizesTable = get<2>(trackInfo);
+                                vector<std::uint64_t> &chunkOffsetTable = get<1>(trackInfo);
+                                const vector<std::uint64_t> &chunkSizesTable = get<2>(trackInfo);
 
                                 // still chunks to be copied (of this track)?
                                 if (chunkIndexWithinTrack < chunkOffsetTable.size() && chunkIndexWithinTrack < chunkSizesTable.size()) {
                                     // copy chunk, update entry in chunk offset table
                                     sourceStream.seekg(static_cast<streamoff>(chunkOffsetTable[chunkIndexWithinTrack]));
-                                    chunkOffsetTable[chunkIndexWithinTrack] = static_cast<uint64>(outputStream.tellp());
+                                    chunkOffsetTable[chunkIndexWithinTrack] = static_cast<std::uint64_t>(outputStream.tellp());
                                     copyHelper.copy(sourceStream, outputStream, chunkSizesTable[chunkIndexWithinTrack]);
 
                                     // update counter / status
@@ -782,7 +780,7 @@ calculatePadding:
 
                             // incrase chunk index within track, update progress percentage
                             if (!(++chunkIndexWithinTrack % 10)) {
-                                progress.updateStepPercentage(static_cast<byte>(totalChunksCopied * 100 / totalChunkCount));
+                                progress.updateStepPercentage(static_cast<std::uint8_t>(totalChunksCopied * 100 / totalChunkCount));
                             }
 
                         } while (anyChunksCopied);
@@ -815,7 +813,7 @@ calculatePadding:
         progress.updateStep("Reparsing output file ...");
         if (rewriteRequired) {
             // report new size
-            fileInfo().reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
+            fileInfo().reportSizeChanged(static_cast<std::uint64_t>(outputStream.tellp()));
             // "save as path" is now the regular path
             if (!fileInfo().saveFilePath().empty()) {
                 fileInfo().reportPathChanged(fileInfo().saveFilePath());
@@ -826,7 +824,7 @@ calculatePadding:
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
             setStream(outputStream);
         } else {
-            const auto newSize = static_cast<uint64>(outputStream.tellp());
+            const auto newSize = static_cast<std::uint64_t>(outputStream.tellp());
             if (newSize < fileInfo().size()) {
                 // file is smaller after the modification -> truncate
                 // -> close stream before truncating
@@ -906,7 +904,7 @@ calculatePadding:
  * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
-void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const std::vector<int64> &newMdatOffsets, Diagnostics &diag)
+void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets, const std::vector<std::int64_t> &newMdatOffsets, Diagnostics &diag)
 {
     // do NOT invalidate the status here since this method is internally called by internalMakeFile(), just update the status
     const string context("updating MP4 container chunk offset table");
@@ -933,7 +931,7 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                             continue;
                         }
                         stream().seekg(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 1);
-                        uint32 flags = reader().readUInt24BE();
+                        std::uint32_t flags = reader().readUInt24BE();
                         if (!(flags & 1)) {
                             continue;
                         }
@@ -942,13 +940,13 @@ void Mp4Container::updateOffsets(const std::vector<int64> &oldMdatOffsets, const
                             continue;
                         }
                         stream().seekg(4, ios_base::cur); // skip track ID
-                        uint64 off = reader().readUInt64BE();
+                        std::uint64_t off = reader().readUInt64BE();
                         for (auto iOld = oldMdatOffsets.cbegin(), iNew = newMdatOffsets.cbegin(), end = oldMdatOffsets.cend(); iOld != end;
                              ++iOld, ++iNew) {
-                            if (off < static_cast<uint64>(*iOld)) {
+                            if (off < static_cast<std::uint64_t>(*iOld)) {
                                 continue;
                             }
-                            off += static_cast<uint64>(*iNew - *iOld);
+                            off += static_cast<std::uint64_t>(*iNew - *iOld);
                             stream().seekp(static_cast<iostream::off_type>(tfhdAtom->dataOffset()) + 8);
                             writer().writeUInt64BE(off);
                             break;

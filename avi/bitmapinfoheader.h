@@ -3,7 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 namespace IoUtilities {
 class BinaryReader;
@@ -17,17 +17,17 @@ public:
 
     void parse(IoUtilities::BinaryReader &reader);
 
-    uint32 size;
-    uint32 width;
-    uint32 height;
-    uint16 planes;
-    uint16 bitCount;
-    uint32 compression;
-    uint32 imageSize;
-    uint32 horizontalResolution;
-    uint32 verticalResolution;
-    uint32 clrUsed;
-    uint32 clrImportant;
+    std::uint32_t size;
+    std::uint32_t width;
+    std::uint32_t height;
+    std::uint16_t planes;
+    std::uint16_t bitCount;
+    std::uint32_t compression;
+    std::uint32_t imageSize;
+    std::uint32_t horizontalResolution;
+    std::uint32_t verticalResolution;
+    std::uint32_t clrUsed;
+    std::uint32_t clrImportant;
 };
 
 } // namespace TagParser

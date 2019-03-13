@@ -40,7 +40,7 @@ void FlacMetaDataBlockHeader::parseHeader(const char *buffer)
  */
 void FlacMetaDataBlockHeader::makeHeader(std::ostream &outputStream)
 {
-    byte buff[4];
+    std::uint8_t buff[4];
     *buff = (m_last ? (0x80 | m_type) : m_type);
     BE::getBytes24(m_dataSize, reinterpret_cast<char *>(buff) + 1);
     outputStream.write(reinterpret_cast<char *>(buff), sizeof(buff));
@@ -59,14 +59,14 @@ void FlacMetaDataBlockHeader::makeHeader(std::ostream &outputStream)
 void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
 {
     BitReader reader(buffer, 0x22);
-    m_minBlockSize = reader.readBits<uint16>(16);
-    m_maxBlockSize = reader.readBits<uint16>(16);
-    m_minFrameSize = reader.readBits<uint32>(24);
-    m_maxFrameSize = reader.readBits<uint32>(24);
-    m_samplingFrequency = reader.readBits<uint32>(20);
-    m_channelCount = reader.readBits<byte>(3) + 1;
-    m_bitsPerSample = reader.readBits<byte>(5) + 1;
-    m_totalSampleCount = reader.readBits<uint64>(36);
+    m_minBlockSize = reader.readBits<std::uint16_t>(16);
+    m_maxBlockSize = reader.readBits<std::uint16_t>(16);
+    m_minFrameSize = reader.readBits<std::uint32_t>(24);
+    m_maxFrameSize = reader.readBits<std::uint32_t>(24);
+    m_samplingFrequency = reader.readBits<std::uint32_t>(20);
+    m_channelCount = reader.readBits<std::uint8_t>(3) + 1;
+    m_bitsPerSample = reader.readBits<std::uint8_t>(5) + 1;
+    m_totalSampleCount = reader.readBits<std::uint64_t>(36);
     memcpy(m_md5Sum, buffer + 0x22 - sizeof(m_md5Sum), sizeof(m_md5Sum));
 }
 
@@ -81,12 +81,12 @@ void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
  *
  * \a maxSize specifies the maximum size of the structure.
  */
-void FlacMetaDataBlockPicture::parse(istream &inputStream, uint32 maxSize)
+void FlacMetaDataBlockPicture::parse(istream &inputStream, std::uint32_t maxSize)
 {
     CHECK_MAX_SIZE(32);
     BinaryReader reader(&inputStream);
     m_pictureType = reader.readUInt32BE();
-    uint32 size = reader.readUInt32BE();
+    std::uint32_t size = reader.readUInt32BE();
     CHECK_MAX_SIZE(size);
     m_value.setMimeType(reader.readString(size));
     size = reader.readUInt32BE();
@@ -110,13 +110,13 @@ void FlacMetaDataBlockPicture::parse(istream &inputStream, uint32 maxSize)
  * \remarks Any changes to the object will invalidate this value.
  * \throws Throws an InvalidDataException() if the assigned data is too big.
  */
-uint32 FlacMetaDataBlockPicture::requiredSize() const
+std::uint32_t FlacMetaDataBlockPicture::requiredSize() const
 {
     const auto requiredSize(32 + m_value.mimeType().size() + m_value.description().size() + m_value.dataSize());
-    if (requiredSize > numeric_limits<uint32>::max()) {
+    if (requiredSize > numeric_limits<std::uint32_t>::max()) {
         throw InvalidDataException();
     }
-    return static_cast<uint32>(requiredSize);
+    return static_cast<std::uint32_t>(requiredSize);
 }
 
 /*!
@@ -125,21 +125,21 @@ uint32 FlacMetaDataBlockPicture::requiredSize() const
  */
 void FlacMetaDataBlockPicture::make(ostream &outputStream)
 {
-    if (m_value.mimeType().size() > numeric_limits<uint32>::max() || m_value.description().size() > numeric_limits<uint32>::max()
-        || m_value.dataSize() > numeric_limits<uint32>::max()) {
+    if (m_value.mimeType().size() > numeric_limits<std::uint32_t>::max() || m_value.description().size() > numeric_limits<std::uint32_t>::max()
+        || m_value.dataSize() > numeric_limits<std::uint32_t>::max()) {
         throw InvalidDataException();
     }
     BinaryWriter writer(&outputStream);
     writer.writeUInt32BE(pictureType());
-    writer.writeUInt32BE(static_cast<uint32>(m_value.mimeType().size()));
+    writer.writeUInt32BE(static_cast<std::uint32_t>(m_value.mimeType().size()));
     writer.writeString(m_value.mimeType());
-    writer.writeUInt32BE(static_cast<uint32>(m_value.description().size()));
+    writer.writeUInt32BE(static_cast<std::uint32_t>(m_value.description().size()));
     writer.writeString(m_value.description());
     writer.writeUInt32BE(0); // skip width
     writer.writeUInt32BE(0); // skip height
     writer.writeUInt32BE(0); // skip color depth
     writer.writeUInt32BE(0); // skip number of colors used
-    writer.writeUInt32BE(static_cast<uint32>(m_value.dataSize()));
+    writer.writeUInt32BE(static_cast<std::uint32_t>(m_value.dataSize()));
     writer.write(value().dataPointer(), static_cast<streamoff>(m_value.dataSize()));
 }
 

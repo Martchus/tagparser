@@ -62,11 +62,11 @@ void OggStream::internalParseHeader(Diagnostics &diag)
 
     // iterate through segments using OggIterator
     for (bool hasIdentificationHeader = false, hasCommentHeader = false; iterator && (!hasIdentificationHeader || !hasCommentHeader); ++iterator) {
-        const uint32 currentSize = iterator.currentSegmentSize();
+        const std::uint32_t currentSize = iterator.currentSegmentSize();
         if (currentSize >= 8) {
             // determine stream format
             inputStream().seekg(static_cast<streamoff>(iterator.currentSegmentOffset()));
-            const uint64 sig = reader().readUInt64BE();
+            const std::uint64_t sig = reader().readUInt64BE();
 
             if ((sig & 0x00ffffffffffff00u) == 0x00766F7262697300u) {
                 // Vorbis header detected
@@ -286,7 +286,7 @@ void OggStream::internalParseHeader(Diagnostics &diag)
     m_headerValid = true;
 }
 
-void OggStream::calculateDurationViaSampleCount(uint16 preSkip)
+void OggStream::calculateDurationViaSampleCount(std::uint16_t preSkip)
 {
     // define predicate for finding pages of this stream by its stream serial number
     const auto pred = bind(&OggPage::matchesStreamSerialNumber, _1, m_id);

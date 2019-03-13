@@ -33,7 +33,7 @@ class TAG_PARSER_EXPORT MatroskaTagFieldMaker {
 public:
     void make(std::ostream &stream) const;
     const MatroskaTagField &field() const;
-    uint64 requiredSize() const;
+    std::uint64_t requiredSize() const;
 
 private:
     MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostics &diag);
@@ -41,8 +41,8 @@ private:
     MatroskaTagField &m_field;
     bool m_isBinary;
     std::string m_stringValue;
-    uint64 m_simpleTagSize;
-    uint64 m_totalSize;
+    std::uint64_t m_simpleTagSize;
+    std::uint64_t m_totalSize;
     std::vector<MatroskaTagFieldMaker> m_nestedMaker;
 };
 
@@ -57,7 +57,7 @@ inline const MatroskaTagField &MatroskaTagFieldMaker::field() const
 /*!
  * \brief Returns number of bytes which will be written when making the field.
  */
-inline uint64 MatroskaTagFieldMaker::requiredSize() const
+inline std::uint64_t MatroskaTagFieldMaker::requiredSize() const
 {
     return m_totalSize;
 }

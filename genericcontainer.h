@@ -23,10 +23,10 @@ template <class FileInfoType, class TagType, class TrackType, class ElementType>
     friend FileInfoType;
 
 public:
-    GenericContainer(FileInfoType &fileInfo, uint64 startOffset);
+    GenericContainer(FileInfoType &fileInfo, std::uint64_t startOffset);
     ~GenericContainer() override;
 
-    void validateElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
+    void validateElementStructure(Diagnostics &diag, std::uint64_t *paddingSize = nullptr);
     FileInfoType &fileInfo() const;
     ElementType *firstElement() const;
     const std::vector<std::unique_ptr<ElementType>> &additionalElements() const;
@@ -34,7 +34,7 @@ public:
     TagType *tag(std::size_t index) override;
     std::size_t tagCount() const override;
     TrackType *track(std::size_t index) override;
-    TrackType *trackById(uint64 id);
+    TrackType *trackById(std::uint64_t id);
     std::size_t trackCount() const override;
     const std::vector<std::unique_ptr<TagType>> &tags() const;
     std::vector<std::unique_ptr<TagType>> &tags();
@@ -68,7 +68,7 @@ private:
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-GenericContainer<FileInfoType, TagType, TrackType, ElementType>::GenericContainer(FileInfoType &fileInfo, uint64 startOffset)
+GenericContainer<FileInfoType, TagType, TrackType, ElementType>::GenericContainer(FileInfoType &fileInfo, std::uint64_t startOffset)
     : AbstractContainer(fileInfo.stream(), startOffset)
     , m_fileInfo(&fileInfo)
 {
@@ -96,7 +96,7 @@ GenericContainer<FileInfoType, TagType, TrackType, ElementType>::~GenericContain
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(Diagnostics &diag, uint64 *paddingSize)
+inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(Diagnostics &diag, std::uint64_t *paddingSize)
 {
     parseHeader(diag);
     if (m_firstElement) {
@@ -178,7 +178,7 @@ inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType
 }
 
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::trackById(uint64 id)
+inline TrackType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::trackById(std::uint64_t id)
 {
     for (auto &track : m_tracks) {
         if (track->id() == id) {

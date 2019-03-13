@@ -14,7 +14,6 @@
 #include "../tagtarget.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
-#include <c++utilities/io/catchiofailure.h>
 #include <c++utilities/tests/testutils.h>
 using namespace TestUtilities;
 
@@ -22,6 +21,7 @@ using namespace TestUtilities;
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <cstdio>
+#include <regex>
 
 #include <unistd.h>
 
@@ -97,11 +97,11 @@ void UtilitiesTests::testTagTarget()
 {
     TagTarget target;
     CPPUNIT_ASSERT(target.isEmpty());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("default level is 50", static_cast<uint64>(50), target.level());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("default level is 50", static_cast<std::uint64_t>(50), target.level());
     CPPUNIT_ASSERT_EQUAL("level 50"s, target.toString(TagTargetLevel::Unspecified));
     target = TagTarget(30, { 1, 2, 3 }, { 4 }, { 5, 6 }, { 7, 8, 9 });
     CPPUNIT_ASSERT(!target.isEmpty());
-    const auto mapping = [](uint64 level) { return level == 30 ? TagTargetLevel::Track : TagTargetLevel::Unspecified; };
+    const auto mapping = [](std::uint64_t level) { return level == 30 ? TagTargetLevel::Track : TagTargetLevel::Unspecified; };
     CPPUNIT_ASSERT_EQUAL(
         "level 30 'track, song, chapter', track 1, track 2, track 3, chapter 4, edition 5, edition 6, attachment  7, attachment  8, attachment  9"s,
         target.toString(mapping));
@@ -147,11 +147,11 @@ void UtilitiesTests::testAspectRatio()
     static_assert(AspectRatio(16, 9).isExtended(), "extended aspect ratio");
 
     const AspectRatio ratio(4);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), ratio.numerator);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(11), ratio.denominator);
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(16), ratio.numerator);
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(11), ratio.denominator);
     const AspectRatio ratio2(77);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(0), ratio2.numerator);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(0), ratio2.denominator);
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(0), ratio2.numerator);
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(0), ratio2.denominator);
 }
 
 void UtilitiesTests::testMediaFormat()
@@ -327,9 +327,8 @@ void UtilitiesTests::testBackupFile()
     try {
         createBackupFile("bak", file.path(), backupPath2, file.stream(), backupStream2);
         CPPUNIT_FAIL("renaming failed because backup dir does not exist");
-    } catch (...) {
-        const char *what = catchIoFailure();
-        CPPUNIT_ASSERT(strstr(what, "Unable to rename original file before rewriting it."));
+    } catch (const std::ios_base::failure &failure) {
+        TESTUTILS_ASSERT_LIKE("renaming error", "Unable to rename original file before rewriting it: .*"s, string(failure.what()));
     }
     backupStream2.clear();
     workingCopyPathMode("bak/unsupported.bin", WorkingCopyMode::NoCopy);
@@ -384,15 +383,11 @@ void UtilitiesTests::testBackupFile()
     // restore after io failure
     createBackupFile(string(), file.path(), backupPath1, file.stream(), backupStream1);
     try {
-        throwIoFailure("simulated IO failure");
-    } catch (...) {
+        throw std::ios_base::failure("simulated IO failure");
+    } catch (const std::ios_base::failure &) {
         Diagnostics diag;
-        try {
-            handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test");
-            CPPUNIT_FAIL("IO failure not rethrown");
-        } catch (...) {
-            catchIoFailure();
-        }
+        CPPUNIT_ASSERT_THROW_MESSAGE("IO failure re-thrown",
+            handleFailureAfterFileModified(file, backupPath1, file.stream(), backupStream1, diag, "test"), std::ios_base::failure);
         CPPUNIT_ASSERT(diag.level() >= DiagLevel::Critical);
         CPPUNIT_ASSERT_EQUAL("An IO error occurred when rewriting the file to apply changed tag information."s, diag.front().message());
         CPPUNIT_ASSERT_EQUAL("The original file has been restored."s, diag.back().message());

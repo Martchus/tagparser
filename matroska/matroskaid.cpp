@@ -19,7 +19,7 @@ namespace MatroskaTrackType {
  * \brief Returns a string for the specified \a matroskaId
  *        if known; otherwise returns an empty string.
  */
-const char *matroskaIdName(uint32 matroskaId)
+const char *matroskaIdName(std::uint32_t matroskaId)
 {
     using namespace EbmlIds;
     using namespace MatroskaIds;
@@ -520,7 +520,7 @@ const char *matroskaIdName(uint32 matroskaId)
  * \brief Returns the level at which elements with the specified \a matroskaId are supposed
  *        to occur in a Matroska file.
  */
-MatroskaElementLevel matroskaIdLevel(uint32 matroskaId)
+MatroskaElementLevel matroskaIdLevel(std::uint32_t matroskaId)
 {
     using namespace EbmlIds;
     using namespace MatroskaIds;

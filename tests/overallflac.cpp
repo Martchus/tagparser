@@ -17,9 +17,9 @@ void OverallTests::checkFlacTestfile1()
     for (const auto &track : tracks) {
         CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
         CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Flac, track->format().general);
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
         CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(16), track->bitsPerSample());
         CPPUNIT_ASSERT_EQUAL(4, track->duration().minutes());
     }
     const auto tags = m_fileInfo.tags();
@@ -61,9 +61,9 @@ void OverallTests::checkFlacTestfile2()
     for (const auto &track : tracks) {
         CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
         CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Flac, track->format().general);
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(2), track->channelCount());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
         CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint16>(16), track->bitsPerSample());
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(16), track->bitsPerSample());
         CPPUNIT_ASSERT_EQUAL(4, track->duration().minutes());
     }
     const auto tags = m_fileInfo.tags();

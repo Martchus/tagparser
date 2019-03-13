@@ -4,9 +4,9 @@
 #include "./tagtarget.h"
 #include "./tagvalue.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 
+#include <cstdint>
 #include <string>
 #include <type_traits>
 
@@ -111,7 +111,7 @@ public:
     virtual bool hasField(KnownField field) const = 0;
     virtual void removeAllFields() = 0;
     const std::string &version() const;
-    uint32 size() const;
+    std::uint32_t size() const;
     virtual bool supportsTarget() const;
     const TagTarget &target() const;
     void setTarget(const TagTarget &target);
@@ -132,7 +132,7 @@ protected:
     Tag();
 
     std::string m_version;
-    uint32 m_size;
+    std::uint32_t m_size;
     TagTarget m_target;
 };
 
@@ -161,7 +161,7 @@ inline const std::string &Tag::version() const
     return m_version;
 }
 
-inline uint32 Tag::size() const
+inline std::uint32_t Tag::size() const
 {
     return m_size;
 }
@@ -193,7 +193,7 @@ inline const char *Tag::targetLevelName() const
 
 inline bool Tag::isTargetingLevel(TagTargetLevel tagTargetLevel) const
 {
-    return !supportsTarget() || static_cast<byte>(targetLevel()) >= static_cast<byte>(tagTargetLevel);
+    return !supportsTarget() || static_cast<std::uint8_t>(targetLevel()) >= static_cast<std::uint8_t>(tagTargetLevel);
 }
 
 inline std::string Tag::targetString() const

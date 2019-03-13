@@ -3,6 +3,7 @@
 
 #include "./tagtarget.h"
 
+#include <cstdint>
 #include <type_traits>
 
 namespace TagParser {
@@ -25,7 +26,7 @@ enum class TagUsage {
 /*!
  * \brief The Flags enum contains options to control the tag creation via MediaFileInfo::createAppropriateTags().
  */
-enum class TagCreationFlags : uint64 {
+enum class TagCreationFlags : std::uint64_t {
     None = 0, /**< no flags present */
     TreatUnknownFilesAsMp3Files = 1 << 0, /**< treat unknown file formats as MP3 (might make those files unusable) */
     Id3InitOnCreate = 1 << 1, /**< initialize newly created ID3 tags with the values of the already present ID3 tags */
@@ -78,7 +79,7 @@ struct TagCreationSettings {
     /// \brief Specifies the usage of ID3v2 when creating tags for MP3 files (has no effect when the file is no MP3 file or not treated as one).
     TagUsage id3v2usage = TagUsage::Always;
     /// \brief Specifies the ID3v2 version to be used in case an ID3v2 tag present or will be created. Valid values are 2, 3 and 4.
-    byte id3v2MajorVersion = 3;
+    std::uint8_t id3v2MajorVersion = 3;
 
     // workaround for GGC bug 66297 (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66297)
 #if __GNUC__ < 7 || (__GNUC__ == 7 && __GNUC_MINOR__ < 2)

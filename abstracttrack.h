@@ -9,7 +9,6 @@
 
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 
@@ -52,7 +51,7 @@ public:
     void setOutputStream(std::ostream &stream);
     IoUtilities::BinaryReader &reader();
     IoUtilities::BinaryWriter &writer();
-    uint64 startOffset() const;
+    std::uint64_t startOffset() const;
     MediaFormat format() const;
     double version() const;
     const char *formatName() const;
@@ -60,11 +59,11 @@ public:
     const std::string &formatId() const;
     MediaType mediaType() const;
     const char *mediaTypeName() const;
-    uint64 size() const;
-    uint32 trackNumber() const;
-    void setTrackNumber(uint32 trackNumber);
-    uint64 id() const;
-    void setId(uint64 id);
+    std::uint64_t size() const;
+    std::uint32_t trackNumber() const;
+    void setTrackNumber(std::uint32_t trackNumber);
+    std::uint64_t id() const;
+    void setId(std::uint64_t id);
     const std::string name() const;
     void setName(const std::string &name);
     const ChronoUtilities::TimeSpan &duration() const;
@@ -74,27 +73,27 @@ public:
     const ChronoUtilities::DateTime &modificationTime() const;
     const std::string &language() const;
     void setLanguage(const std::string &language);
-    uint32 samplingFrequency() const;
-    uint32 extensionSamplingFrequency() const;
-    uint16 bitsPerSample() const;
-    uint16 channelCount() const;
-    byte channelConfig() const;
+    std::uint32_t samplingFrequency() const;
+    std::uint32_t extensionSamplingFrequency() const;
+    std::uint16_t bitsPerSample() const;
+    std::uint16_t channelCount() const;
+    std::uint8_t channelConfig() const;
     const char *channelConfigString() const;
-    byte extensionChannelConfig() const;
+    std::uint8_t extensionChannelConfig() const;
     const char *extensionChannelConfigString() const;
-    uint64 sampleCount() const;
+    std::uint64_t sampleCount() const;
     int quality() const;
     const Size &pixelSize() const;
     const Size &displaySize() const;
     const Size &resolution() const;
     const std::string &compressorName() const;
     void setCompressorName(const std::string &compressorName);
-    uint16 depth() const;
-    uint32 fps() const;
+    std::uint16_t depth() const;
+    std::uint32_t fps() const;
     const char *chromaFormat() const;
     const AspectRatio &pixelAspectRatio() const;
     bool isInterlaced() const;
-    uint32 timeScale() const;
+    std::uint32_t timeScale() const;
     bool isEnabled() const;
     void setEnabled(bool enabled);
     bool isDefault() const;
@@ -103,7 +102,7 @@ public:
     void setForced(bool forced);
     bool hasLacing() const;
     bool isEncrypted() const;
-    uint32 colorSpace() const;
+    std::uint32_t colorSpace() const;
     const Margin &cropping() const;
     std::string label() const;
     std::string description() const;
@@ -112,24 +111,24 @@ public:
     bool isHeaderValid() const;
 
 protected:
-    AbstractTrack(std::istream &inputStream, std::ostream &outputStream, uint64 startOffset);
-    AbstractTrack(std::iostream &stream, uint64 startOffset);
+    AbstractTrack(std::istream &inputStream, std::ostream &outputStream, std::uint64_t startOffset);
+    AbstractTrack(std::iostream &stream, std::uint64_t startOffset);
     virtual void internalParseHeader(Diagnostics &diag) = 0;
 
     std::istream *m_istream;
     std::ostream *m_ostream;
     IoUtilities::BinaryReader m_reader;
     IoUtilities::BinaryWriter m_writer;
-    uint64 m_startOffset;
+    std::uint64_t m_startOffset;
     bool m_headerValid;
     MediaFormat m_format;
     std::string m_formatId;
     std::string m_formatName;
     MediaType m_mediaType;
     double m_version;
-    uint64 m_size;
-    uint32 m_trackNumber;
-    uint64 m_id;
+    std::uint64_t m_size;
+    std::uint32_t m_trackNumber;
+    std::uint64_t m_id;
     std::string m_name;
     ChronoUtilities::TimeSpan m_duration;
     double m_bitrate;
@@ -137,26 +136,26 @@ protected:
     ChronoUtilities::DateTime m_creationTime;
     ChronoUtilities::DateTime m_modificationTime;
     std::string m_language;
-    uint32 m_samplingFrequency;
-    uint32 m_extensionSamplingFrequency;
-    uint16 m_bitsPerSample;
-    uint32 m_bytesPerSecond;
-    uint16 m_channelCount;
-    byte m_channelConfig;
-    byte m_extensionChannelConfig;
-    uint16 m_chunkSize;
-    uint64 m_sampleCount;
+    std::uint32_t m_samplingFrequency;
+    std::uint32_t m_extensionSamplingFrequency;
+    std::uint16_t m_bitsPerSample;
+    std::uint32_t m_bytesPerSecond;
+    std::uint16_t m_channelCount;
+    std::uint8_t m_channelConfig;
+    std::uint8_t m_extensionChannelConfig;
+    std::uint16_t m_chunkSize;
+    std::uint64_t m_sampleCount;
     int m_quality;
     Size m_pixelSize;
     Size m_displaySize;
     Size m_resolution;
     std::string m_compressorName;
-    uint16 m_depth;
-    uint32 m_fps;
+    std::uint16_t m_depth;
+    std::uint32_t m_fps;
     const char *m_chromaFormat;
     AspectRatio m_pixelAspectRatio;
     bool m_interlaced;
-    uint32 m_timeScale;
+    std::uint32_t m_timeScale;
     bool m_enabled;
     bool m_default;
     bool m_forced;
@@ -164,7 +163,7 @@ protected:
     bool m_encrypted;
     bool m_usedInPresentation;
     bool m_usedWhenPreviewing;
-    uint32 m_colorSpace;
+    std::uint32_t m_colorSpace;
     Margin m_cropping;
 };
 
@@ -239,7 +238,7 @@ inline TrackType AbstractTrack::type() const
 /*!
  * \brief Returns the start offset of the track in the associated stream.
  */
-inline uint64 AbstractTrack::startOffset() const
+inline std::uint64_t AbstractTrack::startOffset() const
 {
     return m_startOffset;
 }
@@ -310,7 +309,7 @@ inline const char *AbstractTrack::mediaTypeName() const
 /*!
  * \brief Returns the size in bytes if known; otherwise returns 0.
  */
-inline uint64 AbstractTrack::size() const
+inline std::uint64_t AbstractTrack::size() const
 {
     return m_size;
 }
@@ -318,7 +317,7 @@ inline uint64 AbstractTrack::size() const
 /*!
  * \brief Returns the track number if known; otherwise returns 0.
  */
-inline uint32 AbstractTrack::trackNumber() const
+inline std::uint32_t AbstractTrack::trackNumber() const
 {
     return m_trackNumber;
 }
@@ -327,7 +326,7 @@ inline uint32 AbstractTrack::trackNumber() const
  * \brief Sets the track number.
  * \remarks Whether the new value is applied when saving changes depends on the implementation.
  */
-inline void AbstractTrack::setTrackNumber(uint32 trackNumber)
+inline void AbstractTrack::setTrackNumber(std::uint32_t trackNumber)
 {
     m_trackNumber = trackNumber;
 }
@@ -335,7 +334,7 @@ inline void AbstractTrack::setTrackNumber(uint32 trackNumber)
 /*!
  * \brief Returns the track ID if known; otherwise returns 0.
  */
-inline uint64 AbstractTrack::id() const
+inline std::uint64_t AbstractTrack::id() const
 {
     return m_id;
 }
@@ -344,7 +343,7 @@ inline uint64 AbstractTrack::id() const
  * \brief Sets the track ID.
  * \remarks Whether the new value is applied when saving changes depends on the implementation.
  */
-inline void AbstractTrack::setId(uint64 id)
+inline void AbstractTrack::setId(std::uint64_t id)
 {
     m_id = id;
 }
@@ -428,7 +427,7 @@ inline void AbstractTrack::setLanguage(const std::string &language)
 /*!
  * \brief Returns the number of samples per second if known; otherwise returns 0.
  */
-inline uint32 AbstractTrack::samplingFrequency() const
+inline std::uint32_t AbstractTrack::samplingFrequency() const
 {
     return m_samplingFrequency;
 }
@@ -437,7 +436,7 @@ inline uint32 AbstractTrack::samplingFrequency() const
  * \brief Returns the number of samples per second if known; otherwise returns 0.
  * \remarks This sample rate value takes extensions like SBR into account.
  */
-inline uint32 AbstractTrack::extensionSamplingFrequency() const
+inline std::uint32_t AbstractTrack::extensionSamplingFrequency() const
 {
     return m_extensionSamplingFrequency;
 }
@@ -445,7 +444,7 @@ inline uint32 AbstractTrack::extensionSamplingFrequency() const
 /*!
  * \brief Returns the number of bits per sample; otherwise returns 0.
  */
-inline uint16 AbstractTrack::bitsPerSample() const
+inline std::uint16_t AbstractTrack::bitsPerSample() const
 {
     return m_bitsPerSample;
 }
@@ -455,7 +454,7 @@ inline uint16 AbstractTrack::bitsPerSample() const
  *
  * This value only makes sense for audio tracks.
  */
-inline uint16 AbstractTrack::channelCount() const
+inline std::uint16_t AbstractTrack::channelCount() const
 {
     return m_channelCount;
 }
@@ -466,7 +465,7 @@ inline uint16 AbstractTrack::channelCount() const
  * This is the MPEG-4 channel config for MPEG-4 audio.
  * \sa Mpeg4ChannelConfigs::channelConfigString()
  */
-inline byte AbstractTrack::channelConfig() const
+inline std::uint8_t AbstractTrack::channelConfig() const
 {
     return m_channelConfig;
 }
@@ -474,7 +473,7 @@ inline byte AbstractTrack::channelConfig() const
 /*!
  * \brief Returns the number of samples/frames if known; otherwise returns 0.
  */
-inline uint64 AbstractTrack::sampleCount() const
+inline std::uint64_t AbstractTrack::sampleCount() const
 {
     return m_sampleCount;
 }
@@ -539,7 +538,7 @@ inline void AbstractTrack::setCompressorName(const std::string &compressorName)
 /*!
  * \brief Returns the bit depth if known; otherwise returns 0.
  */
-inline uint16 AbstractTrack::depth() const
+inline std::uint16_t AbstractTrack::depth() const
 {
     return m_depth;
 }
@@ -549,7 +548,7 @@ inline uint16 AbstractTrack::depth() const
  *
  * This value only makes sense for video tracks.
  */
-inline uint32 AbstractTrack::fps() const
+inline std::uint32_t AbstractTrack::fps() const
 {
     return m_fps;
 }
@@ -587,7 +586,7 @@ inline bool AbstractTrack::isInterlaced() const
  *
  * The time scale depends on the format.
  */
-inline uint32 AbstractTrack::timeScale() const
+inline std::uint32_t AbstractTrack::timeScale() const
 {
     return m_timeScale;
 }
@@ -662,7 +661,7 @@ inline bool AbstractTrack::isEncrypted() const
 /*!
  * \brief Returns the color space if known; otherwise returns 0.
  */
-inline uint32 AbstractTrack::colorSpace() const
+inline std::uint32_t AbstractTrack::colorSpace() const
 {
     return m_colorSpace;
 }

@@ -3,6 +3,8 @@
 
 #include <c++utilities/conversion/binaryconversion.h>
 
+#include <cstdint>
+
 using namespace ConversionUtilities;
 
 namespace TagParser {
@@ -10,7 +12,7 @@ namespace TagParser {
 /*!
  * \brief Holds 64-bit signatures.
  */
-enum Sig64 : uint64 {
+enum Sig64 : std::uint64_t {
     Ar = 0x213C617263683E0A,
     Asf1 = 0x3026B2758E66CF11ul,
     Asf2 = 0xA6D900AA0062CE6Cul,
@@ -22,14 +24,14 @@ enum Sig64 : uint64 {
 /*!
  * \brief Holds 52-bit signatures.
  */
-enum Sig56 : uint64 {
+enum Sig56 : std::uint64_t {
     Rar = 0x526172211A0700ul,
 };
 
 /*!
  * \brief Holds 48-bit signatures.
  */
-enum Sig48 : uint64 {
+enum Sig48 : std::uint64_t {
     Gif87a = 0x474946383761ul,
     Gif89a = 0x474946383961ul,
     SevenZ = 0x377ABCAF271Cul,
@@ -39,7 +41,7 @@ enum Sig48 : uint64 {
 /*!
  * \brief Holds 32-bit signatures.
  */
-enum Sig32 : uint32 {
+enum Sig32 : std::uint32_t {
     Dirac = 0x42424344u,
     Elf = 0x7F454C46u,
     Flac = 0x664C6143u,
@@ -68,7 +70,7 @@ enum Sig32 : uint32 {
 /*!
  * \brief Holds 24-bit signatures.
  */
-enum Sig24 : uint32 {
+enum Sig24 : std::uint32_t {
     Bzip2 = 0x425A68u,
     Flv = 0x464C56u,
     Gzip = 0x1F8B08u,
@@ -79,7 +81,7 @@ enum Sig24 : uint32 {
 /*!
  * \brief Holds 16-bit signatures.
  */
-enum Sig16 : uint16 {
+enum Sig16 : std::uint16_t {
     Ac3 = 0x0B77u,
     Adts = 0xFFF0u,
     AdtsMask = 0xFFF6u,
@@ -102,7 +104,7 @@ enum Sig16 : uint16 {
 ContainerFormat parseSignature(const char *buffer, int bufferSize)
 {
     // read signature
-    uint64 sig = 0;
+    std::uint64_t sig = 0;
     if (bufferSize >= 8) {
         sig = ConversionUtilities::BE::toUInt64(buffer);
     } else if (bufferSize >= 4) {
@@ -567,7 +569,7 @@ const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaTy
 /*!
  * \brief Returns the general TagTargetLevel for the specified \a container format and raw \a targetLevelValue.
  */
-TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targetLevelValue)
+TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, std::uint64_t targetLevelValue)
 {
     switch (containerFormat) {
     case ContainerFormat::Matroska:
@@ -581,7 +583,7 @@ TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, uint64 targ
 /*!
  * \brief Returns the raw target level value for the specified \a containerFormat and general \a targetLevel.
  */
-uint64 containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel)
+std::uint64_t containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel)
 {
     switch (containerFormat) {
     case ContainerFormat::Matroska:

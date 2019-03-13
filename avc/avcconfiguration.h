@@ -12,14 +12,14 @@ class Diagnostics;
 
 struct TAG_PARSER_EXPORT AvcConfiguration {
     AvcConfiguration();
-    byte profileIndication;
-    byte profileCompat;
-    byte levelIndication;
-    byte naluSizeLength;
+    std::uint8_t profileIndication;
+    std::uint8_t profileCompat;
+    std::uint8_t levelIndication;
+    std::uint8_t naluSizeLength;
     std::vector<SpsInfo> spsInfos;
     std::vector<PpsInfo> ppsInfos;
 
-    void parse(IoUtilities::BinaryReader &reader, uint64 maxSize, Diagnostics &diag);
+    void parse(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
 };
 
 /*!

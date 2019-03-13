@@ -13,7 +13,6 @@
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
-#include <c++utilities/io/catchiofailure.h>
 
 #include <unistd.h>
 
@@ -38,12 +37,12 @@ namespace TagParser {
  * \brief Implementation of GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>.
  */
 
-uint64 MatroskaContainer::m_maxFullParseSize = 0x3200000;
+std::uint64_t MatroskaContainer::m_maxFullParseSize = 0x3200000;
 
 /*!
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
-MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, uint64 startOffset)
+MatroskaContainer::MatroskaContainer(MediaFileInfo &fileInfo, std::uint64_t startOffset)
     : GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>(fileInfo, startOffset)
     , m_maxIdLength(4)
     , m_maxSizeLength(8)
@@ -93,7 +92,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
         unordered_set<EbmlElement::IdentifierType> ids;
         bool cueTimeFound = false, cueTrackPositionsFound = false;
         unique_ptr<EbmlElement> clusterElement;
-        uint64 pos, prevClusterSize = 0, currentOffset = 0;
+        std::uint64_t pos, prevClusterSize = 0, currentOffset = 0;
         // iterate throught all segments
         for (EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement;
              segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {
@@ -300,7 +299,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
 /*!
  * \brief Returns an indication whether \a offset equals the start offset of \a element.
  */
-bool sameOffset(uint64 offset, const EbmlElement *element)
+bool sameOffset(std::uint64_t offset, const EbmlElement *element)
 {
     return element->startOffset() == offset;
 }
@@ -309,7 +308,7 @@ bool sameOffset(uint64 offset, const EbmlElement *element)
  * \brief Returns whether none of the specified \a elements have the specified \a offset.
  * \remarks This method is used when gathering elements to avoid adding the same element twice.
  */
-inline bool excludesOffset(const vector<EbmlElement *> &elements, uint64 offset)
+inline bool excludesOffset(const vector<EbmlElement *> &elements, std::uint64_t offset)
 {
     return find_if(elements.cbegin(), elements.cend(), std::bind(sameOffset, offset, _1)) == elements.cend();
 }
@@ -341,9 +340,9 @@ MatroskaAttachment *MatroskaContainer::createAttachment()
     // generate unique ID
     static const auto randomEngine(
         default_random_engine(static_cast<default_random_engine::result_type>(chrono::system_clock::now().time_since_epoch().count())));
-    uint64 attachmentId;
+    std::uint64_t attachmentId;
     auto dice(bind(uniform_int_distribution<decltype(attachmentId)>(), randomEngine));
-    byte tries = 0;
+    std::uint8_t tries = 0;
 generateRandomId:
     attachmentId = dice();
     if (tries < 0xFF) {
@@ -365,7 +364,7 @@ generateRandomId:
  * \brief Determines the position of the element with the specified \a elementId.
  * \sa determineTagPosition() and determineIndexPosition()
  */
-ElementPosition MatroskaContainer::determineElementPosition(uint64 elementId, Diagnostics &diag) const
+ElementPosition MatroskaContainer::determineElementPosition(std::uint64_t elementId, Diagnostics &diag) const
 {
     if (!m_firstElement || m_segmentCount != 1) {
         return ElementPosition::Keep;
@@ -412,7 +411,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
     m_tagsElements.clear();
     m_seekInfos.clear();
     m_segmentCount = 0;
-    uint64 currentOffset = 0;
+    std::uint64_t currentOffset = 0;
     vector<MatroskaSeekInfo>::difference_type seekInfosIndex = 0;
 
     // loop through all top level elements
@@ -507,7 +506,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                             // stop here if all relevant information has been gathered
                             for (auto i = m_seekInfos.cbegin() + seekInfosIndex, end = m_seekInfos.cend(); i != end; ++i, ++seekInfosIndex) {
                                 for (const auto &infoPair : (*i)->info()) {
-                                    uint64 offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
+                                    std::uint64_t offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
                                     if (offset >= fileInfo().size()) {
                                         diag.emplace_back(DiagLevel::Critical,
                                             argsToString("Offset (", offset, ") denoted by \"SeekHead\" element is invalid."), context);
@@ -614,8 +613,8 @@ void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)
     for (EbmlElement *element : m_segmentInfoElements) {
         element->parse(diag);
         EbmlElement *subElement = element->firstChild();
-        float64 rawDuration = 0.0;
-        uint64 timeScale = 1000000;
+        double rawDuration = 0.0;
+        std::uint64_t timeScale = 1000000;
         bool hasTitle = false;
         while (subElement) {
             subElement->parse(diag);
@@ -825,25 +824,25 @@ struct SegmentData {
     /// \brief used to make "Cues"-element
     MatroskaCuePositionUpdater cuesUpdater;
     /// \brief size of the "SegmentInfo"-element
-    uint64 infoDataSize;
+    std::uint64_t infoDataSize;
     /// \brief cluster sizes
-    vector<uint64> clusterSizes;
+    vector<std::uint64_t> clusterSizes;
     /// \brief first "Cluster"-element (original file)
     EbmlElement *firstClusterElement;
     /// \brief end offset of last "Cluster"-element (original file)
-    uint64 clusterEndOffset;
+    std::uint64_t clusterEndOffset;
     /// \brief start offset (in the new file)
-    uint64 startOffset;
+    std::uint64_t startOffset;
     /// \brief padding (in the new file)
-    uint64 newPadding;
+    std::uint64_t newPadding;
     /// \brief total size of the segment data (in the new file, excluding header)
-    uint64 totalDataSize;
+    std::uint64_t totalDataSize;
     /// \brief total size of the segment data (in the new file, including header)
-    uint64 totalSize;
+    std::uint64_t totalSize;
     /// \brief data offset of the segment in the new file
-    uint64 newDataOffset;
+    std::uint64_t newDataOffset;
     /// \brief header size (in the new file)
-    byte sizeDenotationLength;
+    std::uint8_t sizeDenotationLength;
 };
 
 void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
@@ -868,16 +867,16 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // define variables needed for precalculation of "Tags"- and "Attachments"-element
     vector<MatroskaTagMaker> tagMaker;
     tagMaker.reserve(tags().size());
-    uint64 tagElementsSize = 0;
-    uint64 tagsSize;
+    std::uint64_t tagElementsSize = 0;
+    std::uint64_t tagsSize;
     vector<MatroskaAttachmentMaker> attachmentMaker;
     attachmentMaker.reserve(m_attachments.size());
-    uint64 attachedFileElementsSize = 0;
-    uint64 attachmentsSize;
+    std::uint64_t attachedFileElementsSize = 0;
+    std::uint64_t attachmentsSize;
     vector<MatroskaTrackHeaderMaker> trackHeaderMaker;
     trackHeaderMaker.reserve(tracks().size());
-    uint64 trackHeaderElementsSize = 0;
-    uint64 trackHeaderSize;
+    std::uint64_t trackHeaderElementsSize = 0;
+    std::uint64_t trackHeaderSize;
 
     // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
     // current segment index
@@ -885,17 +884,17 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // segment specific data
     vector<SegmentData> segmentData;
     // offset of the segment which is currently written / offset of "Cues"-element in segment
-    uint64 offset;
+    std::uint64_t offset;
     // current total offset (including EBML header)
-    uint64 totalOffset;
+    std::uint64_t totalOffset;
     // current write offset (used to calculate positions)
-    uint64 currentPosition = 0;
+    std::uint64_t currentPosition = 0;
     // holds the offsets of all CRC-32 elements and the length of the enclosing block
-    vector<tuple<uint64, uint64>> crc32Offsets;
+    vector<tuple<std::uint64_t, std::uint64_t>> crc32Offsets;
     // size length used to make size denotations
-    byte sizeLength;
+    std::uint8_t sizeLength;
     // sizes and offsets for cluster calculation
-    uint64 clusterSize, clusterReadSize, clusterReadOffset;
+    std::uint64_t clusterSize, clusterReadSize, clusterReadOffset;
 
     // define variables needed to manage file layout
     // -> use the preferred tag position by default (might be changed later if not forced)
@@ -909,33 +908,33 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // -> index of the last segment
     unsigned int lastSegmentIndex = numeric_limits<unsigned int>::max();
     // -> holds new padding
-    uint64 newPadding;
+    std::uint64_t newPadding;
     // -> whether rewrite is required (always required when forced to rewrite)
     bool rewriteRequired = fileInfo().isForcingRewrite() || !fileInfo().saveFilePath().empty();
 
     // calculate EBML header size
     // -> sub element ID sizes
-    uint64 ebmlHeaderDataSize = 2 * 7;
+    std::uint64_t ebmlHeaderDataSize = 2 * 7;
     // -> content and size denotation length of numeric sub elements
     for (auto headerValue :
-        initializer_list<uint64>{ m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion }) {
+        initializer_list<std::uint64_t>{ m_version, m_readVersion, m_maxIdLength, m_maxSizeLength, m_doctypeVersion, m_doctypeReadVersion }) {
         ebmlHeaderDataSize += sizeLength = EbmlElement::calculateUIntegerLength(headerValue);
         ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(sizeLength);
     }
     // -> content and size denotation length of string sub elements
     ebmlHeaderDataSize += m_doctype.size();
     ebmlHeaderDataSize += EbmlElement::calculateSizeDenotationLength(m_doctype.size());
-    const uint64 ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
+    const std::uint64_t ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
 
     // calculate size of "WritingLib"-element
     constexpr const char muxingAppName[] = APP_NAME " v" APP_VERSION;
-    constexpr uint64 muxingAppElementDataSize = sizeof(muxingAppName) - 1;
-    constexpr uint64 muxingAppElementTotalSize = 2 + 1 + muxingAppElementDataSize;
+    constexpr std::uint64_t muxingAppElementDataSize = sizeof(muxingAppName) - 1;
+    constexpr std::uint64_t muxingAppElementTotalSize = 2 + 1 + muxingAppElementDataSize;
 
     // calculate size of "WritingApp"-element
-    const uint64 writingAppElementDataSize
+    const std::uint64_t writingAppElementDataSize
         = fileInfo().writingApplication().empty() ? muxingAppElementDataSize : fileInfo().writingApplication().size() - 1;
-    const uint64 writingAppElementTotalSize = 2 + 1 + writingAppElementDataSize;
+    const std::uint64_t writingAppElementTotalSize = 2 + 1 + writingAppElementDataSize;
 
     try {
         // calculate size of "Tags"-element
@@ -1030,9 +1029,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     calculateSegmentData:
         // define variables to store sizes, offsets and other information required to make a header and "Segment"-elements
         // -> current "pretent" write offset
-        uint64 currentOffset = ebmlHeaderSize;
+        std::uint64_t currentOffset = ebmlHeaderSize;
         // -> current read offset (used to calculate positions)
-        uint64 readOffset = 0;
+        std::uint64_t readOffset = 0;
         // -> index of current element during iteration
         unsigned int index;
 
@@ -1224,7 +1223,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                                 diag.emplace_back(DiagLevel::Critical, "Header size of \"Segment\"-element from original file is invalid.", context);
                                 throw InvalidDataException();
                             }
-                            segment.sizeDenotationLength = static_cast<byte>(level0Element->headerSize() - 4u);
+                            segment.sizeDenotationLength = static_cast<std::uint8_t>(level0Element->headerSize() - 4u);
 
                         nonRewriteCalculations:
                             // pretend writing "Cluster"-elements assuming there is no rewrite required
@@ -1248,7 +1247,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                                 progress.stopIfAborted();
                                 // update the progress percentage (using offset / file size should be accurate enough)
                                 if (index % 50 == 0) {
-                                    progress.updateStepPercentage(static_cast<byte>(level1Element->dataOffset() * 100 / fileInfo().size()));
+                                    progress.updateStepPercentage(static_cast<std::uint8_t>(level1Element->dataOffset() * 100 / fileInfo().size()));
                                 }
                             }
                             if (cuesInvalidated) {
@@ -1392,7 +1391,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         progress.stopIfAborted();
                         // update the progress percentage (using offset / file size should be accurate enough)
                         if ((index % 50 == 0) && fileInfo().size()) {
-                            progress.updateStepPercentage(static_cast<byte>(level1Element->dataOffset() * 100 / fileInfo().size()));
+                            progress.updateStepPercentage(static_cast<std::uint8_t>(level1Element->dataOffset() * 100 / fileInfo().size()));
                         }
                         // TODO: reduce code duplication for aborting and progress updates
                     }
@@ -1476,10 +1475,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Parsing the original file failed.", context);
         throw;
-    } catch (...) {
-        const char *what = catchIoFailure();
-        diag.emplace_back(DiagLevel::Critical, "An IO error occurred when parsing the original file.", context);
-        throwIoFailure(what);
+    } catch (const std::ios_base::failure &failure) {
+        diag.emplace_back(DiagLevel::Critical, argsToString("An IO error occurred when parsing the original file: ", failure.what()), context);
+        throw;
     }
 
     // setup stream(s) for writing
@@ -1500,10 +1498,10 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
                 outputStream.open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch (...) {
-                const char *what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Creation of temporary file (to rewrite the original file) failed.", context);
-                throwIoFailure(what);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(
+                    DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
+                throw;
             }
         } else {
             // open the current file as backupStream and create a new outputStream at the specified "save file path"
@@ -1512,10 +1510,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
                 fileInfo().close();
                 outputStream.open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
-            } catch (...) {
-                const char *what = catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "Opening streams to write output file failed.", context);
-                throwIoFailure(what);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
+                throw;
             }
         }
 
@@ -1534,10 +1531,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         try {
             fileInfo().close();
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
-        } catch (...) {
-            const char *what = catchIoFailure();
-            diag.emplace_back(DiagLevel::Critical, "Opening the file with write permissions failed.", context);
-            throwIoFailure(what);
+        } catch (const std::ios_base::failure &failure) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Opening the file with write permissions failed: ", failure.what()), context);
+            throw;
         }
     }
 
@@ -1579,7 +1575,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 outputWriter.writeUInt32BE(MatroskaIds::Segment);
                 sizeLength = EbmlElement::makeSizeDenotation(segment.totalDataSize, buff);
                 outputStream.write(buff, sizeLength);
-                segment.newDataOffset = offset = static_cast<uint64>(outputStream.tellp()); // store segment data offset here
+                segment.newDataOffset = offset = static_cast<std::uint64_t>(outputStream.tellp()); // store segment data offset here
 
                 // write CRC-32 element ...
                 if (segment.hasCrc32) {
@@ -1674,13 +1670,13 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 // write padding / "Void"-element
                 if (segment.newPadding) {
                     // calculate length
-                    uint64 voidLength;
+                    std::uint64_t voidLength;
                     if (segment.newPadding < 64) {
                         sizeLength = 1;
                         *buff = static_cast<char>(voidLength = segment.newPadding - 2) | 0x80;
                     } else {
                         sizeLength = 8;
-                        BE::getBytes(static_cast<uint64>((voidLength = segment.newPadding - 9) | 0x100000000000000), buff);
+                        BE::getBytes(static_cast<std::uint64_t>((voidLength = segment.newPadding - 9) | 0x100000000000000), buff);
                     }
                     // write header
                     outputWriter.writeByte(EbmlIds::Void);
@@ -1695,14 +1691,14 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 level1Element = level0Element->childById(MatroskaIds::Cluster, diag);
                 if (rewriteRequired) {
                     // update status, check whether the operation has been aborted
-                    progress.nextStepOrStop(
-                        "Writing cluster ...", static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
+                    progress.nextStepOrStop("Writing cluster ...",
+                        static_cast<std::uint8_t>((static_cast<std::uint64_t>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
                     // write "Cluster"-element
                     auto clusterSizesIterator = segment.clusterSizes.cbegin();
                     unsigned int index = 0;
                     for (; level1Element; level1Element = level1Element->siblingById(MatroskaIds::Cluster, diag), ++clusterSizesIterator, ++index) {
                         // calculate position of cluster in segment
-                        clusterSize = currentPosition + (static_cast<uint64>(outputStream.tellp()) - offset);
+                        clusterSize = currentPosition + (static_cast<std::uint64_t>(outputStream.tellp()) - offset);
                         // write header; checking whether clusterSizesIterator is valid shouldn't be necessary
                         outputWriter.writeUInt32BE(MatroskaIds::Cluster);
                         sizeLength = EbmlElement::makeSizeDenotation(*clusterSizesIterator, buff);
@@ -1724,20 +1720,20 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         progress.stopIfAborted();
                         if (index % 50 == 0) {
                             progress.updateStepPercentage(
-                                static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
+                                static_cast<std::uint8_t>((static_cast<std::uint64_t>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
                         }
                     }
                 } else {
                     // can't just skip existing "Cluster"-elements: "Position"-elements must be updated
                     progress.nextStepOrStop("Updateing cluster ...",
-                        static_cast<byte>((static_cast<uint64>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
+                        static_cast<std::uint8_t>((static_cast<std::uint64_t>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
                     for (; level1Element; level1Element = level1Element->nextSibling()) {
                         for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                             switch (level2Element->id()) {
                             case MatroskaIds::Position:
                                 // calculate new position
                                 sizeLength = EbmlElement::makeUInteger(level1Element->startOffset() - segmentData.front().newDataOffset, buff,
-                                    level2Element->dataSize() > 8 ? 8 : static_cast<byte>(level2Element->dataSize()));
+                                    level2Element->dataSize() > 8 ? 8 : static_cast<std::uint8_t>(level2Element->dataSize()));
                                 // new position can only applied if it doesn't need more bytes than the previous position
                                 if (level2Element->dataSize() < sizeLength) {
                                     // can't update position -> void position elements ("Position"-elements seem a bit useless anyways)
@@ -1804,7 +1800,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         progress.updateStep("Reparsing output file ...");
         if (rewriteRequired) {
             // report new size
-            fileInfo().reportSizeChanged(static_cast<uint64>(outputStream.tellp()));
+            fileInfo().reportSizeChanged(static_cast<std::uint64_t>(outputStream.tellp()));
 
             // "save as path" is now the regular path
             if (!fileInfo().saveFilePath().empty()) {
@@ -1817,7 +1813,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
             outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
             setStream(outputStream);
         } else {
-            const auto newSize = static_cast<uint64>(outputStream.tellp());
+            const auto newSize = static_cast<std::uint64_t>(outputStream.tellp());
             if (newSize < fileInfo().size()) {
                 // file is smaller after the modification -> truncate
                 // -> close stream before truncating

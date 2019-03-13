@@ -3,7 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
+#include <cstdint>
 
 namespace TagParser {
 
@@ -15,24 +15,24 @@ public:
 
     void parseHeader(OggIterator &iterator);
 
-    constexpr uint32 version() const;
-    constexpr byte channels() const;
-    constexpr uint32 sampleRate() const;
-    constexpr uint32 maxBitrate() const;
-    constexpr uint32 nominalBitrate() const;
-    constexpr uint32 minBitrate() const;
-    constexpr byte blockSize() const;
-    constexpr byte framingFlag() const;
+    constexpr std::uint32_t version() const;
+    constexpr std::uint8_t channels() const;
+    constexpr std::uint32_t sampleRate() const;
+    constexpr std::uint32_t maxBitrate() const;
+    constexpr std::uint32_t nominalBitrate() const;
+    constexpr std::uint32_t minBitrate() const;
+    constexpr std::uint8_t blockSize() const;
+    constexpr std::uint8_t framingFlag() const;
 
 private:
-    uint32 m_version;
-    byte m_channels;
-    uint32 m_sampleRate;
-    uint32 m_maxBitrate;
-    uint32 m_nominalBitrate;
-    uint32 m_minBitrate;
-    byte m_blockSize;
-    byte m_framingFlag;
+    std::uint32_t m_version;
+    std::uint8_t m_channels;
+    std::uint32_t m_sampleRate;
+    std::uint32_t m_maxBitrate;
+    std::uint32_t m_nominalBitrate;
+    std::uint32_t m_minBitrate;
+    std::uint8_t m_blockSize;
+    std::uint8_t m_framingFlag;
 };
 
 /*!
@@ -50,42 +50,42 @@ constexpr VorbisIdentificationHeader::VorbisIdentificationHeader()
 {
 }
 
-constexpr uint32 VorbisIdentificationHeader::version() const
+constexpr std::uint32_t VorbisIdentificationHeader::version() const
 {
     return m_version;
 }
 
-constexpr byte VorbisIdentificationHeader::channels() const
+constexpr std::uint8_t VorbisIdentificationHeader::channels() const
 {
     return m_channels;
 }
 
-constexpr uint32 VorbisIdentificationHeader::sampleRate() const
+constexpr std::uint32_t VorbisIdentificationHeader::sampleRate() const
 {
     return m_sampleRate;
 }
 
-constexpr uint32 VorbisIdentificationHeader::maxBitrate() const
+constexpr std::uint32_t VorbisIdentificationHeader::maxBitrate() const
 {
     return m_maxBitrate;
 }
 
-constexpr uint32 VorbisIdentificationHeader::nominalBitrate() const
+constexpr std::uint32_t VorbisIdentificationHeader::nominalBitrate() const
 {
     return m_nominalBitrate;
 }
 
-constexpr uint32 VorbisIdentificationHeader::minBitrate() const
+constexpr std::uint32_t VorbisIdentificationHeader::minBitrate() const
 {
     return m_minBitrate;
 }
 
-constexpr byte VorbisIdentificationHeader::blockSize() const
+constexpr std::uint8_t VorbisIdentificationHeader::blockSize() const
 {
     return m_blockSize;
 }
 
-constexpr byte VorbisIdentificationHeader::framingFlag() const
+constexpr std::uint8_t VorbisIdentificationHeader::framingFlag() const
 {
     return m_framingFlag;
 }

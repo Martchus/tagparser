@@ -21,7 +21,7 @@ namespace TagParser {
  * \remarks Logging/reporting parsing errors is not implemented yet.
  * \todo Provide implementation
  */
-void Av1Configuration::parse(BinaryReader &reader, uint64 maxSize, Diagnostics &diag)
+void Av1Configuration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
     VAR_UNUSED(reader)
     VAR_UNUSED(maxSize)

@@ -174,7 +174,7 @@ void TagValue::clearMetadata()
  *        integer representation.
  * \throws Throws ConversionException on failure.
  */
-int32 TagValue::toInteger() const
+std::int32_t TagValue::toInteger() const
 {
     if (isEmpty()) {
         return 0;
@@ -185,18 +185,18 @@ int32 TagValue::toInteger() const
         case TagTextEncoding::Unspecified:
         case TagTextEncoding::Latin1:
         case TagTextEncoding::Utf8:
-            return ConversionUtilities::bufferToNumber<int32>(m_ptr.get(), m_size);
+            return ConversionUtilities::bufferToNumber<std::int32_t>(m_ptr.get(), m_size);
         case TagTextEncoding::Utf16LittleEndian:
         case TagTextEncoding::Utf16BigEndian:
             u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
             ensureHostByteOrder(u16str, m_encoding);
-            return ConversionUtilities::stringToNumber<int32>(u16str);
+            return ConversionUtilities::stringToNumber<std::int32_t>(u16str);
         }
     case TagDataType::Integer:
     case TagDataType::PositionInSet:
     case TagDataType::StandardGenreIndex:
-        if (m_size == sizeof(int32)) {
-            return *reinterpret_cast<int32 *>(m_ptr.get());
+        if (m_size == sizeof(std::int32_t)) {
+            return *reinterpret_cast<std::int32_t *>(m_ptr.get());
         }
         throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
     default:
@@ -231,10 +231,10 @@ int TagValue::toStandardGenreIndex() const
     }
     case TagDataType::StandardGenreIndex:
     case TagDataType::Integer:
-        if (m_size != sizeof(int32)) {
+        if (m_size != sizeof(std::int32_t)) {
             throw ConversionException("The assigned index/integer is of unappropriate size.");
         }
-        index = static_cast<int>(*reinterpret_cast<int32 *>(m_ptr.get()));
+        index = static_cast<int>(*reinterpret_cast<std::int32_t *>(m_ptr.get()));
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to genre index."));
@@ -271,10 +271,11 @@ PositionInSet TagValue::toPositionInSet() const
     case TagDataType::Integer:
     case TagDataType::PositionInSet:
         switch (m_size) {
-        case sizeof(int32):
-            return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())));
-        case 2 * sizeof(int32):
-            return PositionInSet(*(reinterpret_cast<int32 *>(m_ptr.get())), *(reinterpret_cast<int32 *>(m_ptr.get() + sizeof(int32))));
+        case sizeof(std::int32_t):
+            return PositionInSet(*(reinterpret_cast<std::int32_t *>(m_ptr.get())));
+        case 2 * sizeof(std::int32_t):
+            return PositionInSet(
+                *(reinterpret_cast<std::int32_t *>(m_ptr.get())), *(reinterpret_cast<std::int32_t *>(m_ptr.get() + sizeof(std::int32_t))));
         default:
             throw ConversionException("The size of the assigned data is not appropriate.");
         }
@@ -299,10 +300,10 @@ TimeSpan TagValue::toTimeSpan() const
     case TagDataType::Integer:
     case TagDataType::TimeSpan:
         switch (m_size) {
-        case sizeof(int32):
-            return TimeSpan(*(reinterpret_cast<int32 *>(m_ptr.get())));
-        case sizeof(int64):
-            return TimeSpan(*(reinterpret_cast<int64 *>(m_ptr.get())));
+        case sizeof(std::int32_t):
+            return TimeSpan(*(reinterpret_cast<std::int32_t *>(m_ptr.get())));
+        case sizeof(std::int64_t):
+            return TimeSpan(*(reinterpret_cast<std::int64_t *>(m_ptr.get())));
         default:
             throw ConversionException("The size of the assigned integer is not appropriate for conversion to time span.");
         }
@@ -326,10 +327,10 @@ DateTime TagValue::toDateTime() const
         return DateTime::fromString(toString(m_encoding == TagTextEncoding::Utf8 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1));
     case TagDataType::Integer:
     case TagDataType::DateTime:
-        if (m_size == sizeof(int32)) {
-            return DateTime(*(reinterpret_cast<uint32 *>(m_ptr.get())));
-        } else if (m_size == sizeof(int64)) {
-            return DateTime(*(reinterpret_cast<uint64 *>(m_ptr.get())));
+        if (m_size == sizeof(std::int32_t)) {
+            return DateTime(*(reinterpret_cast<std::uint32_t *>(m_ptr.get())));
+        } else if (m_size == sizeof(std::int64_t)) {
+            return DateTime(*(reinterpret_cast<std::uint64_t *>(m_ptr.get())));
         } else {
             throw ConversionException("The size of the assigned integer is not appropriate for conversion to date time.");
         }
@@ -735,7 +736,7 @@ void TagValue::ensureHostByteOrder(u16string &u16str, TagTextEncoding currentEnc
 #endif
     ) {
         for (auto &c : u16str) {
-            c = swapOrder(static_cast<uint16>(c));
+            c = swapOrder(static_cast<std::uint16_t>(c));
         }
     }
 }

@@ -3,8 +3,6 @@
 
 #include "../diagnostics.h"
 
-#include <c++utilities/conversion/types.h>
-
 namespace IoUtilities {
 class BinaryReader;
 }
@@ -17,9 +15,9 @@ public:
     void parseHeader(IoUtilities::BinaryReader &reader, Diagnostics &diag);
 
 private:
-    uint64 startOffset;
-    uint64 timestamp;
-    uint32 size;
+    std::uint64_t startOffset;
+    std::uint64_t timestamp;
+    std::uint32_t size;
 };
 
 /*!

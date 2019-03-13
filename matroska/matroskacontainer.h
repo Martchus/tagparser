@@ -9,8 +9,7 @@
 
 #include "../genericcontainer.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,23 +23,23 @@ class MediaFileInfo;
 
 class TAG_PARSER_EXPORT MatroskaContainer : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement> {
 public:
-    MatroskaContainer(MediaFileInfo &stream, uint64 startOffset);
+    MatroskaContainer(MediaFileInfo &stream, std::uint64_t startOffset);
     ~MatroskaContainer() override;
 
     void validateIndex(Diagnostics &diag);
-    uint64 maxIdLength() const;
-    uint64 maxSizeLength() const;
+    std::uint64_t maxIdLength() const;
+    std::uint64_t maxSizeLength() const;
     const std::vector<std::unique_ptr<MatroskaSeekInfo>> &seekInfos() const;
 
-    static uint64 maxFullParseSize();
-    void setMaxFullParseSize(uint64 maxFullParseSize);
+    static std::uint64_t maxFullParseSize();
+    void setMaxFullParseSize(std::uint64_t maxFullParseSize);
     const std::vector<std::unique_ptr<MatroskaEditionEntry>> &editionEntires() const;
     MatroskaChapter *chapter(std::size_t index) override;
     std::size_t chapterCount() const override;
     MatroskaAttachment *createAttachment() override;
     MatroskaAttachment *attachment(std::size_t index) override;
     std::size_t attachmentCount() const override;
-    ElementPosition determineElementPosition(uint64 elementId, Diagnostics &diag) const;
+    ElementPosition determineElementPosition(std::uint64_t elementId, Diagnostics &diag) const;
     ElementPosition determineTagPosition(Diagnostics &diag) const override;
     ElementPosition determineIndexPosition(Diagnostics &diag) const override;
 
@@ -61,8 +60,8 @@ private:
     void parseSegmentInfo(Diagnostics &diag);
     void readTrackStatisticsFromTags(Diagnostics &diag);
 
-    uint64 m_maxIdLength;
-    uint64 m_maxSizeLength;
+    std::uint64_t m_maxIdLength;
+    std::uint64_t m_maxSizeLength;
 
     std::vector<EbmlElement *> m_tracksElements;
     std::vector<EbmlElement *> m_segmentInfoElements;
@@ -73,13 +72,13 @@ private:
     std::vector<std::unique_ptr<MatroskaEditionEntry>> m_editionEntries;
     std::vector<std::unique_ptr<MatroskaAttachment>> m_attachments;
     std::size_t m_segmentCount;
-    static uint64 m_maxFullParseSize;
+    static std::uint64_t m_maxFullParseSize;
 };
 
 /*!
  * \brief Returns the maximal ID length in bytes.
  */
-inline uint64 MatroskaContainer::maxIdLength() const
+inline std::uint64_t MatroskaContainer::maxIdLength() const
 {
     return m_maxIdLength;
 }
@@ -87,7 +86,7 @@ inline uint64 MatroskaContainer::maxIdLength() const
 /*!
  * \brief Returns the maximal size length in bytes.
  */
-inline uint64 MatroskaContainer::maxSizeLength() const
+inline std::uint64_t MatroskaContainer::maxSizeLength() const
 {
     return m_maxSizeLength;
 }
@@ -113,7 +112,7 @@ inline const std::vector<std::unique_ptr<MatroskaSeekInfo>> &MatroskaContainer::
  *
  * \sa setMaxFullParseSize()
  */
-inline uint64 MatroskaContainer::maxFullParseSize()
+inline std::uint64_t MatroskaContainer::maxFullParseSize()
 {
     return m_maxFullParseSize;
 }
@@ -122,7 +121,7 @@ inline uint64 MatroskaContainer::maxFullParseSize()
  * \brief Sets the maximal file size for a "full parse" in byte.
  * \sa maxFullParseSize()
  */
-inline void MatroskaContainer::setMaxFullParseSize(uint64 maxFullParseSize)
+inline void MatroskaContainer::setMaxFullParseSize(std::uint64_t maxFullParseSize)
 {
     m_maxFullParseSize = maxFullParseSize;
 }

@@ -3,8 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <iosfwd>
 #include <numeric>
 #include <vector>
@@ -14,41 +13,41 @@ namespace TagParser {
 class TAG_PARSER_EXPORT OggPage {
 public:
     OggPage();
-    OggPage(std::istream &stream, uint64 startOffset, int32 maxSize);
+    OggPage(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);
 
-    void parseHeader(std::istream &stream, uint64 startOffset, int32 maxSize);
-    static uint32 computeChecksum(std::istream &stream, uint64 startOffset);
-    static void updateChecksum(std::iostream &stream, uint64 startOffset);
+    void parseHeader(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);
+    static std::uint32_t computeChecksum(std::istream &stream, std::uint64_t startOffset);
+    static void updateChecksum(std::iostream &stream, std::uint64_t startOffset);
 
-    uint64 startOffset() const;
-    byte streamStructureVersion() const;
-    byte headerTypeFlag() const;
+    std::uint64_t startOffset() const;
+    std::uint8_t streamStructureVersion() const;
+    std::uint8_t headerTypeFlag() const;
     bool isContinued() const;
     bool isFirstpage() const;
     bool isLastPage() const;
-    uint64 absoluteGranulePosition() const;
-    uint32 streamSerialNumber() const;
-    bool matchesStreamSerialNumber(uint32 streamSerialNumber) const;
-    uint32 sequenceNumber() const;
-    uint32 checksum() const;
-    byte segmentTableSize() const;
-    const std::vector<uint32> &segmentSizes() const;
-    uint32 headerSize() const;
-    uint32 dataSize() const;
-    uint32 totalSize() const;
-    uint64 dataOffset(byte segmentIndex = 0) const;
-    static uint32 makeSegmentSizeDenotation(std::ostream &stream, uint32 size);
+    std::uint64_t absoluteGranulePosition() const;
+    std::uint32_t streamSerialNumber() const;
+    bool matchesStreamSerialNumber(std::uint32_t streamSerialNumber) const;
+    std::uint32_t sequenceNumber() const;
+    std::uint32_t checksum() const;
+    std::uint8_t segmentTableSize() const;
+    const std::vector<std::uint32_t> &segmentSizes() const;
+    std::uint32_t headerSize() const;
+    std::uint32_t dataSize() const;
+    std::uint32_t totalSize() const;
+    std::uint64_t dataOffset(std::uint8_t segmentIndex = 0) const;
+    static std::uint32_t makeSegmentSizeDenotation(std::ostream &stream, std::uint32_t size);
 
 private:
-    uint64 m_startOffset;
-    byte m_streamStructureVersion;
-    byte m_headerTypeFlag;
-    uint64 m_absoluteGranulePosition;
-    uint32 m_streamSerialNumber;
-    uint32 m_sequenceNumber;
-    uint32 m_checksum;
-    byte m_segmentCount;
-    std::vector<uint32> m_segmentSizes;
+    std::uint64_t m_startOffset;
+    std::uint8_t m_streamStructureVersion;
+    std::uint8_t m_headerTypeFlag;
+    std::uint64_t m_absoluteGranulePosition;
+    std::uint32_t m_streamSerialNumber;
+    std::uint32_t m_sequenceNumber;
+    std::uint32_t m_checksum;
+    std::uint8_t m_segmentCount;
+    std::vector<std::uint32_t> m_segmentSizes;
 };
 
 /*!
@@ -70,7 +69,7 @@ inline OggPage::OggPage()
  * \brief Constructs a new OggPage and instantly parses the header read from the specified \a stream
  *        at the specified \a startOffset.
  */
-inline OggPage::OggPage(std::istream &stream, uint64 startOffset, int32 maxSize)
+inline OggPage::OggPage(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize)
     : OggPage()
 {
     parseHeader(stream, startOffset, maxSize);
@@ -81,7 +80,7 @@ inline OggPage::OggPage(std::istream &stream, uint64 startOffset, int32 maxSize)
  *
  * The start offset has been specified when calling the parseHeader() method.
  */
-inline uint64 OggPage::startOffset() const
+inline std::uint64_t OggPage::startOffset() const
 {
     return m_startOffset;
 }
@@ -89,7 +88,7 @@ inline uint64 OggPage::startOffset() const
 /*!
  * \brief Returns the stream structure version.
  */
-inline byte OggPage::streamStructureVersion() const
+inline std::uint8_t OggPage::streamStructureVersion() const
 {
     return m_streamStructureVersion;
 }
@@ -100,7 +99,7 @@ inline byte OggPage::streamStructureVersion() const
  * \sa isFirstpage()
  * \sa isLastPage()
  */
-inline byte OggPage::headerTypeFlag() const
+inline std::uint8_t OggPage::headerTypeFlag() const
 {
     return m_headerTypeFlag;
 }
@@ -140,7 +139,7 @@ inline bool OggPage::isLastPage() const
  *
  * A special value of '-1' (in two's complement) indicates that no packets finish on this page.
  */
-inline uint64 OggPage::absoluteGranulePosition() const
+inline std::uint64_t OggPage::absoluteGranulePosition() const
 {
     return m_absoluteGranulePosition;
 }
@@ -153,7 +152,7 @@ inline uint64 OggPage::absoluteGranulePosition() const
  * two separate bitstreams to be decoded concurrently. The serial number is the means by which pages
  * physical pages are associated with a particular logical stream.
  */
-inline uint32 OggPage::streamSerialNumber() const
+inline std::uint32_t OggPage::streamSerialNumber() const
 {
     return m_streamSerialNumber;
 }
@@ -162,7 +161,7 @@ inline uint32 OggPage::streamSerialNumber() const
  * \brief Returns whether the stream serial number of the current instance matches the specified one.
  * \sa streamSerialNumber()
  */
-inline bool OggPage::matchesStreamSerialNumber(uint32 streamSerialNumber) const
+inline bool OggPage::matchesStreamSerialNumber(std::uint32_t streamSerialNumber) const
 {
     return m_streamSerialNumber == streamSerialNumber;
 }
@@ -172,7 +171,7 @@ inline bool OggPage::matchesStreamSerialNumber(uint32 streamSerialNumber) const
  *
  * Page counter; lets us know if a page is lost (useful where packets span page boundaries).
  */
-inline uint32 OggPage::sequenceNumber() const
+inline std::uint32_t OggPage::sequenceNumber() const
 {
     return m_sequenceNumber;
 }
@@ -187,7 +186,7 @@ inline uint32 OggPage::sequenceNumber() const
  * \sa This method returns the checksum denoted by the header. To compute the actual checksum use
  *     the computeChecksum() method.
  */
-inline uint32 OggPage::checksum() const
+inline std::uint32_t OggPage::checksum() const
 {
     return m_checksum;
 }
@@ -197,7 +196,7 @@ inline uint32 OggPage::checksum() const
  *
  * The number of segment entries to appear in the segment table.
  */
-inline byte OggPage::segmentTableSize() const
+inline std::uint8_t OggPage::segmentTableSize() const
 {
     return m_segmentCount;
 }
@@ -207,7 +206,7 @@ inline byte OggPage::segmentTableSize() const
  *
  * The lacing values for each packet segment physically appearing in this page are listed in contiguous order.
  */
-inline const std::vector<uint32> &OggPage::segmentSizes() const
+inline const std::vector<std::uint32_t> &OggPage::segmentSizes() const
 {
     return m_segmentSizes;
 }
@@ -217,7 +216,7 @@ inline const std::vector<uint32> &OggPage::segmentSizes() const
  *
  * This is 27 plus the number of segment entries in the segment table.
  */
-inline uint32 OggPage::headerSize() const
+inline std::uint32_t OggPage::headerSize() const
 {
     return 27 + m_segmentCount;
 }
@@ -225,7 +224,7 @@ inline uint32 OggPage::headerSize() const
 /*!
  * \brief Returns the data size in byte.
  */
-inline uint32 OggPage::dataSize() const
+inline std::uint32_t OggPage::dataSize() const
 {
     return std::accumulate(m_segmentSizes.cbegin(), m_segmentSizes.cend(), 0u);
 }
@@ -233,7 +232,7 @@ inline uint32 OggPage::dataSize() const
 /*!
  * \brief Returns the total size of the page in byte.
  */
-inline uint32 OggPage::totalSize() const
+inline std::uint32_t OggPage::totalSize() const
 {
     return headerSize() + dataSize();
 }
@@ -246,7 +245,7 @@ inline uint32 OggPage::totalSize() const
  * \sa startOffset()
  * \sa headerSize()
  */
-inline uint64 OggPage::dataOffset(byte segmentIndex) const
+inline std::uint64_t OggPage::dataOffset(std::uint8_t segmentIndex) const
 {
     return startOffset() + headerSize() + std::accumulate(m_segmentSizes.cbegin(), m_segmentSizes.cbegin() + segmentIndex, 0);
 }

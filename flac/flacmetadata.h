@@ -3,8 +3,7 @@
 
 #include "../global.h"
 
-#include <c++utilities/conversion/types.h>
-
+#include <cstdint>
 #include <iostream>
 
 namespace TagParser {
@@ -14,16 +13,16 @@ class TagValue;
 /*!
  * \brief The FlacMetaDataBlockType enum specifies the type of FlacMetaDataBlockHeader.
  */
-enum class FlacMetaDataBlockType : byte { StreamInfo = 0, Padding, Application, SeekTable, VorbisComment, CuseSheet, Picture };
+enum class FlacMetaDataBlockType : std::uint8_t { StreamInfo = 0, Padding, Application, SeekTable, VorbisComment, CuseSheet, Picture };
 
-constexpr bool operator==(byte lhs, FlacMetaDataBlockType type)
+constexpr bool operator==(std::uint8_t lhs, FlacMetaDataBlockType type)
 {
-    return lhs == static_cast<byte>(type);
+    return lhs == static_cast<std::uint8_t>(type);
 }
 
-constexpr bool operator!=(byte lhs, FlacMetaDataBlockType type)
+constexpr bool operator!=(std::uint8_t lhs, FlacMetaDataBlockType type)
 {
-    return lhs != static_cast<byte>(type);
+    return lhs != static_cast<std::uint8_t>(type);
 }
 
 class TAG_PARSER_EXPORT FlacMetaDataBlockHeader {
@@ -33,17 +32,17 @@ public:
     void parseHeader(const char *buffer);
     void makeHeader(std::ostream &outputStream);
 
-    constexpr byte isLast() const;
-    void setLast(byte last);
-    constexpr byte type() const;
+    constexpr std::uint8_t isLast() const;
+    void setLast(std::uint8_t last);
+    constexpr std::uint8_t type() const;
     void setType(FlacMetaDataBlockType type);
-    constexpr uint32 dataSize() const;
-    void setDataSize(uint32 dataSize);
+    constexpr std::uint32_t dataSize() const;
+    void setDataSize(std::uint32_t dataSize);
 
 private:
-    byte m_last;
-    byte m_type;
-    uint32 m_dataSize;
+    std::uint8_t m_last;
+    std::uint8_t m_type;
+    std::uint32_t m_dataSize;
 };
 
 /*!
@@ -60,7 +59,7 @@ constexpr FlacMetaDataBlockHeader::FlacMetaDataBlockHeader()
  * \brief Returns whether this is the last metadata block before the audio blocks.
  * \remarks The default value is 0/false.
  */
-constexpr byte FlacMetaDataBlockHeader::isLast() const
+constexpr std::uint8_t FlacMetaDataBlockHeader::isLast() const
 {
     return m_last;
 }
@@ -68,7 +67,7 @@ constexpr byte FlacMetaDataBlockHeader::isLast() const
 /*!
  * \brief Sets whether this is the last metadata block before the audio blocks.
  */
-inline void FlacMetaDataBlockHeader::setLast(byte last)
+inline void FlacMetaDataBlockHeader::setLast(std::uint8_t last)
 {
     m_last = last;
 }
@@ -77,7 +76,7 @@ inline void FlacMetaDataBlockHeader::setLast(byte last)
  * \brief Returns the block type.
  * \sa FlacMetaDataBlockType
  */
-constexpr byte FlacMetaDataBlockHeader::type() const
+constexpr std::uint8_t FlacMetaDataBlockHeader::type() const
 {
     return m_type;
 }
@@ -87,13 +86,13 @@ constexpr byte FlacMetaDataBlockHeader::type() const
  */
 inline void FlacMetaDataBlockHeader::setType(FlacMetaDataBlockType type)
 {
-    m_type = static_cast<byte>(type);
+    m_type = static_cast<std::uint8_t>(type);
 }
 
 /*!
  * \brief Returns the length in bytes of the meta data (excluding the size of the header itself).
  */
-constexpr uint32 FlacMetaDataBlockHeader::dataSize() const
+constexpr std::uint32_t FlacMetaDataBlockHeader::dataSize() const
 {
     return m_dataSize;
 }
@@ -102,7 +101,7 @@ constexpr uint32 FlacMetaDataBlockHeader::dataSize() const
  * \brief Sets the length in bytes of the meta data (excluding the size of the header itself).
  * \remarks Max value is (2^24 - 1).
  */
-inline void FlacMetaDataBlockHeader::setDataSize(uint32 dataSize)
+inline void FlacMetaDataBlockHeader::setDataSize(std::uint32_t dataSize)
 {
     m_dataSize = dataSize;
 }
@@ -113,25 +112,25 @@ public:
 
     void parse(const char *buffer);
 
-    constexpr uint16 minBlockSize() const;
-    constexpr uint16 maxBlockSize() const;
-    constexpr uint32 minFrameSize() const;
-    constexpr uint32 maxFrameSize() const;
-    constexpr uint32 samplingFrequency() const;
-    constexpr byte channelCount() const;
-    constexpr byte bitsPerSample() const;
-    constexpr uint64 totalSampleCount() const;
+    constexpr std::uint16_t minBlockSize() const;
+    constexpr std::uint16_t maxBlockSize() const;
+    constexpr std::uint32_t minFrameSize() const;
+    constexpr std::uint32_t maxFrameSize() const;
+    constexpr std::uint32_t samplingFrequency() const;
+    constexpr std::uint8_t channelCount() const;
+    constexpr std::uint8_t bitsPerSample() const;
+    constexpr std::uint64_t totalSampleCount() const;
     constexpr const char *md5Sum() const;
 
 private:
-    uint16 m_minBlockSize;
-    uint16 m_maxBlockSize;
-    uint32 m_minFrameSize;
-    uint32 m_maxFrameSize;
-    uint32 m_samplingFrequency;
-    byte m_channelCount;
-    byte m_bitsPerSample;
-    uint64 m_totalSampleCount;
+    std::uint16_t m_minBlockSize;
+    std::uint16_t m_maxBlockSize;
+    std::uint32_t m_minFrameSize;
+    std::uint32_t m_maxFrameSize;
+    std::uint32_t m_samplingFrequency;
+    std::uint8_t m_channelCount;
+    std::uint8_t m_bitsPerSample;
+    std::uint64_t m_totalSampleCount;
     char m_md5Sum[16];
 };
 
@@ -154,7 +153,7 @@ constexpr FlacMetaDataBlockStreamInfo::FlacMetaDataBlockStreamInfo()
 /*!
  * \brief Returns the minimum block size (in samples) used in the stream.
  */
-constexpr uint16 FlacMetaDataBlockStreamInfo::minBlockSize() const
+constexpr std::uint16_t FlacMetaDataBlockStreamInfo::minBlockSize() const
 {
     return m_minBlockSize;
 }
@@ -164,7 +163,7 @@ constexpr uint16 FlacMetaDataBlockStreamInfo::minBlockSize() const
  *
  * (Minimum blocksize == maximum blocksize) implies a fixed-blocksize stream.
  */
-constexpr uint16 FlacMetaDataBlockStreamInfo::maxBlockSize() const
+constexpr std::uint16_t FlacMetaDataBlockStreamInfo::maxBlockSize() const
 {
     return m_maxBlockSize;
 }
@@ -174,7 +173,7 @@ constexpr uint16 FlacMetaDataBlockStreamInfo::maxBlockSize() const
  *
  * May be 0 to imply the value is not known.
  */
-constexpr uint32 FlacMetaDataBlockStreamInfo::minFrameSize() const
+constexpr std::uint32_t FlacMetaDataBlockStreamInfo::minFrameSize() const
 {
     return m_minFrameSize;
 }
@@ -184,7 +183,7 @@ constexpr uint32 FlacMetaDataBlockStreamInfo::minFrameSize() const
  *
  * May be 0 to imply the value is not known.
  */
-constexpr uint32 FlacMetaDataBlockStreamInfo::maxFrameSize() const
+constexpr std::uint32_t FlacMetaDataBlockStreamInfo::maxFrameSize() const
 {
     return m_maxFrameSize;
 }
@@ -195,7 +194,7 @@ constexpr uint32 FlacMetaDataBlockStreamInfo::maxFrameSize() const
  * Though 20 bits are available, the maximum sample rate is limited by the
  * structure of frame headers to 655350Hz. Also, a value of 0 is invalid.
  */
-constexpr uint32 FlacMetaDataBlockStreamInfo::samplingFrequency() const
+constexpr std::uint32_t FlacMetaDataBlockStreamInfo::samplingFrequency() const
 {
     return m_samplingFrequency;
 }
@@ -205,7 +204,7 @@ constexpr uint32 FlacMetaDataBlockStreamInfo::samplingFrequency() const
  *
  * FLAC supports from 1 to 8 channels .
  */
-constexpr byte FlacMetaDataBlockStreamInfo::channelCount() const
+constexpr std::uint8_t FlacMetaDataBlockStreamInfo::channelCount() const
 {
     return m_channelCount;
 }
@@ -217,7 +216,7 @@ constexpr byte FlacMetaDataBlockStreamInfo::channelCount() const
  * Currently the reference encoder and decoders only support up
  * to 24 bits per sample.
  */
-constexpr byte FlacMetaDataBlockStreamInfo::bitsPerSample() const
+constexpr std::uint8_t FlacMetaDataBlockStreamInfo::bitsPerSample() const
 {
     return m_bitsPerSample;
 }
@@ -230,7 +229,7 @@ constexpr byte FlacMetaDataBlockStreamInfo::bitsPerSample() const
  *
  * A value of zero here means the number of total samples is unknown.
  */
-constexpr uint64 FlacMetaDataBlockStreamInfo::totalSampleCount() const
+constexpr std::uint64_t FlacMetaDataBlockStreamInfo::totalSampleCount() const
 {
     return m_totalSampleCount;
 }
@@ -250,16 +249,16 @@ class TAG_PARSER_EXPORT FlacMetaDataBlockPicture {
 public:
     FlacMetaDataBlockPicture(TagValue &tagValue);
 
-    void parse(std::istream &inputStream, uint32 maxSize);
-    uint32 requiredSize() const;
+    void parse(std::istream &inputStream, std::uint32_t maxSize);
+    std::uint32_t requiredSize() const;
     void make(std::ostream &outputStream);
 
-    uint32 pictureType() const;
-    void setPictureType(uint32 pictureType);
+    std::uint32_t pictureType() const;
+    void setPictureType(std::uint32_t pictureType);
     TagValue &value();
 
 private:
-    uint32 m_pictureType;
+    std::uint32_t m_pictureType;
     TagValue &m_value;
 };
 
@@ -279,7 +278,7 @@ inline FlacMetaDataBlockPicture::FlacMetaDataBlockPicture(TagValue &tagValue)
 /*!
  * \brief Returns the picture type according to the ID3v2 APIC frame.
  */
-inline uint32 FlacMetaDataBlockPicture::pictureType() const
+inline std::uint32_t FlacMetaDataBlockPicture::pictureType() const
 {
     return m_pictureType;
 }
@@ -287,7 +286,7 @@ inline uint32 FlacMetaDataBlockPicture::pictureType() const
 /*!
  * \brief Sets the picture type according to the ID3v2 APIC frame.
  */
-inline void FlacMetaDataBlockPicture::setPictureType(uint32 pictureType)
+inline void FlacMetaDataBlockPicture::setPictureType(std::uint32_t pictureType)
 {
     m_pictureType = pictureType;
 }

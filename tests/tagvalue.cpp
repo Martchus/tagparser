@@ -80,7 +80,7 @@ void TagValueTests::testInteger()
     TagValue integer(42);
     CPPUNIT_ASSERT(!integer.isEmpty());
     CPPUNIT_ASSERT_EQUAL(TagDataType::Integer, integer.type());
-    CPPUNIT_ASSERT_EQUAL(static_cast<int32>(42), integer.toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::int32_t>(42), integer.toInteger());
     CPPUNIT_ASSERT_EQUAL("42"s, integer.toString());
     integer.assignInteger(2);
     CPPUNIT_ASSERT_EQUAL("Country"s, string(Id3Genres::stringFromIndex(integer.toStandardGenreIndex())));
@@ -106,7 +106,7 @@ void TagValueTests::testInteger()
     integer.clearData();
     CPPUNIT_ASSERT_MESSAGE("cleared vale considered empty", integer.isEmpty());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("only date (but not type) cleared"s, TagDataType::Integer, integer.type());
-    CPPUNIT_ASSERT_EQUAL(static_cast<int32>(0), integer.toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::int32_t>(0), integer.toInteger());
     CPPUNIT_ASSERT_EQUAL(string(), integer.toString());
     CPPUNIT_ASSERT_EQUAL(DateTime(), integer.toDateTime());
     CPPUNIT_ASSERT_EQUAL(TimeSpan(), integer.toTimeSpan());

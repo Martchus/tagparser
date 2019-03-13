@@ -22,7 +22,7 @@ namespace TagParser {
  * \throws Throws InvalidDataException if the capture pattern is not present.
  * \throws Throws TruncatedDataException if the header is truncated (according to \a maxSize).
  */
-void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
+void OggPage::parseHeader(istream &stream, std::uint64_t startOffset, std::int32_t maxSize)
 {
     // prepare reading
     stream.seekg(static_cast<streamoff>(startOffset));
@@ -53,8 +53,8 @@ void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
         }
         // read segment size tabe
         m_segmentSizes.push_back(0);
-        for (byte i = 0; i < m_segmentCount;) {
-            byte entry = reader.readByte();
+        for (std::uint8_t i = 0; i < m_segmentCount;) {
+            std::uint8_t entry = reader.readByte();
             maxSize -= entry;
             m_segmentSizes.back() += entry;
             if (++i < m_segmentCount && entry < 0xff) {
@@ -72,12 +72,12 @@ void OggPage::parseHeader(istream &stream, uint64 startOffset, int32 maxSize)
  * \brief Computes the actual checksum of the page read from the specified \a stream
  *        at the specified \a startOffset.
  */
-uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
+std::uint32_t OggPage::computeChecksum(istream &stream, std::uint64_t startOffset)
 {
     stream.seekg(static_cast<streamoff>(startOffset));
-    uint32 crc = 0x0;
-    byte value, segmentTableSize = 0, segmentTableIndex = 0;
-    for (uint32 i = 0, segmentLength = 27; i != segmentLength; ++i) {
+    std::uint32_t crc = 0x0;
+    std::uint8_t value, segmentTableSize = 0, segmentTableIndex = 0;
+    for (std::uint32_t i = 0, segmentLength = 27; i != segmentLength; ++i) {
         switch (i) {
         case 22:
             // bytes 22, 23, 24, 25 hold denoted checksum and must be set to zero
@@ -90,10 +90,10 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
             break;
         case 26:
             // byte 26 holds the number of segment sizes
-            segmentLength += (segmentTableSize = (value = static_cast<byte>(stream.get())));
+            segmentLength += (segmentTableSize = (value = static_cast<std::uint8_t>(stream.get())));
             break;
         default:
-            value = static_cast<byte>(stream.get());
+            value = static_cast<std::uint8_t>(stream.get());
             if (i > 26 && segmentTableIndex < segmentTableSize) {
                 // bytes 27 to (27 + segment size count) hold page size
                 segmentLength += value;
@@ -109,7 +109,7 @@ uint32 OggPage::computeChecksum(istream &stream, uint64 startOffset)
  * \brief Updates the checksum of the page read from the specified \a stream
  *        at the specified \a startOffset.
  */
-void OggPage::updateChecksum(iostream &stream, uint64 startOffset)
+void OggPage::updateChecksum(iostream &stream, std::uint64_t startOffset)
 {
     char buff[4];
     LE::getBytes(computeChecksum(stream, startOffset), buff);
@@ -121,9 +121,9 @@ void OggPage::updateChecksum(iostream &stream, uint64 startOffset)
  * \brief Writes the segment size denotation for the specified segment \a size to the specified stream.
  * \return Returns the number of bytes written.
  */
-uint32 OggPage::makeSegmentSizeDenotation(ostream &stream, uint32 size)
+std::uint32_t OggPage::makeSegmentSizeDenotation(ostream &stream, std::uint32_t size)
 {
-    uint32 bytesWritten = 1;
+    std::uint32_t bytesWritten = 1;
     while (size >= 0xff) {
         stream.put(static_cast<char>(0xff));
         size -= 0xff;

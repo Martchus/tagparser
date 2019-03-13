@@ -1,8 +1,6 @@
 #ifndef TAG_PARSER_EBMLID_H
 #define TAG_PARSER_EBMLID_H
 
-#include <c++utilities/conversion/types.h>
-
 namespace TagParser {
 
 /*!

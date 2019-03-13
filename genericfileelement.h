@@ -4,9 +4,9 @@
 #include "./exceptions.h"
 #include "./progressfeedback.h"
 
-#include <c++utilities/conversion/types.h>
 #include <c++utilities/io/copy.h>
 
+#include <cstdint>
 #include <initializer_list>
 #include <iostream>
 #include <list>
@@ -63,9 +63,9 @@ public:
      */
     using DataSizeType = typename FileElementTraits<ImplementationType>::DataSizeType;
 
-    GenericFileElement(ContainerType &container, uint64 startOffset);
-    GenericFileElement(ImplementationType &parent, uint64 startOffset);
-    GenericFileElement(ContainerType &container, uint64 startOffset, uint64 maxSize);
+    GenericFileElement(ContainerType &container, std::uint64_t startOffset);
+    GenericFileElement(ImplementationType &parent, std::uint64_t startOffset);
+    GenericFileElement(ContainerType &container, std::uint64_t startOffset, std::uint64_t maxSize);
     GenericFileElement(const GenericFileElement &other) = delete;
     GenericFileElement(GenericFileElement &other) = delete;
     GenericFileElement &operator=(const GenericFileElement &other) = delete;
@@ -75,23 +75,23 @@ public:
     std::iostream &stream();
     IoUtilities::BinaryReader &reader();
     IoUtilities::BinaryWriter &writer();
-    uint64 startOffset() const;
-    uint64 relativeStartOffset() const;
+    std::uint64_t startOffset() const;
+    std::uint64_t relativeStartOffset() const;
     const IdentifierType &id() const;
     std::string idToString() const;
-    uint32 idLength() const;
-    uint32 headerSize() const;
+    std::uint32_t idLength() const;
+    std::uint32_t headerSize() const;
     DataSizeType dataSize() const;
-    uint32 sizeLength() const;
-    uint64 dataOffset() const;
-    uint64 totalSize() const;
-    uint64 endOffset() const;
-    uint64 maxTotalSize() const;
-    byte level() const;
+    std::uint32_t sizeLength() const;
+    std::uint64_t dataOffset() const;
+    std::uint64_t totalSize() const;
+    std::uint64_t endOffset() const;
+    std::uint64_t maxTotalSize() const;
+    std::uint8_t level() const;
     ImplementationType *parent();
     const ImplementationType *parent() const;
-    ImplementationType *parent(byte n);
-    const ImplementationType *parent(byte n) const;
+    ImplementationType *parent(std::uint8_t n);
+    const ImplementationType *parent(std::uint8_t n) const;
     ImplementationType *nextSibling();
     const ImplementationType *nextSibling() const;
     ImplementationType *firstChild();
@@ -110,15 +110,15 @@ public:
     const ImplementationType *siblingByIdIncludingThis(const IdentifierType &id, Diagnostics &diag) const;
     bool isParent() const;
     bool isPadding() const;
-    uint64 firstChildOffset() const;
+    std::uint64_t firstChildOffset() const;
     bool isParsed() const;
     void clear();
     void parse(Diagnostics &diag);
     void reparse(Diagnostics &diag);
-    void validateSubsequentElementStructure(Diagnostics &diag, uint64 *paddingSize = nullptr);
-    static constexpr uint32 maximumIdLengthSupported();
-    static constexpr uint32 maximumSizeLengthSupported();
-    static constexpr byte minimumElementSize();
+    void validateSubsequentElementStructure(Diagnostics &diag, std::uint64_t *paddingSize = nullptr);
+    static constexpr std::uint32_t maximumIdLengthSupported();
+    static constexpr std::uint32_t maximumSizeLengthSupported();
+    static constexpr std::uint8_t minimumElementSize();
     void copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     void copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     void copyEntirely(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
@@ -127,22 +127,23 @@ public:
     void copyBuffer(std::ostream &targetStream);
     void copyPreferablyFromBuffer(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     const std::unique_ptr<char[]> &buffer();
-    ImplementationType *denoteFirstChild(uint32 offset);
+    ImplementationType *denoteFirstChild(std::uint32_t offset);
 
 protected:
     IdentifierType m_id;
-    uint64 m_startOffset;
-    uint64 m_maxSize;
+    std::uint64_t m_startOffset;
+    std::uint64_t m_maxSize;
     DataSizeType m_dataSize;
-    uint32 m_idLength;
-    uint32 m_sizeLength;
+    std::uint32_t m_idLength;
+    std::uint32_t m_sizeLength;
     ImplementationType *m_parent;
     std::unique_ptr<ImplementationType> m_nextSibling;
     std::unique_ptr<ImplementationType> m_firstChild;
     std::unique_ptr<char[]> m_buffer;
 
 private:
-    void copyInternal(std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress);
+    void copyInternal(
+        std::ostream &targetStream, std::uint64_t startOffset, std::uint64_t bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress);
 
     ContainerType *m_container;
     bool m_parsed;
@@ -156,7 +157,8 @@ protected:
  * \remarks The available size is obtained using the stream of the \a container.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset)
+GenericFileElement<ImplementationType>::GenericFileElement(
+    GenericFileElement<ImplementationType>::ContainerType &container, std::uint64_t startOffset)
     : m_id(IdentifierType())
     , m_startOffset(startOffset)
     , m_dataSize(0)
@@ -180,7 +182,7 @@ GenericFileElement<ImplementationType>::GenericFileElement(GenericFileElement<Im
  * \brief Constructs a new sub level file element with the specified \a parent at the specified \a startOffset.
  */
 template <class ImplementationType>
-GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &parent, uint64 startOffset)
+GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &parent, std::uint64_t startOffset)
     : m_id(IdentifierType())
     , m_startOffset(startOffset)
     , m_maxSize(parent.startOffset() + parent.totalSize() - startOffset)
@@ -199,7 +201,7 @@ GenericFileElement<ImplementationType>::GenericFileElement(ImplementationType &p
  */
 template <class ImplementationType>
 GenericFileElement<ImplementationType>::GenericFileElement(
-    GenericFileElement<ImplementationType>::ContainerType &container, uint64 startOffset, uint64 maxSize)
+    GenericFileElement<ImplementationType>::ContainerType &container, std::uint64_t startOffset, std::uint64_t maxSize)
     : m_id(IdentifierType())
     , m_startOffset(startOffset)
     , m_maxSize(maxSize)
@@ -258,7 +260,7 @@ template <class ImplementationType> inline IoUtilities::BinaryWriter &GenericFil
 /*!
  * \brief Returns the start offset in the related stream.
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::startOffset() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::startOffset() const
 {
     return m_startOffset;
 }
@@ -266,7 +268,7 @@ template <class ImplementationType> inline uint64 GenericFileElement<Implementat
 /*!
  * \brief Returns the offset of the element in its parent or - if it is a top-level element - in the related stream.
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::relativeStartOffset() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::relativeStartOffset() const
 {
     return parent() ? startOffset() - parent()->startOffset() : startOffset();
 }
@@ -291,7 +293,7 @@ template <class ImplementationType> inline std::string GenericFileElement<Implem
 /*!
  * \brief Returns the length of the id denotation in byte.
  */
-template <class ImplementationType> inline uint32 GenericFileElement<ImplementationType>::idLength() const
+template <class ImplementationType> inline std::uint32_t GenericFileElement<ImplementationType>::idLength() const
 {
     return m_idLength;
 }
@@ -301,7 +303,7 @@ template <class ImplementationType> inline uint32 GenericFileElement<Implementat
  *
  * This is the sum of the id length and the size length.
  */
-template <class ImplementationType> inline uint32 GenericFileElement<ImplementationType>::headerSize() const
+template <class ImplementationType> inline std::uint32_t GenericFileElement<ImplementationType>::headerSize() const
 {
     return m_idLength + m_sizeLength;
 }
@@ -320,7 +322,7 @@ inline typename GenericFileElement<ImplementationType>::DataSizeType GenericFile
 /*!
  * \brief Returns the length of the size denotation of the element in byte.
  */
-template <class ImplementationType> inline uint32 GenericFileElement<ImplementationType>::sizeLength() const
+template <class ImplementationType> inline std::uint32_t GenericFileElement<ImplementationType>::sizeLength() const
 {
     return m_sizeLength;
 }
@@ -330,7 +332,7 @@ template <class ImplementationType> inline uint32 GenericFileElement<Implementat
  *
  * This is the sum of start offset and header size.
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::dataOffset() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::dataOffset() const
 {
     return startOffset() + headerSize();
 }
@@ -340,7 +342,7 @@ template <class ImplementationType> inline uint64 GenericFileElement<Implementat
  *
  * This is the sum of the header size and the data size.
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::totalSize() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::totalSize() const
 {
     return headerSize() + dataSize();
 }
@@ -348,7 +350,7 @@ template <class ImplementationType> inline uint64 GenericFileElement<Implementat
 /*!
  * \brief Returns the offset of the first byte which doesn't belong to this element anymore.
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::endOffset() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::endOffset() const
 {
     return startOffset() + totalSize();
 }
@@ -359,7 +361,7 @@ template <class ImplementationType> inline uint64 GenericFileElement<Implementat
  * This is usually the size of the file for top-level elements and
  * the remaining size of the parent for non-top-level elements.
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::maxTotalSize() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::maxTotalSize() const
 {
     return m_maxSize;
 }
@@ -368,9 +370,9 @@ template <class ImplementationType> inline uint64 GenericFileElement<Implementat
  * \brief Returns how deep the element is nested (0 for top-level elements, 1 for children of
  *        top-level elements, ...).
  */
-template <class ImplementationType> byte GenericFileElement<ImplementationType>::level() const
+template <class ImplementationType> std::uint8_t GenericFileElement<ImplementationType>::level() const
 {
-    byte level = 0;
+    std::uint8_t level = 0;
     for (const ImplementationType *parent = m_parent; parent; ++level, parent = parent->m_parent)
         ;
     return level;
@@ -404,7 +406,7 @@ template <class ImplementationType> inline const ImplementationType *GenericFile
  * - The returned element has ownership (at least indirect) over the current instance.
  * - Returns nullptr if level() < \a n.
  */
-template <class ImplementationType> ImplementationType *GenericFileElement<ImplementationType>::parent(byte n)
+template <class ImplementationType> ImplementationType *GenericFileElement<ImplementationType>::parent(std::uint8_t n)
 {
     ImplementationType *parent = static_cast<ImplementationType *>(this);
     for (; n && parent; --n, parent = parent->m_parent)
@@ -418,7 +420,7 @@ template <class ImplementationType> ImplementationType *GenericFileElement<Imple
  * - The returned element has ownership (at least indirect) over the current instance.
  * - Returns nullptr if level() < \a n.
  */
-template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::parent(byte n) const
+template <class ImplementationType> inline const ImplementationType *GenericFileElement<ImplementationType>::parent(std::uint8_t n) const
 {
     return const_cast<GenericFileElement<ImplementationType> *>(this)->parent(n);
 }
@@ -723,7 +725,7 @@ template <class ImplementationType> inline bool GenericFileElement<Implementatio
 /*!
  * \brief Returns the offset of the first child (relative to the start offset of this element).
  */
-template <class ImplementationType> inline uint64 GenericFileElement<ImplementationType>::firstChildOffset() const
+template <class ImplementationType> inline std::uint64_t GenericFileElement<ImplementationType>::firstChildOffset() const
 {
     return static_cast<const ImplementationType *>(this)->firstChildOffset();
 }
@@ -812,7 +814,7 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  * \sa parse()
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(Diagnostics &diag, uint64 *paddingSize)
+void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(Diagnostics &diag, std::uint64_t *paddingSize)
 {
     // validate element itself by just parsing it
     parse(diag);
@@ -848,7 +850,7 @@ void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStre
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
-    if (uint32 firstChildOffset = this->firstChildOffset()) {
+    if (std::uint32_t firstChildOffset = this->firstChildOffset()) {
         copyInternal(targetStream, startOffset(), firstChildOffset, diag, progress);
     } else {
         copyInternal(targetStream, startOffset(), totalSize(), diag, progress);
@@ -921,7 +923,7 @@ template <class ImplementationType> inline const std::unique_ptr<char[]> &Generi
  */
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyInternal(
-    std::ostream &targetStream, uint64 startOffset, uint64 bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
+    std::ostream &targetStream, std::uint64_t startOffset, std::uint64_t bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     // ensure the header has been parsed correctly
     try {
@@ -944,7 +946,8 @@ void GenericFileElement<ImplementationType>::copyInternal(
  * \brief Denotes the first child to start at the specified \a offset (relative to the start offset of this descriptor).
  * \remarks A new first child is constructed. A possibly existing subtree is invalidated.
  */
-template <class ImplementationType> ImplementationType *GenericFileElement<ImplementationType>::denoteFirstChild(uint32 relativeFirstChildOffset)
+template <class ImplementationType>
+ImplementationType *GenericFileElement<ImplementationType>::denoteFirstChild(std::uint32_t relativeFirstChildOffset)
 {
     if (relativeFirstChildOffset + minimumElementSize() <= totalSize()) {
         m_firstChild.reset(new ImplementationType(static_cast<ImplementationType &>(*this), startOffset() + relativeFirstChildOffset));
@@ -957,7 +960,7 @@ template <class ImplementationType> ImplementationType *GenericFileElement<Imple
 /*!
  * \brief Returns the maximum id length supported by the class in byte.
  */
-template <class ImplementationType> constexpr uint32 GenericFileElement<ImplementationType>::maximumIdLengthSupported()
+template <class ImplementationType> constexpr std::uint32_t GenericFileElement<ImplementationType>::maximumIdLengthSupported()
 {
     return sizeof(IdentifierType);
 }
@@ -965,7 +968,7 @@ template <class ImplementationType> constexpr uint32 GenericFileElement<Implemen
 /*!
  * \brief Returns the maximum size length supported by the class in byte.
  */
-template <class ImplementationType> constexpr uint32 GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
+template <class ImplementationType> constexpr std::uint32_t GenericFileElement<ImplementationType>::maximumSizeLengthSupported()
 {
     return sizeof(DataSizeType);
 }
@@ -973,7 +976,7 @@ template <class ImplementationType> constexpr uint32 GenericFileElement<Implemen
 /*!
  * \brief Returns the mimimum element size.
  */
-template <class ImplementationType> constexpr byte GenericFileElement<ImplementationType>::minimumElementSize()
+template <class ImplementationType> constexpr std::uint8_t GenericFileElement<ImplementationType>::minimumElementSize()
 {
     return FileElementTraits<ImplementationType>::minimumElementSize();
 }

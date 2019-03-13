@@ -11,10 +11,10 @@
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
-#include <c++utilities/io/catchiofailure.h>
 
 #include <iostream>
 #include <memory>
@@ -48,7 +48,7 @@ VorbisCommentField::VorbisCommentField(const IdentifierType &id, const TagValue 
 /*!
  * \brief Internal implementation for parsing.
  */
-template <class StreamType> void VorbisCommentField::internalParse(StreamType &stream, uint64 &maxSize, Diagnostics &diag)
+template <class StreamType> void VorbisCommentField::internalParse(StreamType &stream, std::uint64_t &maxSize, Diagnostics &diag)
 {
     static const string context("parsing Vorbis comment  field");
     char buff[4];
@@ -65,7 +65,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
             // read data
             auto data = make_unique<char[]>(size);
             stream.read(data.get(), size);
-            uint32 idSize = 0;
+            std::uint32_t idSize = 0;
             for (const char *i = data.get(), *end = data.get() + size; i != end && *i != '='; ++i, ++idSize)
                 ;
             // extract id
@@ -90,9 +90,9 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
                 } catch (const ConversionException &) {
                     diag.emplace_back(DiagLevel::Critical, "Base64 coding of METADATA_BLOCK_PICTURE is invalid.", context);
                     throw InvalidDataException();
-                } catch (...) {
-                    catchIoFailure();
-                    diag.emplace_back(DiagLevel::Critical, "An IO error occurred when reading the METADATA_BLOCK_PICTURE struct.", context);
+                } catch (const std::ios_base::failure &failure) {
+                    diag.emplace_back(DiagLevel::Critical,
+                        argsToString("An IO error occurred when reading the METADATA_BLOCK_PICTURE struct: ", failure.what()), context);
                     throw Failure();
                 }
             } else if (id().size() + 1 < size) {
@@ -118,7 +118,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
  */
 void VorbisCommentField::parse(OggIterator &iterator, Diagnostics &diag)
 {
-    uint64 maxSize = iterator.streamSize() - iterator.currentCharacterOffset();
+    std::uint64_t maxSize = iterator.streamSize() - iterator.currentCharacterOffset();
     internalParse(iterator, maxSize, diag);
 }
 
@@ -132,7 +132,7 @@ void VorbisCommentField::parse(OggIterator &iterator, Diagnostics &diag)
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize, Diagnostics &diag)
+void VorbisCommentField::parse(OggIterator &iterator, std::uint64_t &maxSize, Diagnostics &diag)
 {
     internalParse(iterator, maxSize, diag);
 }
@@ -147,7 +147,7 @@ void VorbisCommentField::parse(OggIterator &iterator, uint64 &maxSize, Diagnosti
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void VorbisCommentField::parse(istream &stream, uint64 &maxSize, Diagnostics &diag)
+void VorbisCommentField::parse(istream &stream, std::uint64_t &maxSize, Diagnostics &diag)
 {
     internalParse(stream, maxSize, diag);
 }
@@ -190,13 +190,13 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
                 bufferStream.rdbuf()->pubsetbuf(buffer.get(), requiredSize);
 
                 pictureBlock.make(bufferStream);
-                valueString = encodeBase64(reinterpret_cast<byte *>(buffer.get()), requiredSize);
+                valueString = encodeBase64(reinterpret_cast<std::uint8_t *>(buffer.get()), requiredSize);
             } catch (const Failure &) {
                 diag.emplace_back(DiagLevel::Critical, "Unable to make METADATA_BLOCK_PICTURE struct from the assigned value.", context);
                 throw;
-            } catch (...) {
-                catchIoFailure();
-                diag.emplace_back(DiagLevel::Critical, "An IO error occurred when writing the METADATA_BLOCK_PICTURE struct.", context);
+            } catch (const std::ios_base::failure &failure) {
+                diag.emplace_back(DiagLevel::Critical,
+                    argsToString("An IO error occurred when writing the METADATA_BLOCK_PICTURE struct: ", failure.what()), context);
                 throw Failure();
             }
         } else {
@@ -204,11 +204,11 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
             valueString = value().toString();
         }
         const auto size(valueString.size() + id().size() + 1);
-        if (size > numeric_limits<uint32>::max()) {
+        if (size > numeric_limits<std::uint32_t>::max()) {
             diag.emplace_back(DiagLevel::Critical, "Assigned value exceeds the maximum size.", context);
             throw InvalidDataException();
         }
-        writer.writeUInt32LE(static_cast<uint32>(size));
+        writer.writeUInt32LE(static_cast<std::uint32_t>(size));
         writer.writeString(id());
         writer.writeChar('=');
         writer.writeString(valueString);

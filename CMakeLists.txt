@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
 
 # add project files
 set(HEADER_FILES
@@ -169,32 +169,23 @@ set(META_APP_NAME "Tag Parser")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
 set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags")
-set(META_VERSION_MAJOR 8)
-set(META_VERSION_MINOR 3)
+set(META_VERSION_MAJOR 9)
+set(META_VERSION_MINOR 0)
 set(META_VERSION_PATCH 0)
-set(META_PUBLIC_SHARED_LIB_DEPENDS c++utilities)
-set(META_PUBLIC_STATIC_LIB_DEPENDS c++utilities_static)
 set(META_REQUIRED_CPP_UNIT_VERSION 1.14.0)
 set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
 
 # find c++utilities
-find_package(c++utilities 4.17.0 REQUIRED)
-use_cpp_utilities()
+set(CONFIGURATION_PACKAGE_SUFFIX "" CACHE STRING "sets the suffix for find_package() calls to packages configured via c++utilities")
+find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.0.0 REQUIRED)
+use_cpp_utilities(VISIBILITY PUBLIC)
 
 # find 3rd party libraries
 include(3rdParty)
 # zlib
-use_external_library_from_package(z ZLIB ANY_VERSION ZLIB_INCLUDE_DIRS ZLIB_LIBRARIES AUTO_LINKAGE REQUIRED)
-# crypto (optional for testing integrity of testfiles)
-find_external_library_from_package(crypto
-                                   OpenSSL
-                                   ANY_VERSION
-                                   OPENSSL_INCLUDE_DIR
-                                   OPENSSL_CRYPTO_LIBRARY
-                                   AUTO_LINKAGE
-                                   OPTIONAL)
-link_tests_against_library(crypto AUTO_LINKAGE OPTIONAL)
-if (NOT USE_crypto)
+use_zlib()
+use_crypto(LIBRARIES_VARIABLE "TEST_LIBRARIES" OPTIONAL)
+if (NOT "OpenSSL::Crypto" IN_LIST "TEST_LIBRARIES")
     list(REMOVE_ITEM TEST_SRC_FILES tests/testfilecheck.cpp)
     message(WARNING "Unable to check testfile integrity because OpenSSL is not available.")
 endif ()

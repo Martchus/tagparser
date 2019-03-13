@@ -8,8 +8,8 @@
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
-#include <c++utilities/conversion/types.h>
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
 
@@ -24,40 +24,40 @@ class MatroskaContainer;
 template <> class TAG_PARSER_EXPORT FileElementTraits<EbmlElement> {
 public:
     using ContainerType = MatroskaContainer;
-    using IdentifierType = uint32;
-    using DataSizeType = uint64;
+    using IdentifierType = std::uint32_t;
+    using DataSizeType = std::uint64_t;
 };
 
 class TAG_PARSER_EXPORT EbmlElement : public GenericFileElement<EbmlElement> {
     friend class GenericFileElement<EbmlElement>;
 
 public:
-    EbmlElement(MatroskaContainer &container, uint64 startOffset);
+    EbmlElement(MatroskaContainer &container, std::uint64_t startOffset);
 
     std::string idToString() const;
     bool isParent() const;
     bool isPadding() const;
-    uint64 firstChildOffset() const;
+    std::uint64_t firstChildOffset() const;
     std::string readString();
-    uint64 readUInteger();
-    float64 readFloat();
+    std::uint64_t readUInteger();
+    double readFloat();
 
-    static byte calculateIdLength(IdentifierType id);
-    static byte calculateSizeDenotationLength(uint64 size);
-    static byte makeId(IdentifierType id, char *buff);
-    static byte makeSizeDenotation(uint64 size, char *buff);
-    static byte makeSizeDenotation(uint64 size, char *buff, byte minBytes);
-    static byte calculateUIntegerLength(uint64 integer);
-    static byte makeUInteger(uint64 value, char *buff);
-    static byte makeUInteger(uint64 value, char *buff, byte minBytes);
-    static void makeSimpleElement(std::ostream &stream, IdentifierType id, uint64 content);
+    static std::uint8_t calculateIdLength(IdentifierType id);
+    static std::uint8_t calculateSizeDenotationLength(std::uint64_t size);
+    static std::uint8_t makeId(IdentifierType id, char *buff);
+    static std::uint8_t makeSizeDenotation(std::uint64_t size, char *buff);
+    static std::uint8_t makeSizeDenotation(std::uint64_t size, char *buff, std::uint8_t minBytes);
+    static std::uint8_t calculateUIntegerLength(std::uint64_t integer);
+    static std::uint8_t makeUInteger(std::uint64_t value, char *buff);
+    static std::uint8_t makeUInteger(std::uint64_t value, char *buff, std::uint8_t minBytes);
+    static void makeSimpleElement(std::ostream &stream, IdentifierType id, std::uint64_t content);
     static void makeSimpleElement(std::ostream &stream, IdentifierType id, const std::string &content);
     static void makeSimpleElement(std::ostream &stream, IdentifierType id, const char *data, std::size_t dataSize);
-    static uint64 bytesToBeSkipped;
+    static std::uint64_t bytesToBeSkipped;
 
 protected:
-    EbmlElement(EbmlElement &parent, uint64 startOffset);
-    EbmlElement(MatroskaContainer &container, uint64 startOffset, uint64 maxSize);
+    EbmlElement(EbmlElement &parent, std::uint64_t startOffset);
+    EbmlElement(MatroskaContainer &container, std::uint64_t startOffset, std::uint64_t maxSize);
 
     void internalParse(Diagnostics &diag);
 
@@ -155,7 +155,7 @@ inline bool EbmlElement::isPadding() const
  * \brief Returns the offset of the first child of the element.
  * \remarks The returned offset is relative to the start offset if this element.
  */
-inline uint64 EbmlElement::firstChildOffset() const
+inline std::uint64_t EbmlElement::firstChildOffset() const
 {
     return isParent() ? (idLength() + sizeLength()) : 0;
 }

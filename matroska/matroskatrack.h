@@ -16,15 +16,15 @@ class TAG_PARSER_EXPORT MatroskaTrackHeaderMaker {
 public:
     void make(std::ostream &stream) const;
     const MatroskaTrack &track() const;
-    uint64 requiredSize() const;
+    std::uint64_t requiredSize() const;
 
 private:
     MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag);
 
     const MatroskaTrack &m_track;
-    uint64 m_dataSize;
-    uint64 m_requiredSize;
-    byte m_sizeDenotationLength;
+    std::uint64_t m_dataSize;
+    std::uint64_t m_requiredSize;
+    std::uint8_t m_sizeDenotationLength;
 };
 
 /*!
@@ -38,7 +38,7 @@ inline const MatroskaTrack &MatroskaTrackHeaderMaker::track() const
 /*!
  * \brief Returns the number of bytes which will be written when calling make().
  */
-inline uint64 MatroskaTrackHeaderMaker::requiredSize() const
+inline std::uint64_t MatroskaTrackHeaderMaker::requiredSize() const
 {
     return m_requiredSize;
 }
