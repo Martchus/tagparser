@@ -129,5 +129,6 @@ convert mkv/nested-tags.mkv \
                  \( 'mtx-test-data/mkv/tags.mkv' \) \
                  --global-tags "$srcdir/testfiles/mkv/nested-tags.xml" \
                  --track-order '0:0,0:1'
+convert mp4/chapters.m4b ffmpeg -i "$srcdir/testfiles/metadata_for_ffmpeg.txt" -i flac/test.flac -map 1:0 -map_metadata 1 -c:a aac -ac 2 mp4/chapters.m4b
 
 success "All testfiles downloaded/converted!"

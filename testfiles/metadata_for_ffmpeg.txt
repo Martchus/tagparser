@@ -1,0 +1,46 @@
+;FFMETADATA1
+narratedBy=Nick
+date=2019
+year=2019-01-15
+artist=Andrew
+album_artist=Andrew
+album=test album
+genre=Audiobook
+copyright=©2018 Andrew
+title=test title
+author=Andrew
+[CHAPTER]
+TIMEBASE=1/1000
+START=0
+END=295354
+title=Intro
+[CHAPTER]
+TIMEBASE=1/1000
+START=295354
+END=1127836
+title=Recap
+[CHAPTER]
+TIMEBASE=1/1000
+START=1127836
+END=5227319
+title=Chapter 1
+[CHAPTER]
+TIMEBASE=1/1000
+START=5227319
+END=7847737
+title=Chapter 2
+[CHAPTER]
+TIMEBASE=1/1000
+START=7847737
+END=11114181
+title=Chapter 3
+[CHAPTER]
+TIMEBASE=1/1000
+START=11114181
+END=15530570
+title=Chapter 4
+[CHAPTER]
+TIMEBASE=1/1000
+START=15530570
+END=202437575
+title=Chapter 5
