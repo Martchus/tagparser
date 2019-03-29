@@ -69,7 +69,7 @@ void restoreOriginalFileFromBackupFile(
     }
     // remove original file and restore backup
     std::remove(originalPath.c_str());
-    if (std::rename(backupPath.c_str(), originalPath.c_str())) {
+    if (std::rename(BasicFileInfo::pathForOpen(backupPath), BasicFileInfo::pathForOpen(originalPath))) {
         // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
         try {
             // need to open all streams again
@@ -153,10 +153,10 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
 
         // test whether the backup path is still unused; otherwise continue loop
 #ifdef PLATFORM_WINDOWS
-        if (GetFileAttributes(backupPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
+        if (GetFileAttributes(BasicFileInfo::pathForOpen(backupPath)) == INVALID_FILE_ATTRIBUTES) {
 #else
         struct stat backupStat;
-        if (stat(backupPath.c_str(), &backupStat)) {
+        if (stat(BasicFileInfo::pathForOpen(backupPath), &backupStat)) {
 #endif
             break;
         }
@@ -168,7 +168,7 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
     }
 
     // rename original file
-    if (std::rename(originalPath.c_str(), backupPath.c_str())) {
+    if (std::rename(BasicFileInfo::pathForOpen(originalPath), BasicFileInfo::pathForOpen(backupPath))) {
         // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
         try {
             backupStream.exceptions(ios_base::failbit | ios_base::badbit);
@@ -177,9 +177,9 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
             if (backupStream.is_open()) {
                 backupStream.close();
             }
-            backupStream.open(backupPath, ios_base::out | ios_base::binary);
+            backupStream.open(BasicFileInfo::pathForOpen(backupPath), ios_base::out | ios_base::binary);
             // ensure originalStream is opened with read permissions
-            originalStream.open(originalPath, ios_base::in | ios_base::binary);
+            originalStream.open(BasicFileInfo::pathForOpen(originalPath), ios_base::in | ios_base::binary);
             // do the actual copying
             backupStream << originalStream.rdbuf();
             // streams are closed in the next try-block
@@ -201,11 +201,11 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
         }
         // open backup stream
         backupStream.exceptions(ios_base::failbit | ios_base::badbit);
-        backupStream.open(backupPath, ios_base::in | ios_base::binary);
+        backupStream.open(BasicFileInfo::pathForOpen(backupPath), ios_base::in | ios_base::binary);
     } catch (const std::ios_base::failure &failure) {
         // can't open the new file
         // -> try to re-rename backup file in the error case to restore previous state
-        if (std::rename(backupPath.c_str(), originalPath.c_str())) {
+        if (std::rename(BasicFileInfo::pathForOpen(backupPath), BasicFileInfo::pathForOpen(originalPath))) {
             throw std::ios_base::failure("Unable to restore original file from backup file \"" % backupPath % "\" after failure: " + failure.what());
         } else {
             throw std::ios_base::failure(argsToString("Unable to open backup file: ", failure.what()));

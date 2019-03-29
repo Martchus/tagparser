@@ -3,6 +3,7 @@
 
 #include "./global.h"
 
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/nativefilestream.h>
 
 #include <cstdint>
@@ -20,7 +21,7 @@ public:
 
     // methods to control associated file stream
     void open(bool readOnly = false);
-    void reopen(bool readonly = false);
+    void reopen(bool readOnly = false);
     bool isOpen() const;
     bool isReadOnly() const;
     void close();
@@ -39,6 +40,7 @@ public:
     std::string pathWithoutExtension() const;
     static std::string containingDirectory(const std::string &path);
     std::string containingDirectory() const;
+    static const char *pathForOpen(const std::string &url);
 
     // methods to get, set the file size
     std::uint64_t size() const;
@@ -127,6 +129,17 @@ inline void BasicFileInfo::reportSizeChanged(std::uint64_t newSize)
 inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
 {
     m_path = newPath;
+}
+
+/*!
+ * \brief Returns removes the "file:/" prefix from \a url to be able to pass it to functions
+ *        like open(), stat() and truncate().
+ * \remarks If \a url is already a plain path it won't changed.
+ * \returns Returns a pointer the URL data itself. No copy is made.
+ */
+inline const char *BasicFileInfo::pathForOpen(const std::string &url)
+{
+    return ConversionUtilities::startsWith(url, "file:/") ? url.data() + 6 : url.data();
 }
 
 } // namespace TagParser

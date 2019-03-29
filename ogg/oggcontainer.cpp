@@ -377,7 +377,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         try {
             BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
             // recreate original file, define buffer variables
-            fileInfo().stream().open(fileInfo().path(), ios_base::out | ios_base::binary | ios_base::trunc);
+            fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::out | ios_base::binary | ios_base::trunc);
         } catch (const std::ios_base::failure &failure) {
             diag.emplace_back(
                 DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -387,9 +387,9 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         // open the current file as backupStream and create a new outputStream at the specified "save file path"
         try {
             backupStream.exceptions(ios_base::badbit | ios_base::failbit);
-            backupStream.open(fileInfo().path(), ios_base::in | ios_base::binary);
+            backupStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::in | ios_base::binary);
             fileInfo().close();
-            fileInfo().stream().open(fileInfo().saveFilePath(), ios_base::out | ios_base::binary | ios_base::trunc);
+            fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().saveFilePath()), ios_base::out | ios_base::binary | ios_base::trunc);
         } catch (const std::ios_base::failure &failure) {
             diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
             throw;
