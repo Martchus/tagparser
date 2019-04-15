@@ -197,6 +197,7 @@ bool Mp4Atom::isParent() const
     case Track:
     case Media:
     case MediaInformation:
+    case MediaInformationHeader:
     case DataInformation:
     case SampleTable:
     case UserData:
