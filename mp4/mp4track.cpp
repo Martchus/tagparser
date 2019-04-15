@@ -1076,23 +1076,8 @@ void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
         edtsAtom->makeBuffer();
     }
     if (m_minfAtom) {
-        if (Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
-            vmhdAtom->makeBuffer();
-        }
-        if (Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
-            smhdAtom->makeBuffer();
-        }
-        if (Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
-            hmhdAtom->makeBuffer();
-        }
-        if (Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
-            nmhdAtom->makeBuffer();
-        }
-        if (Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
-            dinfAtom->makeBuffer();
-        }
-        if (Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
-            stblAtom->makeBuffer();
+        for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
+            childAtom->makeBuffer();
         }
     }
 }
@@ -1104,8 +1089,8 @@ uint64 Mp4Track::requiredSize(Diagnostics &diag) const
 {
     // add size of
     // ... trak header
-    uint64 size = 8;
-    // ... tkhd atom (TODO: buffer TrackHeaderInfo in v7)
+    std::uint64_t size = 8;
+    // ... tkhd atom (TODO: buffer TrackHeaderInfo in next major release)
     size += verifyPresentTrackHeader().requiredSize;
     // ... tref atom (if one exists)
     if (Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
@@ -1120,27 +1105,15 @@ uint64 Mp4Track::requiredSize(Diagnostics &diag) const
     // ... minf childs
     bool dinfAtomWritten = false;
     if (m_minfAtom) {
-        if (Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
-            size += vmhdAtom->totalSize();
-        }
-        if (Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
-            size += smhdAtom->totalSize();
-        }
-        if (Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
-            size += hmhdAtom->totalSize();
-        }
-        if (Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
-            size += nmhdAtom->totalSize();
-        }
-        if (Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
-            size += dinfAtom->totalSize();
-            dinfAtomWritten = true;
-        }
-        if (Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
-            size += stblAtom->totalSize();
+        for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
+            if (childAtom->id() == Mp4AtomIds::DataInformation) {
+                dinfAtomWritten = true;
+            }
+            size += childAtom->totalSize();
         }
     }
     if (!dinfAtomWritten) {
+        // take 36 bytes for a self-made dinf atom into account if the file lacks one
         size += 36;
     }
     return size;
@@ -1163,11 +1136,11 @@ void Mp4Track::makeTrack(Diagnostics &diag)
     // write tkhd atom
     makeTrackHeader(diag);
     // write tref atom (if one exists)
-    if (Mp4Atom *trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference, diag)) {
+    if (Mp4Atom *const trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference, diag)) {
         trefAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
     }
     // write edts atom (if one exists)
-    if (Mp4Atom *edtsAtom = trakAtom().childById(Mp4AtomIds::Edit, diag)) {
+    if (Mp4Atom *const edtsAtom = trakAtom().childById(Mp4AtomIds::Edit, diag)) {
         edtsAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
     }
     // write mdia atom
@@ -1335,26 +1308,15 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
     writer().writeUInt32BE(Mp4AtomIds::MediaInformation);
     bool dinfAtomWritten = false;
     if (m_minfAtom) {
-        // copy existing vmhd atom
-        if (Mp4Atom *vmhdAtom = m_minfAtom->childById(Mp4AtomIds::VideoMediaHeader, diag)) {
-            vmhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-        }
-        // copy existing smhd atom
-        if (Mp4Atom *smhdAtom = m_minfAtom->childById(Mp4AtomIds::SoundMediaHeader, diag)) {
-            smhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-        }
-        // copy existing hmhd atom
-        if (Mp4Atom *hmhdAtom = m_minfAtom->childById(Mp4AtomIds::HintMediaHeader, diag)) {
-            hmhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-        }
-        // copy existing nmhd atom
-        if (Mp4Atom *nmhdAtom = m_minfAtom->childById(Mp4AtomIds::NullMediaHeaderBox, diag)) {
-            nmhdAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-        }
-        // copy existing dinf atom
-        if (Mp4Atom *dinfAtom = m_minfAtom->childById(Mp4AtomIds::DataInformation, diag)) {
-            dinfAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-            dinfAtomWritten = true;
+        // copy existing atoms except sample table which is handled separately
+        for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
+            if (childAtom->id() == Mp4AtomIds::SampleTable) {
+                continue;
+            }
+            if (childAtom->id() == Mp4AtomIds::DataInformation) {
+                dinfAtomWritten = true;
+            }
+            childAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
         }
     }
     // write dinf atom if not written yet
@@ -1376,7 +1338,7 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
     // -> just copy existing stbl atom because makeSampleTable() is not fully implemented (yet)
     bool stblAtomWritten = false;
     if (m_minfAtom) {
-        if (Mp4Atom *stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
+        if (Mp4Atom *const stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
             stblAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
             stblAtomWritten = true;
         }
