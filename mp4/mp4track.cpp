@@ -143,10 +143,7 @@ Mp4Track::Mp4Track(Mp4Atom &trakAtom)
     , m_stscAtom(nullptr)
     , m_stcoAtom(nullptr)
     , m_stszAtom(nullptr)
-    ,
-    //m_codecConfigAtom(nullptr),
-    //m_esDescAtom(nullptr),
-    m_framesPerSample(1)
+    , m_framesPerSample(1)
     , m_chunkOffsetSize(4)
     , m_chunkCount(0)
     , m_sampleToChunkEntryCount(0)
