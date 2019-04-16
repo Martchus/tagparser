@@ -205,6 +205,7 @@ bool Mp4Atom::isParent() const
     case ItunesList:
     case MovieFragment:
     case TrackFragment:
+    case TrackReference:
     case MovieExtends:
     case DataReference:
     case Mp4AtomIds::AvcConfiguration:
