@@ -587,43 +587,42 @@ calculatePadding:
         // write movie atom / padding and media data
         for (byte pass = 0; pass != 2; ++pass) {
             if (newTagPos == (pass ? ElementPosition::AfterData : ElementPosition::BeforeData)) {
-                // write movie atom
-                // -> write movie atom header
-                Mp4Atom::makeHeader(movieAtomSize, Mp4AtomIds::Movie, outputWriter);
-
-                // -> write track atoms
-                for (auto &track : tracks()) {
-                    track->makeTrack(diag);
-                }
-
-                // -> write other movie atom children
-                for (level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
-                    for (level1Atom = level0Atom->firstChild(); level1Atom; level1Atom = level1Atom->nextSibling()) {
-                        switch (level1Atom->id()) {
-                        case Mp4AtomIds::UserData:
-                        case Mp4AtomIds::Track:
-                            // track and user data atoms are written separately
-                            break;
-                        default:
-                            // write buffered data
-                            level1Atom->copyBuffer(outputStream);
-                            level1Atom->discardBuffer();
-                        }
+                // define function to write tracks
+                bool tracksWritten = false;
+                const auto writeTracks = [&] {
+                    if (tracksWritten) {
+                        return;
                     }
-                }
 
-                // -> write user data atom
-                if (userDataAtomSize) {
+                    for (auto &track : tracks()) {
+                        track->makeTrack(diag);
+                    }
+                    tracksWritten = true;
+                };
+
+                // define function to write user data
+                bool userDataWritten = false;
+                const auto writeUserData = [&] {
+                    if (userDataWritten || !userDataAtomSize) {
+                        return;
+                    }
+
                     // writer user data atom header
                     Mp4Atom::makeHeader(userDataAtomSize, Mp4AtomIds::UserData, outputWriter);
 
-                    // write other children of user data atom
-                    for (level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
-                        for (level1Atom = level0Atom->childById(Mp4AtomIds::UserData, diag); level1Atom;
+                    // write children of user data atom
+                    bool metaAtomWritten = false;
+                    for (Mp4Atom *level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
+                        for (Mp4Atom *level1Atom = level0Atom->childById(Mp4AtomIds::UserData, diag); level1Atom;
                              level1Atom = level1Atom->siblingById(Mp4AtomIds::UserData, diag)) {
-                            for (level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
+                            for (Mp4Atom *level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
                                 switch (level2Atom->id()) {
                                 case Mp4AtomIds::Meta:
+                                    // write meta atom
+                                    for (auto &maker : tagMaker) {
+                                        maker.make(outputStream, diag);
+                                    }
+                                    metaAtomWritten = true;
                                     break;
                                 default:
                                     // write buffered data
@@ -634,11 +633,41 @@ calculatePadding:
                         }
                     }
 
-                    // write meta atom
-                    for (auto &maker : tagMaker) {
-                        maker.make(outputStream, diag);
+                    // write meta atom if not already written
+                    if (!metaAtomWritten) {
+                        for (auto &maker : tagMaker) {
+                            maker.make(outputStream, diag);
+                        }
+                    }
+
+                    userDataWritten = true;
+                };
+
+                // write movie atom
+                // -> write movie atom header
+                Mp4Atom::makeHeader(movieAtomSize, Mp4AtomIds::Movie, outputWriter);
+
+                // -> write children of movie atom preserving the original order
+                for (level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
+                    for (level1Atom = level0Atom->firstChild(); level1Atom; level1Atom = level1Atom->nextSibling()) {
+                        switch (level1Atom->id()) {
+                        case Mp4AtomIds::Track:
+                            writeTracks();
+                            break;
+                        case Mp4AtomIds::UserData:
+                            writeUserData();
+                            break;
+                        default:
+                            // write buffered data
+                            level1Atom->copyBuffer(outputStream);
+                            level1Atom->discardBuffer();
+                        }
                     }
                 }
+
+                // -> write tracks and user data atoms if not already happened within the loop
+                writeTracks();
+                writeUserData();
 
             } else {
                 // write padding
