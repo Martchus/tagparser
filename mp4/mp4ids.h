@@ -21,8 +21,9 @@ enum KnownValue : uint32 {
     DataInformation = 0x64696e66,
     DataReference = 0x64726566,
     Drms = 0x64726D73,
-    Edts = 0x65647473,
-    Edit = 0x656C7374,
+    Edts = 0x65647473, // FIXME: remove in next major release
+    Edit = 0x65647473,
+    EditList = 0x656C7374,
     Free = 0x66726565,
     FileType = 0x66747970,
     HandlerReference = 0x68646c72,

@@ -1066,11 +1066,11 @@ void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
     if (m_tkhdAtom) {
         m_tkhdAtom->makeBuffer();
     }
-    if (Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
-        trefAtom->makeBuffer();
-    }
-    if (Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit, diag)) {
-        edtsAtom->makeBuffer();
+    for (Mp4Atom *trakChild = m_trakAtom->firstChild(); trakChild; trakChild = trakChild->nextSibling()) {
+        if (trakChild->id() == Mp4AtomIds::Media) {
+            continue;
+        }
+        trakChild->makeBuffer();
     }
     if (m_minfAtom) {
         for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
@@ -1084,18 +1084,19 @@ void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
  */
 uint64 Mp4Track::requiredSize(Diagnostics &diag) const
 {
+    VAR_UNUSED(diag)
+
     // add size of
     // ... trak header
     std::uint64_t size = 8;
     // ... tkhd atom (TODO: buffer TrackHeaderInfo in next major release)
     size += verifyPresentTrackHeader().requiredSize;
-    // ... tref atom (if one exists)
-    if (Mp4Atom *trefAtom = m_trakAtom->childById(Mp4AtomIds::TrackReference, diag)) {
-        size += trefAtom->totalSize();
-    }
-    // ... edts atom (if one exists)
-    if (Mp4Atom *edtsAtom = m_trakAtom->childById(Mp4AtomIds::Edit, diag)) {
-        size += edtsAtom->totalSize();
+    // ... children beside tkhd and mdia
+    for (Mp4Atom *trakChild = m_trakAtom->firstChild(); trakChild; trakChild = trakChild->nextSibling()) {
+        if (trakChild->id() == Mp4AtomIds::Media || trakChild->id() == Mp4AtomIds::TrackHeader) {
+            continue;
+        }
+        size += trakChild->totalSize();
     }
     // ... mdia header + mdhd total size + hdlr total size + minf header
     size += 8 + 44 + (33 + m_name.size()) + 8;
@@ -1130,18 +1131,21 @@ void Mp4Track::makeTrack(Diagnostics &diag)
     ostream::pos_type trakStartOffset = outputStream().tellp();
     m_writer.writeUInt32BE(0); // write size later
     m_writer.writeUInt32BE(Mp4AtomIds::Track);
+
     // write tkhd atom
     makeTrackHeader(diag);
-    // write tref atom (if one exists)
-    if (Mp4Atom *const trefAtom = trakAtom().childById(Mp4AtomIds::TrackReference, diag)) {
-        trefAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
+
+    // write children of trak atom except mdia
+    for (Mp4Atom *trakChild = trakAtom().firstChild(); trakChild; trakChild = trakChild->nextSibling()) {
+        if (trakChild->id() == Mp4AtomIds::Media || trakChild->id() == Mp4AtomIds::TrackHeader) {
+            continue;
+        }
+        trakChild->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
     }
-    // write edts atom (if one exists)
-    if (Mp4Atom *const edtsAtom = trakAtom().childById(Mp4AtomIds::Edit, diag)) {
-        edtsAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-    }
+
     // write mdia atom
     makeMedia(diag);
+
     // write size (of trak atom)
     Mp4Atom::seekBackAndWriteAtomSize(outputStream(), trakStartOffset, diag);
 }

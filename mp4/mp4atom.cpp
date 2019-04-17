@@ -195,6 +195,7 @@ bool Mp4Atom::isParent() const
     switch (id()) {
     case Movie:
     case Track:
+    case Edit:
     case Media:
     case MediaInformation:
     case MediaInformationHeader:
