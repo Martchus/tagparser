@@ -1063,6 +1063,8 @@ void Mp4Track::addInfo(const Av1Configuration &av1Config, AbstractTrack &track)
  */
 void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
 {
+    VAR_UNUSED(diag)
+
     if (m_tkhdAtom) {
         m_tkhdAtom->makeBuffer();
     }
@@ -1098,8 +1100,18 @@ uint64 Mp4Track::requiredSize(Diagnostics &diag) const
         }
         size += trakChild->totalSize();
     }
-    // ... mdia header + mdhd total size + hdlr total size + minf header
-    size += 8 + 44 + (33 + m_name.size()) + 8;
+    // ... mdhd total size
+    if (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+         || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+          || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max()) {
+        // write version 1 where those fields are 64-bit
+            size += 44;
+    } else {
+        // write version 0 where those fields are 32-bit
+        size += 32;
+    }
+    // ... mdia header + hdlr total size + minf header
+    size += 8 + (33 + m_name.size()) + 8;
     // ... minf childs
     bool dinfAtomWritten = false;
     if (m_minfAtom) {
@@ -1238,14 +1250,29 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::Media);
     // write mdhd atom
-    writer().writeUInt32BE(44); // size
+    const auto creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
+    const auto modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
+    const auto duration = static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale);
+    const std::uint8_t version = (creationTime > numeric_limits<std::uint32_t>::max()
+                                  || modificationTime > numeric_limits<std::uint32_t>::max()
+                                  || duration > numeric_limits<std::uint32_t>::max()) ? 1 : 0;
+    writer().writeUInt32BE(version != 0 ? 44 : 32); // size
     writer().writeUInt32BE(Mp4AtomIds::MediaHeader);
-    writer().writeByte(1); // version
+    writer().writeByte(version); // version
     writer().writeUInt24BE(0); // flags
-    writer().writeUInt64BE(static_cast<uint64>((m_creationTime - startDate).totalSeconds()));
-    writer().writeUInt64BE(static_cast<uint64>((m_modificationTime - startDate).totalSeconds()));
+    if (version != 0) {
+        writer().writeUInt64BE(creationTime);
+        writer().writeUInt64BE(modificationTime);
+    } else {
+        writer().writeUInt32BE(static_cast<std::uint32_t>(creationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(modificationTime));
+    }
     writer().writeUInt32BE(m_timeScale);
-    writer().writeUInt64BE(static_cast<uint64>(m_duration.totalSeconds() * m_timeScale));
+    if (version != 0) {
+        writer().writeUInt64BE(duration);
+    } else {
+        writer().writeUInt32BE(static_cast<std::uint32_t>(duration));
+    }
     // convert and write language
     uint16 language = 0;
     for (size_t charIndex = 0; charIndex != 3; ++charIndex) {
