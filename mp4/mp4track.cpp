@@ -435,12 +435,15 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
 
     // determine required size
     info.requiredSize = m_tkhdAtom->dataSize() + 8;
-    if (info.version == 0) {
-        // add 12 byte to size if the existing version is 0 because we always write version 1 which takes 12 byte more space
+    // -> add 12 byte to size if update from version 0 to version 1 is required (which needs 12 byte more)
+    if ((info.version == 0)
+            && (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+                || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+                || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max())) {
         info.requiredSize += 12;
     }
-    if (info.requiredSize > numeric_limits<uint32>::max()) {
-        // add 8 byte to the size because it must be denoted using a 64-bit integer
+    // -> add 8 byte to the size because it must be denoted using a 64-bit integer
+    if (info.requiredSize > numeric_limits<std::uint32_t>::max()) {
         info.requiredSize += 8;
     }
     return info;
@@ -1192,9 +1195,17 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
         writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
     }
 
+    // determine time-related values and version
+    const auto creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
+    const auto modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
+    const auto duration = static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale);
+    const std::uint8_t version = (info.version == 0) && (creationTime > numeric_limits<std::uint32_t>::max()
+                                  || modificationTime > numeric_limits<std::uint32_t>::max()
+                                  || duration > numeric_limits<std::uint32_t>::max()) ? 1 : info.version;
+
     // make version and flags
-    writer().writeByte(1);
-    uint32 flags = 0;
+    writer().writeByte(version);
+    std::uint32_t flags = 0;
     if (m_enabled) {
         flags |= 0x000001;
     }
@@ -1207,13 +1218,22 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     writer().writeUInt24BE(flags);
 
     // make creation and modification time
-    writer().writeUInt64BE(static_cast<uint64>((m_creationTime - startDate).totalSeconds()));
-    writer().writeUInt64BE(static_cast<uint64>((m_modificationTime - startDate).totalSeconds()));
+    if (version != 0) {
+        writer().writeUInt64BE(creationTime);
+        writer().writeUInt64BE(modificationTime);
+    } else {
+        writer().writeUInt32BE(static_cast<std::uint32_t>(creationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(modificationTime));
+    }
 
     // make track ID and duration
     writer().writeUInt32BE(static_cast<uint32>(m_id));
     writer().writeUInt32BE(0); // reserved
-    writer().writeUInt64BE(static_cast<uint64>(m_duration.totalSeconds() * m_timeScale));
+    if (version != 0) {
+        writer().writeUInt64BE(duration);
+    } else {
+        writer().writeUInt32BE(static_cast<std::uint32_t>(duration));
+    }
     writer().writeUInt32BE(0); // reserved
     writer().writeUInt32BE(0); // reserved
 
@@ -1228,6 +1248,7 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
         }
     } else {
         // write default values
+        diag.emplace_back(DiagLevel::Warning, "Writing some default values because the existing tkhd atom is truncated.", "making tkhd atom");
         writer().writeInt16BE(0); // layer
         writer().writeInt16BE(0); // alternate group
         writer().writeFixed8BE(1.0); // volume (fixed 8.8 - 2 byte)
