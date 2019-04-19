@@ -1330,6 +1330,9 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         outputStream().write("hint", 4);
         break;
     case MediaType::Text:
+        outputStream().write("text", 4);
+        break;
+    case MediaType::Meta:
         outputStream().write("meta", 4);
         break;
     default:
@@ -1601,12 +1604,15 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
         m_mediaType = MediaType::Hint;
         break;
     case 0x6D657461:
+        m_mediaType = MediaType::Meta;
+        break;
     case 0x74657874:
         m_mediaType = MediaType::Text;
         break;
     default:
         m_mediaType = MediaType::Unknown;
     }
+    // FIXME: save raw media type in next major release so unknown ones can still be written correctly in Mp4Track::makeMedia()
     // -> name
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
     if ((tmp = m_istream->peek()) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {

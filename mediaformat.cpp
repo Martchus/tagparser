@@ -997,20 +997,22 @@ const char *MediaFormat::extensionName() const
 const char *mediaTypeName(MediaType mediaType)
 {
     switch (mediaType) {
+    case MediaType::Unknown:
+        return "Other";
     case MediaType::Audio:
         return "Audio";
     case MediaType::Video:
         return "Video";
     case MediaType::Text:
         return "Subititle";
-    case MediaType::Hint:
-        return "Hint";
     case MediaType::Buttons:
         return "Buttons";
     case MediaType::Control:
         return "Control";
-    case MediaType::Unknown:
-        return "Other";
+    case MediaType::Hint:
+        return "Hint";
+    case MediaType::Meta:
+        return "Meta-data";
     }
     return "";
 }

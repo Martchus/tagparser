@@ -17,7 +17,8 @@ enum class MediaType : unsigned int {
     Text, /**< text/subtitle */
     Buttons, /**< buttons */
     Control, /**< control */
-    Hint /**< hint */
+    Hint, /**< hint */
+    Meta, /**< (timed) metadata */
 };
 
 TAG_PARSER_EXPORT const char *mediaTypeName(MediaType mediaType);
