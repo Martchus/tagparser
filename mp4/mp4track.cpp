@@ -1299,15 +1299,19 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     for (size_t charIndex = 0; charIndex != 3; ++charIndex) {
         const char langChar = charIndex < m_language.size() ? m_language[charIndex] : 0;
         if (langChar >= 'a' && langChar <= 'z') {
-            language |= static_cast<uint16>(langChar - 0x60) << (0xA - charIndex * 0x5);
-        } else { // invalid character
-            if (!m_language.empty()) {
-                diag.emplace_back(
-                    DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format and will be ignored.", "making mdhd atom");
-            }
-            language = 0x55C4; // und
+            language |= static_cast<std::uint16_t>(langChar - 0x60) << (0xA - charIndex * 0x5);
+            continue;
+        }
+
+        // handle invalid characters
+        if (m_language.empty()) {
+            // preserve empty language field
+            language = 0;
             break;
         }
+        diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format. Setting language to undefined.", "making mdhd atom");
+        language = 0x55C4; // und(efined)
+        break;
     }
     if (m_language.size() > 3) {
         diag.emplace_back(
