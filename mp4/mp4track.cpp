@@ -200,7 +200,7 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
         }
         // read the table
         offsets.reserve(actualChunkCount);
-        m_istream->seekg(m_stcoAtom->dataOffset() + 8);
+        m_istream->seekg(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8));
         switch (chunkOffsetSize()) {
         case 4:
             for (uint32 i = 0; i < actualChunkCount; ++i) {
@@ -233,8 +233,8 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                     if (tfhdAtom->dataSize() < calculatedDataSize) {
                         diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated.", context);
                     } else {
-                        inputStream().seekg(tfhdAtom->dataOffset() + 1);
-                        const uint32 flags = reader().readUInt24BE();
+                        inputStream().seekg(static_cast<streamoff>(tfhdAtom->dataOffset() + 1));
+                        const std::uint32_t flags = reader().readUInt24BE();
                         if (m_id == reader().readUInt32BE()) { // check track ID
                             if (flags & 0x000001) { // base-data-offset present
                                 calculatedDataSize += 8;
@@ -286,9 +286,9 @@ std::vector<uint64> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics 
                                 if (trunAtom->dataSize() < calculatedDataSize) {
                                     diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
                                 } else {
-                                    inputStream().seekg(trunAtom->dataOffset() + 1);
-                                    uint32 flags = reader().readUInt24BE();
-                                    uint32 sampleCount = reader().readUInt32BE();
+                                    inputStream().seekg(static_cast<streamoff>(trunAtom->dataOffset() + 1));
+                                    std::uint32_t flags = reader().readUInt24BE();
+                                    std::uint32_t sampleCount = reader().readUInt32BE();
                                     m_sampleCount += sampleCount;
                                     if (flags & 0x000001) { // data offset present
                                         calculatedDataSize += 4;
@@ -471,20 +471,19 @@ vector<tuple<uint32, uint32, uint32>> Mp4Track::readSampleToChunkTable(Diagnosti
     } else {
         actualTableSize -= 8;
     }
-    uint32 actualSampleToChunkEntryCount = sampleToChunkEntryCount();
-    uint64 calculatedTableSize = actualSampleToChunkEntryCount * 12;
+    std::uint64_t actualSampleToChunkEntryCount = sampleToChunkEntryCount();
+    std::uint64_t calculatedTableSize = actualSampleToChunkEntryCount * 12;
     if (calculatedTableSize < actualTableSize) {
         diag.emplace_back(DiagLevel::Critical, "The stsc atom stores more entries as denoted. The additional entries will be ignored.", context);
     } else if (calculatedTableSize > actualTableSize) {
         diag.emplace_back(DiagLevel::Critical, "The stsc atom is truncated. It stores less entries as denoted.", context);
-        // FIXME: floor and cast actually required?
-        actualSampleToChunkEntryCount = floor(static_cast<double>(actualTableSize) / 12.0);
+        actualSampleToChunkEntryCount = actualTableSize / 12;
     }
     // prepare reading
     vector<tuple<uint32, uint32, uint32>> sampleToChunkTable;
     sampleToChunkTable.reserve(actualSampleToChunkEntryCount);
-    m_istream->seekg(m_stscAtom->dataOffset() + 8);
-    for (uint32 i = 0; i < actualSampleToChunkEntryCount; ++i) {
+    m_istream->seekg(static_cast<streamoff>(m_stscAtom->dataOffset() + 8));
+    for (std::uint32_t i = 0; i < actualSampleToChunkEntryCount; ++i) {
         // read entry
         uint32 firstChunk = reader().readUInt32BE();
         uint32 samplesPerChunk = reader().readUInt32BE();
@@ -565,13 +564,13 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
     using namespace Mpeg4ElementaryStreamObjectIds;
     unique_ptr<Mpeg4ElementaryStreamInfo> esInfo;
     if (esDescAtom->dataSize() >= 12) {
-        reader.stream()->seekg(esDescAtom->dataOffset());
+        reader.stream()->seekg(static_cast<streamoff>(esDescAtom->dataOffset()));
         // read version/flags
         if (reader.readUInt32BE() != 0) {
             diag.emplace_back(DiagLevel::Warning, "Unknown version/flags.", context);
         }
         // read extended descriptor
-        Mpeg4Descriptor esDesc(esDescAtom->container(), reader.stream()->tellg(), esDescAtom->dataSize() - 4);
+        Mpeg4Descriptor esDesc(esDescAtom->container(), static_cast<std::uint64_t>(reader.stream()->tellg()), esDescAtom->dataSize() - 4);
         try {
             esDesc.parse(diag);
             // check ID
@@ -580,7 +579,7 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                 throw Failure();
             }
             // read stream info
-            reader.stream()->seekg(esDesc.dataOffset());
+            reader.stream()->seekg(static_cast<streamoff>(esDesc.dataOffset()));
             esInfo = make_unique<Mpeg4ElementaryStreamInfo>();
             esInfo->id = reader.readUInt16BE();
             esInfo->esDescFlags = reader.readByte();
@@ -593,13 +592,13 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
             if (esInfo->ocrFlag()) {
                 esInfo->ocrId = reader.readUInt16BE();
             }
-            for (Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<uint64>(reader.stream()->tellg()) - esDesc.startOffset());
+            for (Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<std::uint32_t>(static_cast<std::uint64_t>(reader.stream()->tellg()) - esDesc.startOffset()));
                  esDescChild; esDescChild = esDescChild->nextSibling()) {
                 esDescChild->parse(diag);
                 switch (esDescChild->id()) {
                 case Mpeg4DescriptorIds::DecoderConfigDescr:
                     // read decoder config descriptor
-                    reader.stream()->seekg(esDescChild->dataOffset());
+                    reader.stream()->seekg(static_cast<streamoff>(esDescChild->dataOffset()));
                     esInfo->objectTypeId = reader.readByte();
                     esInfo->decCfgDescFlags = reader.readByte();
                     esInfo->bufferSize = reader.readUInt24BE();
@@ -656,9 +655,9 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(istream 
     static const string context("parsing MPEG-4 audio specific config from elementary stream descriptor");
     using namespace Mpeg4AudioObjectIds;
     // read config into buffer and construct BitReader for bitwise reading
-    stream.seekg(startOffset);
+    stream.seekg(static_cast<streamoff>(startOffset));
     auto buff = make_unique<char[]>(size);
-    stream.read(buff.get(), size);
+    stream.read(buff.get(), static_cast<streamoff>(size));
     BitReader bitReader(buff.get(), size);
     auto audioCfg = make_unique<Mpeg4AudioSpecificConfig>();
     try {
@@ -824,7 +823,7 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
     using namespace Mpeg4AudioObjectIds;
     auto videoCfg = make_unique<Mpeg4VideoSpecificConfig>();
     // seek to start
-    reader.stream()->seekg(startOffset);
+    reader.stream()->seekg(static_cast<streamoff>(startOffset));
     if (size > 3 && (reader.readUInt24BE() == 1)) {
         size -= 3;
         uint32 buff1;
@@ -845,7 +844,7 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(Bin
                 while (size >= 3) {
                     if ((buff1 = reader.readUInt24BE()) != 1) {
                         reader.stream()->seekg(-2, ios_base::cur);
-                        videoCfg->userData.push_back(buff1 >> 16);
+                        videoCfg->userData.push_back(static_cast<char>(buff1 >> 16));
                         --size;
                     } else {
                         size -= 3;
@@ -902,13 +901,13 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
         throw InvalidDataException();
     }
     static const unsigned int stcoDataBegin = 8;
-    uint64 startPos = m_stcoAtom->dataOffset() + stcoDataBegin;
-    uint64 endPos = startPos + m_stcoAtom->dataSize() - stcoDataBegin;
-    m_istream->seekg(startPos);
-    m_ostream->seekp(startPos);
-    vector<int64>::size_type i;
-    vector<int64>::size_type size;
-    uint64 currentPos = m_istream->tellg();
+    std::uint64_t startPos = m_stcoAtom->dataOffset() + stcoDataBegin;
+    std::uint64_t endPos = startPos + m_stcoAtom->dataSize() - stcoDataBegin;
+    m_istream->seekg(static_cast<streamoff>(startPos));
+    m_ostream->seekp(static_cast<streamoff>(startPos));
+    vector<std::int64_t>::size_type i;
+    vector<std::int64_t>::size_type size;
+    auto currentPos = static_cast<std::uint64_t>(m_istream->tellg());
     switch (m_stcoAtom->id()) {
     case Mp4AtomIds::ChunkOffset: {
         uint32 off;
@@ -920,9 +919,9 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
                     break;
                 }
             }
-            m_ostream->seekp(currentPos);
+            m_ostream->seekp(static_cast<streamoff>(currentPos));
             m_writer.writeUInt32BE(off);
-            currentPos += m_istream->gcount();
+            currentPos += static_cast<std::uint64_t>(m_istream->gcount());
         }
         break;
     }
@@ -936,9 +935,9 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
                     break;
                 }
             }
-            m_ostream->seekp(currentPos);
+            m_ostream->seekp(static_cast<streamoff>(currentPos));
             m_writer.writeUInt64BE(off);
-            currentPos += m_istream->gcount();
+            currentPos += static_cast<std::uint64_t>(m_istream->gcount());
         }
         break;
     }
@@ -950,7 +949,8 @@ void Mp4Track::updateChunkOffsets(const vector<int64> &oldMdatOffsets, const vec
 /*!
  * \brief Updates the chunk offsets of the track. This is necessary when the "mdat"-atom
  *        (which contains the actual chunk data) is moved.
- * \param chunkOffsets Specifies the new chunk offset table.
+ * \param chunkOffsets Specifies the new chunk offset table. If the "stco" atom is used the values
+ *                     must fit into an 32-bit unsigned int.
  *
  * \throws Throws InvalidDataException when
  *          - there is no stream assigned.
@@ -967,11 +967,11 @@ void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
     if (chunkOffsets.size() != chunkCount()) {
         throw InvalidDataException();
     }
-    m_ostream->seekp(m_stcoAtom->dataOffset() + 8);
+    m_ostream->seekp(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8));
     switch (m_stcoAtom->id()) {
     case Mp4AtomIds::ChunkOffset:
         for (auto offset : chunkOffsets) {
-            m_writer.writeUInt32BE(offset);
+            m_writer.writeUInt32BE(static_cast<std::uint32_t>(offset));
         }
         break;
     case Mp4AtomIds::ChunkOffset64:
@@ -987,7 +987,8 @@ void Mp4Track::updateChunkOffsets(const std::vector<uint64> &chunkOffsets)
 /*!
  * \brief Updates a particular chunk offset.
  * \param chunkIndex Specifies the index of the chunk offset to be updated.
- * \param offset Specifies the new chunk offset.
+ * \param offset Specifies the new chunk offset. If the "stco" atom is used the value must fit
+ *               into a 32-bit unsigned int.
  * \remarks This method seems to be obsolete.
  * \throws Throws InvalidDataException when
  *          - there is no stream assigned.
@@ -1001,10 +1002,10 @@ void Mp4Track::updateChunkOffset(uint32 chunkIndex, uint64 offset)
     if (!isHeaderValid() || !m_istream || !m_stcoAtom || chunkIndex >= m_chunkCount) {
         throw InvalidDataException();
     }
-    m_ostream->seekp(m_stcoAtom->dataOffset() + 8 + chunkOffsetSize() * chunkIndex);
+    m_ostream->seekp(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8 + chunkOffsetSize() * chunkIndex));
     switch (chunkOffsetSize()) {
     case 4:
-        writer().writeUInt32BE(offset);
+        writer().writeUInt32BE(static_cast<std::uint32_t>(offset));
         break;
     case 8:
         writer().writeUInt64BE(offset);
@@ -1414,10 +1415,11 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
  */
 void Mp4Track::makeSampleTable(Diagnostics &diag)
 {
-    ostream::pos_type stblStartOffset = outputStream().tellp();
+    // ostream::pos_type stblStartOffset = outputStream().tellp(); (enable when function is fully implemented)
+
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::SampleTable);
-    Mp4Atom *stblAtom = m_minfAtom ? m_minfAtom->childById(Mp4AtomIds::SampleTable, diag) : nullptr;
+    Mp4Atom *const stblAtom = m_minfAtom ? m_minfAtom->childById(Mp4AtomIds::SampleTable, diag) : nullptr;
     // write stsd atom
     if (m_stsdAtom) {
         // copy existing stsd atom
@@ -1427,7 +1429,7 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
         throw NotImplementedException();
     }
     // write stts and ctts atoms
-    Mp4Atom *sttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::DecodingTimeToSample, diag) : nullptr;
+    Mp4Atom *const sttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::DecodingTimeToSample, diag) : nullptr;
     if (sttsAtom) {
         // copy existing stts atom
         sttsAtom->copyEntirely(outputStream(), diag, nullptr);
@@ -1435,7 +1437,7 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "Unable to make stts atom from scratch.", "making stts atom");
         throw NotImplementedException();
     }
-    Mp4Atom *cttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::CompositionTimeToSample, diag) : nullptr;
+    Mp4Atom *const cttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::CompositionTimeToSample, diag) : nullptr;
     if (cttsAtom) {
         // copy existing ctts atom
         cttsAtom->copyEntirely(outputStream(), diag, nullptr);
@@ -1467,8 +1469,8 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
 
     // write subs atom (sub-sample information)
 
-    // write size (of stbl atom)
-    Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset, diag);
+    // write size of stbl atom (enable when function is fully implemented)
+    // Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset, diag);
 }
 
 void Mp4Track::internalParseHeader(Diagnostics &diag)
@@ -1530,7 +1532,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     BinaryReader &reader = m_trakAtom->reader();
 
     // read tkhd atom
-    m_istream->seekg(m_tkhdAtom->startOffset() + 8); // seek to beg, skip size and name
+    m_istream->seekg(static_cast<streamoff>(m_tkhdAtom->startOffset() + 8)); // seek to beg, skip size and name
     auto atomVersion = reader.readByte(); // read version
     const auto flags = reader.readUInt24BE();
     m_enabled = flags & 0x000001;
@@ -1557,7 +1559,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     }
 
     // read mdhd atom
-    m_istream->seekg(m_mdhdAtom->dataOffset()); // seek to beg, skip size and name
+    m_istream->seekg(static_cast<streamoff>(m_mdhdAtom->dataOffset())); // seek to beg, skip size and name
     atomVersion = reader.readByte(); // read version
     m_istream->seekg(3, ios_base::cur); // skip flags
     switch (atomVersion) {
@@ -1595,7 +1597,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
     // read hdlr atom
     // -> seek to begin skipping size, name, version, flags and reserved bytes
-    m_istream->seekg(m_hdlrAtom->dataOffset() + 8);
+    m_istream->seekg(static_cast<streamoff>(m_hdlrAtom->dataOffset() + 8));
     // -> track type
     switch (reader.readUInt32BE()) {
     case 0x76696465:
@@ -1619,7 +1621,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     // FIXME: save raw media type in next major release so unknown ones can still be written correctly in Mp4Track::makeMedia()
     // -> name
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
-    if ((tmp = m_istream->peek()) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {
+    if (static_cast<std::uint64_t>(tmp = static_cast<std::uint8_t>(m_istream->peek())) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {
         // assume size prefixed string (seems to appear in QuickTime files)
         m_istream->seekg(1, ios_base::cur);
         m_name = reader.readString(tmp);
@@ -1630,11 +1632,11 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
     // read stco atom (only chunk count)
     m_chunkOffsetSize = (m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64) ? 8 : 4;
-    m_istream->seekg(m_stcoAtom->dataOffset() + 4);
+    m_istream->seekg(static_cast<streamoff>(m_stcoAtom->dataOffset() + 4));
     m_chunkCount = reader.readUInt32BE();
 
     // read stsd atom
-    m_istream->seekg(m_stsdAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
+    m_istream->seekg(static_cast<streamoff>(m_stsdAtom->dataOffset() + 4)); // seek to beg, skip size, name, version and flags
     const auto entryCount = reader.readUInt32BE();
     Mp4Atom *esDescParentAtom = nullptr;
     if (entryCount) {
@@ -1646,7 +1648,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 m_formatId = interpretIntegerAsString<uint32>(codecConfigContainerAtom->id());
                 m_format = FourccIds::fourccToMediaFormat(codecConfigContainerAtom->id());
                 // parse codecConfigContainerAtom
-                m_istream->seekg(codecConfigContainerAtom->dataOffset());
+                m_istream->seekg(static_cast<streamoff>(codecConfigContainerAtom->dataOffset()));
                 switch (codecConfigContainerAtom->id()) {
                 case FourccIds::Mpeg4Audio:
                 case FourccIds::AmrNarrowband:
@@ -1740,7 +1742,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             if (esDescParentAtom) {
                 // parse AVC configuration
                 if (auto *const avcConfigAtom = esDescParentAtom->childById(Mp4AtomIds::AvcConfiguration, diag)) {
-                    m_istream->seekg(avcConfigAtom->dataOffset());
+                    m_istream->seekg(static_cast<streamoff>(avcConfigAtom->dataOffset()));
                     m_avcConfig = make_unique<TagParser::AvcConfiguration>();
                     try {
                         m_avcConfig->parse(reader, avcConfigAtom->dataSize(), diag);
@@ -1754,7 +1756,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
 
                 // parse AV1 configuration
                 if (auto *const av1ConfigAtom = esDescParentAtom->childById(Mp4AtomIds::Av1Configuration, diag)) {
-                    m_istream->seekg(av1ConfigAtom->dataOffset());
+                    m_istream->seekg(static_cast<streamoff>(av1ConfigAtom->dataOffset()));
                     m_av1Config = make_unique<TagParser::Av1Configuration>();
                     try {
                         m_av1Config->parse(reader, av1ConfigAtom->dataSize(), diag);
@@ -1817,8 +1819,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                             case GeneralMediaFormat::Mpeg1Audio:
                             case GeneralMediaFormat::Mpeg2Audio: {
                                 MpegAudioFrame frame;
-                                m_istream->seekg(m_stcoAtom->dataOffset() + 8);
-                                m_istream->seekg(m_chunkOffsetSize == 8 ? reader.readUInt64BE() : reader.readUInt32BE());
+                                m_istream->seekg(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8));
+                                m_istream->seekg(static_cast<streamoff>(m_chunkOffsetSize == 8 ? reader.readUInt64BE() : reader.readUInt32BE()));
                                 frame.parseHeader(reader, diag);
                                 MpegAudioFrameStream::addInfo(frame, *this);
                                 break;
@@ -1844,9 +1846,9 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             "The stsz atom is truncated. There are no sample sizes present. The size of the track can not be determined.", context);
     } else {
         actualSampleSizeTableSize -= 12; // subtract size of version and flags
-        m_istream->seekg(m_stszAtom->dataOffset() + 4); // seek to beg, skip size, name, version and flags
-        uint32 fieldSize;
-        uint32 constantSize;
+        m_istream->seekg(static_cast<streamoff>(m_stszAtom->dataOffset() + 4)); // seek to beg, skip size, name, version and flags
+        std::uint32_t fieldSize;
+        std::uint32_t constantSize;
         if (m_stszAtom->id() == Mp4AtomIds::CompactSampleSize) {
             constantSize = 0;
             m_istream->seekg(3, ios_base::cur); // seek reserved bytes
@@ -1925,8 +1927,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 if (tfhdAtom->dataSize() < calculatedDataSize) {
                     diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated.", context);
                 } else {
-                    m_istream->seekg(tfhdAtom->dataOffset() + 1);
-                    uint32 flags = reader.readUInt24BE();
+                    m_istream->seekg(static_cast<streamoff>(tfhdAtom->dataOffset() + 1));
+                    std::uint32_t flags = reader.readUInt24BE();
                     if (m_id == reader.readUInt32BE()) { // check track ID
                         if (flags & 0x000001) { // base-data-offset present
                             calculatedDataSize += 8;
@@ -1977,9 +1979,9 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                             if (trunAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
                             } else {
-                                m_istream->seekg(trunAtom->dataOffset() + 1);
-                                uint32 flags = reader.readUInt24BE();
-                                uint32 sampleCount = reader.readUInt32BE();
+                                m_istream->seekg(static_cast<streamoff>(trunAtom->dataOffset() + 1));
+                                std::uint32_t flags = reader.readUInt24BE();
+                                std::uint32_t sampleCount = reader.readUInt32BE();
                                 m_sampleCount += sampleCount;
                                 if (flags & 0x000001) { // data offset present
                                     calculatedDataSize += 4;
@@ -2059,7 +2061,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     }
 
     // read stsc atom (only number of entries)
-    m_istream->seekg(m_stscAtom->dataOffset() + 4);
+    m_istream->seekg(static_cast<streamoff>(m_stscAtom->dataOffset() + 4));
     m_sampleToChunkEntryCount = reader.readUInt32BE();
 }
 
