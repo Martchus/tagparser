@@ -56,10 +56,9 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag)
             m_size = xingSize;
         }
     }
-    m_bitrate = frame.isXingFramefieldPresent()
-        ? ((static_cast<double>(m_size) * 8.0)
-              / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samplingFrequency())) / 1024.0)
-        : frame.bitrate();
+    m_bitrate = frame.isXingFramefieldPresent() ? ((static_cast<double>(m_size) * 8.0)
+                    / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samplingFrequency())) / 1024.0)
+                                                : frame.bitrate();
     m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bytesPerSecond = static_cast<std::uint32_t>(m_bitrate * 125)));
 }
 

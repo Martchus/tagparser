@@ -437,9 +437,9 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
     info.requiredSize = m_tkhdAtom->dataSize() + 8;
     // -> add 12 byte to size if update from version 0 to version 1 is required (which needs 12 byte more)
     if ((info.version == 0)
-            && (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-                || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-                || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max())) {
+        && (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+            || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+            || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max())) {
         info.requiredSize += 12;
     }
     // -> add 8 byte to the size because it must be denoted using a 64-bit integer
@@ -592,7 +592,8 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
             if (esInfo->ocrFlag()) {
                 esInfo->ocrId = reader.readUInt16BE();
             }
-            for (Mpeg4Descriptor *esDescChild = esDesc.denoteFirstChild(static_cast<std::uint32_t>(static_cast<std::uint64_t>(reader.stream()->tellg()) - esDesc.startOffset()));
+            for (Mpeg4Descriptor *esDescChild
+                 = esDesc.denoteFirstChild(static_cast<std::uint32_t>(static_cast<std::uint64_t>(reader.stream()->tellg()) - esDesc.startOffset()));
                  esDescChild; esDescChild = esDescChild->nextSibling()) {
                 esDescChild->parse(diag);
                 switch (esDescChild->id()) {
@@ -1107,10 +1108,10 @@ std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
     }
     // ... mdhd total size
     if (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-         || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-          || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max()) {
+        || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
+        || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max()) {
         // write version 1 where those fields are 64-bit
-            size += 44;
+        size += 44;
     } else {
         // write version 0 where those fields are 32-bit
         size += 32;
@@ -1201,9 +1202,11 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     const auto creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
     const auto modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
     const auto duration = static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale);
-    const std::uint8_t version = (info.version == 0) && (creationTime > numeric_limits<std::uint32_t>::max()
-                                  || modificationTime > numeric_limits<std::uint32_t>::max()
-                                  || duration > numeric_limits<std::uint32_t>::max()) ? 1 : info.version;
+    const std::uint8_t version = (info.version == 0)
+            && (creationTime > numeric_limits<std::uint32_t>::max() || modificationTime > numeric_limits<std::uint32_t>::max()
+                || duration > numeric_limits<std::uint32_t>::max())
+        ? 1
+        : info.version;
 
     // make version and flags
     writer().writeByte(version);
@@ -1276,9 +1279,10 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     const auto creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
     const auto modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
     const auto duration = static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale);
-    const std::uint8_t version = (creationTime > numeric_limits<std::uint32_t>::max()
-                                  || modificationTime > numeric_limits<std::uint32_t>::max()
-                                  || duration > numeric_limits<std::uint32_t>::max()) ? 1 : 0;
+    const std::uint8_t version = (creationTime > numeric_limits<std::uint32_t>::max() || modificationTime > numeric_limits<std::uint32_t>::max()
+                                     || duration > numeric_limits<std::uint32_t>::max())
+        ? 1
+        : 0;
     writer().writeUInt32BE(version != 0 ? 44 : 32); // size
     writer().writeUInt32BE(Mp4AtomIds::MediaHeader);
     writer().writeByte(version); // version
@@ -1311,7 +1315,8 @@ void Mp4Track::makeMedia(Diagnostics &diag)
             language = 0;
             break;
         }
-        diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format. Setting language to undefined.", "making mdhd atom");
+        diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format. Setting language to undefined.",
+            "making mdhd atom");
         language = 0x55C4; // und(efined)
         break;
     }

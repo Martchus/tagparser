@@ -1239,7 +1239,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                                 segment.clusterEndOffset = level1Element->endOffset();
                                 if (segment.cuesElement
                                     && segment.cuesUpdater.updateOffsets(
-                                           clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)
+                                        clusterReadOffset, level1Element->startOffset() - 4 - segment.sizeDenotationLength - ebmlHeaderSize)
                                     && newCuesPos == ElementPosition::BeforeData) {
                                     cuesInvalidated = true;
                                 }
@@ -1326,13 +1326,13 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     if (rewriteRequired) {
                         if (newTagPos != ElementPosition::AfterData
                             && (!fileInfo().forceTagPosition()
-                                   || (fileInfo().tagPosition() == ElementPosition::Keep && currentTagPos == ElementPosition::Keep))) {
+                                || (fileInfo().tagPosition() == ElementPosition::Keep && currentTagPos == ElementPosition::Keep))) {
                             // rewriting might be avoided by writing the tags at the end
                             newTagPos = ElementPosition::AfterData;
                             rewriteRequired = false;
                         } else if (newCuesPos != ElementPosition::AfterData
                             && (!fileInfo().forceIndexPosition()
-                                   || (fileInfo().indexPosition() == ElementPosition::Keep && currentCuesPos == ElementPosition::Keep))) {
+                                || (fileInfo().indexPosition() == ElementPosition::Keep && currentCuesPos == ElementPosition::Keep))) {
                             // rewriting might be avoided by writing the cues at the end
                             newCuesPos = ElementPosition::AfterData;
                             rewriteRequired = false;

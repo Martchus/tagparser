@@ -439,7 +439,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         // prevent making the comment twice if it spreads over multiple pages/segments
                         if (!currentParams->removed
                             && ((m_iterator.currentPageIndex() == currentParams->firstPageIndex
-                                   && m_iterator.currentSegmentIndex() == currentParams->firstSegmentIndex))) {
+                                && m_iterator.currentSegmentIndex() == currentParams->firstSegmentIndex))) {
                             makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams, diag);
                         }
 

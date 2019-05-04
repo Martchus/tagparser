@@ -607,7 +607,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
 
         } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lComment) || (version < 3 && m_frameId == Id3v2FrameIds::sComment))
             || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
-                   || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
+                || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
             // make comment frame or the unsynchronized lyrics frame
             m_frame.makeComment(m_data, m_decompressedSize, *values.front(), version, diag);
 
