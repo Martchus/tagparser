@@ -331,7 +331,7 @@ void UtilitiesTests::testBackupFile()
         TESTUTILS_ASSERT_LIKE("renaming error", "Unable to rename original file before rewriting it: .*"s, string(failure.what()));
     }
     backupStream2.clear();
-    workingCopyPathMode("bak/unsupported.bin", WorkingCopyMode::NoCopy);
+    workingCopyPath("bak/unsupported.bin", WorkingCopyMode::NoCopy);
     createBackupFile("bak", file.path(), backupPath2, file.stream(), backupStream2);
     CPPUNIT_ASSERT_EQUAL(workingDir + "/bak/unsupported.bin", backupPath2);
 
