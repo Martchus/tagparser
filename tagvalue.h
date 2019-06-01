@@ -76,6 +76,8 @@ public:
     TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
         TagTextEncoding encoding = TagTextEncoding::Latin1);
     TagValue(PositionInSet value);
+    TagValue(ChronoUtilities::DateTime value);
+    TagValue(ChronoUtilities::TimeSpan value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
     ~TagValue();
@@ -277,10 +279,25 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, Ta
 
 /*!
  * \brief Constructs a new TagValue holding a copy of the given PositionInSet \a value.
- * \param value Specifies the PositionInSet.
  */
 inline TagValue::TagValue(PositionInSet value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::PositionInSet)
+{
+}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given DateTime \a value.
+ */
+inline TagValue::TagValue(ChronoUtilities::DateTime value)
+    : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::DateTime)
+{
+}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given TimeSpan \a value.
+ */
+inline TagValue::TagValue(ChronoUtilities::TimeSpan value)
+    : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::TimeSpan)
 {
 }
 

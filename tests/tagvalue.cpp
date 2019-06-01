@@ -128,6 +128,7 @@ void TagValueTests::testTimeSpan()
     const TimeSpan fiveMinutes(TimeSpan::fromMinutes(5));
     TagValue timeSpan;
     timeSpan.assignTimeSpan(fiveMinutes);
+    CPPUNIT_ASSERT_EQUAL(timeSpan, TagValue(timeSpan));
     CPPUNIT_ASSERT_EQUAL(fiveMinutes, timeSpan.toTimeSpan());
     CPPUNIT_ASSERT_EQUAL(fiveMinutes.toString(), timeSpan.toString());
     CPPUNIT_ASSERT_THROW(timeSpan.toInteger(), ConversionException);
@@ -140,6 +141,7 @@ void TagValueTests::testDateTime()
     const DateTime now(DateTime::now());
     TagValue dateTime;
     dateTime.assignDateTime(now);
+    CPPUNIT_ASSERT_EQUAL(dateTime, TagValue(dateTime));
     CPPUNIT_ASSERT_EQUAL(now, dateTime.toDateTime());
     CPPUNIT_ASSERT_EQUAL(now.toString(), dateTime.toString());
     CPPUNIT_ASSERT_THROW(dateTime.toInteger(), ConversionException);
