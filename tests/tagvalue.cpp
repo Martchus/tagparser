@@ -195,6 +195,14 @@ void TagValueTests::testEqualityOperator()
     CPPUNIT_ASSERT_MESSAGE("equality requires identical types or identical string representation"s, TagValue(0) != TagValue::empty());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("types might differ"s, TagValue(15), TagValue(15));
     CPPUNIT_ASSERT_EQUAL_MESSAGE("types might differ"s, TagValue("15", 2, TagTextEncoding::Latin1), TagValue(15));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("comparision of equal UTF-16 strings"s, TagValue("\x31\0\x32\0", 4, TagTextEncoding::Utf16LittleEndian),
+        TagValue("\x31\0\x32\0", 4, TagTextEncoding::Utf16LittleEndian));
+    CPPUNIT_ASSERT_MESSAGE("comparision of different UTF-16 strings"s,
+        TagValue("\x31\0\x33\0", 4, TagTextEncoding::Utf16LittleEndian) != TagValue("\x31\0\x32\0", 4, TagTextEncoding::Utf16LittleEndian));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "comparision of equal binary data"s, TagValue("\x31\0\x32\0", 4, TagDataType::Binary), TagValue("\x31\0\x32\0", 4, TagDataType::Binary));
+    CPPUNIT_ASSERT_MESSAGE("comparision of different binary data"s,
+        TagValue("\x31\0\x33\0", 4, TagDataType::Binary) != TagValue("\x31\0\x32\0", 4, TagDataType::Binary));
     CPPUNIT_ASSERT_MESSAGE("encoding must be equal if relevant for types"s,
         TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian) != TagValue("15", 2, TagTextEncoding::Latin1));
     CPPUNIT_ASSERT_EQUAL_MESSAGE(

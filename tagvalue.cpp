@@ -117,11 +117,19 @@ bool TagValue::operator==(const TagValue &other) const
     if (m_type == other.m_type) {
         switch (m_type) {
         case TagDataType::Text:
-            if (m_size != other.m_size && m_encoding != other.m_encoding) {
+            if (m_size != other.m_size || m_encoding != other.m_encoding) {
                 // don't consider differently encoded text values equal
                 return false;
             }
-            return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
+            if (!m_size) {
+                return true;
+            }
+            for (auto i1 = m_ptr.get(), i2 = other.m_ptr.get(), end = m_ptr.get() + m_size; i1 != end; ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return false;
+                }
+            }
+            return true;
         case TagDataType::PositionInSet:
             return toPositionInSet() == other.toPositionInSet();
         case TagDataType::Integer:
@@ -138,7 +146,15 @@ bool TagValue::operator==(const TagValue &other) const
             if (m_size != other.m_size) {
                 return false;
             }
-            return strncmp(m_ptr.get(), other.m_ptr.get(), m_size) == 0;
+            if (!m_size) {
+                return true;
+            }
+            for (auto i1 = m_ptr.get(), i2 = other.m_ptr.get(), end = m_ptr.get() + m_size; i1 != end; ++i1, ++i2) {
+                if (*i1 != *i2) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }
