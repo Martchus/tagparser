@@ -142,6 +142,8 @@ public:
             std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>>
             * = nullptr>
     static std::vector<std::string> toStrings(const ContainerType &values, TagTextEncoding encoding = TagTextEncoding::Utf8);
+    bool compareData(const TagValue &other) const;
+    static bool compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2);
 
 private:
     std::unique_ptr<char[]> m_ptr;
@@ -608,6 +610,14 @@ std::vector<std::string> TagValue::toStrings(const ContainerType &values, TagTex
         res.emplace_back(Traits::dereferenceMaybe(value).toString(encoding));
     }
     return res;
+}
+
+/*!
+ * \brief Returns whether the raw data of the current instance equals the raw data of \a other.
+ */
+inline bool TagValue::compareData(const TagValue &other) const
+{
+    return compareData(m_ptr.get(), m_size, other.m_ptr.get(), other.m_size);
 }
 
 } // namespace TagParser

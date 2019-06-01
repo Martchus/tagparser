@@ -233,8 +233,9 @@ void OverallTests::checkMp3TestMetaData()
 
     // check common test meta data
     if (id3v1Tag) {
+        CPPUNIT_ASSERT_EQUAL(TagTextEncoding::Latin1, id3v1Tag->value(KnownField::Title).dataEncoding());
         CPPUNIT_ASSERT_EQUAL(m_testTitle, id3v1Tag->value(KnownField::Title));
-        CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), id3v1Tag->value(KnownField::Comment).toString()); // ignore encoding here
+        CPPUNIT_ASSERT_EQUAL(m_testCommentWithoutDescription, id3v1Tag->value(KnownField::Comment));
         CPPUNIT_ASSERT_EQUAL(m_testAlbum, id3v1Tag->value(KnownField::Album));
         CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v1Tag->value(KnownField::Artist));
         m_preservedMetaData.pop();
@@ -244,6 +245,7 @@ void OverallTests::checkMp3TestMetaData()
         const TagValue &commentValue = id3v2Tag->value(KnownField::Comment);
 
         if (m_mode & UseId3v24) {
+            CPPUNIT_ASSERT_EQUAL(TagTextEncoding::Utf8, titleValue.dataEncoding());
             CPPUNIT_ASSERT_EQUAL(m_testTitle, titleValue);
             CPPUNIT_ASSERT_EQUAL(m_testComment, commentValue);
             CPPUNIT_ASSERT_EQUAL(m_testAlbum, id3v2Tag->value(KnownField::Album));
@@ -251,14 +253,14 @@ void OverallTests::checkMp3TestMetaData()
             // TODO: check more fields
         } else {
             CPPUNIT_ASSERT_EQUAL_MESSAGE("not attempted to use UTF-8 in ID3v2.3", TagTextEncoding::Utf16LittleEndian, titleValue.dataEncoding());
-            CPPUNIT_ASSERT_EQUAL(m_testTitle.toString(), titleValue.toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL(m_testTitle, titleValue);
             CPPUNIT_ASSERT_EQUAL_MESSAGE("not attempted to use UTF-8 in ID3v2.3", TagTextEncoding::Utf16LittleEndian, commentValue.dataEncoding());
             CPPUNIT_ASSERT_EQUAL_MESSAGE(
                 "not attempted to use UTF-8 in ID3v2.3", TagTextEncoding::Utf16LittleEndian, commentValue.descriptionEncoding());
-            CPPUNIT_ASSERT_EQUAL(m_testComment.toString(), commentValue.toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL(m_testComment, commentValue);
             CPPUNIT_ASSERT_EQUAL_MESSAGE(
                 "description is also converted to UTF-16", "s\0o\0m\0e\0 \0d\0e\0s\0c\0r\0i\0p\0t\0i\0\xf3\0n\0"s, commentValue.description());
-            CPPUNIT_ASSERT_EQUAL(m_testAlbum.toString(TagTextEncoding::Utf8), id3v2Tag->value(KnownField::Album).toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL(m_testAlbum, id3v2Tag->value(KnownField::Album));
             CPPUNIT_ASSERT_EQUAL(m_preservedMetaData.front(), id3v2Tag->value(KnownField::Artist));
             // TODO: check more fields
         }

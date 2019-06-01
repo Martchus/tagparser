@@ -131,6 +131,7 @@ private:
     AbortableProgressFeedback m_progress;
     TagValue m_testTitle;
     TagValue m_testComment;
+    TagValue m_testCommentWithoutDescription;
     TagValue m_testAlbum;
     TagValue m_testPartNumber;
     TagValue m_testTotalParts;

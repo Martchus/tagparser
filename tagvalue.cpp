@@ -46,6 +46,25 @@ const char *tagDataTypeString(TagDataType dataType)
 }
 
 /*!
+ * \brief Returns the encoding parameter (name of the character set and bytes per character) for the specified \a tagTextEncoding.
+ */
+pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
+{
+    switch (tagTextEncoding) {
+    case TagTextEncoding::Latin1:
+        return make_pair("ISO-8859-1", 1.0f);
+    case TagTextEncoding::Utf8:
+        return make_pair("UTF-8", 1.0f);
+    case TagTextEncoding::Utf16LittleEndian:
+        return make_pair("UTF-16LE", 2.0f);
+    case TagTextEncoding::Utf16BigEndian:
+        return make_pair("UTF-16BE", 2.0f);
+    default:
+        return make_pair(nullptr, 0.0f);
+    }
+}
+
+/*!
  * \class TagParser::TagValue
  * \brief The TagValue class wraps values of different types. It is meant to be assigned to a tag field.
  *
@@ -97,39 +116,125 @@ TagValue &TagValue::operator=(const TagValue &other)
     return *this;
 }
 
+/// \cond
+TagTextEncoding pickUtfEncoding(TagTextEncoding encoding1, TagTextEncoding encoding2)
+{
+    switch (encoding1) {
+    case TagTextEncoding::Utf8:
+    case TagTextEncoding::Utf16LittleEndian:
+    case TagTextEncoding::Utf16BigEndian:
+        return encoding1;
+    default:
+        switch (encoding2) {
+        case TagTextEncoding::Utf8:
+        case TagTextEncoding::Utf16LittleEndian:
+        case TagTextEncoding::Utf16BigEndian:
+            return encoding2;
+        default:;
+        }
+    }
+    return TagTextEncoding::Utf8;
+}
+/// \endcond
+
 /*!
- * \brief Returns whether both instances are equal.
- *
- * If the data types are not equal, two instances are still considered equal if the string representation
- * is identical. The encoding and meta data must be equal as well if relevant for the data type.
- *
- * \sa TagValueTests::testEqualityOperator()
+ * \brief Returns whether both instances are equal. Meta-data like description and MIME-type is taken into
+ *        account as well.
+ * \remarks
+ * - If the data types are not equal, two instances are still considered equal if the string representation
+ *   is identical. For instance the text "2" is considered equal to the integer 2. This also means that an empty
+ *   TagValue and the integer 0 are *not* considered equal.
+ * - The choice to allow implicit conversions was made because different tag formats use different types and
+ *   usually one does not care about those internals when comparing values.
+ * - If any of the differently typed values can not be converted to a string (eg. it is binary data) the values
+ *   are *not* considered equal. So the text "foo" and the binary value "foo" are not considered equal although
+ *   the raw data is identical.
+ * - In fact, values of the types TagDataType::DateTime, TagDataType::TimeSpan, TagDataType::Picture, TagDataType::Binary
+ *   and TagDataType::Unspecified will never be considered equal with a value of another type.
+ * - If the type is TagDataType::Text and the encoding differs values might still be considered equal if they
+ *   represent the same characters. The same counts for the description.
+ * - This might be a costly operation due to possible conversions.
+ * \sa
+ * - TagValue::compareData() to compare raw data without any conversions
+ * - TagValueTests::testEqualityOperator() for examples
  */
 bool TagValue::operator==(const TagValue &other) const
 {
-    // check whether meta-data is equal
-    if (m_desc != other.m_desc || (!m_desc.empty() && m_descEncoding != other.m_descEncoding) || m_mimeType != other.m_mimeType
-        || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
+    // check whether meta-data is equal (except description)
+    if (m_mimeType != other.m_mimeType || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
         return false;
+    }
+
+    // check description which might be differently encoded
+    if (m_descEncoding == other.m_descEncoding || m_descEncoding == TagTextEncoding::Unspecified
+        || other.m_descEncoding == TagTextEncoding::Unspecified || m_desc.empty() || other.m_desc.empty()) {
+        if (m_desc != other.m_desc) {
+            return false;
+        }
+    } else {
+        const auto utfEncodingToUse = pickUtfEncoding(m_descEncoding, other.m_descEncoding);
+        StringData str1, str2;
+        const char *data1, *data2;
+        size_t size1, size2;
+        if (m_descEncoding != utfEncodingToUse) {
+            const auto inputParameter = encodingParameter(m_descEncoding), outputParameter = encodingParameter(utfEncodingToUse);
+            str1 = convertString(
+                inputParameter.first, outputParameter.first, m_desc.data(), m_desc.size(), outputParameter.second / inputParameter.second);
+            data1 = str1.first.get();
+            size1 = str1.second;
+        } else {
+            data1 = m_desc.data();
+            size1 = m_desc.size();
+        }
+        if (other.m_descEncoding != utfEncodingToUse) {
+            const auto inputParameter = encodingParameter(other.m_descEncoding), outputParameter = encodingParameter(utfEncodingToUse);
+            str2 = convertString(inputParameter.first, outputParameter.first, other.m_desc.data(), other.m_desc.size(),
+                outputParameter.second / inputParameter.second);
+            data2 = str2.first.get();
+            size2 = str2.second;
+        } else {
+            data2 = other.m_desc.data();
+            size2 = other.m_desc.size();
+        }
+        return compareData(data1, size1, data2, size2);
     }
 
     // check for equality if both types are identical
     if (m_type == other.m_type) {
         switch (m_type) {
-        case TagDataType::Text:
-            if (m_size != other.m_size || m_encoding != other.m_encoding) {
-                // don't consider differently encoded text values equal
+        case TagDataType::Text: {
+            if (m_size != other.m_size && m_encoding == other.m_encoding) {
                 return false;
             }
-            if (!m_size) {
-                return true;
+
+            // compare raw data directly if the encoding is the same
+            if (m_encoding == other.m_encoding || m_encoding == TagTextEncoding::Unspecified || other.m_encoding == TagTextEncoding::Unspecified) {
+                return compareData(other);
             }
-            for (auto i1 = m_ptr.get(), i2 = other.m_ptr.get(), end = m_ptr.get() + m_size; i1 != end; ++i1, ++i2) {
-                if (*i1 != *i2) {
-                    return false;
-                }
+
+            // compare UTF-8 or UTF-16 representation of strings avoiding unnecessary conversions
+            const auto utfEncodingToUse = pickUtfEncoding(m_encoding, other.m_encoding);
+            string str1, str2;
+            const char *data1, *data2;
+            size_t size1, size2;
+            if (m_encoding != utfEncodingToUse) {
+                str1 = toString(utfEncodingToUse);
+                data1 = str1.data();
+                size1 = str1.size();
+            } else {
+                data1 = m_ptr.get();
+                size1 = m_size;
             }
-            return true;
+            if (other.m_encoding != utfEncodingToUse) {
+                str2 = other.toString(utfEncodingToUse);
+                data2 = str2.data();
+                size2 = str2.size();
+            } else {
+                data2 = other.m_ptr.get();
+                size2 = other.m_size;
+            }
+            return compareData(data1, size1, data2, size2);
+        }
         case TagDataType::PositionInSet:
             return toPositionInSet() == other.toPositionInSet();
         case TagDataType::Integer:
@@ -143,23 +248,24 @@ bool TagValue::operator==(const TagValue &other) const
         case TagDataType::Picture:
         case TagDataType::Binary:
         case TagDataType::Undefined:
-            if (m_size != other.m_size) {
-                return false;
-            }
-            if (!m_size) {
-                return true;
-            }
-            for (auto i1 = m_ptr.get(), i2 = other.m_ptr.get(), end = m_ptr.get() + m_size; i1 != end; ++i1, ++i2) {
-                if (*i1 != *i2) {
-                    return false;
-                }
-            }
-            return true;
+            return compareData(other);
         }
         return false;
     }
 
-    // check for equality if types are different by comparing the string representation
+    // check for equality if types are different by comparing the string representation (if that makes sense)
+    for (const auto dataType : { m_type, other.m_type }) {
+        switch (dataType) {
+        case TagDataType::TimeSpan:
+        case TagDataType::DateTime:
+        case TagDataType::Picture:
+        case TagDataType::Binary:
+        case TagDataType::Undefined:
+            // do not attempt to convert these types to string because it will always fail anyways
+            return false;
+        default:;
+        }
+    }
     try {
         return toString() == other.toString(m_encoding);
     } catch (const ConversionException &) {
@@ -360,25 +466,6 @@ DateTime TagValue::toDateTime() const
 }
 
 /*!
- * \brief Returns the encoding parameter (name of the character set and bytes per character) for the specified \a tagTextEncoding.
- */
-pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
-{
-    switch (tagTextEncoding) {
-    case TagTextEncoding::Latin1:
-        return make_pair("ISO-8859-1", 1.0f);
-    case TagTextEncoding::Utf8:
-        return make_pair("UTF-8", 1.0f);
-    case TagTextEncoding::Utf16LittleEndian:
-        return make_pair("UTF-16LE", 2.0f);
-    case TagTextEncoding::Utf16BigEndian:
-        return make_pair("UTF-16BE", 2.0f);
-    default:
-        return make_pair(nullptr, 0.0f);
-    }
-}
-
-/*!
  * \brief Converts the currently assigned text value to the specified \a encoding.
  * \throws Throws ConversionUtilities::ConversionException() if the conversion fails.
  * \remarks
@@ -483,7 +570,10 @@ void TagValue::convertDescriptionEncoding(TagTextEncoding encoding)
  * \param result Specifies the string to store the result.
  * \param encoding Specifies the encoding to to be used; set to TagTextEncoding::Unspecified to use the
  *        present encoding without any character set conversion.
- * \remarks If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
+ * \remarks
+ * - Not all types can be converted to a string, eg. TagDataType::Picture, TagDataType::Binary and
+ *   TagDataType::Unspecified will always fail to convert.
+ * - If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
  * \throws Throws ConversionException on failure.
  */
 void TagValue::toString(string &result, TagTextEncoding encoding) const
@@ -563,7 +653,10 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::u16string representation.
  * \throws Throws ConversionException on failure.
- * \remarks Use this only, if \a encoding is an UTF-16 encoding.
+ * \remarks
+ * - Not all types can be converted to a string, eg. TagDataType::Picture, TagDataType::Binary and
+ *   TagDataType::Unspecified will always fail to convert.
+ * - Use this only, if \a encoding is an UTF-16 encoding.
  * \sa toString()
  */
 void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
@@ -803,7 +896,28 @@ void TagValue::ensureHostByteOrder(u16string &u16str, TagTextEncoding currentEnc
 }
 
 /*!
- * \brief Returns an empty TagValue.
+ * \brief Returns whether 2 data buffers are equal. In case one of the sizes is zero, no pointer is dereferenced.
+ */
+bool TagValue::compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2)
+{
+    if (size1 != size2) {
+        return false;
+    }
+    if (!size1) {
+        return true;
+    }
+    for (auto i1 = data1, i2 = data2, end = data1 + size1; i1 != end; ++i1, ++i2) {
+        if (*i1 != *i2) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/*!
+ * \brief Returns a default-constructed TagValue where TagValue::isNull() and TagValue::isEmpty() both return true.
+ * \remarks This is useful if one wants to return a const reference to a TagValue and a null-value is needed to indicate
+ *          that the field does not exist at all.
  */
 const TagValue &TagValue::empty()
 {
