@@ -116,7 +116,7 @@ void TagValueTests::testPositionInSet()
 {
     const TagValue test(PositionInSet(4, 23));
     CPPUNIT_ASSERT_EQUAL(PositionInSet(4, 23), test.toPositionInSet());
-    CPPUNIT_ASSERT_THROW(test.toInteger(), ConversionException);
+    CPPUNIT_ASSERT_EQUAL(test.toInteger(), 4);
     CPPUNIT_ASSERT_EQUAL("4/23"s, test.toString());
     CPPUNIT_ASSERT_THROW(test.toStandardGenreIndex(), ConversionException);
     CPPUNIT_ASSERT_THROW(test.toDateTime(), ConversionException);

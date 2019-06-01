@@ -192,8 +192,12 @@ int32 TagValue::toInteger() const
             ensureHostByteOrder(u16str, m_encoding);
             return ConversionUtilities::stringToNumber<int32>(u16str);
         }
-    case TagDataType::Integer:
     case TagDataType::PositionInSet:
+        if (m_size == sizeof(PositionInSet)) {
+            return *reinterpret_cast<std::int32_t *>(m_ptr.get());
+        }
+        throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
+    case TagDataType::Integer:
     case TagDataType::StandardGenreIndex:
         if (m_size == sizeof(int32)) {
             return *reinterpret_cast<int32 *>(m_ptr.get());
