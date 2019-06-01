@@ -58,6 +58,16 @@ bool Id3v2Tag::supportsMultipleValues(KnownField field) const
     }
 }
 
+void Id3v2Tag::ensureTextValuesAreProperlyEncoded()
+{
+    const auto encoding = proposedTextEncoding();
+    for (auto &field : fields()) {
+        auto &value = field.second.value();
+        value.convertDataEncoding(encoding);
+        value.convertDescriptionEncoding(encoding);
+    }
+}
+
 /*!
  * \brief Works like the default implementation but adds additional values as well.
  */

@@ -5,8 +5,10 @@
 #include "../exceptions.h"
 
 #include <c++utilities/conversion/conversionexception.h>
+#include <c++utilities/conversion/stringbuilder.h>
 
 #include <cstring>
+#include <initializer_list>
 
 using namespace std;
 using namespace ConversionUtilities;
@@ -37,7 +39,7 @@ const char *Id3v1Tag::typeName() const
 
 bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 {
-    return Tag::canEncodingBeUsed(encoding);
+    return encoding == TagTextEncoding::Latin1 || encoding == TagTextEncoding::Utf8;
 }
 
 /*!
@@ -48,7 +50,7 @@ bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
  */
 void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
 {
-    VAR_UNUSED(diag);
+    VAR_UNUSED(diag)
     char buffer[128];
     stream.read(buffer, 128);
     if (buffer[0] != 0x54 || buffer[1] != 0x41 || buffer[2] != 0x47) {
@@ -59,15 +61,16 @@ void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
     readValue(m_artist, 30, buffer + 33);
     readValue(m_album, 30, buffer + 63);
     readValue(m_year, 4, buffer + 93);
-    if (buffer[125] == 0) {
+    const auto is11 = buffer[125] == 0;
+    if (is11) {
         readValue(m_comment, 28, buffer + 97);
         m_version = "1.1";
     } else {
         readValue(m_comment, 30, buffer + 97);
         m_version = "1.0";
     }
-    readValue(m_comment, buffer[125] == 0 ? 28 : 30, buffer + 97);
-    if (buffer[125] == 0) {
+    readValue(m_comment, is11 ? 28 : 30, buffer + 97);
+    if (is11) {
         m_trackPos.assignPosition(PositionInSet(*reinterpret_cast<char *>(buffer + 126), 0));
     }
     m_genre.assignStandardGenreIndex(*reinterpret_cast<unsigned char *>(buffer + 127));
@@ -250,13 +253,17 @@ bool Id3v1Tag::supportsField(KnownField field) const
 
 void Id3v1Tag::ensureTextValuesAreProperlyEncoded()
 {
-    m_title.convertDataEncodingForTag(this);
-    m_artist.convertDataEncodingForTag(this);
-    m_album.convertDataEncodingForTag(this);
-    m_year.convertDataEncodingForTag(this);
-    m_comment.convertDataEncodingForTag(this);
-    m_trackPos.convertDataEncodingForTag(this);
-    m_genre.convertDataEncodingForTag(this);
+    for (auto *value : initializer_list<TagValue *>{ &m_title, &m_artist, &m_album, &m_year, &m_comment, &m_trackPos, &m_genre }) {
+        // convert UTF-16 to UTF-8
+        switch (value->dataEncoding()) {
+        case TagTextEncoding::Latin1:
+        case TagTextEncoding::Utf8:
+        case TagTextEncoding::Unspecified:
+            break;
+        default:
+            value->convertDataEncoding(TagTextEncoding::Utf8);
+        }
+    }
 }
 
 /*!
@@ -265,11 +272,15 @@ void Id3v1Tag::ensureTextValuesAreProperlyEncoded()
 void Id3v1Tag::readValue(TagValue &value, size_t maxLength, const char *buffer)
 {
     const char *end = buffer + maxLength - 1;
-    while ((*end == 0x0 || *end == ' ') && end >= buffer) {
+    while ((*end == 0x0 || *end == ' ') && end > buffer) {
         --end;
         --maxLength;
     }
-    value.assignData(buffer, maxLength, TagDataType::Text, TagTextEncoding::Latin1);
+    if (maxLength >= 3 && ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF) {
+        value.assignData(buffer + 3, maxLength - 3, TagDataType::Text, TagTextEncoding::Utf8);
+    } else {
+        value.assignData(buffer, maxLength, TagDataType::Text, TagTextEncoding::Latin1);
+    }
 }
 
 /*!
@@ -277,14 +288,51 @@ void Id3v1Tag::readValue(TagValue &value, size_t maxLength, const char *buffer)
  */
 void Id3v1Tag::writeValue(const TagValue &value, size_t length, char *buffer, ostream &targetStream, Diagnostics &diag)
 {
+    // initialize buffer with zeroes
     memset(buffer, 0, length);
+
+    // stringify value
+    string valueAsString;
     try {
-        value.toString().copy(buffer, length);
+        valueAsString = value.toString();
     } catch (const ConversionException &) {
         diag.emplace_back(
             DiagLevel::Warning, "Field can not be set because given value can not be converted appropriately.", "making ID3v1 tag field");
     }
-    targetStream.write(buffer, length);
+
+    // handle encoding
+    auto *valueStart = buffer;
+    auto valueLength = length;
+    switch (value.dataEncoding()) {
+    case TagTextEncoding::Latin1:
+    case TagTextEncoding::Unspecified:
+        break;
+    case TagTextEncoding::Utf8:
+        // write
+        for (const auto c : valueAsString) {
+            if ((c & 0x80) == 0) {
+                continue;
+            }
+            buffer[0] = static_cast<char>(0xEF);
+            buffer[1] = static_cast<char>(0xBB);
+            buffer[2] = static_cast<char>(0xBF);
+            valueStart += 3;
+            valueLength -= 3;
+            break;
+        }
+        FALLTHROUGH;
+    default:
+        diag.emplace_back(DiagLevel::Warning, "The used encoding is unlikely to be supported by other software.", "making ID3v1 tag field");
+    }
+
+    // copy the string
+    if (valueAsString.size() > length) {
+        diag.emplace_back(
+            DiagLevel::Warning, argsToString("Value has been truncated. Max. ", length, " characters supported."), "making ID3v1 tag field");
+    }
+    valueAsString.copy(valueStart, valueLength);
+
+    targetStream.write(buffer, static_cast<streamsize>(length));
 }
 
 } // namespace TagParser

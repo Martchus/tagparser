@@ -80,6 +80,17 @@ void OverallTests::checkMp3Testfile1()
         CPPUNIT_ASSERT_EQUAL(0_st, tracks.size());
     }
 
+    auto warningAboutEncoding = false;
+    for (auto &msg : m_diag) {
+        if (msg.message() == "The used encoding is unlikely to be supported by other software.") {
+            CPPUNIT_ASSERT_EQUAL(DiagLevel::Warning, msg.level());
+            warningAboutEncoding = true;
+            msg = DiagMessage(DiagLevel::Information, string(), string());
+        }
+    }
+    const auto encodingWarningExpected
+        = m_tagStatus == TagStatus::TestMetaDataPresent && (m_mode & Mp3TestFlags::Id3v1Only || m_mode & Mp3TestFlags::Id3v2AndId3v1);
+    CPPUNIT_ASSERT_EQUAL(encodingWarningExpected, warningAboutEncoding);
     CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
 
@@ -324,6 +335,9 @@ void OverallTests::setMp3TestMetaData1()
         tag->setValue(KnownField::TrackPosition, m_testPosition);
         tag->setValue(KnownField::DiskPosition, m_testPosition);
         // TODO: set more fields
+    }
+    if (id3v1Tag) {
+        id3v1Tag->ensureTextValuesAreProperlyEncoded();
     }
 }
 
