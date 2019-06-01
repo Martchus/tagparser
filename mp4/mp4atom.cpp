@@ -131,7 +131,7 @@ void Mp4Atom::internalParse(Diagnostics &diag)
  * previous offset and the start offset as 32-bit unsigned integer to the \a stream.
  * Then it seeks back to the previous offset.
  */
-void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const ostream::pos_type &startOffset, Diagnostics &diag)
+void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset, Diagnostics &diag)
 {
     ostream::pos_type currentOffset = stream.tellp();
     const auto atomSize(currentOffset - startOffset);

@@ -864,7 +864,7 @@ u16string Id3v2Frame::parseWideString(const char *buffer, size_t dataSize, TagTe
  * \param encoding Specifies the encoding of the string. Might be reset if a byte order mark is found.
  * \remarks This method is not used anymore and might be deleted.
  */
-void Id3v2Frame::parseBom(const char *buffer, size_t maxSize, TagTextEncoding &encoding, Diagnostics &diag)
+void Id3v2Frame::parseBom(const char *buffer, std::size_t maxSize, TagTextEncoding &encoding, Diagnostics &diag)
 {
     switch (encoding) {
     case TagTextEncoding::Utf16BigEndian:
