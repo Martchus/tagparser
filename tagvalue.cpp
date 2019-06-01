@@ -437,6 +437,47 @@ void TagValue::convertDataEncodingForTag(const Tag *tag)
 }
 
 /*!
+ * \brief Converts the assigned description to use the specified \a encoding.
+ */
+void TagValue::convertDescriptionEncoding(TagTextEncoding encoding)
+{
+    if (encoding == m_descEncoding) {
+        return;
+    }
+    if (m_desc.empty()) {
+        m_descEncoding = encoding;
+        return;
+    }
+    StringData encodedData;
+    switch (encoding) {
+    case TagTextEncoding::Utf8:
+        // use pre-defined methods when encoding to UTF-8
+        switch (dataEncoding()) {
+        case TagTextEncoding::Latin1:
+            encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
+            break;
+        case TagTextEncoding::Utf16LittleEndian:
+            encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
+            break;
+        case TagTextEncoding::Utf16BigEndian:
+            encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
+            break;
+        default:;
+        }
+        break;
+    default: {
+        // otherwise, determine input and output parameter to use general covertString method
+        const auto inputParameter = encodingParameter(m_descEncoding);
+        const auto outputParameter = encodingParameter(encoding);
+        encodedData = convertString(
+            inputParameter.first, outputParameter.first, m_desc.data(), m_desc.size(), outputParameter.second / inputParameter.second);
+    }
+    }
+    m_desc.assign(encodedData.first.get(), encodedData.second);
+    m_descEncoding = encoding;
+}
+
+/*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::string representation.
  * \param result Specifies the string to store the result.

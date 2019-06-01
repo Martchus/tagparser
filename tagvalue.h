@@ -119,6 +119,7 @@ public:
     void convertDataEncoding(TagTextEncoding encoding);
     void convertDataEncodingForTag(const Tag *tag);
     TagTextEncoding descriptionEncoding() const;
+    void convertDescriptionEncoding(TagTextEncoding encoding);
     static const TagValue &empty();
 
     void assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
@@ -477,9 +478,12 @@ inline const char *TagValue::dataPointer() const
 
 /*!
  * \brief Returns the description.
- * \remarks The usage of this meta information depends on the tag implementation.
- * \sa descriptionEncoding()
- * \sa setDescription()
+ * \remarks The usage of this meta information depends on the tag implementation. It might be ignored
+ *          if not supported.
+ * \sa
+ * - descriptionEncoding() for the encoding of the returned string
+ * - convertDescriptionEncoding() to change the encoding of the description
+ * - setDescription() for setting the description
  */
 inline const std::string &TagValue::description() const
 {
@@ -490,9 +494,11 @@ inline const std::string &TagValue::description() const
  * \brief Sets the description.
  * \param value Specifies the description.
  * \param encoding Specifies the encoding used to provide the description.
- * \remarks The usage of this meta information depends on the tag implementation.
- * \sa description()
- * \sa descriptionEncoding()
+ * \remarks The usage of this meta information depends on the tag implementation. It might be ignored
+ *          if not supported.
+ * \sa
+ * - description() and descriptionEncoding()
+ * - convertDescriptionEncoding() to change the description encoding after assignment
  */
 inline void TagValue::setDescription(const std::string &value, TagTextEncoding encoding)
 {
