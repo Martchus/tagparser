@@ -69,6 +69,23 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
  * \brief The TagValue class wraps values of different types. It is meant to be assigned to a tag field.
  *
  * For a list of supported types see TagParser::TagDataType.
+ *
+ * When constructing a TagValue choose the type which suites the value you want to store best. If the
+ * tag format uses a different type the serializer will take care of the neccassary conversion (eg. convert
+ * an integer to a string).
+ *
+ * When consuming a TagValue read from a tag one should not expect that a particular type is used. The
+ * type depends on what the particular tag format uses. However, the conversion functions provided by the
+ * TagValue class take care of neccassary conversions, eg. TagValue::toInteger() will attempt to convert a
+ * string to a number (an possibly throw a ConversionException on failure).
+ *
+ * Values of the type TagDataType::Text can be differently encoded. See TagParser::TagTextEncoding for a
+ * list of supported encodings. Be sure to use an encoding which is supported by the tag implementation.
+ * To ensure that the functions Tag::canEncodingBeUsed(), Tag::proposedTextEncoding() and
+ * Tag::ensureTextValuesAreProperlyEncoded() can be used.
+ *
+ * Values of the type TagDataType::Text are not supposed to contain Byte-Order-Marks. Before assigning text
+ * which might be prepended by a Byte-Order-Mark the helper function TagValue::stripBom() can be used.
  */
 
 /*!
