@@ -603,7 +603,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
 
         } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lCover) || (version < 3 && m_frameId == Id3v2FrameIds::sCover)) {
             // make picture frame
-            m_frame.makePicture(m_data, m_decompressedSize, *values.front(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version);
+            m_frame.makePicture(m_data, m_decompressedSize, *values.front(), m_frame.isTypeInfoAssigned() ? m_frame.typeInfo() : 0, version, diag);
 
         } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lComment) || (version < 3 && m_frameId == Id3v2FrameIds::sComment))
             || ((version >= 3 && m_frameId == Id3v2FrameIds::lUnsynchronizedLyrics)
@@ -1057,7 +1057,8 @@ size_t Id3v2Frame::makeBom(char *buffer, TagTextEncoding encoding)
 /*!
  * \brief Writes the specified picture to the specified buffer (ID3v2.2 compatible).
  */
-void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo)
+void Id3v2Frame::makeLegacyPicture(
+    unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo, Diagnostics &diag)
 {
     // determine description
     TagTextEncoding descriptionEncoding = picture.descriptionEncoding();
@@ -1080,6 +1081,7 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, std::uint32_t &bu
         + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
         + picture.dataSize();
     if (requiredBufferSize > numeric_limits<std::uint32_t>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Required size exceeds maximum.", "making legacy picture frame");
         throw InvalidDataException();
     }
     buffer = make_unique<char[]>(bufferSize = static_cast<std::uint32_t>(requiredBufferSize));
@@ -1125,11 +1127,11 @@ void Id3v2Frame::makeLegacyPicture(unique_ptr<char[]> &buffer, std::uint32_t &bu
 /*!
  * \brief Writes the specified picture to the specified buffer.
  */
-void Id3v2Frame::makePicture(
-    std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo, std::uint8_t version)
+void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo,
+    std::uint8_t version, Diagnostics &diag)
 {
     if (version < 3) {
-        makeLegacyPicture(buffer, bufferSize, picture, typeInfo);
+        makeLegacyPicture(buffer, bufferSize, picture, typeInfo, diag);
         return;
     }
 
@@ -1153,11 +1155,15 @@ void Id3v2Frame::makePicture(
         mimeTypeSize = picture.mimeType().length();
     }
     // calculate needed buffer size and create buffer
-    const std::uint32_t dataSize = picture.dataSize();
-    buffer = make_unique<char[]>(bufferSize = 1 + mimeTypeSize + 1 + 1 + descriptionSize
-            + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
-            + dataSize);
-    // note:                                  encoding byte + mime type size + 0 byte + picture type byte + description size + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
+    // note: encoding byte + mime type size + 0 byte + picture type byte + description size + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
+    const auto requiredBufferSize = 1 + mimeTypeSize + 1 + 1 + descriptionSize
+        + (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian ? 4 : 1)
+        + picture.dataSize();
+    if (requiredBufferSize > numeric_limits<uint32_t>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Required size exceeds maximum.", "making picture frame");
+        throw InvalidDataException();
+    }
+    buffer = make_unique<char[]>(bufferSize = static_cast<uint32_t>(requiredBufferSize));
     char *offset = buffer.get();
     // write encoding byte
     *offset = static_cast<char>(makeTextEncodingByte(descriptionEncoding));
@@ -1187,10 +1193,10 @@ void Id3v2Frame::makePicture(
 void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &comment, std::uint8_t version, Diagnostics &diag)
 {
     static const string context("making comment frame");
-    // check type and other values are valid
+    // check whether type and other values are valid
     TagTextEncoding encoding = comment.dataEncoding();
     if (!comment.description().empty() && encoding != comment.descriptionEncoding()) {
-        diag.emplace_back(DiagLevel::Critical, "Data enoding and description encoding aren't equal.", context);
+        diag.emplace_back(DiagLevel::Critical, "Data encoding and description encoding aren't equal.", context);
         throw InvalidDataException();
     }
     const string &lng = comment.language();
@@ -1211,10 +1217,15 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSi
         descriptionSize = convertedDescription.second;
     }
     // calculate needed buffer size and create buffer
+    // note: encoding byte + language + description size + actual data size + BOMs and termination
     const auto data = comment.toString(encoding);
-    buffer = make_unique<char[]>(bufferSize = 1 + 3 + descriptionSize + data.size()
-            + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 6 : 1) + data.size());
-    // note:                     encoding byte              + language + description size + actual data size + BOMs and termination
+    const auto requiredBufferSize = 1 + 3 + descriptionSize + data.size()
+        + (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian ? 6 : 1) + data.size();
+    if (requiredBufferSize > numeric_limits<uint32_t>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Required size exceeds maximum.", context);
+        throw InvalidDataException();
+    }
+    buffer = make_unique<char[]>(bufferSize = static_cast<uint32_t>(requiredBufferSize));
     char *offset = buffer.get();
     // write encoding
     *offset = static_cast<char>(makeTextEncodingByte(encoding));

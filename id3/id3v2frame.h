@@ -136,9 +136,10 @@ public:
     static void makeString(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const std::string &value, TagTextEncoding encoding);
     static void makeEncodingAndData(
         std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, TagTextEncoding encoding, const char *data, std::size_t m_dataSize);
-    static void makeLegacyPicture(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo);
-    static void makePicture(
-        std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo, std::uint8_t version);
+    static void makeLegacyPicture(
+        std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo, Diagnostics &diag);
+    static void makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo,
+        std::uint8_t version, Diagnostics &diag);
     static void makeComment(
         std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &comment, std::uint8_t version, Diagnostics &diag);
 
