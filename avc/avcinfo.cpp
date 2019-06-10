@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 using namespace std;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -262,7 +262,7 @@ void PpsInfo::parse(BinaryReader &reader, std::uint32_t maxSize)
 /*!
  * \brief Parses HRD parameters.
  */
-void HrdParameters::parse(IoUtilities::BitReader &reader)
+void HrdParameters::parse(CppUtilities::BitReader &reader)
 {
     cpbCount = reader.readUnsignedExpGolombCodedBits<ugolomb>() + 1;
     bitRateScale = reader.readBits<std::uint8_t>(4);

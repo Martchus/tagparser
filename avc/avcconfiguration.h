@@ -19,7 +19,7 @@ struct TAG_PARSER_EXPORT AvcConfiguration {
     std::vector<SpsInfo> spsInfos;
     std::vector<PpsInfo> ppsInfos;
 
-    void parse(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
+    void parse(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
 };
 
 /*!

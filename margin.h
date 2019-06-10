@@ -122,7 +122,7 @@ constexpr bool Margin::isNull() const
  */
 inline std::string Margin::toString() const
 {
-    return ConversionUtilities::argsToString("top: ", m_top, "; left: ", m_left, "; bottom: ", m_bottom, "; right: ", m_right);
+    return CppUtilities::argsToString("top: ", m_top, "; left: ", m_left, "; bottom: ", m_bottom, "; right: ", m_right);
 }
 
 } // namespace TagParser

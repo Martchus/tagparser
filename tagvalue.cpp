@@ -13,8 +13,7 @@
 #include <utility>
 
 using namespace std;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -324,12 +323,12 @@ std::int32_t TagValue::toInteger() const
         case TagTextEncoding::Unspecified:
         case TagTextEncoding::Latin1:
         case TagTextEncoding::Utf8:
-            return ConversionUtilities::bufferToNumber<std::int32_t>(m_ptr.get(), m_size);
+            return bufferToNumber<std::int32_t>(m_ptr.get(), m_size);
         case TagTextEncoding::Utf16LittleEndian:
         case TagTextEncoding::Utf16BigEndian:
             u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
             ensureHostByteOrder(u16str, m_encoding);
-            return ConversionUtilities::stringToNumber<std::int32_t>(u16str);
+            return stringToNumber<std::int32_t>(u16str);
         }
     case TagDataType::PositionInSet:
         if (m_size == sizeof(PositionInSet)) {
@@ -634,7 +633,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         }
         return;
     case TagDataType::Integer:
-        result = ConversionUtilities::numberToString(toInteger());
+        result = numberToString(toInteger());
         break;
     case TagDataType::PositionInSet:
         result = toPositionInSet().toString();
@@ -718,7 +717,7 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         }
         return;
     case TagDataType::Integer:
-        regularStrRes = ConversionUtilities::numberToString(toInteger());
+        regularStrRes = numberToString(toInteger());
         break;
     case TagDataType::PositionInSet:
         regularStrRes = toPositionInSet().toString();
@@ -870,19 +869,19 @@ void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encod
 {
     switch (encoding) {
     case TagTextEncoding::Utf8:
-        if ((length >= 3) && (ConversionUtilities::BE::toUInt24(text) == 0x00EFBBBF)) {
+        if ((length >= 3) && (BE::toUInt24(text) == 0x00EFBBBF)) {
             text += 3;
             length -= 3;
         }
         break;
     case TagTextEncoding::Utf16LittleEndian:
-        if ((length >= 2) && (ConversionUtilities::LE::toUInt16(text) == 0xFEFF)) {
+        if ((length >= 2) && (LE::toUInt16(text) == 0xFEFF)) {
             text += 2;
             length -= 2;
         }
         break;
     case TagTextEncoding::Utf16BigEndian:
-        if ((length >= 2) && (ConversionUtilities::BE::toUInt16(text) == 0xFEFF)) {
+        if ((length >= 2) && (BE::toUInt16(text) == 0xFEFF)) {
             text += 2;
             length -= 2;
         }

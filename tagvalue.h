@@ -76,8 +76,8 @@ public:
     TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
         TagTextEncoding encoding = TagTextEncoding::Latin1);
     TagValue(PositionInSet value);
-    TagValue(ChronoUtilities::DateTime value);
-    TagValue(ChronoUtilities::TimeSpan value);
+    TagValue(CppUtilities::DateTime value);
+    TagValue(CppUtilities::TimeSpan value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
     ~TagValue();
@@ -102,8 +102,8 @@ public:
     std::int32_t toInteger() const;
     int toStandardGenreIndex() const;
     PositionInSet toPositionInSet() const;
-    ChronoUtilities::TimeSpan toTimeSpan() const;
-    ChronoUtilities::DateTime toDateTime() const;
+    CppUtilities::TimeSpan toTimeSpan() const;
+    CppUtilities::DateTime toDateTime() const;
     std::size_t dataSize() const;
     char *dataPointer();
     const char *dataPointer() const;
@@ -132,13 +132,13 @@ public:
     void assignData(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
         TagTextEncoding encoding = TagTextEncoding::Latin1);
     void assignPosition(PositionInSet value);
-    void assignTimeSpan(ChronoUtilities::TimeSpan value);
-    void assignDateTime(ChronoUtilities::DateTime value);
+    void assignTimeSpan(CppUtilities::TimeSpan value);
+    void assignDateTime(CppUtilities::DateTime value);
 
     static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
     template <typename ContainerType,
-        Traits::EnableIf<Traits::IsIteratable<ContainerType>,
+       CppUtilities:: Traits::EnableIf<CppUtilities::Traits::IsIteratable<ContainerType>,
             std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>>
             * = nullptr>
     static std::vector<std::string> toStrings(const ContainerType &values, TagTextEncoding encoding = TagTextEncoding::Utf8);
@@ -292,7 +292,7 @@ inline TagValue::TagValue(PositionInSet value)
 /*!
  * \brief Constructs a new TagValue holding a copy of the given DateTime \a value.
  */
-inline TagValue::TagValue(ChronoUtilities::DateTime value)
+inline TagValue::TagValue(CppUtilities::DateTime value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::DateTime)
 {
 }
@@ -300,7 +300,7 @@ inline TagValue::TagValue(ChronoUtilities::DateTime value)
 /*!
  * \brief Constructs a new TagValue holding a copy of the given TimeSpan \a value.
  */
-inline TagValue::TagValue(ChronoUtilities::TimeSpan value)
+inline TagValue::TagValue(CppUtilities::TimeSpan value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::TimeSpan)
 {
 }
@@ -344,7 +344,7 @@ inline void TagValue::assignPosition(PositionInSet value)
 /*!
  * \brief Assigns the given TimeSpan \a value.
  */
-inline void TagValue::assignTimeSpan(ChronoUtilities::TimeSpan value)
+inline void TagValue::assignTimeSpan(CppUtilities::TimeSpan value)
 {
     assignData(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::TimeSpan);
 }
@@ -352,7 +352,7 @@ inline void TagValue::assignTimeSpan(ChronoUtilities::TimeSpan value)
 /*!
  * \brief Assigns the given DateTime \a value.
  */
-inline void TagValue::assignDateTime(ChronoUtilities::DateTime value)
+inline void TagValue::assignDateTime(CppUtilities::DateTime value)
 {
     assignData(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::DateTime);
 }
@@ -600,14 +600,14 @@ inline TagTextEncoding TagValue::descriptionEncoding() const
  * \sa toString()
  */
 template <typename ContainerType,
-    Traits::EnableIf<Traits::IsIteratable<ContainerType>,
+   CppUtilities:: Traits::EnableIf<CppUtilities::Traits::IsIteratable<ContainerType>,
         std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>> *>
 std::vector<std::string> TagValue::toStrings(const ContainerType &values, TagTextEncoding encoding)
 {
     std::vector<std::string> res;
     res.reserve(values.size());
     for (const auto &value : values) {
-        res.emplace_back(Traits::dereferenceMaybe(value).toString(encoding));
+        res.emplace_back(CppUtilities::Traits::dereferenceMaybe(value).toString(encoding));
     }
     return res;
 }

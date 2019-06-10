@@ -73,7 +73,7 @@ private:
 
     Mp4TagField &m_field;
     std::stringstream m_convertedData;
-    IoUtilities::BinaryWriter m_writer;
+    CppUtilities::BinaryWriter m_writer;
     std::uint32_t m_rawDataType;
     std::uint64_t m_dataSize;
     std::uint64_t m_totalSize;
@@ -210,12 +210,12 @@ inline bool Mp4TagField::supportsNestedFields() const
  */
 inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
 {
-    const auto latin1 = ConversionUtilities::convertUtf8ToLatin1(idString, idStringSize != std::string::npos ? idStringSize : std::strlen(idString));
+    const auto latin1 = CppUtilities::convertUtf8ToLatin1(idString, idStringSize != std::string::npos ? idStringSize : std::strlen(idString));
     switch (latin1.second) {
     case 4:
-        return ConversionUtilities::BE::toUInt32(latin1.first.get());
+        return CppUtilities::BE::toUInt32(latin1.first.get());
     default:
-        throw ConversionUtilities::ConversionException("MP4 ID must be exactly 4 chars");
+        throw CppUtilities::ConversionException("MP4 ID must be exactly 4 chars");
     }
 }
 
@@ -226,7 +226,7 @@ inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(const char *id
  */
 inline std::string Mp4TagField::fieldIdToString(Mp4TagField::IdentifierType id)
 {
-    const auto utf8 = ConversionUtilities::convertLatin1ToUtf8(ConversionUtilities::interpretIntegerAsString<std::uint32_t>(id).data(), 4);
+    const auto utf8 = CppUtilities::convertLatin1ToUtf8(CppUtilities::interpretIntegerAsString<std::uint32_t>(id).data(), 4);
     return std::string(utf8.first.get(), utf8.second);
 }
 

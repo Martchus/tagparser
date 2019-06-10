@@ -17,10 +17,7 @@
 #include <memory>
 
 using namespace std;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
-using namespace IoUtilities;
-
+using namespace CppUtilities;
 namespace TagParser {
 
 namespace Id3v2TextEncodingBytes {
@@ -537,7 +534,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
                         diag.emplace_back(DiagLevel::Critical, argsToString("Assigned duration \"", duration.toString(), "\" is negative."), context);
                         throw InvalidDataException();
                     }
-                    substrings.emplace_back(ConversionUtilities::numberToString(static_cast<std::uint64_t>(duration.totalMilliseconds())));
+                    substrings.emplace_back(numberToString(static_cast<std::uint64_t>(duration.totalMilliseconds())));
                 }
 
             } else {
@@ -573,7 +570,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
                     if ((value->type() == TagDataType::StandardGenreIndex)
                         && ((version >= 3 && m_frameId == Id3v2FrameIds::lGenre) || (version < 3 && m_frameId == Id3v2FrameIds::sGenre))) {
                         // make standard genere index
-                        substrings.emplace_back(ConversionUtilities::numberToString(value->toStandardGenreIndex()));
+                        substrings.emplace_back(numberToString(value->toStandardGenreIndex()));
 
                     } else {
                         // make other text frame
@@ -775,7 +772,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
     case TagTextEncoding::Unspecified:
     case TagTextEncoding::Latin1:
     case TagTextEncoding::Utf8: {
-        if ((bufferSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
+        if ((bufferSize >= 3) && (BE::toUInt24(buffer) == 0x00EFBBBF)) {
             if (encoding == TagTextEncoding::Latin1) {
                 diag.emplace_back(DiagLevel::Critical, "Denoted character set is Latin-1 but an UTF-8 BOM is present - assuming UTF-8.",
                     "parsing frame " + idToString());
@@ -801,7 +798,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
     case TagTextEncoding::Utf16BigEndian:
     case TagTextEncoding::Utf16LittleEndian: {
         if (bufferSize >= 2) {
-            switch (ConversionUtilities::LE::toUInt16(buffer)) {
+            switch (LE::toUInt16(buffer)) {
             case 0xFEFF:
                 if (encoding == TagTextEncoding::Utf16BigEndian) {
                     diag.emplace_back(DiagLevel::Critical,
@@ -869,14 +866,14 @@ void Id3v2Frame::parseBom(const char *buffer, std::size_t maxSize, TagTextEncodi
     switch (encoding) {
     case TagTextEncoding::Utf16BigEndian:
     case TagTextEncoding::Utf16LittleEndian:
-        if ((maxSize >= 2) && (ConversionUtilities::BE::toUInt16(buffer) == 0xFFFE)) {
+        if ((maxSize >= 2) && (BE::toUInt16(buffer) == 0xFFFE)) {
             encoding = TagTextEncoding::Utf16LittleEndian;
-        } else if ((maxSize >= 2) && (ConversionUtilities::BE::toUInt16(buffer) == 0xFEFF)) {
+        } else if ((maxSize >= 2) && (BE::toUInt16(buffer) == 0xFEFF)) {
             encoding = TagTextEncoding::Utf16BigEndian;
         }
         break;
     default:
-        if ((maxSize >= 3) && (ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF)) {
+        if ((maxSize >= 3) && (BE::toUInt24(buffer) == 0x00EFBBBF)) {
             encoding = TagTextEncoding::Utf8;
             diag.emplace_back(DiagLevel::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + idToString());
         }
@@ -1021,7 +1018,7 @@ void Id3v2Frame::makeEncodingAndData(
         // allocate buffer
         buffer = make_unique<char[]>(bufferSize = static_cast<std::uint32_t>(1 + 2 + dataSize + 2));
         buffer[0] = static_cast<char>(makeTextEncodingByte(encoding)); // set text encoding byte
-        ConversionUtilities::LE::getBytes(
+        CppUtilities::LE::getBytes(
             encoding == TagTextEncoding::Utf16LittleEndian ? static_cast<std::uint16_t>(0xFEFF) : static_cast<std::uint16_t>(0xFFFE),
             buffer.get() + 1);
         bufferDataAddress = buffer.get() + 3;
@@ -1044,10 +1041,10 @@ size_t Id3v2Frame::makeBom(char *buffer, TagTextEncoding encoding)
 {
     switch (encoding) {
     case TagTextEncoding::Utf16LittleEndian:
-        ConversionUtilities::LE::getBytes(static_cast<std::uint16_t>(0xFEFF), buffer);
+        LE::getBytes(static_cast<std::uint16_t>(0xFEFF), buffer);
         return 2;
     case TagTextEncoding::Utf16BigEndian:
-        ConversionUtilities::BE::getBytes(static_cast<std::uint16_t>(0xFEFF), buffer);
+        BE::getBytes(static_cast<std::uint16_t>(0xFEFF), buffer);
         return 2;
     default:
         return 0;
@@ -1154,6 +1151,7 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &buf
     if (mimeTypeSize == string::npos) {
         mimeTypeSize = picture.mimeType().length();
     }
+
     // calculate needed buffer size and create buffer
     // note: encoding byte + mime type size + 0 byte + picture type byte + description size + 1 or 4 null bytes (depends on encoding)                                                                                       + data size
     const auto requiredBufferSize = 1 + mimeTypeSize + 1 + 1 + descriptionSize
@@ -1165,13 +1163,17 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &buf
     }
     buffer = make_unique<char[]>(bufferSize = static_cast<uint32_t>(requiredBufferSize));
     char *offset = buffer.get();
+
     // write encoding byte
     *offset = static_cast<char>(makeTextEncodingByte(descriptionEncoding));
+
     // write mime type
     picture.mimeType().copy(++offset, mimeTypeSize);
+
     *(offset += mimeTypeSize) = 0x00; // terminate mime type
     // write picture type
     *(++offset) = static_cast<char>(typeInfo);
+
     // write description
     offset += makeBom(offset + 1, descriptionEncoding);
     if (convertedDescription.first) {
@@ -1183,6 +1185,7 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &buf
     if (descriptionEncoding == TagTextEncoding::Utf16BigEndian || descriptionEncoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;
     }
+
     // write actual data
     copy(picture.dataPointer(), picture.dataPointer() + picture.dataSize(), ++offset);
 }
@@ -1193,6 +1196,7 @@ void Id3v2Frame::makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &buf
 void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &comment, std::uint8_t version, Diagnostics &diag)
 {
     static const string context("making comment frame");
+
     // check whether type and other values are valid
     TagTextEncoding encoding = comment.dataEncoding();
     if (!comment.description().empty() && encoding != comment.descriptionEncoding()) {
@@ -1216,6 +1220,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSi
         convertedDescription = convertUtf8ToUtf16LE(comment.description().data(), descriptionSize);
         descriptionSize = convertedDescription.second;
     }
+
     // calculate needed buffer size and create buffer
     // note: encoding byte + language + description size + actual data size + BOMs and termination
     const auto data = comment.toString(encoding);
@@ -1227,12 +1232,15 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSi
     }
     buffer = make_unique<char[]>(bufferSize = static_cast<uint32_t>(requiredBufferSize));
     char *offset = buffer.get();
+
     // write encoding
     *offset = static_cast<char>(makeTextEncodingByte(encoding));
+
     // write language
     for (unsigned int i = 0; i < 3; ++i) {
         *(++offset) = (lng.length() > i) ? lng[i] : 0x00;
     }
+
     // write description
     offset += makeBom(offset + 1, encoding);
     if (convertedDescription.first) {
@@ -1245,6 +1253,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSi
     if (encoding == TagTextEncoding::Utf16BigEndian || encoding == TagTextEncoding::Utf16LittleEndian) {
         *(++offset) = 0x00;
     }
+
     // write actual data
     offset += makeBom(offset + 1, encoding);
     data.copy(++offset, data.size());

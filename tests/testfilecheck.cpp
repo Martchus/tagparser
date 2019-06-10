@@ -11,10 +11,8 @@
 #include <fstream>
 
 using namespace std;
-using namespace ConversionUtilities;
-using namespace TestUtilities;
+using namespace CppUtilities;
 using namespace TagParser;
-
 using namespace CPPUNIT_NS;
 
 /*!

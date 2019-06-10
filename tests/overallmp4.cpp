@@ -6,7 +6,7 @@
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4tag.h"
 
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace Mp4TestFlags {
 enum TestFlag {
@@ -495,7 +495,7 @@ void OverallTests::setMp4TestMetaData()
  */
 void OverallTests::alterMp4Tracks()
 {
-    m_additionalFileInfo.setPath(TestUtilities::testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
+    m_additionalFileInfo.setPath(testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
     m_additionalFileInfo.reopen(true);
     m_additionalFileInfo.parseContainerFormat(m_diag);
     m_additionalFileInfo.parseTracks(m_diag);
@@ -525,12 +525,12 @@ void OverallTests::testMp4Parsing()
     cerr << endl << "MP4 parser" << endl;
     m_fileInfo.setForceFullParse(false);
     m_tagStatus = TagStatus::Original;
-    parseFile(TestUtilities::testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"), &OverallTests::checkMp4Testfile1);
-    parseFile(TestUtilities::testFilePath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), &OverallTests::checkMp4Testfile2);
-    parseFile(TestUtilities::testFilePath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), &OverallTests::checkMp4Testfile3);
-    parseFile(TestUtilities::testFilePath("mtx-test-data/alac/othertest-itunes.m4a"), &OverallTests::checkMp4Testfile4);
-    parseFile(TestUtilities::testFilePath("mtx-test-data/aac/he-aacv2-ps.m4a"), &OverallTests::checkMp4Testfile5);
-    parseFile(TestUtilities::testFilePath("mp4/android-8.1-camera-recoding.mp4"), &OverallTests::checkMp4Testfile7);
+    parseFile(testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"), &OverallTests::checkMp4Testfile1);
+    parseFile(testFilePath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), &OverallTests::checkMp4Testfile2);
+    parseFile(testFilePath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), &OverallTests::checkMp4Testfile3);
+    parseFile(testFilePath("mtx-test-data/alac/othertest-itunes.m4a"), &OverallTests::checkMp4Testfile4);
+    parseFile(testFilePath("mtx-test-data/aac/he-aacv2-ps.m4a"), &OverallTests::checkMp4Testfile5);
+    parseFile(testFilePath("mp4/android-8.1-camera-recoding.mp4"), &OverallTests::checkMp4Testfile7);
 }
 
 /*!
@@ -589,16 +589,16 @@ void OverallTests::testMp4Making()
         // -> either remove tags or set test meta data
         m_tagStatus = (m_mode & RemoveTagOrTrack) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
         void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeAllTags : &OverallTests::setMp4TestMetaData;
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile1);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile2);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), modifyRoutine,
+        makeFile(workingCopyPath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile1);
+        makeFile(workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile2);
+        makeFile(workingCopyPath("mtx-test-data/mp4/dash/dragon-age-inquisition-H1LkM6IVlm4-video.mp4"), modifyRoutine,
             &OverallTests::checkMp4Testfile3);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/alac/othertest-itunes.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile4);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
-        makeFile(TestUtilities::workingCopyPath("mp4/android-8.1-camera-recoding.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile7);
+        makeFile(workingCopyPath("mtx-test-data/alac/othertest-itunes.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile4);
+        makeFile(workingCopyPath("mtx-test-data/aac/he-aacv2-ps.m4a"), modifyRoutine, &OverallTests::checkMp4Testfile5);
+        makeFile(workingCopyPath("mp4/android-8.1-camera-recoding.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile7);
         // -> add/remove tracks
         modifyRoutine = (m_mode & RemoveTagOrTrack) ? &OverallTests::removeSecondTrack : &OverallTests::alterMp4Tracks;
         m_fileInfo.setTagPosition(ElementPosition::Keep);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile6);
+        makeFile(workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile6);
     }
 }

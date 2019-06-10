@@ -49,9 +49,7 @@
 
 using namespace std;
 using namespace std::placeholders;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 /*!
  * \namespace IoUtilities
@@ -860,7 +858,7 @@ bool MediaFileInfo::hasTracksOfType(MediaType type) const
  *
  * \sa parseTracks()
  */
-ChronoUtilities::TimeSpan MediaFileInfo::duration() const
+CppUtilities::TimeSpan MediaFileInfo::duration() const
 {
     if (m_container) {
         return m_container->duration();

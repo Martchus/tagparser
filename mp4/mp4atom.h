@@ -49,7 +49,7 @@ public:
     static void seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream::pos_type &startOffset, Diagnostics &diag);
     static void seekBackAndWriteAtomSize64(std::ostream &stream, const std::ostream::pos_type &startOffset);
     static constexpr void addHeaderSize(std::uint64_t &dataSize);
-    static void makeHeader(std::uint64_t size, std::uint32_t id, IoUtilities::BinaryWriter &writer);
+    static void makeHeader(std::uint64_t size, std::uint32_t id, CppUtilities::BinaryWriter &writer);
 
 protected:
     Mp4Atom(ContainerType &container, std::uint64_t startOffset, std::uint64_t maxSize);
@@ -66,7 +66,7 @@ private:
  */
 inline std::string Mp4Atom::idToString() const
 {
-    auto idString = ConversionUtilities::interpretIntegerAsString<IdentifierType>(id());
+    auto idString = CppUtilities::interpretIntegerAsString<IdentifierType>(id());
     for (char &c : idString) {
         if (c < ' ') {
             c = '?';

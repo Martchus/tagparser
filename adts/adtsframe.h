@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 }
 
@@ -15,7 +15,7 @@ class TAG_PARSER_EXPORT AdtsFrame {
 public:
     constexpr AdtsFrame();
 
-    void parseHeader(IoUtilities::BinaryReader &reader);
+    void parseHeader(CppUtilities::BinaryReader &reader);
 
     constexpr bool isValid() const;
     constexpr bool isMpeg4() const;

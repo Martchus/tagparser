@@ -12,8 +12,7 @@
 #include <memory>
 
 using namespace std;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -333,7 +332,7 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
         comment->make(buffer, VorbisCommentFlags::None, diag);
         break;
     case GeneralMediaFormat::Opus:
-        ConversionUtilities::BE::getBytes(static_cast<std::uint64_t>(0x4F70757354616773u), copyHelper.buffer());
+        BE::getBytes(static_cast<std::uint64_t>(0x4F70757354616773u), copyHelper.buffer());
         buffer.write(copyHelper.buffer(), 8);
         comment->make(buffer, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
         break;

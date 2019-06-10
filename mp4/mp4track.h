@@ -133,11 +133,11 @@ public:
 
     // methods to parse configuration details from the track header
     static std::unique_ptr<Mpeg4ElementaryStreamInfo> parseMpeg4ElementaryStreamInfo(
-        IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag);
+        CppUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag);
     static std::unique_ptr<Mpeg4AudioSpecificConfig> parseAudioSpecificConfig(
         std::istream &stream, std::uint64_t startOffset, std::uint64_t size, Diagnostics &diag);
     static std::unique_ptr<Mpeg4VideoSpecificConfig> parseVideoSpecificConfig(
-        IoUtilities::BinaryReader &reader, std::uint64_t startOffset, std::uint64_t size, Diagnostics &diag);
+        CppUtilities::BinaryReader &reader, std::uint64_t startOffset, std::uint64_t size, Diagnostics &diag);
 
     // methods to read the "index" (chunk offsets and sizes)
     std::vector<std::uint64_t> readChunkOffsets(bool parseFragments, Diagnostics &diag);

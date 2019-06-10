@@ -6,16 +6,14 @@
 #include <c++utilities/chrono/format.h>
 #include <c++utilities/conversion/conversionexception.h>
 
-using namespace TestUtilities;
+using namespace CppUtilities;
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 using namespace std;
+using namespace CppUtilities;
 using namespace TagParser;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
-
 using namespace CPPUNIT_NS;
 
 /*!

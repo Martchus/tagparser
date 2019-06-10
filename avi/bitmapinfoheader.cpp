@@ -2,7 +2,7 @@
 
 #include <c++utilities/io/binaryreader.h>
 
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

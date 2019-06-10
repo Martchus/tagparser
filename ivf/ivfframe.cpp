@@ -5,7 +5,7 @@
 #include <c++utilities/io/binaryreader.h>
 
 using namespace std;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -18,7 +18,7 @@ namespace TagParser {
 /*!
  * \brief Parses the header read using the specified \a reader.
  */
-void IvfFrame::parseHeader(IoUtilities::BinaryReader &reader, Diagnostics &diag)
+void IvfFrame::parseHeader(CppUtilities::BinaryReader &reader, Diagnostics &diag)
 {
     VAR_UNUSED(diag)
     startOffset = static_cast<std::uint64_t>(reader.stream()->tellg());

@@ -19,7 +19,7 @@
 #include <c++utilities/conversion/stringconversion.h>
 
 using namespace std;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

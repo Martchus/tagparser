@@ -367,8 +367,8 @@ void OverallTests::testMp3Parsing()
     cerr << endl << "MP3 parser" << endl;
     m_fileInfo.setForceFullParse(false);
     m_tagStatus = TagStatus::Original;
-    parseFile(TestUtilities::testFilePath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"), &OverallTests::checkMp3Testfile1);
-    parseFile(TestUtilities::testFilePath("misc/multiple_id3v2_4_values.mp3"), &OverallTests::checkMp3Testfile2);
+    parseFile(testFilePath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"), &OverallTests::checkMp3Testfile1);
+    parseFile(testFilePath("misc/multiple_id3v2_4_values.mp3"), &OverallTests::checkMp3Testfile2);
 }
 
 /*!
@@ -425,9 +425,9 @@ void OverallTests::testMp3Making()
 
         // do actual tests
         m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"),
+        makeFile(workingCopyPath("mtx-test-data/mp3/id3-tag-and-xing-header.mp3"),
             (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setMp3TestMetaData1, &OverallTests::checkMp3Testfile1);
-        makeFile(TestUtilities::workingCopyPath("misc/multiple_id3v2_4_values.mp3"),
+        makeFile(workingCopyPath("misc/multiple_id3v2_4_values.mp3"),
             (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setMp3TestMetaData2, &OverallTests::checkMp3Testfile2);
     }
 }

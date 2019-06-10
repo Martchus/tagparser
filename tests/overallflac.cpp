@@ -103,8 +103,8 @@ void OverallTests::testFlacParsing()
     cerr << endl << "FLAC parser" << endl;
     m_fileInfo.setForceFullParse(false);
     m_tagStatus = TagStatus::Original;
-    parseFile(TestUtilities::testFilePath("flac/test.flac"), &OverallTests::checkFlacTestfile1);
-    parseFile(TestUtilities::testFilePath("flac/test.ogg"), &OverallTests::checkFlacTestfile2);
+    parseFile(testFilePath("flac/test.flac"), &OverallTests::checkFlacTestfile1);
+    parseFile(testFilePath("flac/test.ogg"), &OverallTests::checkFlacTestfile2);
 }
 
 /*!
@@ -134,7 +134,7 @@ void OverallTests::testFlacMaking()
         // do actual tests
         m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
         void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaData;
-        makeFile(TestUtilities::workingCopyPath("flac/test.flac"), modifyRoutine, &OverallTests::checkFlacTestfile1);
-        makeFile(TestUtilities::workingCopyPath("flac/test.ogg"), modifyRoutine, &OverallTests::checkFlacTestfile2);
+        makeFile(workingCopyPath("flac/test.flac"), modifyRoutine, &OverallTests::checkFlacTestfile1);
+        makeFile(workingCopyPath("flac/test.ogg"), modifyRoutine, &OverallTests::checkFlacTestfile2);
     }
 }

@@ -3,7 +3,7 @@
 
 #include "../generictagfield.h"
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 class BinaryWriter;
 } // namespace IoUtilities
@@ -54,7 +54,7 @@ public:
     void parse(OggIterator &iterator, Diagnostics &diag);
     void parse(OggIterator &iterator, std::uint64_t &maxSize, Diagnostics &diag);
     void parse(std::istream &stream, std::uint64_t &maxSize, Diagnostics &diag);
-    bool make(IoUtilities::BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag);
+    bool make(CppUtilities::BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag);
     bool isAdditionalTypeInfoUsed() const;
     bool supportsNestedFields() const;
 

@@ -8,13 +8,12 @@
 #include "../exceptions.h"
 
 #include <c++utilities/io/bitreader.h>
-#include <c++utilities/misc/memory.h>
 
 #include <istream>
 #include <limits>
 
 using namespace std;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 /*!
  * \file aacframe.cpp

@@ -5,7 +5,6 @@
 #include <c++utilities/io/binaryreader.h>
 
 using namespace std;
-using namespace IoUtilities;
 
 namespace TagParser {
 
@@ -19,7 +18,7 @@ namespace TagParser {
  * \throws Throws InvalidDataException if the data read from the stream is
  *         no valid frame header.
  */
-void AdtsFrame::parseHeader(IoUtilities::BinaryReader &reader)
+void AdtsFrame::parseHeader(CppUtilities::BinaryReader &reader)
 {
     m_header1 = reader.readUInt16BE();
     // check whether syncword is present

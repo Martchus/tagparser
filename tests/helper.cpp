@@ -1,6 +1,6 @@
 #include "./helper.h"
 
-namespace TestUtilities {
+namespace CppUtilities {
 
 /*!
  * \brief Prints a TagTextEncoding to enable CPPUNIT_ASSERT_EQUAL for tag values.

@@ -9,7 +9,7 @@
 #include <sstream>
 
 using namespace std;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

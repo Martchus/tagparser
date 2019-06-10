@@ -3,7 +3,7 @@
 #include <c++utilities/conversion/stringconversion.h>
 
 using namespace std;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 /*!
  * \brief Contains all classes and functions of the TagInfo library.

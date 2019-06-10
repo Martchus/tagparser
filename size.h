@@ -123,7 +123,7 @@ constexpr bool Size::operator>=(const Size &other) const
  */
 inline std::string Size::toString() const
 {
-    return ConversionUtilities::argsToString("width: ", m_width, ", height: ", m_height);
+    return CppUtilities::argsToString("width: ", m_width, ", height: ", m_height);
 }
 
 } // namespace TagParser

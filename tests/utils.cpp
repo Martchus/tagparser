@@ -15,7 +15,7 @@
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/tests/testutils.h>
-using namespace TestUtilities;
+using namespace CppUtilities;
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -26,11 +26,8 @@ using namespace TestUtilities;
 #include <unistd.h>
 
 using namespace std;
+using namespace CppUtilities::Literals;
 using namespace TagParser;
-using namespace ConversionUtilities;
-using namespace IoUtilities;
-using namespace TestUtilities::Literals;
-
 using namespace CPPUNIT_NS;
 
 /*!

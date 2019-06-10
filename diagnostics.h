@@ -49,7 +49,7 @@ public:
     const char *levelName() const;
     const std::string &message() const;
     const std::string &context() const;
-    const ChronoUtilities::DateTime &creationTime() const;
+    const CppUtilities::DateTime &creationTime() const;
     bool operator==(const DiagMessage &other) const;
 
     static std::string formatList(const std::vector<std::string> &values);
@@ -58,7 +58,7 @@ private:
     DiagLevel m_level;
     std::string m_message;
     std::string m_context;
-    ChronoUtilities::DateTime m_creationTime;
+    CppUtilities::DateTime m_creationTime;
 };
 
 /*!
@@ -68,7 +68,7 @@ inline DiagMessage::DiagMessage(DiagLevel level, const std::string &message, con
     : m_level(level)
     , m_message(message)
     , m_context(context)
-    , m_creationTime(ChronoUtilities::DateTime::gmtNow())
+    , m_creationTime(CppUtilities::DateTime::gmtNow())
 {
 }
 
@@ -79,7 +79,7 @@ inline DiagMessage::DiagMessage(DiagLevel level, std::string &&message, const st
     : m_level(level)
     , m_message(message)
     , m_context(context)
-    , m_creationTime(ChronoUtilities::DateTime::gmtNow())
+    , m_creationTime(CppUtilities::DateTime::gmtNow())
 {
 }
 
@@ -90,7 +90,7 @@ inline DiagMessage::DiagMessage(DiagLevel level, const std::string &message, std
     : m_level(level)
     , m_message(message)
     , m_context(context)
-    , m_creationTime(ChronoUtilities::DateTime::gmtNow())
+    , m_creationTime(CppUtilities::DateTime::gmtNow())
 {
 }
 
@@ -101,7 +101,7 @@ inline DiagMessage::DiagMessage(DiagLevel level, std::string &&message, std::str
     : m_level(level)
     , m_message(message)
     , m_context(context)
-    , m_creationTime(ChronoUtilities::DateTime::gmtNow())
+    , m_creationTime(CppUtilities::DateTime::gmtNow())
 {
 }
 
@@ -140,7 +140,7 @@ inline const std::string &DiagMessage::context() const
 /*!
  * \brief Returns the creation time (using GMT timezone).
  */
-inline const ChronoUtilities::DateTime &DiagMessage::creationTime() const
+inline const CppUtilities::DateTime &DiagMessage::creationTime() const
 {
     return m_creationTime;
 }

@@ -2,9 +2,7 @@
 #include "./diagnostics.h"
 
 using namespace std;
-using namespace ChronoUtilities;
-using namespace ConversionUtilities;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

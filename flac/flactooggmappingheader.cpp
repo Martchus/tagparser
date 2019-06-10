@@ -7,7 +7,7 @@
 #include <c++utilities/conversion/binaryconversion.h>
 
 using namespace std;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

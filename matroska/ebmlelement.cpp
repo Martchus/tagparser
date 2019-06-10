@@ -17,8 +17,7 @@
 #include <string>
 
 using namespace std;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -173,7 +172,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
             reader().read(buf + (maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
             // xor the first byte in buffer which has been read from the file with mask
             *(buf + (maximumSizeLengthSupported() - m_sizeLength)) ^= mask;
-            m_dataSize = ConversionUtilities::BE::toUInt64(buf);
+            m_dataSize = BE::toUInt64(buf);
             // check if element is truncated
             if (totalSize() > maxTotalSize()) {
                 if (m_idLength + m_sizeLength > maxTotalSize()) { // header truncated

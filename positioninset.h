@@ -21,7 +21,7 @@ namespace TagParser {
 class TAG_PARSER_EXPORT PositionInSet {
 public:
     constexpr PositionInSet(std::int32_t position = 0, std::int32_t total = 0);
-    template <typename StringType = std::string, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
+    template <typename StringType = std::string, CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
     PositionInSet(const StringType &numericString);
 
     constexpr std::int32_t position() const;
@@ -29,7 +29,7 @@ public:
     constexpr bool isNull() const;
     constexpr bool operator==(const PositionInSet &other) const;
 
-    template <typename StringType = std::string, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
+    template <typename StringType = std::string, CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
     StringType toString() const;
 
 private:
@@ -43,19 +43,19 @@ private:
  * \param numericString Specifies the string containing the position and possibly
  *                      the total element count (separated by "/").
  */
-template <typename StringType, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>> *>
+template <typename StringType, CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> *>
 PositionInSet::PositionInSet(const StringType &numericString)
     : m_position(0)
     , m_total(0)
 {
     const auto separator = numericString.find('/');
     if (separator == StringType::npos || separator == numericString.length() - 1) {
-        m_position = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString);
+        m_position = CppUtilities::stringToNumber<std::int32_t, StringType>(numericString);
     } else if (separator == 0) {
-        m_total = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(1));
+        m_total = CppUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(1));
     } else {
-        m_position = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(0, separator));
-        m_total = ConversionUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(separator + 1));
+        m_position = CppUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(0, separator));
+        m_total = CppUtilities::stringToNumber<std::int32_t, StringType>(numericString.substr(separator + 1));
     }
 }
 
@@ -105,7 +105,7 @@ constexpr inline bool PositionInSet::operator==(const PositionInSet &other) cons
 /*!
  * \brief Returns the string representation of the current PositionInSet.
  */
-template <typename StringType, Traits::EnableIfAny<Traits::IsSpecializationOf<StringType, std::basic_string>> *>
+template <typename StringType, CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> *>
 StringType PositionInSet::toString() const
 {
     std::basic_stringstream<typename StringType::value_type> ss;

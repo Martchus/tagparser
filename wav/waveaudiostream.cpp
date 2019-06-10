@@ -9,7 +9,7 @@
 #include <c++utilities/io/binaryreader.h>
 
 using namespace std;
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -22,7 +22,7 @@ namespace TagParser {
  * \brief Parses the WAVE "fmt " header segment using the specified \a reader.
  * \remarks Reads 16 bytes from the associated stream.
  */
-void WaveFormatHeader::parse(IoUtilities::BinaryReader &reader)
+void WaveFormatHeader::parse(CppUtilities::BinaryReader &reader)
 {
     Diagnostics diag;
     parseExt(reader, 16, diag);
@@ -36,7 +36,7 @@ void WaveFormatHeader::parse(IoUtilities::BinaryReader &reader)
  * - Make GUID a field of WaveFormatHeader instead of returning the MediaFormat in v9.
  * - Replace parse() function with this.
  */
-pair<MediaFormat, std::uint64_t> WaveFormatHeader::parseExt(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
+pair<MediaFormat, std::uint64_t> WaveFormatHeader::parseExt(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
     auto result = make_pair<MediaFormat, std::uint64_t>(GeneralMediaFormat::Unknown, 0);
     if (maxSize < 16) {
@@ -152,7 +152,7 @@ TrackType WaveAudioStream::type() const
  */
 void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track)
 {
-    track.m_formatId = ConversionUtilities::numberToString(waveHeader.formatTag);
+    track.m_formatId = numberToString(waveHeader.formatTag);
     track.m_channelCount = waveHeader.channelCount;
     track.m_samplingFrequency = waveHeader.sampleRate;
     track.m_bytesPerSecond = waveHeader.bytesPerSecond;

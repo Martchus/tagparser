@@ -7,7 +7,7 @@
 
 #include <ostream>
 
-namespace TestUtilities {
+namespace CppUtilities {
 
 std::ostream &operator<<(std::ostream &os, const TagParser::TagTextEncoding &encoding);
 

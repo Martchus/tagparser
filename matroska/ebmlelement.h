@@ -70,7 +70,7 @@ private:
  */
 inline std::string EbmlElement::idToString() const
 {
-    using namespace ConversionUtilities;
+    using namespace CppUtilities;
     const char *const name = matroskaIdName(id());
     if (*name) {
         return argsToString('0', 'x', numberToString(id(), 16), ' ', '\"', name, '\"');

@@ -12,7 +12,7 @@
 #include <c++utilities/chrono/format.h>
 #include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/tests/testutils.h>
-using namespace TestUtilities;
+using namespace CppUtilities;
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -21,12 +21,8 @@ using namespace TestUtilities;
 #include <string>
 
 using namespace std;
-using namespace ConversionUtilities;
-using namespace IoUtilities;
-using namespace TestUtilities;
-using namespace TestUtilities::Literals;
+using namespace CppUtilities::Literals;
 using namespace TagParser;
-
 using namespace CPPUNIT_NS;
 
 enum class TagStatus { Original, TestMetaDataPresent, Removed };

@@ -18,8 +18,8 @@ public:
 
     std::uint64_t id() const;
     const std::vector<LocaleAwareString> &names() const;
-    ChronoUtilities::TimeSpan startTime() const;
-    ChronoUtilities::TimeSpan endTime() const;
+    CppUtilities::TimeSpan startTime() const;
+    CppUtilities::TimeSpan endTime() const;
     const std::vector<std::uint64_t> &tracks() const;
     bool isHidden() const;
     bool isEnabled() const;
@@ -37,8 +37,8 @@ protected:
 
     std::uint64_t m_id;
     std::vector<LocaleAwareString> m_names;
-    ChronoUtilities::TimeSpan m_startTime;
-    ChronoUtilities::TimeSpan m_endTime;
+    CppUtilities::TimeSpan m_startTime;
+    CppUtilities::TimeSpan m_endTime;
     std::vector<std::uint64_t> m_tracks;
     bool m_hidden;
     bool m_enabled;
@@ -63,7 +63,7 @@ inline const std::vector<LocaleAwareString> &AbstractChapter::names() const
 /*!
  * \brief Returns the start time if known; otherwise returns a negative time span.
  */
-inline ChronoUtilities::TimeSpan AbstractChapter::startTime() const
+inline CppUtilities::TimeSpan AbstractChapter::startTime() const
 {
     return m_startTime;
 }
@@ -71,7 +71,7 @@ inline ChronoUtilities::TimeSpan AbstractChapter::startTime() const
 /*!
  * \brief Returns the end time if known; otherwise returns a negative time span.
  */
-inline ChronoUtilities::TimeSpan AbstractChapter::endTime() const
+inline CppUtilities::TimeSpan AbstractChapter::endTime() const
 {
     return m_endTime;
 }

@@ -12,7 +12,7 @@
 #include <tuple>
 #include <unordered_map>
 
-namespace IoUtilities {
+namespace CppUtilities {
 template <std::size_t bufferSize> class CopyHelper;
 }
 
@@ -152,7 +152,7 @@ protected:
 private:
     void announceComment(
         std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat mediaFormat = GeneralMediaFormat::Vorbis);
-    void makeVorbisCommentSegment(std::stringstream &buffer, IoUtilities::CopyHelper<65307> &copyHelper, std::vector<std::uint32_t> &newSegmentSizes,
+    void makeVorbisCommentSegment(std::stringstream &buffer, CppUtilities::CopyHelper<65307> &copyHelper, std::vector<std::uint32_t> &newSegmentSizes,
         VorbisComment *comment, OggParameter *params, Diagnostics &diag);
 
     std::unordered_map<std::uint32_t, std::vector<std::unique_ptr<OggStream>>::size_type> m_streamsBySerialNo;

@@ -9,8 +9,8 @@ class TAG_PARSER_EXPORT WaveFormatHeader {
 public:
     constexpr WaveFormatHeader();
 
-    void parse(IoUtilities::BinaryReader &reader);
-    std::pair<MediaFormat, std::uint64_t> parseExt(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
+    void parse(CppUtilities::BinaryReader &reader);
+    std::pair<MediaFormat, std::uint64_t> parseExt(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
     MediaFormat format() const;
     constexpr std::uint32_t bitrate() const;
 

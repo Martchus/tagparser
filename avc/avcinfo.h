@@ -5,7 +5,7 @@
 #include "../margin.h"
 #include "../size.h"
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 class BitReader;
 } // namespace IoUtilities
@@ -54,7 +54,7 @@ struct TAG_PARSER_EXPORT HrdParameters {
     std::uint8_t cpbOutputDelayLength;
     std::uint8_t timeOffsetLength;
 
-    void parse(IoUtilities::BitReader &reader);
+    void parse(CppUtilities::BitReader &reader);
 };
 
 constexpr HrdParameters::HrdParameters()
@@ -94,7 +94,7 @@ struct TAG_PARSER_EXPORT SpsInfo {
     std::uint8_t pictureStructPresent;
     std::uint16_t size;
 
-    void parse(IoUtilities::BinaryReader &reader, std::uint32_t maxSize);
+    void parse(CppUtilities::BinaryReader &reader, std::uint32_t maxSize);
 };
 
 constexpr SpsInfo::SpsInfo()
@@ -125,7 +125,7 @@ struct TAG_PARSER_EXPORT PpsInfo {
     std::uint8_t picOrderPresent;
     std::uint16_t size;
 
-    void parse(IoUtilities::BinaryReader &reader, std::uint32_t maxSize);
+    void parse(CppUtilities::BinaryReader &reader, std::uint32_t maxSize);
 };
 
 constexpr PpsInfo::PpsInfo()

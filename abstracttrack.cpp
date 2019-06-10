@@ -7,9 +7,7 @@
 #include "mpegaudio/mpegaudioframe.h"
 
 using namespace std;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

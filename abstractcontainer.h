@@ -12,10 +12,10 @@
 
 #include <iostream>
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 class BinaryWriter;
-} // namespace IoUtilities
+} // namespace CppUtilities
 
 namespace TagParser {
 
@@ -33,8 +33,8 @@ public:
     std::iostream &stream();
     void setStream(std::iostream &stream);
     std::uint64_t startOffset() const;
-    IoUtilities::BinaryReader &reader();
-    IoUtilities::BinaryWriter &writer();
+    CppUtilities::BinaryReader &reader();
+    CppUtilities::BinaryWriter &writer();
 
     void parseHeader(Diagnostics &diag);
     void parseTags(Diagnostics &diag);
@@ -79,9 +79,9 @@ public:
     void setTitle(const std::string &title, std::size_t segmentIndex = 0);
     virtual bool supportsTitle() const;
     virtual std::size_t segmentCount() const;
-    ChronoUtilities::TimeSpan duration() const;
-    ChronoUtilities::DateTime creationTime() const;
-    ChronoUtilities::DateTime modificationTime() const;
+    CppUtilities::TimeSpan duration() const;
+    CppUtilities::DateTime creationTime() const;
+    CppUtilities::DateTime modificationTime() const;
     std::uint32_t timeScale() const;
 
     virtual void reset();
@@ -102,9 +102,9 @@ protected:
     std::uint64_t m_doctypeVersion;
     std::uint64_t m_doctypeReadVersion;
     std::vector<std::string> m_titles;
-    ChronoUtilities::TimeSpan m_duration;
-    ChronoUtilities::DateTime m_creationTime;
-    ChronoUtilities::DateTime m_modificationTime;
+    CppUtilities::TimeSpan m_duration;
+    CppUtilities::DateTime m_creationTime;
+    CppUtilities::DateTime m_modificationTime;
     std::uint32_t m_timeScale;
 
     bool m_headerParsed;
@@ -117,8 +117,8 @@ protected:
 private:
     std::uint64_t m_startOffset;
     std::iostream *m_stream;
-    IoUtilities::BinaryReader m_reader;
-    IoUtilities::BinaryWriter m_writer;
+    CppUtilities::BinaryReader m_reader;
+    CppUtilities::BinaryWriter m_writer;
 };
 
 /*!
@@ -150,7 +150,7 @@ inline std::uint64_t AbstractContainer::startOffset() const
 /*!
  * \brief Returns the related BinaryReader.
  */
-inline IoUtilities::BinaryReader &AbstractContainer::reader()
+inline CppUtilities::BinaryReader &AbstractContainer::reader()
 {
     return m_reader;
 }
@@ -158,7 +158,7 @@ inline IoUtilities::BinaryReader &AbstractContainer::reader()
 /*!
  * \brief Returns the related BinaryWriter.
  */
-inline IoUtilities::BinaryWriter &AbstractContainer::writer()
+inline CppUtilities::BinaryWriter &AbstractContainer::writer()
 {
     return m_writer;
 }
@@ -273,7 +273,7 @@ inline void AbstractContainer::setTitle(const std::string &title, std::size_t se
 /*!
  * \brief Returns the duration of the file if known; otherwise returns a time span of zero ticks.
  */
-inline ChronoUtilities::TimeSpan AbstractContainer::duration() const
+inline CppUtilities::TimeSpan AbstractContainer::duration() const
 {
     return m_duration;
 }
@@ -281,7 +281,7 @@ inline ChronoUtilities::TimeSpan AbstractContainer::duration() const
 /*!
  * \brief Returns the creation time of the file if known; otherwise the returned date time is null.
  */
-inline ChronoUtilities::DateTime AbstractContainer::creationTime() const
+inline CppUtilities::DateTime AbstractContainer::creationTime() const
 {
     return m_creationTime;
 }
@@ -289,7 +289,7 @@ inline ChronoUtilities::DateTime AbstractContainer::creationTime() const
 /*!
  * \brief Returns the modification time of the file if known; otherwise the returned date time is null.
  */
-inline ChronoUtilities::DateTime AbstractContainer::modificationTime() const
+inline CppUtilities::DateTime AbstractContainer::modificationTime() const
 {
     return m_modificationTime;
 }

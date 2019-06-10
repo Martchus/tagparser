@@ -14,8 +14,7 @@
 #include <memory>
 
 using namespace std;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -139,7 +138,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
         if (!skipSignature) {
             CHECK_MAX_SIZE(7);
             stream.read(sig, 7);
-            skipSignature = (ConversionUtilities::BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
+            skipSignature = (BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
         }
         if (skipSignature) {
             // read vendor (length prefixed string)

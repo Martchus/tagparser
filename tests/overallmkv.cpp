@@ -15,7 +15,7 @@
 #include <cstring>
 #include <fstream>
 
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace MkvTestFlags {
 enum TestFlag {
@@ -622,7 +622,7 @@ void OverallTests::setMkvTestMetaData()
     // assign an attachment
     AbstractAttachment *const attachment = container->createAttachment();
     CPPUNIT_ASSERT_MESSAGE("create attachment", attachment);
-    attachment->setFile(TestUtilities::testFilePath("matroska_wave1/logo3_256x256.png"), m_diag);
+    attachment->setFile(testFilePath("matroska_wave1/logo3_256x256.png"), m_diag);
     attachment->setMimeType("image/png");
     attachment->setName("cover.jpg");
 }
@@ -721,15 +721,15 @@ void OverallTests::testMkvMakingWithDifferentSettings()
         // do actual tests
         m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
         void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setMkvTestMetaData;
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test1.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile1);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test2.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile2);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test3.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile3);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test4.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile4);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test5.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile5);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test6.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile6);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test7.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile7);
-        makeFile(TestUtilities::workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine,
+        makeFile(workingCopyPath("matroska_wave1/test1.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile1);
+        makeFile(workingCopyPath("matroska_wave1/test2.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile2);
+        makeFile(workingCopyPath("matroska_wave1/test3.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile3);
+        makeFile(workingCopyPath("matroska_wave1/test4.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile4);
+        makeFile(workingCopyPath("matroska_wave1/test5.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile5);
+        makeFile(workingCopyPath("matroska_wave1/test6.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile6);
+        makeFile(workingCopyPath("matroska_wave1/test7.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile7);
+        makeFile(workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
+        makeFile(workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine,
             &OverallTests::checkMkvTestfileHandbrakeChapters);
     }
 }

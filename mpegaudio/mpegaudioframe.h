@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <iostream>
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 }
 
@@ -37,7 +37,7 @@ class TAG_PARSER_EXPORT MpegAudioFrame {
 public:
     constexpr MpegAudioFrame();
 
-    void parseHeader(IoUtilities::BinaryReader &reader, Diagnostics &diag);
+    void parseHeader(CppUtilities::BinaryReader &reader, Diagnostics &diag);
 
     constexpr bool isValid() const;
     double mpegVersion() const;

@@ -65,7 +65,7 @@ constexpr bool AspectRatio::isExtended() const
  */
 inline std::string AspectRatio::toString() const
 {
-    return ConversionUtilities::argsToString(numerator, " : ", denominator);
+    return CppUtilities::argsToString(numerator, " : ", denominator);
 }
 
 } // namespace TagParser

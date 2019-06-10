@@ -26,9 +26,7 @@
 
 using namespace std;
 using namespace std::placeholders;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

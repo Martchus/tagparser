@@ -7,7 +7,7 @@
 
 namespace TagParser {
 
-DECLARE_ENUM_CLASS(TagTargetLevel, std::uint8_t);
+enum class TagTargetLevel : std::uint8_t;
 
 /*!
  * \brief Specifies the container format.

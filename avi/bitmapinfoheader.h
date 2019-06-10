@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 }
 
@@ -15,7 +15,7 @@ class TAG_PARSER_EXPORT BitmapInfoHeader {
 public:
     BitmapInfoHeader();
 
-    void parse(IoUtilities::BinaryReader &reader);
+    void parse(CppUtilities::BinaryReader &reader);
 
     std::uint32_t size;
     std::uint32_t width;

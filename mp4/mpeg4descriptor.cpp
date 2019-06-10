@@ -7,7 +7,7 @@
 #include <c++utilities/io/binaryreader.h>
 
 using namespace std;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -46,7 +46,7 @@ string Mpeg4Descriptor::parsingContext() const
  */
 std::string Mpeg4Descriptor::idToString() const
 {
-    return "0x" + ConversionUtilities::numberToString(id(), 16);
+    return "0x" + numberToString(id(), 16);
 }
 
 /*!

@@ -49,8 +49,8 @@ public:
     void setInputStream(std::istream &stream);
     std::ostream &outputStream();
     void setOutputStream(std::ostream &stream);
-    IoUtilities::BinaryReader &reader();
-    IoUtilities::BinaryWriter &writer();
+    CppUtilities::BinaryReader &reader();
+    CppUtilities::BinaryWriter &writer();
     std::uint64_t startOffset() const;
     MediaFormat format() const;
     double version() const;
@@ -66,11 +66,11 @@ public:
     void setId(std::uint64_t id);
     const std::string name() const;
     void setName(const std::string &name);
-    const ChronoUtilities::TimeSpan &duration() const;
+    const CppUtilities::TimeSpan &duration() const;
     double bitrate() const;
     double maxBitrate() const;
-    const ChronoUtilities::DateTime &creationTime() const;
-    const ChronoUtilities::DateTime &modificationTime() const;
+    const CppUtilities::DateTime &creationTime() const;
+    const CppUtilities::DateTime &modificationTime() const;
     const std::string &language() const;
     void setLanguage(const std::string &language);
     std::uint32_t samplingFrequency() const;
@@ -117,8 +117,8 @@ protected:
 
     std::istream *m_istream;
     std::ostream *m_ostream;
-    IoUtilities::BinaryReader m_reader;
-    IoUtilities::BinaryWriter m_writer;
+    CppUtilities::BinaryReader m_reader;
+    CppUtilities::BinaryWriter m_writer;
     std::uint64_t m_startOffset;
     bool m_headerValid;
     MediaFormat m_format;
@@ -130,11 +130,11 @@ protected:
     std::uint32_t m_trackNumber;
     std::uint64_t m_id;
     std::string m_name;
-    ChronoUtilities::TimeSpan m_duration;
+    CppUtilities::TimeSpan m_duration;
     double m_bitrate;
     double m_maxBitrate;
-    ChronoUtilities::DateTime m_creationTime;
-    ChronoUtilities::DateTime m_modificationTime;
+    CppUtilities::DateTime m_creationTime;
+    CppUtilities::DateTime m_modificationTime;
     std::string m_language;
     std::uint32_t m_samplingFrequency;
     std::uint32_t m_extensionSamplingFrequency;
@@ -211,7 +211,7 @@ inline void AbstractTrack::setOutputStream(std::ostream &stream)
  * \remarks The returned reader is internally used when reading binary data
  *          from the associated stream. Do not change its byte order.
  */
-inline IoUtilities::BinaryReader &AbstractTrack::reader()
+inline CppUtilities::BinaryReader &AbstractTrack::reader()
 {
     return m_reader;
 }
@@ -222,7 +222,7 @@ inline IoUtilities::BinaryReader &AbstractTrack::reader()
  * \remarks The returned writer is internally used when writing binary data
  *          to the associated stream. Do not change its byte order.
  */
-inline IoUtilities::BinaryWriter &AbstractTrack::writer()
+inline CppUtilities::BinaryWriter &AbstractTrack::writer()
 {
     return m_writer;
 }
@@ -368,7 +368,7 @@ inline void AbstractTrack::setName(const std::string &name)
 /*!
  * \brief Returns the duration if known; otherwise returns a TimeSpan of zero ticks.
  */
-inline const ChronoUtilities::TimeSpan &AbstractTrack::duration() const
+inline const CppUtilities::TimeSpan &AbstractTrack::duration() const
 {
     return m_duration;
 }
@@ -392,7 +392,7 @@ inline double AbstractTrack::maxBitrate() const
 /*!
  * \brief Returns the creation time if known; otherwise returns a DateTime of zero ticks.
  */
-inline const ChronoUtilities::DateTime &AbstractTrack::creationTime() const
+inline const CppUtilities::DateTime &AbstractTrack::creationTime() const
 {
     return m_creationTime;
 }
@@ -400,7 +400,7 @@ inline const ChronoUtilities::DateTime &AbstractTrack::creationTime() const
 /*!
  * \brief Returns the time of the last modification if known; otherwise returns a DateTime of zero ticks.
  */
-inline const ChronoUtilities::DateTime &AbstractTrack::modificationTime() const
+inline const CppUtilities::DateTime &AbstractTrack::modificationTime() const
 {
     return m_modificationTime;
 }

@@ -23,7 +23,7 @@ class TAG_PARSER_EXPORT Id3v2FrameMaker {
     friend class Id3v2Frame;
 
 public:
-    void make(IoUtilities::BinaryWriter &writer);
+    void make(CppUtilities::BinaryWriter &writer);
     const Id3v2Frame &field() const;
     const std::unique_ptr<char[]> &data() const;
     std::uint32_t dataSize() const;
@@ -92,9 +92,9 @@ public:
     Id3v2Frame(const IdentifierType &id, const TagValue &value, std::uint8_t group = 0, std::uint16_t flag = 0);
 
     // parsing/making
-    void parse(IoUtilities::BinaryReader &reader, std::uint32_t version, std::uint32_t maximalSize, Diagnostics &diag);
+    void parse(CppUtilities::BinaryReader &reader, std::uint32_t version, std::uint32_t maximalSize, Diagnostics &diag);
     Id3v2FrameMaker prepareMaking(std::uint8_t version, Diagnostics &diag);
-    void make(IoUtilities::BinaryWriter &writer, std::uint8_t version, Diagnostics &diag);
+    void make(CppUtilities::BinaryWriter &writer, std::uint8_t version, Diagnostics &diag);
 
     // member access
     const std::vector<TagValue> &additionalValues() const;
@@ -338,11 +338,11 @@ inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(const char *idSt
 {
     switch (idStringSize != std::string::npos ? idStringSize : std::strlen(idString)) {
     case 3:
-        return ConversionUtilities::BE::toUInt24(idString);
+        return CppUtilities::BE::toUInt24(idString);
     case 4:
-        return ConversionUtilities::BE::toUInt32(idString);
+        return CppUtilities::BE::toUInt32(idString);
     default:
-        throw ConversionUtilities::ConversionException("ID3v2 ID must be 3 or 4 chars");
+        throw CppUtilities::ConversionException("ID3v2 ID must be 3 or 4 chars");
     }
 }
 
@@ -351,7 +351,7 @@ inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(const char *idSt
  */
 inline std::string Id3v2Frame::fieldIdToString(Id3v2Frame::IdentifierType id)
 {
-    return ConversionUtilities::interpretIntegerAsString<std::uint32_t>(id, Id3v2FrameIds::isLongId(id) ? 0 : 1);
+    return CppUtilities::interpretIntegerAsString<std::uint32_t>(id, Id3v2FrameIds::isLongId(id) ? 0 : 1);
 }
 
 } // namespace TagParser

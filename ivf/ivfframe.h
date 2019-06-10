@@ -3,7 +3,7 @@
 
 #include "../diagnostics.h"
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 }
 
@@ -12,7 +12,7 @@ namespace TagParser {
 class TAG_PARSER_EXPORT IvfFrame {
 public:
     constexpr IvfFrame();
-    void parseHeader(IoUtilities::BinaryReader &reader, Diagnostics &diag);
+    void parseHeader(CppUtilities::BinaryReader &reader, Diagnostics &diag);
 
 private:
     std::uint64_t startOffset;

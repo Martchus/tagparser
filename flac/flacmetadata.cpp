@@ -12,8 +12,7 @@
 #include <memory>
 
 using namespace std;
-using namespace ConversionUtilities;
-using namespace IoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

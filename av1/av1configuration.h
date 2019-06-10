@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace IoUtilities {
+namespace CppUtilities {
 class BinaryReader;
 }
 
@@ -26,7 +26,7 @@ struct TAG_PARSER_EXPORT Av1Configuration {
     std::uint8_t chromaSubsamplingY;
     std::uint16_t chromaSamplePosition;
 
-    void parse(IoUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
+    void parse(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
 };
 
 /*!

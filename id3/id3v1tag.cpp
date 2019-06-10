@@ -11,7 +11,7 @@
 #include <initializer_list>
 
 using namespace std;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -276,7 +276,7 @@ void Id3v1Tag::readValue(TagValue &value, size_t maxLength, const char *buffer)
         --end;
         --maxLength;
     }
-    if (maxLength >= 3 && ConversionUtilities::BE::toUInt24(buffer) == 0x00EFBBBF) {
+    if (maxLength >= 3 && BE::toUInt24(buffer) == 0x00EFBBBF) {
         value.assignData(buffer + 3, maxLength - 3, TagDataType::Text, TagTextEncoding::Utf8);
     } else {
         value.assignData(buffer, maxLength, TagDataType::Text, TagTextEncoding::Latin1);

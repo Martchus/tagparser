@@ -14,9 +14,7 @@
 #include <sstream>
 
 using namespace std;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 

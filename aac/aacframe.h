@@ -462,7 +462,7 @@ private:
     void parseRawDataBlock();
 
     // these fields contain setup information
-    IoUtilities::BitReader m_reader;
+    CppUtilities::BitReader m_reader;
     std::uint8_t m_mpeg4AudioObjectId;
     std::uint8_t m_mpeg4SamplingFrequencyIndex;
     std::uint8_t m_mpeg4ExtensionSamplingFrequencyIndex;

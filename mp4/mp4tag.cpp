@@ -9,8 +9,7 @@
 #include <c++utilities/io/binarywriter.h>
 
 using namespace std;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -339,7 +338,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
         if (/*(((handlerType & 0xFFFFFFFF00000000) >> 32) != 0x6D647461) && */ (handlerType != 0x6d6469726170706c)) {
             diag.emplace_back(DiagLevel::Warning, "Handler type (value in hdlr atom) is unknown. Trying to parse meta information anyhow.", context);
         }
-        m_version = ConversionUtilities::numberToString(versionByte);
+        m_version = numberToString(versionByte);
     } else {
         m_version.clear();
     }

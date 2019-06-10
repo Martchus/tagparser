@@ -23,9 +23,7 @@
 #include <locale>
 
 using namespace std;
-using namespace IoUtilities;
-using namespace ConversionUtilities;
-using namespace ChronoUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -558,7 +556,7 @@ vector<std::uint64_t> Mp4Track::readChunkSizes(Diagnostics &diag)
  * \sa mpeg4ElementaryStreamInfo()
  */
 std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(
-    IoUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag)
+    CppUtilities::BinaryReader &reader, Mp4Atom *esDescAtom, Diagnostics &diag)
 {
     static const string context("parsing MPEG-4 elementary stream descriptor");
     using namespace Mpeg4ElementaryStreamObjectIds;

@@ -28,8 +28,8 @@ class VorbisComment;
 class Diagnostics;
 class AbortableProgressFeedback;
 
-DECLARE_ENUM_CLASS(MediaType, unsigned int);
-DECLARE_ENUM_CLASS(TagType, unsigned int);
+enum class MediaType : unsigned int;
+enum class TagType : unsigned int;
 
 /*!
  * \brief The ParsingStatus enum specifies whether a certain part of the file (tracks, tags, ...) has
@@ -86,7 +86,7 @@ public:
     std::size_t trackCount() const;
     std::vector<AbstractTrack *> tracks() const;
     bool hasTracksOfType(TagParser::MediaType type) const;
-    ChronoUtilities::TimeSpan duration() const;
+    CppUtilities::TimeSpan duration() const;
     double overallAverageBitrate() const;
     std::unordered_set<std::string> availableLanguages(TagParser::MediaType type = TagParser::MediaType::Audio) const;
     std::string technicalSummary() const;

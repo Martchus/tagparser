@@ -26,8 +26,8 @@ public:
     bool isReadOnly() const;
     void close();
     void invalidate();
-    IoUtilities::NativeFileStream &stream();
-    const IoUtilities::NativeFileStream &stream() const;
+    CppUtilities::NativeFileStream &stream();
+    const CppUtilities::NativeFileStream &stream() const;
 
     // methods to get, set path (components)
     const std::string &path() const;
@@ -52,7 +52,7 @@ protected:
 
 private:
     std::string m_path;
-    IoUtilities::NativeFileStream m_file;
+    CppUtilities::NativeFileStream m_file;
     std::uint64_t m_size;
     bool m_readOnly;
 };
@@ -78,7 +78,7 @@ inline bool BasicFileInfo::isReadOnly() const
 /*!
  * \brief Returns the std::fstream for the current instance.
  */
-inline IoUtilities::NativeFileStream &BasicFileInfo::stream()
+inline CppUtilities::NativeFileStream &BasicFileInfo::stream()
 {
     return m_file;
 }
@@ -86,7 +86,7 @@ inline IoUtilities::NativeFileStream &BasicFileInfo::stream()
 /*!
  * \brief Returns the std::fstream for the current instance.
  */
-inline const IoUtilities::NativeFileStream &BasicFileInfo::stream() const
+inline const CppUtilities::NativeFileStream &BasicFileInfo::stream() const
 {
     return m_file;
 }
@@ -139,7 +139,7 @@ inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
  */
 inline const char *BasicFileInfo::pathForOpen(const std::string &url)
 {
-    return ConversionUtilities::startsWith(url, "file:/") ? url.data() + 6 : url.data();
+    return CppUtilities::startsWith(url, "file:/") ? url.data() + 6 : url.data();
 }
 
 } // namespace TagParser

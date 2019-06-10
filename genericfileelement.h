@@ -13,11 +13,9 @@
 #include <memory>
 #include <string>
 
-namespace IoUtilities {
-
+namespace CppUtilities {
 class BinaryReader;
 class BinaryWriter;
-
 } // namespace IoUtilities
 
 namespace TagParser {
@@ -73,8 +71,8 @@ public:
     ContainerType &container();
     const ContainerType &container() const;
     std::iostream &stream();
-    IoUtilities::BinaryReader &reader();
-    IoUtilities::BinaryWriter &writer();
+    CppUtilities::BinaryReader &reader();
+    CppUtilities::BinaryWriter &writer();
     std::uint64_t startOffset() const;
     std::uint64_t relativeStartOffset() const;
     const IdentifierType &id() const;
@@ -244,7 +242,7 @@ template <class ImplementationType> inline std::iostream &GenericFileElement<Imp
 /*!
  * \brief Returns the related BinaryReader.
  */
-template <class ImplementationType> inline IoUtilities::BinaryReader &GenericFileElement<ImplementationType>::reader()
+template <class ImplementationType> inline CppUtilities::BinaryReader &GenericFileElement<ImplementationType>::reader()
 {
     return m_container->reader();
 }
@@ -252,7 +250,7 @@ template <class ImplementationType> inline IoUtilities::BinaryReader &GenericFil
 /*!
  * \brief Returns the related BinaryWriter.
  */
-template <class ImplementationType> inline IoUtilities::BinaryWriter &GenericFileElement<ImplementationType>::writer()
+template <class ImplementationType> inline CppUtilities::BinaryWriter &GenericFileElement<ImplementationType>::writer()
 {
     return m_container->writer();
 }
@@ -933,7 +931,7 @@ void GenericFileElement<ImplementationType>::copyInternal(
     }
     auto &stream = container().stream();
     stream.seekg(startOffset);
-    IoUtilities::CopyHelper<0x2000> copyHelper;
+    CppUtilities::CopyHelper<0x2000> copyHelper;
     if (progress) {
         copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)),
             std::bind(&AbortableProgressFeedback::updateStepPercentageFromFraction, std::ref(progress), std::placeholders::_1));

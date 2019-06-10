@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-using namespace ConversionUtilities;
+using namespace CppUtilities;
 
 namespace TagParser {
 
@@ -106,12 +106,12 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     // read signature
     std::uint64_t sig = 0;
     if (bufferSize >= 8) {
-        sig = ConversionUtilities::BE::toUInt64(buffer);
+        sig = BE::toUInt64(buffer);
     } else if (bufferSize >= 4) {
-        sig = ConversionUtilities::BE::toUInt32(buffer);
+        sig = BE::toUInt32(buffer);
         sig <<= 4;
     } else if (bufferSize >= 2) {
-        sig = ConversionUtilities::BE::toUInt16(buffer);
+        sig = BE::toUInt16(buffer);
         sig <<= 6;
     } else {
         return ContainerFormat::Unknown;
@@ -178,9 +178,9 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case PhotoshopDocument:
         return ContainerFormat::PhotoshopDocument;
     case Riff:
-        if (bufferSize >= 16 && ConversionUtilities::BE::toUInt64(buffer + 8) == Sig64::RiffAvi) {
+        if (bufferSize >= 16 && BE::toUInt64(buffer + 8) == Sig64::RiffAvi) {
             return ContainerFormat::RiffAvi;
-        } else if (bufferSize >= 12 && ConversionUtilities::BE::toUInt32(buffer + 8) == RiffWave) {
+        } else if (bufferSize >= 12 && BE::toUInt32(buffer + 8) == RiffWave) {
             return ContainerFormat::RiffWave;
         } else {
             return ContainerFormat::Riff;

@@ -133,8 +133,8 @@ void OverallTests::testOggParsing()
     cerr << endl << "OGG parser" << endl;
     m_fileInfo.setForceFullParse(false);
     m_tagStatus = TagStatus::Original;
-    parseFile(TestUtilities::testFilePath("mtx-test-data/ogg/qt4dance_medium.ogg"), &OverallTests::checkOggTestfile1);
-    parseFile(TestUtilities::testFilePath("mtx-test-data/opus/v-opus.ogg"), &OverallTests::checkOggTestfile2);
+    parseFile(testFilePath("mtx-test-data/ogg/qt4dance_medium.ogg"), &OverallTests::checkOggTestfile1);
+    parseFile(testFilePath("mtx-test-data/opus/v-opus.ogg"), &OverallTests::checkOggTestfile2);
 }
 
 /*!
@@ -167,7 +167,7 @@ void OverallTests::testOggMaking()
         // do actual tests
         m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
         void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaData;
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/ogg/qt4dance_medium.ogg"), modifyRoutine, &OverallTests::checkOggTestfile1);
-        makeFile(TestUtilities::workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
+        makeFile(workingCopyPath("mtx-test-data/ogg/qt4dance_medium.ogg"), modifyRoutine, &OverallTests::checkOggTestfile1);
+        makeFile(workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
     }
 }
