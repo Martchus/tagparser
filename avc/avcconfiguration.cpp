@@ -25,7 +25,7 @@ namespace TagParser {
  */
 void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
     if (maxSize < 7) {
         throw TruncatedDataException();
     }

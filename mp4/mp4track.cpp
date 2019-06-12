@@ -1054,8 +1054,8 @@ void Mp4Track::addInfo(const AvcConfiguration &avcConfig, AbstractTrack &track)
  */
 void Mp4Track::addInfo(const Av1Configuration &av1Config, AbstractTrack &track)
 {
-    VAR_UNUSED(av1Config)
-    VAR_UNUSED(track)
+    CPP_UTILITIES_UNUSED(av1Config)
+    CPP_UTILITIES_UNUSED(track)
     throw NotImplementedException();
 }
 
@@ -1067,7 +1067,7 @@ void Mp4Track::addInfo(const Av1Configuration &av1Config, AbstractTrack &track)
  */
 void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
 
     if (m_tkhdAtom) {
         m_tkhdAtom->makeBuffer();
@@ -1090,7 +1090,7 @@ void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
  */
 std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
 
     // add size of
     // ... trak header

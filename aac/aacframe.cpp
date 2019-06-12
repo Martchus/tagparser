@@ -1181,7 +1181,7 @@ std::uint16_t AacFrameElementParser::parsePsData(std::shared_ptr<AacPsInfo> &ps,
 
 std::uint16_t AacFrameElementParser::parseDrmPsData(std::shared_ptr<AacDrmPsInfo> &drmPs)
 {
-    VAR_UNUSED(drmPs)
+    CPP_UTILITIES_UNUSED(drmPs)
     throw NotImplementedException(); // TODO
 }
 
@@ -1310,7 +1310,7 @@ shared_ptr<AacSbrInfo> AacFrameElementParser::makeSbrInfo(std::uint8_t sbrElemen
 
 void AacFrameElementParser::parseSbrExtensionData(std::uint8_t sbrElement, std::uint16_t count, bool crcFlag)
 {
-    VAR_UNUSED(count);
+    CPP_UTILITIES_UNUSED(count);
     //uint16 alignBitCount = 0;
     std::shared_ptr<AacSbrInfo> &sbr = m_sbrElements[sbrElement];
     if (m_psResetFlag) {

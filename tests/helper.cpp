@@ -23,4 +23,4 @@ std::ostream &operator<<(std::ostream &os, const TagParser::TagTextEncoding &enc
     return os;
 }
 
-} // namespace TestUtilities
+} // namespace CppUtilities

@@ -21,7 +21,8 @@ namespace TagParser {
 class TAG_PARSER_EXPORT PositionInSet {
 public:
     constexpr PositionInSet(std::int32_t position = 0, std::int32_t total = 0);
-    template <typename StringType = std::string, CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
+    template <typename StringType = std::string,
+        CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
     PositionInSet(const StringType &numericString);
 
     constexpr std::int32_t position() const;
@@ -29,7 +30,8 @@ public:
     constexpr bool isNull() const;
     constexpr bool operator==(const PositionInSet &other) const;
 
-    template <typename StringType = std::string, CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
+    template <typename StringType = std::string,
+        CppUtilities::Traits::EnableIfAny<CppUtilities::Traits::IsSpecializationOf<StringType, std::basic_string>> * = nullptr>
     StringType toString() const;
 
 private:

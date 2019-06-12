@@ -110,7 +110,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
  */
 void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
 
     std::uint64_t totalSize = 0;
     char buff0[8];

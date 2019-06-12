@@ -182,7 +182,7 @@ bool AbstractContainer::supportsTrackModifications() const
  */
 ElementPosition AbstractContainer::determineIndexPosition(Diagnostics &diag) const
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     return ElementPosition::Keep;
 }
 
@@ -196,7 +196,7 @@ ElementPosition AbstractContainer::determineIndexPosition(Diagnostics &diag) con
  */
 void AbstractContainer::internalParseHeader(Diagnostics &diag)
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -210,7 +210,7 @@ void AbstractContainer::internalParseHeader(Diagnostics &diag)
  */
 void AbstractContainer::internalParseTags(Diagnostics &diag)
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -224,7 +224,7 @@ void AbstractContainer::internalParseTags(Diagnostics &diag)
  */
 void AbstractContainer::internalParseTracks(Diagnostics &diag)
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -238,7 +238,7 @@ void AbstractContainer::internalParseTracks(Diagnostics &diag)
  */
 void AbstractContainer::internalParseChapters(Diagnostics &diag)
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -252,7 +252,7 @@ void AbstractContainer::internalParseChapters(Diagnostics &diag)
  */
 void AbstractContainer::internalParseAttachments(Diagnostics &diag)
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     throw NotImplementedException();
 }
 
@@ -266,8 +266,8 @@ void AbstractContainer::internalParseAttachments(Diagnostics &diag)
  */
 void AbstractContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    VAR_UNUSED(diag);
-    VAR_UNUSED(progress);
+    CPP_UTILITIES_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(progress);
     throw NotImplementedException();
 }
 
@@ -293,7 +293,7 @@ Tag *AbstractContainer::createTag(const TagTarget &)
  */
 Tag *AbstractContainer::tag(size_t index)
 {
-    VAR_UNUSED(index);
+    CPP_UTILITIES_UNUSED(index);
     return nullptr;
 }
 
@@ -322,7 +322,7 @@ size_t AbstractContainer::tagCount() const
  */
 bool AbstractContainer::removeTag(Tag *tag)
 {
-    VAR_UNUSED(tag);
+    CPP_UTILITIES_UNUSED(tag);
     return false;
 }
 
@@ -351,7 +351,7 @@ void AbstractContainer::removeAllTags()
  */
 ElementPosition AbstractContainer::determineTagPosition(Diagnostics &diag) const
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
     return ElementPosition::Keep;
 }
 
@@ -362,7 +362,7 @@ ElementPosition AbstractContainer::determineTagPosition(Diagnostics &diag) const
  */
 AbstractTrack *AbstractContainer::track(size_t index)
 {
-    VAR_UNUSED(index);
+    CPP_UTILITIES_UNUSED(index);
     return nullptr;
 }
 
@@ -390,7 +390,7 @@ size_t AbstractContainer::trackCount() const
  */
 bool AbstractContainer::removeTrack(AbstractTrack *track)
 {
-    VAR_UNUSED(track);
+    CPP_UTILITIES_UNUSED(track);
     return false;
 }
 
@@ -418,7 +418,7 @@ void AbstractContainer::removeAllTracks()
  */
 AbstractChapter *AbstractContainer::chapter(size_t index)
 {
-    VAR_UNUSED(index);
+    CPP_UTILITIES_UNUSED(index);
     return nullptr;
 }
 
@@ -447,7 +447,7 @@ AbstractAttachment *AbstractContainer::createAttachment()
  */
 AbstractAttachment *AbstractContainer::attachment(size_t index)
 {
-    VAR_UNUSED(index);
+    CPP_UTILITIES_UNUSED(index);
     return nullptr;
 }
 

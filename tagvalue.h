@@ -138,7 +138,7 @@ public:
     static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
     template <typename ContainerType,
-       CppUtilities:: Traits::EnableIf<CppUtilities::Traits::IsIteratable<ContainerType>,
+        CppUtilities::Traits::EnableIf<CppUtilities::Traits::IsIteratable<ContainerType>,
             std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>>
             * = nullptr>
     static std::vector<std::string> toStrings(const ContainerType &values, TagTextEncoding encoding = TagTextEncoding::Utf8);
@@ -600,7 +600,7 @@ inline TagTextEncoding TagValue::descriptionEncoding() const
  * \sa toString()
  */
 template <typename ContainerType,
-   CppUtilities:: Traits::EnableIf<CppUtilities::Traits::IsIteratable<ContainerType>,
+    CppUtilities::Traits::EnableIf<CppUtilities::Traits::IsIteratable<ContainerType>,
         std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>> *>
 std::vector<std::string> TagValue::toStrings(const ContainerType &values, TagTextEncoding encoding)
 {

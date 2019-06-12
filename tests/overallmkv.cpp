@@ -729,8 +729,7 @@ void OverallTests::testMkvMakingWithDifferentSettings()
         makeFile(workingCopyPath("matroska_wave1/test6.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile6);
         makeFile(workingCopyPath("matroska_wave1/test7.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile7);
         makeFile(workingCopyPath("matroska_wave1/test8.mkv"), modifyRoutine, &OverallTests::checkMkvTestfile8);
-        makeFile(workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine,
-            &OverallTests::checkMkvTestfileHandbrakeChapters);
+        makeFile(workingCopyPath("mtx-test-data/mkv/handbrake-chapters-2.mkv"), modifyRoutine, &OverallTests::checkMkvTestfileHandbrakeChapters);
     }
 }
 

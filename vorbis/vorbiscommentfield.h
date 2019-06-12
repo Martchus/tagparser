@@ -6,7 +6,7 @@
 namespace CppUtilities {
 class BinaryReader;
 class BinaryWriter;
-} // namespace IoUtilities
+} // namespace CppUtilities
 
 namespace TagParser {
 

@@ -295,7 +295,7 @@ std::streamoff FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
  */
 void FlacStream::makePadding(ostream &stream, std::uint32_t size, bool isLast, Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
 
     // make header
     FlacMetaDataBlockHeader header;

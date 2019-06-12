@@ -20,7 +20,7 @@ namespace TagParser {
  */
 void IvfFrame::parseHeader(CppUtilities::BinaryReader &reader, Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
     startOffset = static_cast<std::uint64_t>(reader.stream()->tellg());
     size = reader.readUInt32BE();
     timestamp = reader.readUInt64BE();

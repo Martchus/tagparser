@@ -556,7 +556,7 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
     : m_track(track)
     , m_dataSize(0)
 {
-    VAR_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(diag);
 
     // calculate size for recognized elements
     m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.id());

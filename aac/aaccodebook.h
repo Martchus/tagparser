@@ -3,7 +3,7 @@
 
 // NOTE: The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
 
-#include <c++utilities/application/global.h>
+#include "../global.h"
 
 #include <cstdint>
 
@@ -11,18 +11,18 @@ namespace TagParser {
 
 /// \cond
 
-struct LIB_EXPORT AacHcb {
+struct TAG_PARSER_EXPORT AacHcb {
     std::uint8_t offset;
     std::uint8_t extraBits;
 };
 
-struct LIB_EXPORT AacHcb2Pair {
+struct TAG_PARSER_EXPORT AacHcb2Pair {
     std::uint8_t bits;
     std::int8_t x;
     std::int8_t y;
 };
 
-struct LIB_EXPORT AacHcb2Quad {
+struct TAG_PARSER_EXPORT AacHcb2Quad {
     std::uint8_t bits;
     std::int8_t x;
     std::int8_t y;
@@ -30,12 +30,12 @@ struct LIB_EXPORT AacHcb2Quad {
     std::int8_t w;
 };
 
-struct LIB_EXPORT AacHcbBinPair {
+struct TAG_PARSER_EXPORT AacHcbBinPair {
     std::uint8_t isLeaf;
     std::int8_t data[2];
 };
 
-struct LIB_EXPORT AacHcbBinQuad {
+struct TAG_PARSER_EXPORT AacHcbBinQuad {
     std::uint8_t isLeaf;
     std::int8_t data[4];
 };

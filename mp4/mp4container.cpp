@@ -705,7 +705,7 @@ calculatePadding:
                                 origMediaDataOffsets.push_back(static_cast<std::int64_t>(level0Atom->startOffset()));
                                 newMediaDataOffsets.push_back(outputStream.tellp());
                             }
-                            FALLTHROUGH;
+                            [[fallthrough]];
                         default:
                             // update status
                             progress.updateStep("Writing atom: " + level0Atom->idToString());

@@ -50,7 +50,7 @@ bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
  */
 void Id3v1Tag::parse(std::istream &stream, Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
     char buffer[128];
     stream.read(buffer, 128);
     if (buffer[0] != 0x54 || buffer[1] != 0x41 || buffer[2] != 0x47) {
@@ -320,7 +320,7 @@ void Id3v1Tag::writeValue(const TagValue &value, size_t length, char *buffer, os
             valueLength -= 3;
             break;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
     default:
         diag.emplace_back(DiagLevel::Warning, "The used encoding is unlikely to be supported by other software.", "making ID3v1 tag field");
     }

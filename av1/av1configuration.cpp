@@ -23,9 +23,9 @@ namespace TagParser {
  */
 void Av1Configuration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
-    VAR_UNUSED(reader)
-    VAR_UNUSED(maxSize)
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(reader)
+    CPP_UTILITIES_UNUSED(maxSize)
+    CPP_UTILITIES_UNUSED(diag)
     throw NotImplementedException();
 }
 

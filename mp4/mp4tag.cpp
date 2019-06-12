@@ -233,7 +233,7 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
         if (!this->value(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::label).isEmpty()) {
             setValue(Mp4TagExtendedMeanIds::iTunes, Mp4TagExtendedNameIds::label, value);
         }
-        FALLTHROUGH;
+        [[fallthrough]];
     default:
         return FieldMapBasedTag<Mp4Tag>::setValue(field, value);
     }

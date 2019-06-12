@@ -267,7 +267,7 @@ bool OggIterator::resyncAt(std::uint64_t offset)
                     stream().seekg(currentOffset);
                 }
             }
-            FALLTHROUGH;
+            [[fallthrough]];
         default:
             lettersFound = 0;
         }

@@ -81,7 +81,7 @@ std::uint32_t OggPage::computeChecksum(istream &stream, std::uint64_t startOffse
         case 22:
             // bytes 22, 23, 24, 25 hold denoted checksum and must be set to zero
             stream.seekg(4, ios_base::cur);
-            FALLTHROUGH;
+            [[fallthrough]];
         case 23:
         case 24:
         case 25:

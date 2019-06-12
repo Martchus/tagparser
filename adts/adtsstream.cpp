@@ -17,7 +17,7 @@ namespace TagParser {
 
 void AdtsStream::internalParseHeader(Diagnostics &diag)
 {
-    VAR_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(diag)
 
     //static const string context("parsing ADTS frame header");
     if (!m_istream) {

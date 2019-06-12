@@ -3,6 +3,8 @@
 
 // NOTE: The AAC parser is still WIP. It does not work yet and its API/ABI may change even in patch releases.
 
+#include "../global.h"
+
 #include <c++utilities/io/bitreader.h>
 
 #include <cstdint>
@@ -72,7 +74,7 @@ namespace AacSbrExtensionIds {
 enum KnownIds : std::uint8_t { DrmParametricStereo = 0, Ps = 2 };
 }
 
-struct LIB_EXPORT AacLtpInfo {
+struct TAG_PARSER_EXPORT AacLtpInfo {
     AacLtpInfo();
     std::uint8_t lastBand;
     std::uint8_t dataPresent;
@@ -85,7 +87,7 @@ struct LIB_EXPORT AacLtpInfo {
     std::uint8_t shortLag[8];
 };
 
-struct LIB_EXPORT AacPredictorInfo {
+struct TAG_PARSER_EXPORT AacPredictorInfo {
     AacPredictorInfo();
     std::uint8_t maxSfb;
     std::uint8_t reset;
@@ -93,7 +95,7 @@ struct LIB_EXPORT AacPredictorInfo {
     std::uint8_t predictionUsed[aacMaxSfb];
 };
 
-struct LIB_EXPORT AacPulseInfo {
+struct TAG_PARSER_EXPORT AacPulseInfo {
     AacPulseInfo();
     std::uint8_t count;
     std::uint8_t startSfb;
@@ -101,7 +103,7 @@ struct LIB_EXPORT AacPulseInfo {
     std::uint8_t amp[4];
 };
 
-struct LIB_EXPORT AacTnsInfo {
+struct TAG_PARSER_EXPORT AacTnsInfo {
     AacTnsInfo();
     std::uint8_t filt[8];
     std::uint8_t coefRes[8];
@@ -112,7 +114,7 @@ struct LIB_EXPORT AacTnsInfo {
     std::uint8_t coef[8][4][32];
 };
 
-struct LIB_EXPORT AacSsrInfo {
+struct TAG_PARSER_EXPORT AacSsrInfo {
     AacSsrInfo();
     std::uint8_t maxBand;
     std::uint8_t adjustNum[4][8];
@@ -120,7 +122,7 @@ struct LIB_EXPORT AacSsrInfo {
     std::uint8_t aloccode[4][8][8];
 };
 
-struct LIB_EXPORT AacDrcInfo {
+struct TAG_PARSER_EXPORT AacDrcInfo {
     AacDrcInfo();
     std::uint8_t present;
     std::uint8_t bandCount;
@@ -134,7 +136,7 @@ struct LIB_EXPORT AacDrcInfo {
     std::uint8_t additionalExcludedChannels[aacMaxChannels];
 };
 
-struct LIB_EXPORT AacPsInfo {
+struct TAG_PARSER_EXPORT AacPsInfo {
     AacPsInfo();
     std::uint8_t headerRead;
     std::uint8_t use34HybridBands;
@@ -145,7 +147,7 @@ struct LIB_EXPORT AacPsInfo {
     // TODO
 };
 
-struct LIB_EXPORT AacDrmPsInfo {
+struct TAG_PARSER_EXPORT AacDrmPsInfo {
     AacDrmPsInfo();
     std::uint8_t headerRead;
     std::uint8_t use34HybridBands;
@@ -156,7 +158,7 @@ struct LIB_EXPORT AacDrmPsInfo {
     // TODO
 };
 
-struct LIB_EXPORT AacSbrInfo {
+struct TAG_PARSER_EXPORT AacSbrInfo {
     AacSbrInfo(std::uint8_t sbrElementType, std::uint16_t samplingFrequency, std::uint16_t frameLength, bool isDrm);
 
     std::uint8_t aacElementId;
@@ -306,7 +308,7 @@ struct LIB_EXPORT AacSbrInfo {
     std::uint8_t bsDfNoise[2][3];
 };
 
-struct LIB_EXPORT AacProgramConfig {
+struct TAG_PARSER_EXPORT AacProgramConfig {
     AacProgramConfig();
     std::uint8_t elementInstanceTag;
     std::uint8_t objectType;
@@ -345,7 +347,7 @@ struct LIB_EXPORT AacProgramConfig {
     std::uint8_t cpeChannel[16];
 };
 
-struct LIB_EXPORT AacIcsInfo {
+struct TAG_PARSER_EXPORT AacIcsInfo {
     AacIcsInfo();
 
     std::uint8_t maxSfb;
@@ -401,7 +403,7 @@ struct LIB_EXPORT AacIcsInfo {
     std::uint16_t dpcmNoiseLastPos;
 };
 
-class LIB_EXPORT AacFrameElementParser {
+class TAG_PARSER_EXPORT AacFrameElementParser {
 public:
     AacFrameElementParser(std::uint8_t audioObjectId, std::uint8_t samplingFrequencyIndex, std::uint8_t extensionSamplingFrequencyIndex,
         std::uint8_t channelConfig, std::uint16_t frameLength = 1024);

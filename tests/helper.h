@@ -47,6 +47,6 @@ inline std::ostream &operator<<(std::ostream &os, const TagParser::DiagMessage &
     return os << diagMessage.levelName() << ':' << ' ' << diagMessage.message() << ' ' << '(' << diagMessage.context() << ')';
 }
 
-} // namespace TestUtilities
+} // namespace CppUtilities
 
 #endif // TAGPARSER_TEST_HELPER
