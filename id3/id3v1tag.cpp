@@ -37,9 +37,17 @@ const char *Id3v1Tag::typeName() const
     return tagName;
 }
 
+/*!
+ * \brief Returns only true for TagTextEncoding::Latin1.
+ * \remarks
+ * The encoding to be used within ID3v1 tags is not standardized but it seems that Latin-1 is the most
+ * commonly used character set and hence safest to use. Hence that is the only encoding which can be safely
+ * recommended here. Despite that, the Id3v1Tag class is actually able to deal with UTF-8 as well. It will
+ * use the BOM to detect and serialize UTF-8.
+ */
 bool Id3v1Tag::canEncodingBeUsed(TagTextEncoding encoding) const
 {
-    return encoding == TagTextEncoding::Latin1 || encoding == TagTextEncoding::Utf8;
+    return encoding == TagTextEncoding::Latin1;
 }
 
 /*!
