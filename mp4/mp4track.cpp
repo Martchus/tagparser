@@ -551,8 +551,6 @@ vector<std::uint64_t> Mp4Track::readChunkSizes(Diagnostics &diag)
 
 /*!
  * \brief Reads the MPEG-4 elementary stream descriptor for the track.
- * \remarks
- *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
 std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamInfo(
@@ -645,8 +643,6 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
 
 /*!
  * \brief Parses the audio specific configuration for the track.
- * \remarks
- *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
 unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(
@@ -812,8 +808,6 @@ unique_ptr<Mpeg4AudioSpecificConfig> Mp4Track::parseAudioSpecificConfig(
 
 /*!
  * \brief Parses the video specific configuration for the track.
- * \remarks
- *  - Notifications might be added.
  * \sa mpeg4ElementaryStreamInfo()
  */
 std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(
