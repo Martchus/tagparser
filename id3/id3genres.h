@@ -18,7 +18,7 @@ public:
     static constexpr bool isIndexSupported(int index);
 
 private:
-    static const char **genreNames();
+    static const char *const *genreNames();
 };
 
 /*!
