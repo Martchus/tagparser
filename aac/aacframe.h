@@ -478,8 +478,8 @@ private:
     std::uint8_t m_channelCount;
     std::uint8_t m_elementCount;
     std::uint8_t m_elementChannelCount[aacMaxSyntaxElements];
-    //byte m_channel;
-    //int16 m_pairedChannel;
+    //std::uint8_t m_channel;
+    //std::int16_t m_pairedChannel;
     std::uint8_t m_elementInstanceTag[aacMaxSyntaxElements];
     std::uint8_t m_commonWindow;
     AacIcsInfo m_ics1;
@@ -487,8 +487,8 @@ private:
     AacDrcInfo m_drc;
     AacProgramConfig m_pce;
     std::uint8_t m_sbrPresentFlag;
-    //byte m_forceUpSampling;
-    //byte m_downSampledSbr;
+    //std::uint8_t m_forceUpSampling;
+    //std::uint8_t m_downSampledSbr;
     std::shared_ptr<AacSbrInfo> m_sbrElements[aacMaxSyntaxElements];
     std::uint8_t m_psUsed[aacMaxSyntaxElements];
     std::uint8_t m_psUsedGlobal;
