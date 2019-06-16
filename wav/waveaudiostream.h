@@ -9,29 +9,34 @@ class TAG_PARSER_EXPORT WaveFormatHeader {
 public:
     constexpr WaveFormatHeader();
 
-    void parse(CppUtilities::BinaryReader &reader);
-    std::pair<MediaFormat, std::uint64_t> parseExt(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
+    std::uint64_t parse(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag);
     MediaFormat format() const;
     constexpr std::uint32_t bitrate() const;
 
+    std::uint64_t guid1;
+    std::uint64_t guid2;
     std::uint16_t formatTag;
     std::uint16_t channelCount;
-    std::uint16_t sampleRate;
-    std::uint16_t bytesPerSecond;
+    std::uint32_t sampleRate;
+    std::uint32_t bytesPerSecond;
     std::uint16_t chunkSize;
     std::uint16_t bitsPerSample;
+    std::uint32_t channelMask;
 };
 
 /*!
  * \brief Constructs a new WaveFormatHeader.
  */
 constexpr WaveFormatHeader::WaveFormatHeader()
-    : formatTag(0)
+    : guid1(0)
+    , guid2(0)
+    , formatTag(0)
     , channelCount(0)
     , sampleRate(0)
     , bytesPerSecond(0)
     , chunkSize(0)
     , bitsPerSample(0)
+    , channelMask(0)
 {
 }
 

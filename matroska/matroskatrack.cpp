@@ -466,14 +466,10 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
     case GeneralMediaFormat::MicrosoftAudioCodecManager:
         if ((codecPrivateElement = m_trackElement->childById(MatroskaIds::CodecPrivate, diag))) {
             // parse WAVE header to determine actual format
-            if (codecPrivateElement->dataSize() >= 16) {
-                m_istream->seekg(static_cast<streamoff>(codecPrivateElement->dataOffset()));
-                WaveFormatHeader waveFormatHeader;
-                waveFormatHeader.parse(reader());
-                WaveAudioStream::addInfo(waveFormatHeader, *this);
-            } else {
-                diag.emplace_back(DiagLevel::Critical, "BITMAPINFOHEADER structure (in \"CodecPrivate\"-element) is truncated.", context);
-            }
+            m_istream->seekg(static_cast<streamoff>(codecPrivateElement->dataOffset()));
+            WaveFormatHeader waveFormatHeader;
+            waveFormatHeader.parse(reader(), codecPrivateElement->dataSize(), diag);
+            WaveAudioStream::addInfo(waveFormatHeader, *this);
         }
         break;
     case GeneralMediaFormat::Aac:

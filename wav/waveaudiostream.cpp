@@ -20,84 +20,56 @@ namespace TagParser {
 
 /*!
  * \brief Parses the WAVE "fmt " header segment using the specified \a reader.
- * \remarks Reads 16 bytes from the associated stream.
- */
-void WaveFormatHeader::parse(CppUtilities::BinaryReader &reader)
-{
-    Diagnostics diag;
-    parseExt(reader, 16, diag);
-}
-
-/*!
- * \brief Parses the WAVE "fmt " header segment using the specified \a reader.
  * \returns Returns the detected media format and the number of bytes read.
- * \todo
- * - Make sampleRate and bytesPerSecond 32-bit in v9.
- * - Make GUID a field of WaveFormatHeader instead of returning the MediaFormat in v9.
- * - Replace parse() function with this.
  */
-pair<MediaFormat, std::uint64_t> WaveFormatHeader::parseExt(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
+std::uint64_t WaveFormatHeader::parse(CppUtilities::BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
-    auto result = make_pair<MediaFormat, std::uint64_t>(GeneralMediaFormat::Unknown, 0);
+    uint64_t bytesRead = 0;
     if (maxSize < 16) {
         diag.emplace_back(DiagLevel::Warning, "\"fmt \" segment is truncated.", "parsing WAVE format header");
-        return result;
+        return bytesRead;
     }
 
     formatTag = reader.readUInt16LE();
-    result.first = format();
     channelCount = reader.readUInt16LE();
     sampleRate = reader.readUInt32LE();
     bytesPerSecond = reader.readUInt32LE();
     chunkSize = reader.readUInt16LE();
     bitsPerSample = reader.readUInt16LE();
-    result.second = 16;
+    bytesRead = 16;
 
     // read extended header unless format is PCM
-    if (result.first.general == GeneralMediaFormat::Pcm) {
-        return result;
+    if (formatTag == 0x0001u || formatTag == 0x0003u) {
+        return bytesRead;
     }
     if ((maxSize -= 16) < 2) {
         diag.emplace_back(DiagLevel::Warning, "\"fmt \" segment is truncated (extended header missing).", "parsing WAVE format header");
-        return result;
+        return bytesRead;
     }
     const auto extensionSize = reader.readUInt16LE();
-    result.second += 2;
+    bytesRead += 2;
     if ((maxSize -= 2) < 2) {
         diag.emplace_back(DiagLevel::Warning, "\"fmt \" segment is truncated (extended header truncated).", "parsing WAVE format header");
-        return result;
+        return bytesRead;
     }
 
     // skip extended header unless format is "WAVE_FORMAT_EXTENSIBLE"
     if (formatTag != 65534) {
         reader.stream()->seekg(extensionSize, ios_base::cur);
-        result.second += extensionSize;
-        return result;
+        bytesRead += extensionSize;
+        return bytesRead;
     }
 
     // read extended header for "WAVE_FORMAT_EXTENSIBLE"
     if (extensionSize != 22) {
         diag.emplace_back(DiagLevel::Warning, "\"fmt \" extended header has unexptected size.", "parsing WAVE format header");
-        return result;
+        return bytesRead;
     }
     bitsPerSample = reader.readUInt16LE();
-    reader.stream()->seekg(4, ios_base::cur); // skip channel mask
-    const auto guid1 = reader.readUInt64BE();
-    const auto guid2 = reader.readUInt64BE();
-    result.second += 22;
-    switch (guid2) {
-    case 0x000800000aa00389b71:
-        switch (guid1) {
-        case 0x0100000000001000ul:
-            result.first = MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntLe);
-            break;
-        case 0x0300000000001000ul:
-            result.first = MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmFloatIeee);
-            break;
-        }
-        break;
-    }
-    return result;
+    channelMask = reader.readUInt32LE();
+    guid1 = reader.readUInt64BE();
+    guid2 = reader.readUInt64BE();
+    return bytesRead += 22;
 }
 
 /*!
@@ -115,6 +87,16 @@ MediaFormat WaveFormatHeader::format() const
     case 0x0055u:
         return MediaFormat(GeneralMediaFormat::Mpeg1Audio, SubFormats::Mpeg1Layer3);
     default:
+        switch (guid2) {
+        case 0x000800000aa00389b71:
+            switch (guid1) {
+            case 0x0100000000001000ul:
+                return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmIntLe);
+            case 0x0300000000001000ul:
+                return MediaFormat(GeneralMediaFormat::Pcm, SubFormats::PcmFloatIeee);
+            }
+            break;
+        }
         return GeneralMediaFormat::Unknown;
     }
 }
@@ -152,6 +134,7 @@ TrackType WaveAudioStream::type() const
  */
 void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track)
 {
+    track.m_format += waveHeader.format();
     track.m_formatId = numberToString(waveHeader.formatTag);
     track.m_channelCount = waveHeader.channelCount;
     track.m_samplingFrequency = waveHeader.sampleRate;
@@ -180,8 +163,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag)
         switch (segmentId) {
         case 0x666D7420u: { // format segment
             WaveFormatHeader waveHeader;
-            std::uint64_t bytesRead;
-            tie(m_format, bytesRead) = waveHeader.parseExt(m_reader, restHeaderLen, diag);
+            const auto bytesRead = waveHeader.parse(m_reader, restHeaderLen, diag);
             addInfo(waveHeader, *this);
             restHeaderLen -= bytesRead;
         } break;
