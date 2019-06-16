@@ -133,9 +133,6 @@ public:
     // making helper
     static std::uint8_t makeTextEncodingByte(TagTextEncoding textEncoding);
     static std::size_t makeBom(char *buffer, TagTextEncoding encoding);
-    static void makeString(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const std::string &value, TagTextEncoding encoding);
-    static void makeEncodingAndData(
-        std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, TagTextEncoding encoding, const char *data, std::size_t m_dataSize);
     static void makeLegacyPicture(
         std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo, Diagnostics &diag);
     static void makePicture(std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &picture, std::uint8_t typeInfo,
