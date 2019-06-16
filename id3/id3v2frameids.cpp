@@ -57,8 +57,8 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sEncoderSettings;
     case lUnsynchronizedLyrics:
         return sUnsynchronizedLyrics;
-    case lGrouping:
-        return sGrouping;
+    case lAlbumArtist:
+        return sAlbumArtist;
     case lContentGroupDescription:
         return sContentGroupDescription;
     case lRecordLabel:
@@ -111,8 +111,8 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lEncoderSettings;
     case sUnsynchronizedLyrics:
         return lUnsynchronizedLyrics;
-    case sGrouping:
-        return lGrouping;
+    case sAlbumArtist:
+        return lAlbumArtist;
     case sContentGroupDescription:
         return lContentGroupDescription;
     case sRecordLabel:

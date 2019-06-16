@@ -184,7 +184,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Rating:
             return lRating;
         case KnownField::AlbumArtist:
-            return lGrouping;
+            return lAlbumArtist;
         default:;
         }
     } else {
@@ -234,7 +234,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Rating:
             return sRating;
         case KnownField::AlbumArtist:
-            return sGrouping;
+            return sAlbumArtist;
         default:;
         }
     }
@@ -281,7 +281,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Lyrics;
     case lSynchronizedLyrics:
         return KnownField::SynchronizedLyrics;
-    case lGrouping:
+    case lAlbumArtist:
         return KnownField::AlbumArtist;
     case lContentGroupDescription:
         return KnownField::Grouping;
@@ -321,7 +321,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Lyrics;
     case sSynchronizedLyrics:
         return KnownField::SynchronizedLyrics;
-    case sGrouping:
+    case sAlbumArtist:
         return KnownField::Grouping;
     case sRecordLabel:
         return KnownField::RecordLabel;
