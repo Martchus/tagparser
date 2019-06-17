@@ -44,11 +44,11 @@ void MatroskaSeekInfo::shift(std::uint64_t start, std::int64_t amount)
  * - Possibly previously parsed info() is not cleared. So subsequent calls can be used to gather seek
  *   information from multiple seek head elements. Use clear() manually if that is not wanted.
  * - If the specified \a seekHeadElement references another seek head element the referenced seek head
- *   element is parsed as well. One can set \a maxNesting to 0 to prevent that or even increase the value
+ *   element is parsed as well. One can set \a maxIndirection to 0 to prevent that or even increase the value
  *   to allow following references even more deeply. References to elements which have already been visited
  *   are never followed, though.
  */
-void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, size_t maxNesting)
+void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, size_t maxIndirection)
 {
     static const string context("parsing \"SeekHead\"-element");
 
@@ -97,7 +97,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, si
             // follow possibly referenced seek head element
             if (m_info.back().first == MatroskaIds::SeekHead) {
                 const auto startOffset =  m_info.back().second;
-                if (!maxNesting) {
+                if (!maxIndirection) {
                     diag.emplace_back(DiagLevel::Warning,
                         argsToString("Not following reference by \"Seek\" element at ", seekElement->startOffset(), " contains to another \"SeekHead\" element at ", startOffset, '.'),
                         context);
@@ -118,7 +118,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, si
                     break;
                 }
                 m_additionalSeekHeadElements.emplace_back(make_unique<EbmlElement>(seekHeadElement->container(), startOffset));
-                parse(m_additionalSeekHeadElements.back().get(), diag, maxNesting - 1);
+                parse(m_additionalSeekHeadElements.back().get(), diag, maxIndirection - 1);
             }
 
             break;
@@ -246,70 +246,9 @@ bool MatroskaSeekInfo::push(unsigned int index, EbmlElement::IdentifierType id, 
  */
 void MatroskaSeekInfo::clear()
 {
-    m_seekHeadElement = nullptr;
+    m_seekHeadElements.clear();
+    m_additionalSeekHeadElements.clear();
     m_info.clear();
-}
-
-/*!
- * \brief Returns a pointer to the first pair with the specified \a offset or nullptr if no such pair could be found.
- */
-std::pair<EbmlElement::IdentifierType, std::uint64_t> *MatroskaSeekInfo::findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, std::uint64_t offset)
-{
-    for (auto &seekInfo : seekInfos) {
-        for (auto &entry : seekInfo.info()) {
-            if (get<1>(entry) == offset) {
-                return &entry;
-            }
-        }
-    }
-    return nullptr;
-}
-
-/*!
- * \brief Sets the offset of all entires in \a newSeekInfos to \a newOffset where the corresponding entry in \a oldSeekInfos has the offset \a oldOffset.
- * \returns Returns an indication whether the update altered the offset length.
- */
-bool MatroskaSeekInfo::updateSeekInfo(
-    const std::vector<MatroskaSeekInfo> &oldSeekInfos, std::vector<MatroskaSeekInfo> &newSeekInfos, std::uint64_t oldOffset, std::uint64_t newOffset)
-{
-    bool updated = false;
-    auto oldIterator0 = oldSeekInfos.cbegin(), oldEnd0 = oldSeekInfos.cend();
-    auto newIterator0 = newSeekInfos.begin(), newEnd0 = newSeekInfos.end();
-    for (; oldIterator0 != oldEnd0 && newIterator0 != newEnd0; ++oldIterator0, ++newIterator0) {
-        auto oldIterator1 = oldIterator0->info().cbegin(), oldEnd1 = oldIterator0->info().cend();
-        auto newIterator1 = newIterator0->info().begin(), newEnd1 = newIterator0->info().end();
-        for (; oldIterator1 != oldEnd1 && newIterator1 != newEnd1; ++oldIterator1, ++newIterator1) {
-            if (get<1>(*oldIterator1) == oldOffset) {
-                if (get<1>(*newIterator1) != newOffset) {
-                    updated
-                        = updated || (EbmlElement::calculateUIntegerLength(newOffset) != EbmlElement::calculateUIntegerLength(get<1>(*newIterator1)));
-                    get<1>(*newIterator1) = newOffset;
-                }
-            }
-        }
-    }
-    return updated;
-}
-
-/*!
- * \brief Sets the offset of all entires in \a newSeekInfos to \a newOffset where the offset is \a oldOffset.
- * \returns Returns an whether at least one offset has been updated.
- */
-bool MatroskaSeekInfo::updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfos, std::uint64_t oldOffset, std::uint64_t newOffset)
-{
-    if (oldOffset == newOffset) {
-        return false;
-    }
-    bool updated = false;
-    for (auto &seekInfo : newSeekInfos) {
-        for (auto &info : seekInfo.info()) {
-            if (get<1>(info) == oldOffset) {
-                get<1>(info) = newOffset;
-                updated = true;
-            }
-        }
-    }
-    return updated;
 }
 
 } // namespace TagParser

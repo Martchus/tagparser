@@ -15,19 +15,13 @@ public:
     const std::vector<std::pair<EbmlElement::IdentifierType, std::uint64_t>> &info() const;
     std::vector<std::pair<EbmlElement::IdentifierType, std::uint64_t>> &info();
     void shift(std::uint64_t start, std::int64_t amount);
-    void parse(EbmlElement *seekHeadElements, Diagnostics &diag, std::size_t maxNesting = 1);
+    void parse(EbmlElement *seekHeadElements, Diagnostics &diag, std::size_t maxIndirection = 1);
     void make(std::ostream &stream, Diagnostics &diag);
     std::uint64_t minSize() const;
     std::uint64_t maxSize() const;
     std::uint64_t actualSize() const;
     bool push(unsigned int index, EbmlElement::IdentifierType id, std::uint64_t offset);
     void clear();
-
-    // these methods seem to be not needed anymore
-    static std::pair<EbmlElement::IdentifierType, std::uint64_t> *findSeekInfo(std::vector<MatroskaSeekInfo> &seekInfos, std::uint64_t offset);
-    static bool updateSeekInfo(const std::vector<MatroskaSeekInfo> &oldSeekInfos, std::vector<MatroskaSeekInfo> &newSeekInfos,
-        std::uint64_t oldOffset, std::uint64_t newOffset);
-    static bool updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfos, std::uint64_t oldOffset, std::uint64_t newOffset);
 
 private:
     std::vector<EbmlElement *> m_seekHeadElements;
