@@ -36,25 +36,30 @@ void MatroskaSeekInfo::shift(std::uint64_t start, std::int64_t amount)
 }
 
 /*!
- * \brief Parses the specified \a seekHeadElement.
+ * \brief Parses the specified \a seekHeadElement and populates info() with the gathered information.
  * \throws Throws ios_base::failure when an IO error occurs.
  * \throws Throws Failure or a derived exception when a parsing error occurs.
- * \remarks The object does not take ownership over the specified \a seekHeadElement.
+ * \remarks
+ * - The object does not take ownership over the specified \a seekHeadElement.
+ * - Possibly previously parsed info() is not cleared. So subsequent calls can be used to gather seek
+ *   information from multiple seek head elements. Use clear() manually if that is not wanted.
+ * - If the specified \a seekHeadElement references another seek head element the referenced seek head
+ *   element is parsed as well. One can set \a maxNesting to 0 to prevent that or even increase the value
+ *   to allow following references even more deeply. References to elements which have already been visited
+ *   are never followed, though.
  */
-void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
+void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, size_t maxNesting)
 {
     static const string context("parsing \"SeekHead\"-element");
-    m_seekHeadElement = seekHeadElement;
-    m_info.clear();
-    EbmlElement *seekElement = seekHeadElement->firstChild();
-    EbmlElement *seekElementChild, *seekIdElement, *seekPositionElement;
-    while (seekElement) {
+
+    m_seekHeadElements.emplace_back(seekHeadElement);
+
+    for (EbmlElement *seekElement = seekHeadElement->firstChild(), *seekIdElement, *seekPositionElement; seekElement; seekElement = seekElement->nextSibling()) {
         seekElement->parse(diag);
         switch (seekElement->id()) {
         case MatroskaIds::Seek:
-            seekElementChild = seekElement->firstChild();
             seekIdElement = seekPositionElement = nullptr;
-            while (seekElementChild) {
+            for (auto *seekElementChild = seekElement->firstChild(); seekElementChild; seekElementChild = seekElementChild->nextSibling()) {
                 seekElementChild->parse(diag);
                 switch (seekElementChild->id()) {
                 case MatroskaIds::SeekID:
@@ -80,13 +85,42 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
                             + "\" within the \"Seek\" element is not a \"SeekID\"-element nor a \"SeekPosition\"-element and will be ignored.",
                         context);
                 }
-                seekElementChild = seekElementChild->nextSibling();
             }
-            if (seekIdElement && seekPositionElement) {
-                m_info.emplace_back(seekIdElement->readUInteger(), seekPositionElement->readUInteger());
-            } else {
+
+            if (!seekIdElement || !seekPositionElement) {
                 diag.emplace_back(DiagLevel::Warning, "The \"Seek\"-element does not contain a \"SeekID\"- and a \"SeekPosition\"-element.", context);
+                break;
             }
+
+            m_info.emplace_back(seekIdElement->readUInteger(), seekPositionElement->readUInteger());
+
+            // follow possibly referenced seek head element
+            if (m_info.back().first == MatroskaIds::SeekHead) {
+                const auto startOffset =  m_info.back().second;
+                if (!maxNesting) {
+                    diag.emplace_back(DiagLevel::Warning,
+                        argsToString("Not following reference by \"Seek\" element at ", seekElement->startOffset(), " contains to another \"SeekHead\" element at ", startOffset, '.'),
+                        context);
+                    break;
+                }
+
+                auto visited = false;
+                for (const auto *const visitedSeekHeadElement : m_seekHeadElements) {
+                    if (visitedSeekHeadElement->startOffset() == startOffset) {
+                        diag.emplace_back(DiagLevel::Warning,
+                            argsToString("The \"Seek\" element at ", seekElement->startOffset(), " contains a loop to the \"SeekHead\" element at ", visitedSeekHeadElement->startOffset(), '.'),
+                            context);
+                        visited = true;
+                        break;
+                    }
+                }
+                if (visited) {
+                    break;
+                }
+                m_additionalSeekHeadElements.emplace_back(make_unique<EbmlElement>(seekHeadElement->container(), startOffset));
+                parse(m_additionalSeekHeadElements.back().get(), diag, maxNesting - 1);
+            }
+
             break;
         case EbmlIds::Crc32:
         case EbmlIds::Void:
@@ -95,7 +129,6 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag)
             diag.emplace_back(
                 DiagLevel::Warning, "The element " % seekElement->idToString() + " is not a seek element and will be ignored.", context);
         }
-        seekElement = seekElement->nextSibling();
     }
     if (m_info.empty()) {
         diag.emplace_back(DiagLevel::Warning, "No seek information found.", context);

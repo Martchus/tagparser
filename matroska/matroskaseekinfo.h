@@ -11,11 +11,11 @@ class TAG_PARSER_EXPORT MatroskaSeekInfo {
 public:
     MatroskaSeekInfo();
 
-    EbmlElement *seekHeadElement() const;
+    const std::vector<EbmlElement *> &seekHeadElements() const;
     const std::vector<std::pair<EbmlElement::IdentifierType, std::uint64_t>> &info() const;
     std::vector<std::pair<EbmlElement::IdentifierType, std::uint64_t>> &info();
     void shift(std::uint64_t start, std::int64_t amount);
-    void parse(EbmlElement *seekHeadElement, Diagnostics &diag);
+    void parse(EbmlElement *seekHeadElements, Diagnostics &diag, std::size_t maxNesting = 1);
     void make(std::ostream &stream, Diagnostics &diag);
     std::uint64_t minSize() const;
     std::uint64_t maxSize() const;
@@ -30,7 +30,8 @@ public:
     static bool updateSeekInfo(std::vector<MatroskaSeekInfo> &newSeekInfos, std::uint64_t oldOffset, std::uint64_t newOffset);
 
 private:
-    EbmlElement *m_seekHeadElement;
+    std::vector<EbmlElement *> m_seekHeadElements;
+    std::vector<std::unique_ptr<EbmlElement>> m_additionalSeekHeadElements;
     std::vector<std::pair<EbmlElement::IdentifierType, std::uint64_t>> m_info;
 };
 
@@ -38,16 +39,17 @@ private:
  * \brief Constructs a new MatroskaSeekInfo.
  */
 inline MatroskaSeekInfo::MatroskaSeekInfo()
-    : m_seekHeadElement(nullptr)
 {
 }
 
 /*!
- * \brief Returns a pointer to the \a seekHeadElement specified when the parse() method was called.
+ * \brief Returns a pointer to the seek head elements the seek information is composed of.
+ * \remarks This list is initially empty. When calling parse() it is at least populated with the specified seek head element (ownership remains
+ * by the caller). In case that seek table references another seek table those elements are also returned (the MatroskaSeekInfo has ownership).
  */
-inline EbmlElement *MatroskaSeekInfo::seekHeadElement() const
+inline const std::vector<EbmlElement *> &MatroskaSeekInfo::seekHeadElements() const
 {
-    return m_seekHeadElement;
+    return m_seekHeadElements;
 }
 
 /*!

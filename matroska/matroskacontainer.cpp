@@ -500,8 +500,8 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                             }
                             break;
                         case MatroskaIds::Cluster:
-                            // cluster reached
-                            // stop here if all relevant information has been gathered
+                            // stop as soon as the first cluster has been reached if all relevant information has been gathered
+                            // -> take elements from seek tables within this segment into account
                             for (auto i = m_seekInfos.cbegin() + seekInfosIndex, end = m_seekInfos.cend(); i != end; ++i, ++seekInfosIndex) {
                                 for (const auto &infoPair : (*i)->info()) {
                                     std::uint64_t offset = currentOffset + topLevelElement->dataOffset() + infoPair.second;
@@ -559,9 +559,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                                     }
                                 }
                             }
-                            // not checking if m_tagsElements is empty avoids long parsing times when loading big files
-                            // but also has the disadvantage that the parser relies on the presence of a SeekHead element
-                            // (which is not mandatory) to detect tags at the end of the segment
+                            // -> stop if tracks and tags have been found or the file exceeds the max. size to fully process
                             if (((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > m_maxFullParseSize)
                                 && !m_segmentInfoElements.empty()) {
                                 goto finish;
