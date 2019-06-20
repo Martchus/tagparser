@@ -54,7 +54,8 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, si
 
     m_seekHeadElements.emplace_back(seekHeadElement);
 
-    for (EbmlElement *seekElement = seekHeadElement->firstChild(), *seekIdElement, *seekPositionElement; seekElement; seekElement = seekElement->nextSibling()) {
+    for (EbmlElement *seekElement = seekHeadElement->firstChild(), *seekIdElement, *seekPositionElement; seekElement;
+         seekElement = seekElement->nextSibling()) {
         seekElement->parse(diag);
         switch (seekElement->id()) {
         case MatroskaIds::Seek:
@@ -96,10 +97,11 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, si
 
             // follow possibly referenced seek head element
             if (m_info.back().first == MatroskaIds::SeekHead) {
-                const auto startOffset =  m_info.back().second;
+                const auto startOffset = m_info.back().second;
                 if (!maxIndirection) {
                     diag.emplace_back(DiagLevel::Warning,
-                        argsToString("Not following reference by \"Seek\" element at ", seekElement->startOffset(), " contains to another \"SeekHead\" element at ", startOffset, '.'),
+                        argsToString("Not following reference by \"Seek\"-element at ", seekElement->startOffset(),
+                            " which points to another \"SeekHead\"-element at ", startOffset, '.'),
                         context);
                     break;
                 }
@@ -108,7 +110,8 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, si
                 for (const auto *const visitedSeekHeadElement : m_seekHeadElements) {
                     if (visitedSeekHeadElement->startOffset() == startOffset) {
                         diag.emplace_back(DiagLevel::Warning,
-                            argsToString("The \"Seek\" element at ", seekElement->startOffset(), " contains a loop to the \"SeekHead\" element at ", visitedSeekHeadElement->startOffset(), '.'),
+                            argsToString("The \"Seek\"-element at ", seekElement->startOffset(), " contains a loop to the \"SeekHead\"-element at ",
+                                visitedSeekHeadElement->startOffset(), '.'),
                             context);
                         visited = true;
                         break;
