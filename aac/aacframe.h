@@ -162,7 +162,7 @@ struct TAG_PARSER_EXPORT AacSbrInfo {
     AacSbrInfo(std::uint8_t sbrElementType, std::uint16_t samplingFrequency, std::uint16_t frameLength, bool isDrm);
 
     std::uint8_t aacElementId;
-    std::uint8_t samplingFrequency;
+    std::uint16_t samplingFrequency;
 
     std::uint32_t maxAacLine;
 
