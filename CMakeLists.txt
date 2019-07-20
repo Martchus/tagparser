@@ -1,5 +1,19 @@
 cmake_minimum_required(VERSION 3.3.0 FATAL_ERROR)
 
+# meta data
+project(tagparser)
+set(META_PROJECT_NAME ${PROJECT_NAME})
+set(META_PROJECT_VARNAME TAG_PARSER)
+set(META_APP_NAME "Tag Parser")
+set(META_APP_AUTHOR "Martchus")
+set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
+set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags")
+set(META_VERSION_MAJOR 9)
+set(META_VERSION_MINOR 0)
+set(META_VERSION_PATCH 0)
+set(META_REQUIRED_CPP_UNIT_VERSION 1.14.0)
+set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
+
 # add project files
 set(HEADER_FILES
     aac/aaccodebook.h
@@ -161,19 +175,6 @@ set(TEST_SRC_FILES
     tests/utils.cpp)
 
 set(DOC_FILES README.md doc/adding-new-fields.md)
-
-# meta data
-set(META_PROJECT_NAME tagparser)
-set(META_PROJECT_VARNAME TAG_PARSER)
-set(META_APP_NAME "Tag Parser")
-set(META_APP_AUTHOR "Martchus")
-set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
-set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags")
-set(META_VERSION_MAJOR 9)
-set(META_VERSION_MINOR 0)
-set(META_VERSION_PATCH 0)
-set(META_REQUIRED_CPP_UNIT_VERSION 1.14.0)
-set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
 
 # find c++utilities
 set(CONFIGURATION_PACKAGE_SUFFIX
