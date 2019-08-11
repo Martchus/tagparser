@@ -82,6 +82,10 @@ constexpr TAG_PARSER_EXPORT const char *lyricist()
 {
     return "LYRICIST";
 }
+constexpr TAG_PARSER_EXPORT const char *lyrics()
+{
+    return "LYRICS";
+}
 constexpr TAG_PARSER_EXPORT const char *author()
 {
     return "AUTHOR";

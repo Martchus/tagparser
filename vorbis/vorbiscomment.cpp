@@ -86,6 +86,8 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return language();
     case KnownField::Lyricist:
         return lyricist();
+    case KnownField::Lyrics:
+        return lyrics();
     case KnownField::AlbumArtist:
         return albumArtist();
     default:
@@ -116,6 +118,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { label(), KnownField::RecordLabel },
          { performer(), KnownField::Performers },
          { lyricist(), KnownField::Lyricist },
+         { lyrics(), KnownField::Lyrics },
          { albumArtist(), KnownField::AlbumArtist },
     });
     // clang-format on
