@@ -3,6 +3,8 @@
 
 #include "./tagtarget.h"
 
+#include <c++utilities/misc/flagenumclass.h>
+
 #include <cstdint>
 #include <type_traits>
 
@@ -36,34 +38,11 @@ enum class TagCreationFlags : std::uint64_t {
     = 1 << 4, /**< keep version of existing ID3v2 tags so TagSettings::id3v2version is only used when creating a *new* ID3v2 tag */
 };
 
-constexpr TagCreationFlags operator|(TagCreationFlags lhs, TagCreationFlags rhs)
-{
-    return static_cast<TagCreationFlags>(
-        static_cast<std::underlying_type<TagCreationFlags>::type>(lhs) | static_cast<std::underlying_type<TagCreationFlags>::type>(rhs));
-}
+} // namespace TagParser
 
-constexpr bool operator&(TagCreationFlags lhs, TagCreationFlags rhs)
-{
-    return static_cast<std::underlying_type<TagCreationFlags>::type>(lhs) & static_cast<std::underlying_type<TagCreationFlags>::type>(rhs);
-}
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::TagCreationFlags);
 
-constexpr TagCreationFlags &operator|=(TagCreationFlags &lhs, TagCreationFlags rhs)
-{
-    return lhs = static_cast<TagCreationFlags>(
-               static_cast<std::underlying_type<TagCreationFlags>::type>(lhs) | static_cast<std::underlying_type<TagCreationFlags>::type>(rhs));
-}
-
-constexpr TagCreationFlags &operator+=(TagCreationFlags &lhs, TagCreationFlags rhs)
-{
-    return lhs = static_cast<TagCreationFlags>(
-               static_cast<std::underlying_type<TagCreationFlags>::type>(lhs) | static_cast<std::underlying_type<TagCreationFlags>::type>(rhs));
-}
-
-constexpr TagCreationFlags &operator-=(TagCreationFlags &lhs, TagCreationFlags rhs)
-{
-    return lhs = static_cast<TagCreationFlags>(
-               static_cast<std::underlying_type<TagCreationFlags>::type>(lhs) & (~static_cast<std::underlying_type<TagCreationFlags>::type>(rhs)));
-}
+namespace TagParser {
 
 /*!
  * \brief The TagSettings struct contains settings which can be passed to MediaFileInfo::createAppropriateTags().
@@ -100,7 +79,7 @@ constexpr
     TagCreationSettings::setFlag(TagCreationFlags flag, bool enabled)
 {
     if (enabled) {
-        flags |= flag;
+        flags += flag;
     } else {
         flags -= flag;
     }
