@@ -1,4 +1,6 @@
 #include "./tagvalue.h"
+
+#include "./caseinsensitivecomparer.h"
 #include "./tag.h"
 
 #include "./id3/id3genres.h"
@@ -156,6 +158,8 @@ TagTextEncoding pickUtfEncoding(TagTextEncoding encoding1, TagTextEncoding encod
 /*!
  * \brief Returns whether both instances are equal. Meta-data like description and MIME-type is taken into
  *        account as well.
+ * \arg other Specifies the other instance.
+ * \arg options Specifies options to alter the behavior. See TagValueComparisionFlags for details.
  * \remarks
  * - If the data types are not equal, two instances are still considered equal if the string representation
  *   is identical. For instance the text "2" is considered equal to the integer 2. This also means that an empty
@@ -174,58 +178,62 @@ TagTextEncoding pickUtfEncoding(TagTextEncoding encoding1, TagTextEncoding encod
  * - TagValue::compareData() to compare raw data without any conversions
  * - TagValueTests::testEqualityOperator() for examples
  */
-bool TagValue::operator==(const TagValue &other) const
+bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options) const
 {
     // check whether meta-data is equal (except description)
-    if (m_mimeType != other.m_mimeType || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
-        return false;
-    }
-
-    // check description which might be differently encoded
-    if (m_descEncoding == other.m_descEncoding || m_descEncoding == TagTextEncoding::Unspecified
-        || other.m_descEncoding == TagTextEncoding::Unspecified || m_desc.empty() || other.m_desc.empty()) {
-        if (m_desc != other.m_desc) {
+    if (!(options & TagValueComparisionFlags::IgnoreMetaData)) {
+        // check meta-data which always uses UTF-8 (everything but description)
+        if (m_mimeType != other.m_mimeType || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
             return false;
         }
-    } else {
-        const auto utfEncodingToUse = pickUtfEncoding(m_descEncoding, other.m_descEncoding);
-        StringData str1, str2;
-        const char *data1, *data2;
-        size_t size1, size2;
-        if (m_descEncoding != utfEncodingToUse) {
-            const auto inputParameter = encodingParameter(m_descEncoding), outputParameter = encodingParameter(utfEncodingToUse);
-            str1 = convertString(
-                inputParameter.first, outputParameter.first, m_desc.data(), m_desc.size(), outputParameter.second / inputParameter.second);
-            data1 = str1.first.get();
-            size1 = str1.second;
+
+        // check description which might use different encodings
+        if (m_descEncoding == other.m_descEncoding || m_descEncoding == TagTextEncoding::Unspecified
+            || other.m_descEncoding == TagTextEncoding::Unspecified || m_desc.empty() || other.m_desc.empty()) {
+            if (!compareData(m_desc, other.m_desc, options & TagValueComparisionFlags::CaseInsensitive)) {
+                return false;
+            }
         } else {
-            data1 = m_desc.data();
-            size1 = m_desc.size();
+            const auto utfEncodingToUse = pickUtfEncoding(m_descEncoding, other.m_descEncoding);
+            StringData str1, str2;
+            const char *data1, *data2;
+            size_t size1, size2;
+            if (m_descEncoding != utfEncodingToUse) {
+                const auto inputParameter = encodingParameter(m_descEncoding), outputParameter = encodingParameter(utfEncodingToUse);
+                str1 = convertString(
+                    inputParameter.first, outputParameter.first, m_desc.data(), m_desc.size(), outputParameter.second / inputParameter.second);
+                data1 = str1.first.get();
+                size1 = str1.second;
+            } else {
+                data1 = m_desc.data();
+                size1 = m_desc.size();
+            }
+            if (other.m_descEncoding != utfEncodingToUse) {
+                const auto inputParameter = encodingParameter(other.m_descEncoding), outputParameter = encodingParameter(utfEncodingToUse);
+                str2 = convertString(inputParameter.first, outputParameter.first, other.m_desc.data(), other.m_desc.size(),
+                    outputParameter.second / inputParameter.second);
+                data2 = str2.first.get();
+                size2 = str2.second;
+            } else {
+                data2 = other.m_desc.data();
+                size2 = other.m_desc.size();
+            }
+            if (!compareData(data1, size1, data2, size2, options & TagValueComparisionFlags::CaseInsensitive)) {
+                return false;
+            }
         }
-        if (other.m_descEncoding != utfEncodingToUse) {
-            const auto inputParameter = encodingParameter(other.m_descEncoding), outputParameter = encodingParameter(utfEncodingToUse);
-            str2 = convertString(inputParameter.first, outputParameter.first, other.m_desc.data(), other.m_desc.size(),
-                outputParameter.second / inputParameter.second);
-            data2 = str2.first.get();
-            size2 = str2.second;
-        } else {
-            data2 = other.m_desc.data();
-            size2 = other.m_desc.size();
-        }
-        return compareData(data1, size1, data2, size2);
     }
 
     // check for equality if both types are identical
     if (m_type == other.m_type) {
         switch (m_type) {
         case TagDataType::Text: {
+            // compare raw data directly if the encoding is the same
             if (m_size != other.m_size && m_encoding == other.m_encoding) {
                 return false;
             }
-
-            // compare raw data directly if the encoding is the same
             if (m_encoding == other.m_encoding || m_encoding == TagTextEncoding::Unspecified || other.m_encoding == TagTextEncoding::Unspecified) {
-                return compareData(other);
+                return compareData(other, options & TagValueComparisionFlags::CaseInsensitive);
             }
 
             // compare UTF-8 or UTF-16 representation of strings avoiding unnecessary conversions
@@ -249,7 +257,7 @@ bool TagValue::operator==(const TagValue &other) const
                 data2 = other.m_ptr.get();
                 size2 = other.m_size;
             }
-            return compareData(data1, size1, data2, size2);
+            return compareData(data1, size1, data2, size2, options & TagValueComparisionFlags::CaseInsensitive);
         }
         case TagDataType::PositionInSet:
             return toPositionInSet() == other.toPositionInSet();
@@ -283,7 +291,7 @@ bool TagValue::operator==(const TagValue &other) const
         }
     }
     try {
-        return toString() == other.toString(m_encoding);
+        return compareData(toString(), other.toString(m_encoding), options & TagValueComparisionFlags::CaseInsensitive);
     } catch (const ConversionException &) {
         return false;
     }
@@ -914,7 +922,7 @@ void TagValue::ensureHostByteOrder(u16string &u16str, TagTextEncoding currentEnc
 /*!
  * \brief Returns whether 2 data buffers are equal. In case one of the sizes is zero, no pointer is dereferenced.
  */
-bool TagValue::compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2)
+bool TagValue::compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2, bool ignoreCase)
 {
     if (size1 != size2) {
         return false;
@@ -922,9 +930,18 @@ bool TagValue::compareData(const char *data1, std::size_t size1, const char *dat
     if (!size1) {
         return true;
     }
-    for (auto i1 = data1, i2 = data2, end = data1 + size1; i1 != end; ++i1, ++i2) {
-        if (*i1 != *i2) {
-            return false;
+    if (ignoreCase) {
+        for (auto i1 = data1, i2 = data2, end = data1 + size1; i1 != end; ++i1, ++i2) {
+            if (CaseInsensitiveCharComparer::toLower(static_cast<unsigned char>(*i1))
+                != CaseInsensitiveCharComparer::toLower(static_cast<unsigned char>(*i2))) {
+                return false;
+            }
+        }
+    } else {
+        for (auto i1 = data1, i2 = data2, end = data1 + size1; i1 != end; ++i1, ++i2) {
+            if (*i1 != *i2) {
+                return false;
+            }
         }
     }
     return true;

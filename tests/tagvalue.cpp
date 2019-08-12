@@ -208,15 +208,22 @@ void TagValueTests::testEqualityOperator()
         TagValue("15", 2, TagTextEncoding::Latin1));
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
         "encoding is ignored when not relevant for types"s, TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian), TagValue(15));
+    const TagValue fooTagValue("foo", 3, TagDataType::Text), fOoTagValue("fOo", 3, TagDataType::Text);
+    CPPUNIT_ASSERT_MESSAGE("string comparison case-sensitive by default"s, fooTagValue != fOoTagValue);
+    CPPUNIT_ASSERT_MESSAGE("case-insensitive string comparision"s, fooTagValue.compareTo(fOoTagValue, TagValueComparisionFlags::CaseInsensitive));
 
     // meta-data
     TagValue withDescription(15);
     withDescription.setDescription("test");
     CPPUNIT_ASSERT_MESSAGE("meta-data must be equal"s, withDescription != TagValue(15));
+    CPPUNIT_ASSERT_MESSAGE("different meta-data ignored"s, withDescription.compareTo(TagValue(15), TagValueComparisionFlags::IgnoreMetaData));
     TagValue withDescription2(withDescription);
     CPPUNIT_ASSERT_EQUAL(withDescription, withDescription2);
     withDescription2.setMimeType("foo/bar");
     CPPUNIT_ASSERT(withDescription != withDescription2);
     withDescription.setMimeType(withDescription2.mimeType());
     CPPUNIT_ASSERT_EQUAL(withDescription, withDescription2);
+    withDescription2.setDescription("Test");
+    CPPUNIT_ASSERT_MESSAGE("meta-data case must match by default"s, withDescription != withDescription2);
+    CPPUNIT_ASSERT_MESSAGE("meta-data case ignored"s, withDescription.compareTo(withDescription2, TagValueComparisionFlags::CaseInsensitive));
 }

@@ -6,6 +6,7 @@
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/binaryconversion.h>
+#include <c++utilities/misc/flagenumclass.h>
 #include <c++utilities/misc/traits.h>
 
 #include <cstring>
@@ -60,6 +61,15 @@ enum class TagDataType : unsigned int {
     Picture, /**< picture file */
     Binary, /**< unspecified binary data */
     Undefined /**< undefined/invalid data type */
+};
+
+/*!
+ * \brief The TagValueComparisionOption enum specifies options for TagValue::compareTo().
+ */
+enum class TagValueComparisionFlags : unsigned int {
+    None, /**< no special behavior */
+    CaseInsensitive = 0x1, /**< string-comparisions are case-insensitive (does *not* affect non-string comparisions) */
+    IgnoreMetaData = 0x2, /**< do *not* take meta-data like description and MIME-types into account */
 };
 
 class TAG_PARSER_EXPORT TagValue {
@@ -142,8 +152,10 @@ public:
             std::is_same<typename std::add_const<typename std::remove_pointer<typename ContainerType::value_type>::type>::type, const TagValue>>
             * = nullptr>
     static std::vector<std::string> toStrings(const ContainerType &values, TagTextEncoding encoding = TagTextEncoding::Utf8);
-    bool compareData(const TagValue &other) const;
-    static bool compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2);
+    bool compareTo(const TagValue &other, TagValueComparisionFlags options = TagValueComparisionFlags::None) const;
+    bool compareData(const TagValue &other, bool ignoreCase = false) const;
+    static bool compareData(const std::string &data1, const std::string &data2, bool ignoreCase = false);
+    static bool compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2, bool ignoreCase = false);
 
 private:
     std::unique_ptr<char[]> m_ptr;
@@ -306,12 +318,21 @@ inline TagValue::TagValue(CppUtilities::TimeSpan value)
 }
 
 /*!
+ * \brief Returns whether both instances are equal.
+ * \sa The same as TagValue::compareTo() with TagValueComparisionOption::None so see TagValue::compareTo() for details.
+ */
+inline bool TagValue::operator==(const TagValue &other) const
+{
+    return compareTo(other, TagValueComparisionFlags::None);
+}
+
+/*!
  * \brief Returns whether both instances are not equal.
- * \remarks Simply the negation of operator==() so check there for details.
+ * \sa The negation of TagValue::compareTo() with TagValueComparisionOption::None so see TagValue::compareTo() for details.
  */
 inline bool TagValue::operator!=(const TagValue &other) const
 {
-    return !(*this == other);
+    return !compareTo(other, TagValueComparisionFlags::None);
 }
 
 /*!
@@ -615,11 +636,21 @@ std::vector<std::string> TagValue::toStrings(const ContainerType &values, TagTex
 /*!
  * \brief Returns whether the raw data of the current instance equals the raw data of \a other.
  */
-inline bool TagValue::compareData(const TagValue &other) const
+inline bool TagValue::compareData(const TagValue &other, bool ignoreCase) const
 {
-    return compareData(m_ptr.get(), m_size, other.m_ptr.get(), other.m_size);
+    return compareData(m_ptr.get(), m_size, other.m_ptr.get(), other.m_size, ignoreCase);
+}
+
+/*!
+ * \brief Returns whether 2 data buffers are equal.
+ */
+inline bool TagValue::compareData(const std::string &data1, const std::string &data2, bool ignoreCase)
+{
+    return compareData(data1.data(), data1.size(), data2.data(), data2.size(), ignoreCase);
 }
 
 } // namespace TagParser
+
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::TagValueComparisionFlags)
 
 #endif // TAG_PARSER_TAGVALUE_H
