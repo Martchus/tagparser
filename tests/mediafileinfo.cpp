@@ -186,6 +186,6 @@ void MediaFileInfoTests::testFullParseAndFurtherProperties()
     CPPUNIT_ASSERT_EQUAL(unordered_set<string>({ "eng" }), file.availableLanguages());
     CPPUNIT_ASSERT_EQUAL(unordered_set<string>({}), file.availableLanguages(MediaType::Text));
     CPPUNIT_ASSERT_EQUAL("ID: 2422994868, type: Video"s, file.tracks()[0]->label());
-    CPPUNIT_ASSERT_EQUAL("ID: 3653291187, type: Audio, language: \"eng\""s, file.tracks()[1]->label());
+    CPPUNIT_ASSERT_EQUAL("ID: 3653291187, type: Audio, language: English"s, file.tracks()[1]->label());
     CPPUNIT_ASSERT_EQUAL("MS-MPEG-4-480p / MP3-2ch-eng"s, file.technicalSummary());
 }

@@ -47,6 +47,7 @@ set(HEADER_FILES
     id3/id3v2tag.h
     ivf/ivfframe.h
     ivf/ivfstream.h
+    language.h
     localeawarestring.h
     margin.h
     matroska/ebmlelement.h
@@ -121,6 +122,7 @@ set(SRC_FILES
     id3/id3v2tag.cpp
     ivf/ivfframe.cpp
     ivf/ivfstream.cpp
+    language.cpp
     localeawarestring.cpp
     matroska/ebmlelement.cpp
     matroska/matroskaattachment.cpp
@@ -200,3 +202,17 @@ include(LibraryTarget)
 include(TestTarget)
 include(Doxygen)
 include(ConfigHeader)
+
+# write languages header from CSV file
+set(LANGUAGES_HEADER "static const std::unordered_map<std::string, std::string> languages = \{")
+file(STRINGS languages.csv LANGUAGE_ROWS ENCODING UTF-8)
+foreach (LANGUAGE_ROW ${LANGUAGE_ROWS})
+    if (NOT LANGUAGE_ROW MATCHES "([a-z][a-z]) ,([a-z][a-z][a-z]) ,([a-z][a-z][a-z]) ,\"?([^\",]*) \"?,\"?([^\",]*) \"?")
+        continue()
+    endif ()
+    set(LANGUAGE_ABBREVIATION "${CMAKE_MATCH_3}")
+    set(LANGUAGE_NAME "${CMAKE_MATCH_4}")
+    set(LANGUAGES_HEADER "${LANGUAGES_HEADER}\n    \{\"${LANGUAGE_ABBREVIATION}\", \"${LANGUAGE_NAME}\"\},")
+endforeach ()
+set(LANGUAGES_HEADER "${LANGUAGES_HEADER}\n};")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/resources/languages.h" "${LANGUAGES_HEADER}")

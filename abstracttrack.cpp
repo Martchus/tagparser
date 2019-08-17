@@ -1,5 +1,6 @@
 #include "./abstracttrack.h"
 #include "./exceptions.h"
+#include "./language.h"
 #include "./mediaformat.h"
 
 #include "./mp4/mp4ids.h"
@@ -137,8 +138,8 @@ string AbstractTrack::label() const
     if (!name().empty()) {
         ss << ", name: \"" << name() << "\"";
     }
-    if (!language().empty() && language() != "und") {
-        ss << ", language: \"" << language() << "\"";
+    if (isLanguageDefined(language())) {
+        ss << ", language: " << languageNameFromIsoWithFallback(language()) << "";
     }
     return ss.str();
 }

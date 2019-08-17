@@ -3,6 +3,7 @@
 #include "./backuphelper.h"
 #include "./diagnostics.h"
 #include "./exceptions.h"
+#include "./language.h"
 #include "./progressfeedback.h"
 #include "./signature.h"
 #include "./tag.h"
@@ -902,12 +903,11 @@ unordered_set<string> MediaFileInfo::availableLanguages(MediaType type) const
     if (m_container) {
         for (size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
             const AbstractTrack *track = m_container->track(i);
-            if ((type == MediaType::Unknown || track->mediaType() == type) && !track->language().empty() && track->language() != "und") {
+            if ((type == MediaType::Unknown || track->mediaType() == type) && isLanguageDefined(track->language())) {
                 res.emplace(track->language());
             }
         }
-    } else if (m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type) && !m_singleTrack->language().empty()
-        && m_singleTrack->language() != "und") {
+    } else if (m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type) && isLanguageDefined(m_singleTrack->language())) {
         res.emplace(m_singleTrack->language());
     }
     return res;
