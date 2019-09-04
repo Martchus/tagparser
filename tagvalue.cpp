@@ -491,7 +491,7 @@ DateTime TagValue::toDateTime() const
 
 /*!
  * \brief Converts the currently assigned text value to the specified \a encoding.
- * \throws Throws ConversionUtilities::ConversionException() if the conversion fails.
+ * \throws Throws CppUtilities::ConversionException() if the conversion fails.
  * \remarks
  * - Does nothing if dataEncoding() equals \a encoding.
  * - Sets dataEncoding() to the specified \a encoding if the conversion succeeds.
