@@ -175,6 +175,7 @@ MediaFormat fourccToMediaFormat(std::uint32_t fourccId)
     case Vp8:
         return GeneralMediaFormat::Vp8;
     case Vp9:
+    case Vp9_2:
         return GeneralMediaFormat::Vp9;
     case WavPack:
         return MediaFormat(GeneralMediaFormat::WavPack);

@@ -1706,6 +1706,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 case FourccIds::Hevc2:
                 case FourccIds::Av1_IVF:
                 case FourccIds::Av1_ISOBMFF:
+                case FourccIds::Vp9_2:
                     m_istream->seekg(6 + 2 + 16, ios_base::cur); // skip reserved bytes, data reference index, and reserved bytes (again)
                     m_pixelSize.setWidth(reader.readUInt16BE());
                     m_pixelSize.setHeight(reader.readUInt16BE());

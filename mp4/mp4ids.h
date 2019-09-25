@@ -386,6 +386,7 @@ enum KnownValue : std::uint32_t {
     Vdva = 0x76647661,
     Vp8 = 0x56503830, /**< VP8 video */
     Vp9 = 0x56503930, /**< VP9 video */
+    Vp9_2 = 0x76703039, /**< VP9 video */
     WavPack = 0x5756504B,
     WindowsMediaAudio = 0x6F776D61, /**< ? */
     WindowsMediaAudio7 = 0x574D4131,
