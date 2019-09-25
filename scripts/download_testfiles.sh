@@ -117,6 +117,9 @@ convert flac/test.flac ffmpeg -i mtx-test-data/alac/othertest-itunes.m4a -c:a fl
 convert flac/test.ogg ffmpeg -i flac/test.flac -vn -c:a copy flac/test.ogg
 convert mkv/av1_test.mkv ffmpeg -i matroska_wave1/test1.mkv -t 1 -c:v libaom-av1 -crf 30 -cpu-used 5 -an -strict experimental mkv/av1_test.mkv
 convert mp4/av1_test.mp4 ffmpeg -i mkv/av1_test.mkv -c copy mp4/av1_test.mp4
+convert mp4/test1-flac.m4a ffmpeg -i mp4/test1.m4a -c:a flac -f mp4  -strict -2 mp4/test1-flac.m4a
+convert mp4/test1-opus.m4a ffmpeg -i mp4/test1.m4a -c:a libopus -f mp4  -strict -2 mp4/test1-opus.m4a
+convert mp4/test1-vorbis.m4a ffmpeg -i mp4/test1.m4a -c:a libvorbis -f mp4  -strict -2 mp4/test1-vorbis.m4a
 convert misc/av1.ivf ffmpeg -i mkv/av1_test.mkv -c copy misc/av1.ivf
 convert mkv/nested-tags.mkv \
         mkvmerge --ui-language en_US \

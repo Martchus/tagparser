@@ -1642,9 +1642,11 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             for (Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom;
                  codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
                 codecConfigContainerAtom->parse(diag);
+
                 // parse FOURCC
                 m_formatId = interpretIntegerAsString<std::uint32_t>(codecConfigContainerAtom->id());
                 m_format = FourccIds::fourccToMediaFormat(codecConfigContainerAtom->id());
+
                 // parse codecConfigContainerAtom
                 m_istream->seekg(static_cast<streamoff>(codecConfigContainerAtom->dataOffset()));
                 switch (codecConfigContainerAtom->id()) {
@@ -1660,6 +1662,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
                 case FourccIds::Dts:
                 case FourccIds::DtsH:
                 case FourccIds::DtsE:
+                case FourccIds::Flac:
+                case FourccIds::Opus:
                     m_istream->seekg(6 + 2, ios_base::cur); // skip reserved bytes, data reference index
                     tmp = reader.readUInt16BE(); // read sound version
                     m_istream->seekg(6, ios_base::cur);

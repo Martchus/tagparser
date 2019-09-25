@@ -269,6 +269,7 @@ enum KnownValue : std::uint32_t {
     Explode = 0x78706C6F,
     FilmNoise = 0x666D6E73,
     Fire = 0x66697265,
+    Flac = 0x664C6143,
     FlashPixImage = 0x66706978,
     FlashScreenVideoDecoder = 0x46535631,
     FloatingPoint32Bit = 0x666C3332,
@@ -342,6 +343,7 @@ enum KnownValue : std::uint32_t {
     MsMpeg4V3Decoder2 = 0x6D703433,
     NtscDv25Video = 0x64766320, /**< NTSC DV-25 video */
     Oggs = 0x4F676753,
+    Opus = 0x4F707573,
     PalDv25Video = 0x64766370, /**< PAL DV-25 video */
     PdfImage = 0x70646620,
     Png = 0x706E6720, /**< Portable Network Graphics */

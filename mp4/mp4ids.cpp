@@ -183,6 +183,10 @@ MediaFormat fourccToMediaFormat(std::uint32_t fourccId)
     case WindowsMediaVideoV2:
     case WindowsMediaVideoV8:
         return MediaFormat(GeneralMediaFormat::WindowsMediaVideo, 2);
+    case Flac:
+        return GeneralMediaFormat::Flac;
+    case Opus:
+        return GeneralMediaFormat::Opus;
     // TODO: map more FOURCCs
     default:
         return GeneralMediaFormat::Unknown;
