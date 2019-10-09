@@ -163,6 +163,7 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
     default:
         return 0;
     }
+    // do not forget to extend Mp4Tag::internallyGetKnownField() and Mp4TagField::appropriateRawDataType() as well
 }
 
 KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
@@ -213,6 +214,7 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
     default:
         return KnownField::Invalid;
     }
+    // do not forget to extend Mp4Tag::internallyGetFieldId() and Mp4TagField::appropriateRawDataType() as well
 }
 
 bool Mp4Tag::setValue(KnownField field, const TagValue &value)

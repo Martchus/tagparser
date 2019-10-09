@@ -350,9 +350,9 @@ std::vector<std::uint32_t> Mp4TagField::expectedRawDataTypes() const
 /*!
  * \brief Returns an appropriate raw data type.
  *
- * Returns the type info if assigned; otherwise returns
- * an raw data type considered as appropriate for the ID
- * of the field.
+ * Returns the type info if assigned; otherwise returns a raw data type considered as appropriate for
+ * the ID of the field. The latter is supposed to work for all supported tag fields IDs (those where a
+ * conversion to KnownField via Mp4Tag exists).
  */
 std::uint32_t Mp4TagField::appropriateRawDataType() const
 {
@@ -362,9 +362,9 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
         return typeInfo();
     }
 
-    // there is no raw data type assigned (tag field was not
-    // present in original file but rather was added manually)
-    // try to derive appropriate raw data type from atom id
+    // there is no raw data type assigned (tag field was not present in original file and
+    // has been inserted by the library's user without type)
+    // -> try to derive appropriate raw data type from atom ID
     switch (id()) {
     case Album:
     case Artist:
@@ -380,6 +380,7 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
     case RecordLabel:
     case Performers:
     case Lyricist:
+    case AlbumArtist:
         switch (value().dataEncoding()) {
         case TagTextEncoding::Utf8:
             return RawDataType::Utf8;
@@ -419,6 +420,9 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
         break;
     default:;
     }
+
+    // do not forget to extend Mp4Tag::internallyGetFieldId() and Mp4Tag::internallyGetKnownField() as well
+
     throw Failure();
 }
 
