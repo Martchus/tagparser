@@ -55,8 +55,8 @@ class OverallTests : public TestFixture {
 public:
     OverallTests();
 
-    void setUp();
-    void tearDown();
+    void setUp() override;
+    void tearDown() override;
 
 private:
     void parseFile(const string &path, void (OverallTests::*checkRoutine)(void));
