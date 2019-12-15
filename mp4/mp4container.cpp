@@ -881,7 +881,7 @@ calculatePadding:
             }
         }
 
-        // flush output stream
+        // prevent deferring final write operations (to catch and handle possible errors here)
         outputStream.flush();
 
         // handle errors (which might have been occurred after renaming/creating backup file)

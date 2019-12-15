@@ -68,19 +68,21 @@ void restoreOriginalFileFromBackupFile(
     }
     // remove original file and restore backup
     std::remove(originalPath.c_str());
-    if (std::rename(BasicFileInfo::pathForOpen(backupPath), BasicFileInfo::pathForOpen(originalPath))) {
-        // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
-        try {
-            // need to open all streams again
-            backupStream.exceptions(ios_base::failbit | ios_base::badbit);
-            originalStream.exceptions(ios_base::failbit | ios_base::badbit);
-            backupStream.open(backupPath, ios_base::in | ios_base::binary);
-            originalStream.open(originalPath, ios_base::out | ios_base::binary);
-            originalStream << backupStream.rdbuf();
-            // TODO: callback for progress updates
-        } catch (const std::ios_base::failure &failure) {
-            throw std::ios_base::failure("Unable to restore original file from backup file \"" % backupPath % "\" after failure: " + failure.what());
-        }
+    if (std::rename(BasicFileInfo::pathForOpen(backupPath), BasicFileInfo::pathForOpen(originalPath)) == 0) {
+        return;
+    }
+    // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
+    try {
+        // need to open all streams again
+        backupStream.exceptions(ios_base::failbit | ios_base::badbit);
+        originalStream.exceptions(ios_base::failbit | ios_base::badbit);
+        backupStream.open(backupPath, ios_base::in | ios_base::binary);
+        originalStream.open(originalPath, ios_base::out | ios_base::binary);
+        originalStream << backupStream.rdbuf();
+        originalStream.flush();
+        // TODO: callback for progress updates
+    } catch (const std::ios_base::failure &failure) {
+        throw std::ios_base::failure("Unable to restore original file from backup file \"" % backupPath % "\" after failure: " + failure.what());
     }
 }
 
@@ -181,6 +183,7 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
             originalStream.open(BasicFileInfo::pathForOpen(originalPath), ios_base::in | ios_base::binary);
             // do the actual copying
             backupStream << originalStream.rdbuf();
+            backupStream.flush();
             // streams are closed in the next try-block
             // TODO: callback for progress updates
         } catch (const std::ios_base::failure &failure) {

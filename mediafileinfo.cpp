@@ -1544,6 +1544,8 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                     diag.emplace_back(DiagLevel::Warning, "Unable to write ID3v1 tag.", context);
                 }
             }
+            // prevent deferring final write operations (to catch and handle possible errors here)
+            stream().flush();
         }
         return;
     }
@@ -1747,13 +1749,14 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 reportPathChanged(saveFilePath());
                 m_saveFilePath.clear();
             }
-            // stream is useless for further usage because it is write-only
+            // prevent deferring final write operations (to catch and handle possible errors here); stream is useless for further
+            // usage anyways because it is write-only
             outputStream.close();
         } else {
             const auto newSize = static_cast<std::uint64_t>(outputStream.tellp());
             if (newSize < size()) {
                 // file is smaller after the modification -> truncate
-                // -> close stream before truncating
+                // -> prevent deferring final write operations
                 outputStream.close();
                 // -> truncate file
                 if (truncate(BasicFileInfo::pathForOpen(path()), static_cast<streamoff>(newSize)) == 0) {
@@ -1762,7 +1765,10 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                     diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
                 }
             } else {
-                // file is longer after the modification -> just report new size
+                // file is longer after the modification
+                // -> prevent deferring final write operations (to catch and handle possible errors here)
+                outputStream.flush();
+                // -> report new size
                 reportSizeChanged(newSize);
             }
         }

@@ -580,6 +580,9 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             OggPage::updateChecksum(fileInfo().stream(), offset);
         }
 
+        // prevent deferring final write operations (to catch and handle possible errors here)
+        fileInfo().stream().flush();
+
         // clear iterator
         m_iterator.clear(fileInfo().stream(), startOffset(), fileInfo().size());
 
