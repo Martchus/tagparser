@@ -850,10 +850,10 @@ calculatePadding:
         }
 
         if (rewriteRequired) {
-            // check whether track count of new file equals track count of old file
+            // check whether the track count of the new file equals the track count of old file
             if (trackCount != tracks().size()) {
                 diag.emplace_back(DiagLevel::Critical,
-                    argsToString("Unable to update chunk offsets (\"stco\"-atom): Number of tracks in the output file (", tracks().size(),
+                    argsToString("Unable to update chunk offsets (\"stco\"/\"co64\"-atom): Number of tracks in the output file (", tracks().size(),
                         ") differs from the number of tracks in the original file (", trackCount, ")."),
                     context);
                 throw Failure();
