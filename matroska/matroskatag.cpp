@@ -153,7 +153,7 @@ void MatroskaTag::parseTargets(EbmlElement &targetsElement, Diagnostics &diag)
         try {
             child->parse(diag);
         } catch (const Failure &) {
-            diag.emplace_back(DiagLevel::Critical, "Unable to parse childs of Targets element.", context);
+            diag.emplace_back(DiagLevel::Critical, "Unable to parse children of Targets element.", context);
             break;
         }
         switch (child->id()) {

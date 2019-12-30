@@ -289,7 +289,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "Unable to parse track element.", context);
         throw;
     }
-    // read information about the track from the childs of the track entry element
+    // read information about the track from the children of the track entry element
     for (EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement;
          trackInfoElement = trackInfoElement->nextSibling()) {
         try {

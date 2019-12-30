@@ -1110,7 +1110,7 @@ std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
     }
     // ... mdia header + hdlr total size + minf header
     size += 8 + (33 + m_name.size()) + 8;
-    // ... minf childs
+    // ... minf children
     bool dinfAtomWritten = false;
     if (m_minfAtom) {
         for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {

@@ -377,7 +377,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                                 // ignore meta data here; it is added separately
                                 break;
                             default:
-                                // add size of unknown childs of the user data atom
+                                // add size of unknown children of the user data atom
                                 userDataAtomSize += level2Atom->totalSize();
                                 level2Atom->makeBuffer();
                             }
@@ -392,7 +392,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                     // ignore track atoms here; they are added separately
                     break;
                 default:
-                    // add size of unknown childs of the movie atom
+                    // add size of unknown children of the movie atom
                     movieAtomSize += level1Atom->totalSize();
                     level1Atom->makeBuffer();
                 }
@@ -962,7 +962,7 @@ void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets
                     }
                 }
             } catch (const Failure &) {
-                diag.emplace_back(DiagLevel::Critical, "Unable to parse childs of top-level atom moof.", context);
+                diag.emplace_back(DiagLevel::Critical, "Unable to parse children of top-level atom moof.", context);
             }
         }
     } catch (const Failure &) {

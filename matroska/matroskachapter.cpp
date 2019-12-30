@@ -44,7 +44,7 @@ void MatroskaChapter::internalParse(Diagnostics &diag)
     // clear previous values and status
     static const string context("parsing \"ChapterAtom\"-element");
     clear();
-    // iterate through childs of "ChapterAtom"-element
+    // iterate through children of "ChapterAtom"-element
     for (EbmlElement *chapterAtomChild = m_chapterAtomElement->firstChild(); chapterAtomChild; chapterAtomChild = chapterAtomChild->nextSibling()) {
         chapterAtomChild->parse(diag);
         switch (chapterAtomChild->id()) {

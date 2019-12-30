@@ -258,8 +258,8 @@ bool Mp4Atom::isPadding() const
  *
  * \remarks This information is not read from the atom header. The offsets are known
  *          for specific atoms.
- * \remarks This method returns zero for non-parent atoms which have no childs.
- * \remarks Childs with variable offset such as the "esds"-atom must be denoted!
+ * \remarks This method returns zero for non-parent atoms which have no children.
+ * \remarks Children with variable offset such as the "esds"-atom must be denoted!
  */
 std::uint64_t Mp4Atom::firstChildOffset() const
 {

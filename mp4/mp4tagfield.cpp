@@ -257,7 +257,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     "Unkown child atom \"" % dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
             }
         } catch (const Failure &) {
-            diag.emplace_back(DiagLevel::Warning, "Unable to parse all childs atom in tag atom (ilst child) found. (will be ignored)", context);
+            diag.emplace_back(DiagLevel::Warning, "Unable to parse all children atom in tag atom (ilst child) found. (will be ignored)", context);
         }
     }
     if (value().isEmpty()) {

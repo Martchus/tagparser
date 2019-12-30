@@ -105,7 +105,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                     break;
                 case MatroskaIds::Cues:
                     cuesElementsFound = true;
-                    // parse childs of "Cues"-element ("CuePoint"-elements)
+                    // parse children of "Cues"-element ("CuePoint"-elements)
                     for (EbmlElement *cuePointElement = segmentChildElement->firstChild(); cuePointElement;
                          cuePointElement = cuePointElement->nextSibling()) {
                         cuePointElement->parse(diag);
@@ -115,7 +115,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                         case EbmlIds::Crc32:
                             break;
                         case MatroskaIds::CuePoint:
-                            // parse childs of "CuePoint"-element
+                            // parse children of "CuePoint"-element
                             for (EbmlElement *cuePointChildElement = cuePointElement->firstChild(); cuePointChildElement;
                                  cuePointChildElement = cuePointChildElement->nextSibling()) {
                                 cuePointChildElement->parse(diag);
@@ -250,7 +250,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                     }
                     break;
                 case MatroskaIds::Cluster:
-                    // parse childs of "Cluster"-element
+                    // parse children of "Cluster"-element
                     for (EbmlElement *clusterElementChild = segmentChildElement->firstChild(); clusterElementChild;
                          clusterElementChild = clusterElementChild->nextSibling()) {
                         clusterElementChild->parse(diag);
@@ -459,7 +459,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                             break;
                         }
                     } catch (const Failure &) {
-                        diag.emplace_back(DiagLevel::Critical, "Unable to parse all childs of EBML header.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Unable to parse all children of EBML header.", context);
                         break;
                     }
                 }
@@ -567,7 +567,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag)
                             break;
                         }
                     } catch (const Failure &) {
-                        diag.emplace_back(DiagLevel::Critical, "Unable to parse all childs of \"Segment\"-element.", context);
+                        diag.emplace_back(DiagLevel::Critical, "Unable to parse all children of \"Segment\"-element.", context);
                         break;
                     }
                 }
@@ -1112,7 +1112,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                                 segment.infoDataSize += 2 + EbmlElement::calculateSizeDenotationLength(title.size()) + title.size();
                             }
                         }
-                        // -> add size of other childs
+                        // -> add size of other children
                         for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                             level2Element->parse(diag);
                             switch (level2Element->id()) {
@@ -1593,7 +1593,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     outputWriter.writeUInt32BE(MatroskaIds::SegmentInfo);
                     sizeLength = EbmlElement::makeSizeDenotation(segment.infoDataSize, buff);
                     outputStream.write(buff, sizeLength);
-                    // -> write childs
+                    // -> write children
                     for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                         switch (level2Element->id()) {
                         case EbmlIds::Void: // skipped
@@ -1699,7 +1699,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         outputWriter.writeUInt32BE(MatroskaIds::Cluster);
                         sizeLength = EbmlElement::makeSizeDenotation(*clusterSizesIterator, buff);
                         outputStream.write(buff, sizeLength);
-                        // write childs
+                        // write children
                         for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {
                             switch (level2Element->id()) {
                             case EbmlIds::Void:

@@ -453,7 +453,7 @@ template <class ImplementationType> inline const ImplementationType *GenericFile
  * \brief Returns the first child of the element.
  *
  * The current element keeps ownership over the returned element.
- * If no childs are present nullptr is returned.
+ * If no children are present nullptr is returned.
  *
  * \remarks parse() needs to be called before.
  */
@@ -466,7 +466,7 @@ template <class ImplementationType> inline ImplementationType *GenericFileElemen
  * \brief Returns the first child of the element.
  *
  * The current element keeps ownership over the returned element.
- * If no childs are present nullptr is returned.
+ * If no children are present nullptr is returned.
  *
  * \remarks parse() needs to be called before.
  */
@@ -479,7 +479,7 @@ template <class ImplementationType> inline const ImplementationType *GenericFile
  * \brief Returns the last child of the element.
  *
  * The current element keeps ownership over the returned element.
- * If no childs are present nullptr is returned.
+ * If no children are present nullptr is returned.
  *
  * \remarks parse() needs to be called before.
  */
@@ -497,7 +497,7 @@ template <class ImplementationType> inline ImplementationType *GenericFileElemen
  * \brief Returns the last child of the element.
  *
  * The current element keeps ownership over the returned element.
- * If no childs are present nullptr is returned.
+ * If no children are present nullptr is returned.
  *
  * \remarks parse() needs to be called before.
  */
@@ -843,7 +843,7 @@ void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStre
 }
 
 /*!
- * \brief Writes the element without its childs to the specified \a targetStream.
+ * \brief Writes the element without its children to the specified \a targetStream.
  */
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
@@ -856,7 +856,7 @@ void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &tar
 }
 
 /*!
- * \brief Writes the entire element including all childs to the specified \a targetStream.
+ * \brief Writes the entire element including all children to the specified \a targetStream.
  */
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)

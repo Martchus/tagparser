@@ -56,7 +56,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
     std::uint64_t cuesElementSize = 0, cuePointElementSize, cueTrackPositionsElementSize, cueReferenceElementSize, pos, relPos, statePos;
     EbmlElement *cueRelativePositionElement, *cueClusterPositionElement;
     for (EbmlElement *cuePointElement = cuesElement->firstChild(); cuePointElement; cuePointElement = cuePointElement->nextSibling()) {
-        // parse childs of "Cues"-element which must be "CuePoint"-elements
+        // parse children of "Cues"-element which must be "CuePoint"-elements
         cuePointElement->parse(diag);
         switch (cuePointElement->id()) {
         case EbmlIds::Void:
@@ -65,7 +65,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
         case MatroskaIds::CuePoint:
             cuePointElementSize = 0;
             for (EbmlElement *cuePointChild = cuePointElement->firstChild(); cuePointChild; cuePointChild = cuePointChild->nextSibling()) {
-                // parse childs of "CuePoint"-element
+                // parse children of "CuePoint"-element
                 cuePointChild->parse(diag);
                 switch (cuePointChild->id()) {
                 case EbmlIds::Void:
@@ -80,7 +80,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                     cueRelativePositionElement = cueClusterPositionElement = nullptr;
                     for (EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild;
                          cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
-                        // parse childs of "CueTrackPositions"-element
+                        // parse children of "CueTrackPositions"-element
                         cueTrackPositionsChild->parse(diag);
                         switch (cueTrackPositionsChild->id()) {
                         case MatroskaIds::CueTrack:
@@ -106,7 +106,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                             cueReferenceElementSize = 0;
                             for (EbmlElement *cueReferenceChild = cueTrackPositionsChild->firstChild(); cueReferenceChild;
                                  cueReferenceChild = cueReferenceChild->nextSibling()) {
-                                // parse childs of "CueReference"-element
+                                // parse children of "CueReference"-element
                                 cueReferenceChild->parse(diag);
                                 switch (cueReferenceChild->id()) {
                                 case EbmlIds::Void:
@@ -293,7 +293,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                             case MatroskaIds::CueTrack:
                             case MatroskaIds::CueDuration:
                             case MatroskaIds::CueBlockNumber:
-                                // write unchanged childs of "CueTrackPositions"-element
+                                // write unchanged children of "CueTrackPositions"-element
                                 cueTrackPositionsChild->copyBuffer(stream);
                                 cueTrackPositionsChild->discardBuffer();
                                 //cueTrackPositionsChild->copyEntirely(stream);
@@ -327,7 +327,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                                         break;
                                     case MatroskaIds::CueRefTime:
                                     case MatroskaIds::CueRefNumber:
-                                        // write unchanged childs of "CueReference"-element
+                                        // write unchanged children of "CueReference"-element
                                         cueReferenceChild->copyBuffer(stream);
                                         cueReferenceChild->discardBuffer();
                                         cueReferenceChild->copyEntirely(stream, diag, nullptr);
