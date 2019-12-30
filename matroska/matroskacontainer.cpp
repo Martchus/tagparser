@@ -1468,6 +1468,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
             }
         }
 
+    } catch (const OperationAbortedException &) {
+        diag.emplace_back(DiagLevel::Information, "Applying new tag information has been aborted.", context);
+        throw;
     } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Parsing the original file failed.", context);
         throw;
