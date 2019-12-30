@@ -931,7 +931,7 @@ void GenericFileElement<ImplementationType>::copyInternal(
     }
     auto &stream = container().stream();
     stream.seekg(startOffset);
-    CppUtilities::CopyHelper<0x2000> copyHelper;
+    CppUtilities::CopyHelper<0x10000> copyHelper;
     if (progress) {
         copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)),
             std::bind(&AbortableProgressFeedback::updateStepPercentageFromFraction, std::ref(progress), std::placeholders::_1));
