@@ -54,6 +54,7 @@ TrackType MatroskaTrack::type() const
 
 /*!
  * \brief Returns the MediaFormat for the specified Matroska codec ID.
+ * \todo Use an std::unordered_map here.
  */
 MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
 {
@@ -122,6 +123,8 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
         fmt.general = GeneralMediaFormat::Mpc;
     } else if (part1 == "A_AC3") {
         fmt.general = GeneralMediaFormat::Ac3;
+    } else if (part1 == "A_EAC3") {
+        fmt.general = GeneralMediaFormat::EAc3;
     } else if (part1 == "A_ALAC") {
         fmt.general = GeneralMediaFormat::Alac;
     } else if (part1 == "A_DTS") {
