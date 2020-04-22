@@ -473,8 +473,14 @@ DateTime TagValue::toDateTime() const
         return DateTime();
     }
     switch (m_type) {
-    case TagDataType::Text:
-        return DateTime::fromString(toString(m_encoding == TagTextEncoding::Utf8 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1));
+    case TagDataType::Text: {
+        const auto str = toString(m_encoding == TagTextEncoding::Utf8 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1);
+        try {
+            return DateTime::fromIsoStringGmt(str.data());
+        } catch (const ConversionException &) {
+            return DateTime::fromString(str);
+        }
+    }
     case TagDataType::Integer:
     case TagDataType::DateTime:
         if (m_size == sizeof(std::int32_t)) {
@@ -661,7 +667,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         result = toTimeSpan().toString();
         break;
     case TagDataType::DateTime:
-        result = toDateTime().toString();
+        result = toDateTime().toIsoString();
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));

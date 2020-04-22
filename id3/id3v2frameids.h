@@ -51,7 +51,6 @@ enum KnownValue : std::uint32_t {
     sYear = 0x545945, /**< ?TYE */
     sOriginalYear = 0x544F5259, /**< TORY */
     sRecordingDates = 0x545244, /**< ?TRD */
-    sRecordDate = 0x545243, /**< ?TRC */
     sDate = 0x544441, /**< ?TDA */
     sTime = 0x54494D, /**< ?TIM */
     sTitle = 0x545432, /**< ?TT2 */

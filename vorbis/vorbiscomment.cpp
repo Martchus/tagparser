@@ -56,6 +56,7 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return comment();
     case KnownField::Cover:
         return cover();
+    case KnownField::RecordDate:
     case KnownField::Year:
         return date();
     case KnownField::Title:
@@ -104,7 +105,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { artist(), KnownField::Artist },
          { comment(), KnownField::Comment },
          { cover(), KnownField::Cover },
-         { date(), KnownField::Year },
+         { date(), KnownField::RecordDate },
          { title(), KnownField::Title },
          { genre(), KnownField::Genre },
          { trackNumber(), KnownField::TrackPosition },

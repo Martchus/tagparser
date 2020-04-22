@@ -60,6 +60,7 @@ public:
 
 class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag> {
     friend class FieldMapBasedTag<Id3v2Tag>;
+    friend class Id3v2TagMaker;
 
 public:
     Id3v2Tag();
@@ -96,6 +97,11 @@ protected:
     TagDataType internallyGetProposedDataType(const std::uint32_t &id) const;
     std::vector<const TagValue *> internallyGetValues(const IdentifierType &id) const;
     bool internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values);
+
+private:
+    void convertOldRecordDateFields(const std::string &diagContext, Diagnostics &diag);
+    void removeOldRecordDateRelatedFields();
+    void prepareRecordDataForMaking(const std::string &diagContext, Diagnostics &diag);
 
 private:
     std::uint8_t m_majorVersion;

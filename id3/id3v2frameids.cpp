@@ -39,8 +39,6 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sOriginalYear;
     case lRecordingDates:
         return sRecordingDates;
-    case lRecordingTime:
-        return sRecordDate;
     case lDate:
         return sDate;
     case lTime:
@@ -99,8 +97,6 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lYear;
     case sOriginalYear:
         return lOriginalYear;
-    case sRecordDate:
-        return lRecordingTime;
     case sRecordingDates:
         return lRecordingDates;
     case sDate:

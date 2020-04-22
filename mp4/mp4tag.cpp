@@ -126,6 +126,7 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return Artist;
     case KnownField::Comment:
         return Comment;
+    case KnownField::RecordDate:
     case KnownField::Year:
         return Year;
     case KnownField::Title:
@@ -177,7 +178,7 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
     case Comment:
         return KnownField::Comment;
     case Year:
-        return KnownField::Year;
+        return KnownField::RecordDate;
     case Title:
         return KnownField::Title;
     case PreDefinedGenre:

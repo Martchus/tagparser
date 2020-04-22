@@ -30,6 +30,7 @@ bool Id3v2Tag::supportsMultipleValues(KnownField field) const
     case KnownField::Artist:
     case KnownField::Year:
     case KnownField::RecordDate:
+    case KnownField::ReleaseDate:
     case KnownField::Title:
     case KnownField::Genre:
     case KnownField::TrackPosition:
@@ -53,7 +54,6 @@ bool Id3v2Tag::supportsMultipleValues(KnownField field) const
         return true;
     default:
         return false;
-        ;
     }
 }
 
@@ -145,10 +145,11 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lArtist;
         case KnownField::Comment:
             return lComment;
-        case KnownField::Year:
-            return lYear;
         case KnownField::RecordDate:
-            return lRecordingTime;
+        case KnownField::Year:
+            return lRecordingTime; // (de)serializer takes to convert to/from lYear/lRecordingDates/lDate/lTime
+        case KnownField::ReleaseDate:
+            return lReleaseTime;
         case KnownField::Title:
             return lTitle;
         case KnownField::Genre:
@@ -195,10 +196,9 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sArtist;
         case KnownField::Comment:
             return sComment;
-        case KnownField::Year:
-            return sYear;
         case KnownField::RecordDate:
-            return sRecordDate;
+        case KnownField::Year:
+            return lRecordingTime; // (de)serializer takes to convert to/from sYear/sRecordingDates/sDate/sTime
         case KnownField::Title:
             return sTitle;
         case KnownField::Genre:
@@ -251,9 +251,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Artist;
     case lComment:
         return KnownField::Comment;
-    case lYear:
-        return KnownField::Year;
     case lRecordingTime:
+    case lYear:
         return KnownField::RecordDate;
     case lTitle:
         return KnownField::Title;
@@ -294,8 +293,6 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case sComment:
         return KnownField::Comment;
     case sYear:
-        return KnownField::Year;
-    case sRecordDate:
         return KnownField::RecordDate;
     case sTitle:
         return KnownField::Title;
@@ -339,6 +336,8 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const std::uint32_t &id) con
         return TagDataType::TimeSpan;
     case lBpm:
     case sBpm:
+    case lYear:
+    case sYear:
         return TagDataType::Integer;
     case lTrackPosition:
     case sTrackPosition:
@@ -353,6 +352,71 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const std::uint32_t &id) con
         } else {
             return TagDataType::Undefined;
         }
+    }
+}
+
+/*!
+ * \brief Converts the lYear/lRecordingDates/lDate/lTime/sYear/sRecordingDates/sDate/sTime fields found in v2.3.0 to lRecordingTime.
+ * \remarks
+ * - Do not get rid of the "old" fields after the conversion so the raw fields can still be checked.
+ * - The make function converts back if necassary and deletes unsupported fields.
+ */
+void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagnostics &diag)
+{
+    // skip if it is a v2.4.0 tag and lRecordingTime is present
+    if (majorVersion() >= 4 && fields().find(Id3v2FrameIds::lRecordingTime) != fields().cend()) {
+        return;
+    }
+
+    // parse values of lYear/lRecordingDates/lDate/lTime/sYear/sRecordingDates/sDate/sTime fields
+    int year = 1, month = 1, day = 1, hour = 0, minute = 0;
+    if (const auto &v = value(Id3v2FrameIds::lYear)) {
+        try {
+            year = v.toInteger();
+        } catch (const ConversionException &e) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse year from \"TYER\" frame: ", e.what()), diagContext);
+        }
+    }
+    if (const auto &v = value(Id3v2FrameIds::lDate)) {
+        try {
+            auto str = v.toString();
+            if (str.size() != 4) {
+                throw ConversionException("format is not DDMM");
+            }
+            day = stringToNumber<unsigned short>(std::string_view(str.data() + 0, 2));
+            month = stringToNumber<unsigned short>(std::string_view(str.data() + 2, 2));
+        } catch (const ConversionException &e) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse month and day from \"TDAT\" frame: ", e.what()), diagContext);
+        }
+    }
+    if (const auto &v = value(Id3v2FrameIds::lTime)) {
+        try {
+            auto str = v.toString();
+            if (str.size() != 4) {
+                throw ConversionException("format is not HHMM");
+            }
+            hour = stringToNumber<unsigned short>(std::string_view(str.data() + 0, 2));
+            minute = stringToNumber<unsigned short>(std::string_view(str.data() + 2, 2));
+        } catch (const ConversionException &e) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse hour and minute from \"TIME\" frame: ", +e.what()), diagContext);
+        }
+    }
+
+    // set the field values as DateTime
+    try {
+        setValue(Id3v2FrameIds::lRecordingTime, DateTime::fromDateAndTime(year, month, day, hour, minute));
+    } catch (const ConversionException &e) {
+        try {
+            // try to set at least the year
+            setValue(Id3v2FrameIds::lRecordingTime, DateTime::fromDate(year));
+            diag.emplace_back(DiagLevel::Critical,
+                argsToString(
+                    "Unable to parse the full date of the recording. Only the 'Year' frame could be parsed; related frames failed: ", e.what()),
+                diagContext);
+        } catch (const ConversionException &) {
+        }
+        diag.emplace_back(
+            DiagLevel::Critical, argsToString("Unable to parse a valid date from the 'Year' frame and related frames: ", e.what()), diagContext);
     }
 }
 
@@ -382,8 +446,8 @@ void Id3v2Tag::parse(istream &stream, const std::uint64_t maximalSize, Diagnosti
         throw InvalidDataException();
     }
     // read header data
-    std::uint8_t majorVersion = reader.readByte();
-    std::uint8_t revisionVersion = reader.readByte();
+    const std::uint8_t majorVersion = reader.readByte();
+    const std::uint8_t revisionVersion = reader.readByte();
     setVersion(majorVersion, revisionVersion);
     m_flags = reader.readByte();
     m_sizeExcludingHeader = reader.readSynchsafeUInt32BE();
@@ -450,6 +514,8 @@ void Id3v2Tag::parse(istream &stream, const std::uint64_t maximalSize, Diagnosti
             bytesRemaining = 0;
         }
     }
+
+    convertOldRecordDateFields(context, diag);
 
     // check for extended header
     if (!hasFooter()) {
@@ -580,6 +646,77 @@ bool FrameComparer::operator()(std::uint32_t lhs, std::uint32_t rhs) const
  */
 
 /*!
+ * \brief Removes all old (major version <= 3) record date related fields.
+ */
+void Id3v2Tag::removeOldRecordDateRelatedFields()
+{
+    for (auto field : { Id3v2FrameIds::lYear, Id3v2FrameIds::lRecordingDates, Id3v2FrameIds::lDate, Id3v2FrameIds::lTime }) {
+        fields().erase(field);
+    }
+}
+
+/*!
+ * \brief Prepare the fields to save the record data according to the ID3v2 version.
+ */
+void Id3v2Tag::prepareRecordDataForMaking(const std::string &diagContext, Diagnostics &diag)
+{
+    // get rid of lYear/lRecordingDates/lDate/lTime/sYear/sRecordingDates/sDate/sTime if writing v2.4.0 or newer
+    // note: If the tag was initially v2.3.0 or older the "old" fields have already been converted to lRecordingTime when
+    //        parsing and the generic accessors propose using lRecordingTime in any case.
+    if (majorVersion() >= 4) {
+        removeOldRecordDateRelatedFields();
+        return;
+    }
+
+    // convert lRecordingTime to old fields for v2.3.0 and older
+    const auto recordingTimeFieldIterator = fields().find(Id3v2FrameIds::lRecordingTime);
+    // -> If the auto-created lRecordingTime field (see note above) has been completely removed write the old fields as-is.
+    //    This allows one to bypass this handling and set the old fields explicitely.
+    if (recordingTimeFieldIterator == fields().cend()) {
+        return;
+    }
+    // -> simply remove all old fields if lRecordingTime is set to an empty value
+    const auto &recordingTime = recordingTimeFieldIterator->second.value();
+    if (recordingTime.isEmpty()) {
+        removeOldRecordDateRelatedFields();
+        return;
+    }
+    // -> convert lRecordingTime (which is supposed to be an ISO string) to a DateTime
+    try {
+        const auto asDateTime = recordingTime.toDateTime();
+        // -> remove any existing old fields to avoid any leftovers
+        removeOldRecordDateRelatedFields();
+        // -> assign old fields from parsed DateTime
+        std::stringstream year, date, time;
+        year << std::setfill('0') << std::setw(4) << asDateTime.year();
+        setValue(Id3v2FrameIds::lYear, TagValue(year.str()));
+        date << std::setfill('0') << std::setw(2) << asDateTime.day() << std::setfill('0') << std::setw(2) << asDateTime.month();
+        setValue(Id3v2FrameIds::lDate, TagValue(date.str()));
+        time << std::setfill('0') << std::setw(2) << asDateTime.hour() << std::setfill('0') << std::setw(2) << asDateTime.minute();
+        setValue(Id3v2FrameIds::lTime, TagValue(time.str()));
+        if (asDateTime.second() || asDateTime.millisecond()) {
+            diag.emplace_back(DiagLevel::Warning,
+                "The recording time field (TRDA) has been truncated to full minutes when converting to corresponding fields for older ID3v2 "
+                "versions.",
+                diagContext);
+        }
+    } catch (const ConversionException &e) {
+        try {
+            diag.emplace_back(DiagLevel::Critical,
+                argsToString("Unable to convert recording time field (TRDA) with the value \"", recordingTime.toString(),
+                    "\" to corresponding fields for older ID3v2 versions: ", e.what()),
+                diagContext);
+        } catch (const ConversionException &) {
+            diag.emplace_back(DiagLevel::Critical,
+                argsToString("Unable to convert recording time field (TRDA) to corresponding fields for older ID3v2 versions: ", e.what()),
+                diagContext);
+        }
+    }
+    // -> get rid of lRecordingTime
+    fields().erase(Id3v2FrameIds::lRecordingTime);
+}
+
+/*!
  * \brief Prepares making the specified \a tag.
  * \sa See Id3v2Tag::prepareMaking() for more information.
  */
@@ -595,6 +732,8 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "The ID3v2 tag version isn't supported.", context);
         throw VersionNotSupportedException();
     }
+
+    tag.prepareRecordDataForMaking(context, diag);
 
     // prepare frames
     m_maker.reserve(tag.fields().size());

@@ -97,6 +97,7 @@ public:
     TagValue &operator=(TagValue &&other) = default;
     bool operator==(const TagValue &other) const;
     bool operator!=(const TagValue &other) const;
+    operator bool() const;
 
     // methods
     bool isNull() const;
@@ -333,6 +334,15 @@ inline bool TagValue::operator==(const TagValue &other) const
 inline bool TagValue::operator!=(const TagValue &other) const
 {
     return !compareTo(other, TagValueComparisionFlags::None);
+}
+
+/*!
+ * \brief Returns whether the value is not empty.
+ * \sa See TagValue::isEmpty() for a definition on what is considered empty.
+ */
+inline TagParser::TagValue::operator bool() const
+{
+    return !isEmpty();
 }
 
 /*!

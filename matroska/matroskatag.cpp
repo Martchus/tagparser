@@ -28,8 +28,9 @@ MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) 
     case KnownField::Comment:
         return comment();
     case KnownField::RecordDate:
-        return dateRecorded();
     case KnownField::Year:
+        return dateRecorded();
+    case KnownField::ReleaseDate:
         return dateRelease();
     case KnownField::Title:
         return title();
@@ -78,7 +79,7 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
         { album(), KnownField::Album },
         { comment(), KnownField::Comment },
         { dateRecorded(), KnownField::RecordDate },
-        { dateRelease(), KnownField::Year },
+        { dateRelease(), KnownField::ReleaseDate },
         { title(), KnownField::Title },
         { partNumber(), KnownField::PartNumber },
         { totalParts(), KnownField::TotalParts },

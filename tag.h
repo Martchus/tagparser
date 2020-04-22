@@ -45,7 +45,7 @@ enum class KnownField : unsigned int {
     Album, /**< album/collection */
     Artist, /**< artist/band */
     Genre, /**< genre */
-    Year, /**< year */
+    Year, /**< record date, deprecated - FIXME v10: remove in favor of RecordDate and ReleaseDate */
     Comment, /**< comment */
     Bpm, /**< beats per minute */
     Bps, /**< beats per second */
@@ -70,6 +70,7 @@ enum class KnownField : unsigned int {
     Description, /**< description */
     Vendor, /**< vendor */
     AlbumArtist, /**< album artist */
+    ReleaseDate, /**< release date */
 };
 
 /*!
@@ -80,7 +81,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the TagParser::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::AlbumArtist;
+constexpr KnownField lastKnownField = KnownField::ReleaseDate;
 
 /*!
  * \brief The number of valid entries in the TagParser::KnownField enum.
@@ -88,11 +89,20 @@ constexpr KnownField lastKnownField = KnownField::AlbumArtist;
 constexpr unsigned int knownFieldArraySize = static_cast<unsigned int>(lastKnownField) + 1;
 
 /*!
- * \brief Returns the next known field. Returns KnownField::Invalid if there is not next field.
+ * \brief Returns whether the specified \a field is deprecated and should not be used anymore.
+ */
+constexpr bool isKnownFieldDeprecated(KnownField field)
+{
+    return field == KnownField::Year;
+}
+
+/*!
+ * \brief Returns the next known field skipping any deprecated fields. Returns KnownField::Invalid if there is not next field.
  */
 constexpr KnownField nextKnownField(KnownField field)
 {
-    return field == lastKnownField ? KnownField::Invalid : static_cast<KnownField>(static_cast<int>(field) + 1);
+    const auto next = field == lastKnownField ? KnownField::Invalid : static_cast<KnownField>(static_cast<int>(field) + 1);
+    return isKnownFieldDeprecated(next) ? nextKnownField(next) : next;
 }
 
 class TAG_PARSER_EXPORT Tag {
