@@ -1,6 +1,8 @@
 #ifndef TAG_PARSER_ID3V2FRAMEIDS_H
 #define TAG_PARSER_ID3V2FRAMEIDS_H
 
+#include "../global.h"
+
 #include <cstdint>
 
 #include <string>
@@ -74,8 +76,8 @@ enum KnownValue : std::uint32_t {
     sUserDefinedText = 0x545858,
 };
 
-std::uint32_t convertToShortId(std::uint32_t id);
-std::uint32_t convertToLongId(std::uint32_t id);
+TAG_PARSER_EXPORT std::uint32_t convertToShortId(std::uint32_t id);
+TAG_PARSER_EXPORT std::uint32_t convertToLongId(std::uint32_t id);
 
 /*!
  * \brief Returns an indication whether the specified \a id is a long frame id.
