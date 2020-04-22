@@ -139,14 +139,14 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
         char sig[8];
         bool skipSignature = flags & VorbisCommentFlags::NoSignature;
         if (!skipSignature) {
-            CHECK_MAX_SIZE(7);
+            CHECK_MAX_SIZE(7)
             stream.read(sig, 7);
             skipSignature = (BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
         }
         if (skipSignature) {
             // read vendor (length prefixed string)
             {
-                CHECK_MAX_SIZE(4);
+                CHECK_MAX_SIZE(4)
                 stream.read(sig, 4);
                 const auto vendorSize = LE::toUInt32(sig);
                 if (vendorSize <= maxSize) {
@@ -161,7 +161,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
                 maxSize -= vendorSize;
             }
             // read field count
-            CHECK_MAX_SIZE(4);
+            CHECK_MAX_SIZE(4)
             stream.read(sig, 4);
             std::uint32_t fieldCount = LE::toUInt32(sig);
             for (std::uint32_t i = 0; i < fieldCount; ++i) {
