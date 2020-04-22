@@ -144,6 +144,44 @@ std::uint32_t convertToLongId(std::uint32_t id)
     }
 }
 
+/*!
+ * \brief Returns whether \a id is only supported in ID3v2.3.x and older and therefore can not be used in an ID3v2.4.x tag.
+ * \remarks
+ * - This function is intended to show warnings. Unknown IDs will be treated as supported everywhere.
+ * - Any short ID is obviously not ID3v2.4.x compatible. Only long IDs are considered here. Short IDs need to be converted to
+ *   long IDs before passing them to this function.
+ */
+bool isPreId3v24Id(uint32_t id)
+{
+    switch (id) {
+    case lYear:
+    case lOriginalYear:
+    case lRecordingDates:
+    case lDate:
+    case lTime:
+        return true;
+    default:
+        return false;
+    }
+}
+
+/*!
+ * \brief Returns whether \a id is only supported inID3v2.4.x and therefore can not be used in older versions.
+ * \remarks This function is intended to show warnings. Unknown IDs will be treated as supported everywhere.
+ */
+bool isOnlyId3v24Id(uint32_t id)
+{
+    switch (id) {
+    case lRecordingTime:
+    case lReleaseTime:
+    case lOriginalReleaseTime:
+    case lTaggingTime:
+        return true;
+    default:
+        return false;
+    }
+}
+
 } // namespace Id3v2FrameIds
 
 } // namespace TagParser

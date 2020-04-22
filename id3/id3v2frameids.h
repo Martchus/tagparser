@@ -78,6 +78,8 @@ enum KnownValue : std::uint32_t {
 
 TAG_PARSER_EXPORT std::uint32_t convertToShortId(std::uint32_t id);
 TAG_PARSER_EXPORT std::uint32_t convertToLongId(std::uint32_t id);
+TAG_PARSER_EXPORT bool isPreId3v24Id(std::uint32_t id);
+TAG_PARSER_EXPORT bool isOnlyId3v24Id(std::uint32_t id);
 
 /*!
  * \brief Returns an indication whether the specified \a id is a long frame id.

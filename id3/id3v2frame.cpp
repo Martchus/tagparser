@@ -195,6 +195,15 @@ void Id3v2Frame::parse(BinaryReader &reader, std::uint32_t version, std::uint32_
         }
     }
 
+    // add a warning if a frame appears in an ID3v2 tag known not to support it
+    if (version <= 3 && Id3v2FrameIds::isOnlyId3v24Id(version < 3 ? Id3v2FrameIds::convertToLongId(id()) : id())) {
+        diag.emplace_back(DiagLevel::Warning,
+            argsToString("The frame is only supported in ID3v2.4 and newer but the tag's version is ID3v2.", version, '.'), context);
+    } else if (version > 3 && Id3v2FrameIds::isPreId3v24Id(id())) {
+        diag.emplace_back(DiagLevel::Warning,
+            argsToString("The frame is only supported in ID3v2.3 and older but the tag's version is ID3v2.", version, '.'), context);
+    }
+
     // frame size mustn't be 0
     if (m_dataSize <= 0) {
         diag.emplace_back(DiagLevel::Warning, "The frame size is 0.", context);
@@ -496,6 +505,19 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
                 throw InvalidDataException();
             }
         }
+    }
+
+    // add a warning if we're writing the frame for an ID3v2 tag known not to support it
+    if (version <= 3 && Id3v2FrameIds::isOnlyId3v24Id(version < 3 ? Id3v2FrameIds::convertToLongId(m_frameId) : m_frameId)) {
+        diag.emplace_back(DiagLevel::Warning,
+            argsToString("The frame is only supported in ID3v2.4 and newer but version of the tag being written is ID3v2.", version,
+                ". The frame is written nevertheless but other tools might not be able to deal with it."),
+            context);
+    } else if (version > 3 && Id3v2FrameIds::isPreId3v24Id(m_frameId)) {
+        diag.emplace_back(DiagLevel::Warning,
+            argsToString("The frame is only supported in ID3v2.3 and older but version of the tag being written is ID3v2.", version,
+                ". The frame is written nevertheless but other tools might not be able to deal with it."),
+            context);
     }
 
     // make actual data depending on the frame ID
