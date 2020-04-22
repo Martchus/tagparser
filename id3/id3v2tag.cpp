@@ -148,7 +148,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Year:
             return lYear;
         case KnownField::RecordDate:
-            return lRecordDate;
+            return lRecordingTime;
         case KnownField::Title:
             return lTitle;
         case KnownField::Genre:
@@ -253,7 +253,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Comment;
     case lYear:
         return KnownField::Year;
-    case lRecordDate:
+    case lRecordingTime:
         return KnownField::RecordDate;
     case lTitle:
         return KnownField::Title;

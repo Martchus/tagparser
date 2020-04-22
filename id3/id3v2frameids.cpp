@@ -35,8 +35,16 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sComment;
     case lYear:
         return sYear;
-    case lRecordDate:
+    case lOriginalYear:
+        return sOriginalYear;
+    case lRecordingDates:
+        return sRecordingDates;
+    case lRecordingTime:
         return sRecordDate;
+    case lDate:
+        return sDate;
+    case lTime:
+        return sTime;
     case lTitle:
         return sTitle;
     case lGenre:
@@ -89,8 +97,16 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lComment;
     case sYear:
         return lYear;
+    case sOriginalYear:
+        return lOriginalYear;
     case sRecordDate:
-        return lRecordDate;
+        return lRecordingTime;
+    case sRecordingDates:
+        return lRecordingDates;
+    case sDate:
+        return lDate;
+    case sTime:
+        return lTime;
     case sTitle:
         return lTitle;
     case sGenre:
