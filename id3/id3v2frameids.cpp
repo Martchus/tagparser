@@ -13,6 +13,10 @@ namespace TagParser {
  * The short IDs start with "s" and the long IDs with "l". To convert between
  * these IDs the functions convertToShortId() and convertToLongId() can be
  * used.
+ *
+ * \sa
+ * - See https://id3.org/id3v2.3.0 for the specification of ID3v2.3.0 frame IDs.
+ * - See https://id3.org/id3v2.4.0-frames for the specification of ID3v2.4.0 frame IDs.
  */
 namespace Id3v2FrameIds {
 

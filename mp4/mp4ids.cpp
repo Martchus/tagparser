@@ -12,6 +12,7 @@ namespace Mp4AtomIds {
 
 /*!
  * \brief Encapsulates IDs of MP4 atoms holding tag information.
+ * \sa See http://atomicparsley.sourceforge.net/mpeg-4files.html for a table of known iTunes metadata atom IDs.
  */
 namespace Mp4TagAtomIds {
 }

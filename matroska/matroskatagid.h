@@ -5,9 +5,6 @@
 
 namespace TagParser {
 
-/*!
- * \brief Encapsulates Matroska tag IDs.
- */
 namespace MatroskaTagIds {
 
 constexpr TAG_PARSER_EXPORT const char *original()

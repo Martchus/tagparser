@@ -6,7 +6,8 @@
 namespace TagParser {
 
 /*!
- * \brief Encapsulates Vorbis comment IDs.
+ * \brief Encapsulates Vorbis comment field names.
+ * \sa See https://xiph.org/vorbis/doc/v-comment.html for the upstream documentation of the field names.
  */
 namespace VorbisCommentIds {
 
