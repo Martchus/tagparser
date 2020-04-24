@@ -410,8 +410,13 @@ inline TagDataType TagValue::type() const
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        std::string representation.
+ * \param result Specifies the string to store the result.
  * \param encoding Specifies the encoding to to be used; set to TagTextEncoding::Unspecified to use the
  *        present encoding without any character set conversion.
+ * \remarks
+ * - Not all types can be converted to a string, eg. TagDataType::Picture, TagDataType::Binary and
+ *   TagDataType::Unspecified will always fail to convert.
+ * - If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
  * \throws Throws ConversionException on failure.
  */
 inline std::string TagValue::toString(TagTextEncoding encoding) const
@@ -448,7 +453,7 @@ inline bool TagValue::isNull() const
 }
 
 /*!
- * \brief Returns whether an empty value is assigned.
+ * \brief Returns whether no or an empty value is assigned.
  *
  * An empty string and empty binary or picture data counts as empty so this function will return
  * true for those. However, the integer 0, a TimeSpan of zero length, ... are not considered empty
