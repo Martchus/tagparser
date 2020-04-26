@@ -667,7 +667,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         result = toTimeSpan().toString();
         break;
     case TagDataType::DateTime:
-        result = toDateTime().toIsoString();
+        result = toDateTime().toString(DateTimeOutputFormat::IsoOmittingDefaultComponents);
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
