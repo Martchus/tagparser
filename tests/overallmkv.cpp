@@ -63,7 +63,7 @@ void OverallTests::checkMkvTestfile1()
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
         CPPUNIT_ASSERT_EQUAL(
             "Matroska Validation File1, basic MPEG4.2 and MP3 with only SimpleBlock"s, tags.front()->value(KnownField::Comment).toString());
-        CPPUNIT_ASSERT_EQUAL("2010"s, tags.front()->value(KnownField::Year).toString());
+        CPPUNIT_ASSERT_EQUAL("2010"s, tags.front()->value(KnownField::ReleaseDate).toString());
         break;
     case TagStatus::TestMetaDataPresent:
         checkMkvTestMetaData();
