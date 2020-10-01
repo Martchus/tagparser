@@ -490,7 +490,38 @@ const char *MediaFormat::abbreviation() const
     case GeneralMediaFormat::Amr:
         return "AMR";
     case GeneralMediaFormat::Avc:
-        return "H.264";
+        switch (sub) {
+        case AvcCavlc444IntraProfile:
+            return "H.264 CAVLC 4:4:4 Intra";
+        case AvcBaselineProfile:
+            return "H.264 Basline";
+        case AvcMainProfile:
+            return "H.264 Main";
+        case AvcScalableBaselineProfile:
+            return "H.264 Scalable Basline";
+        case AvcScalableHighProfile:
+            return "H.264 Scalable High";
+        case AvcExtendedProfile:
+            return "H.264 Extended";
+        case AvcHighProfile:
+            return "H.264 High";
+        case AvcHigh10Profile:
+            return "H.264 High 10";
+        case AvcHighMultiviewProfile:
+            return "H.264 Multiview";
+        case AvcHigh422Profile:
+            return "H.264 High 4:2:2";
+        case AvcStereoHighProfile:
+            return "H.264 Stereo High";
+        case AvcHighMultiviewDepthProfile:
+            return "H.264 Multiview Depth High";
+        case AvcHigh444Profile:
+            return "H.264 High 4:4:4";
+        case AvcHigh444PredictiveProfile:
+            return "H.264 High 4:4:4 Predictive";
+        default:
+            return "H.264";
+        }
     case GeneralMediaFormat::Av1:
         return "AV1";
     case GeneralMediaFormat::Bitmap:
@@ -777,7 +808,38 @@ const char *MediaFormat::shortAbbreviation() const
     case GeneralMediaFormat::Amr:
         return "AMR";
     case GeneralMediaFormat::Avc:
-        return "H.264";
+        switch (sub) {
+        case AvcCavlc444IntraProfile:
+            return "H.264-CAVLC";
+        case AvcBaselineProfile:
+            return "H.264-Basline";
+        case AvcMainProfile:
+            return "H.264-Main";
+        case AvcScalableBaselineProfile:
+            return "H.264-Scalable-Basline";
+        case AvcScalableHighProfile:
+            return "H.264-Scalable-High";
+        case AvcExtendedProfile:
+            return "H.264-Extended";
+        case AvcHighProfile:
+            return "H.264-High";
+        case AvcHigh10Profile:
+            return "H.264-High-10";
+        case AvcHighMultiviewProfile:
+            return "H.264-Multiview";
+        case AvcHigh422Profile:
+            return "H.264-High-4:2:2";
+        case AvcStereoHighProfile:
+            return "H.264-Stereo-High";
+        case AvcHighMultiviewDepthProfile:
+            return "H.264-Multiview-Depth-High";
+        case AvcHigh444Profile:
+            return "H.264-High-4:4:4";
+        case AvcHigh444PredictiveProfile:
+            return "H.264-High-4:4:4-Predictive";
+        default:
+            return "H.264";
+        }
     case GeneralMediaFormat::Av1:
         return "AV1";
     case GeneralMediaFormat::Bitmap:
