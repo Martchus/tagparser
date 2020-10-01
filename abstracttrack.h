@@ -106,6 +106,7 @@ public:
     const Margin &cropping() const;
     std::string label() const;
     std::string description() const;
+    std::string shortDescription() const;
 
     void parseHeader(Diagnostics &diag);
     bool isHeaderValid() const;
@@ -165,6 +166,9 @@ protected:
     bool m_usedWhenPreviewing;
     std::uint32_t m_colorSpace;
     Margin m_cropping;
+
+private:
+    std::string makeDescription(bool verbose) const;
 };
 
 /*!

@@ -184,7 +184,7 @@ enum KnownValue : std::uint32_t {
     AppleGif = 0x67696620, /**< gif  */
     AppleGraphics = 0x736D630, /**< ?6Ö0 */
     AppleGsm101 = 0x6167736D, /**< agsm */
-    AppleH261 = 0x68323631, /**< h261 */
+    AppleH261 = 0x68323631, /**< H.261 */
     AppleIntermediateCodec = 0x69636F64, /**< icod */
     AppleLossless = 0x616C6163, /**< alac */
     AppleMacpaint = 0x504E5447, /**< PNTG */
@@ -279,7 +279,7 @@ enum KnownValue : std::uint32_t {
     Glass = 0x676C6173, /**< glas */
     GradientWipe = 0x6D617474, /**< matt */
     Graphics = 0x736D6320, /**< smc : Graphics */
-    H263Quicktime = 0x68323633, /**< h263: H.263/MPEG-4 ASP video (Quicktime) */
+    H263Quicktime = 0x68323633, /**< h263: H.263 (Quicktime) */
     H2633GPP = 0x73323633, /**< s263: H.263 (3GPP format) */
     H264Decoder1 = 0x44415643, /**< DAVC */
     H264Decoder2 = 0x48323634, /**< H264 */

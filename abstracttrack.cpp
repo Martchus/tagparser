@@ -144,55 +144,91 @@ string AbstractTrack::label() const
     return ss.str();
 }
 
-/*!
- * \brief Returns a short description about the track.
- *
- * The description contains the abbreviated format and further information depending on the media
- * type (eg. display size in case of video, language in case of audio/text). It is intended to be joined
- * with descriptions of other tracks to get a short technical description about the file.
- *
- * Examples (exact format might change in the future!):
- * - H.264-720p
- * - HE-AAC-6ch-eng
- */
-string AbstractTrack::description() const
+/// \cond
+string AbstractTrack::makeDescription(bool verbose) const
 {
     // use abbreviated format
-    const char *format = m_format.shortAbbreviation();
-    if (!format || !*format) {
+    const auto format = MediaFormat(m_format.general, verbose ? m_format.sub : 0, verbose ? m_format.extension : 0);
+    const char *formatName = format.shortAbbreviation();
+    if (!formatName || !*formatName) {
         // fall back to media type name if no abbreviation available
-        format = mediaTypeName();
+        formatName = mediaTypeName();
     }
 
-    // find additional info
-    const char *additionalInfo = nullptr;
+    // find additional info and level
+    const char *additionalInfoRef = nullptr;
+    string level;
     switch (m_mediaType) {
     case MediaType::Video:
         if (!displaySize().isNull()) {
-            additionalInfo = displaySize().abbreviation();
+            additionalInfoRef = displaySize().abbreviation();
         } else if (!pixelSize().isNull()) {
-            additionalInfo = pixelSize().abbreviation();
+            additionalInfoRef = pixelSize().abbreviation();
+        }
+        if (verbose) {
+            switch (format.general) {
+            case GeneralMediaFormat::Mpeg4Video:
+            case GeneralMediaFormat::Avc:
+            case GeneralMediaFormat::Hevc:
+                if (version()) {
+                    level = "@L" + numberToString(version());
+                }
+                break;
+            default:
+                ;
+            }
         }
         break;
     case MediaType::Audio:
     case MediaType::Text:
         if (channelCount()) {
             if (!language().empty() && language() != "und") {
-                return argsToString(format, '-', channelCount(), "ch-", language());
+                return argsToString(formatName, '-', channelCount(), "ch-", language());
             } else {
-                return argsToString(format, '-', channelCount(), 'c', 'h');
+                return argsToString(formatName, '-', channelCount(), 'c', 'h');
             }
         } else if (!language().empty() && language() != "und") {
-            additionalInfo = language().data();
+            additionalInfoRef = language().data();
         }
         break;
     default:;
     }
 
-    if (additionalInfo) {
-        return argsToString(format, '-', additionalInfo);
+    if (additionalInfoRef) {
+        return argsToString(formatName, level, '-', additionalInfoRef);
     }
-    return format;
+    return argsToString(formatName, level);
+}
+/// \endcond
+
+/*!
+ * \brief Returns a description about the track.
+ *
+ * The description contains the abbreviated format and further information depending on the media
+ * type (eg. display size in case of video, language in case of audio/text). It is intended to be joined
+ * with descriptions of other tracks to get a short technical description about the file.
+ *
+ * Examples (exact format might change in the future!):
+ * - H.264-High-10@5.1-720p
+ * - HE-AAC-6ch-eng
+ */
+string AbstractTrack::description() const
+{
+    return makeDescription(true);
+}
+
+/*!
+ * \brief Returns a short description about the track.
+ *
+ * See description() for details.
+ *
+ * Examples (exact format might change in the future!):
+ * - H.264-720p
+ * - HE-AAC-6ch-eng
+ */
+string AbstractTrack::shortDescription() const
+{
+    return makeDescription(false);
 }
 
 /*!
