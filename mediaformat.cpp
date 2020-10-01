@@ -622,7 +622,7 @@ const char *MediaFormat::abbreviation() const
         case Mpeg4AdvancedSimpleProfile4:
         case Mpeg4AdvancedSimpleProfile5:
         case Mpeg4AdvancedSimpleProfile3b:
-            return "H.263";
+            return "MPEG-4 ASP";
         case Mpeg4AvcProfile:
             return "H.264";
         default:
@@ -882,7 +882,7 @@ const char *MediaFormat::shortAbbreviation() const
         case Mpeg4AdvancedSimpleProfile4:
         case Mpeg4AdvancedSimpleProfile5:
         case Mpeg4AdvancedSimpleProfile3b:
-            return "H.263";
+            return "MPEG-4-ASP";
         case Mpeg4AvcProfile:
             return "H.264";
         default:
