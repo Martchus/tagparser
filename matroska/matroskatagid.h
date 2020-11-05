@@ -439,10 +439,6 @@ constexpr TAG_PARSER_EXPORT const char *termsOfUse()
     return "TERMS_OF_USE";
 }
 
-/*!
- * \brief Encapsulates track-specific Matroska tag IDs written by mkvmerge 7.0.0 or newer.
- * \sa https://github.com/mbunkus/mkvtoolnix/wiki/Automatic-tag-generation
- */
 namespace TrackSpecific {
 constexpr TAG_PARSER_EXPORT const char *numberOfBytes()
 {

@@ -20,9 +20,11 @@ using namespace std;
 using namespace CppUtilities;
 namespace TagParser {
 
+/// \cond
 namespace Id3v2TextEncodingBytes {
 enum Id3v2TextEncodingByte : std::uint8_t { Ascii, Utf16WithBom, Utf16BigEndianWithoutBom, Utf8 };
 }
+/// \endcond
 
 /// \brief The maximum (supported) size of an ID3v2Frame.
 constexpr auto maxId3v2FrameDataSize(numeric_limits<std::uint32_t>::max() - 15);

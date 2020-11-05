@@ -90,7 +90,7 @@ const char *InvalidDataException::what() const noexcept
 }
 
 /*!
- * \class TagParser::NoDataException
+ * \class TagParser::NoDataProvidedException
  * \brief The exception that is thrown when the value to be written is empty but that
  *        is not allowed in that context (e.g. an empty ID3v2 frame is not allowed).
  */
