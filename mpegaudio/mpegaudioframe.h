@@ -119,8 +119,8 @@ inline std::uint16_t MpegAudioFrame::bitrate() const
  */
 constexpr std::uint32_t MpegAudioFrame::paddingSize() const
 {
-    if (isValid()) {
-        return (m_header & 0x60000u) == 0x60000u ? 4u : 1u * (m_header & 0x200u);
+    if (isValid() && (m_header & 0x200u)) {
+        return (m_header & 0x60000u) == 0x60000u ? 4u /* layer 1 */ : 1u /* layer 2 and 3 */;
     } else {
         return 0;
     }
