@@ -2,6 +2,8 @@
 
 #include "../exceptions.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
+#include <c++utilities/conversion/stringconversion.h>
 #include <c++utilities/io/binaryreader.h>
 
 using namespace std;
@@ -46,15 +48,23 @@ const std::uint16_t MpegAudioFrame::s_bitrateTable[0x2][0x3][0xF] = { { { 0, 32,
  */
 void MpegAudioFrame::parseHeader(BinaryReader &reader, Diagnostics &diag)
 {
+    // read MPEG audio frame header
     m_header = reader.readUInt32BE();
     if (!isValid()) {
-        diag.emplace_back(DiagLevel::Critical, "Header is invalid.", "parsing MPEG audio frame header");
+        diag.emplace_back(DiagLevel::Critical,
+            "Frame 0x" % numberToString(m_header, 16) % " at 0x" % numberToString<std::int64_t>(reader.stream()->tellg() - 4l, 16) + " is invalid.",
+            "parsing MPEG audio frame header");
         throw InvalidDataException();
+    }
+
+    // read XING header (see https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader)
+    if (size() < s_xingHeaderOffset - 4 + 8) {
+        return;
     }
     reader.stream()->seekg(s_xingHeaderOffset - 4, ios_base::cur);
     m_xingHeader = reader.readUInt64BE();
-    m_xingHeaderFlags = static_cast<XingHeaderFlags>(m_xingHeader & 0xffffffffuL);
     if (isXingHeaderAvailable()) {
+        m_xingHeaderFlags = static_cast<XingHeaderFlags>(m_xingHeader & 0xffffffffuL);
         if (isXingFramefieldPresent()) {
             m_xingFramefield = reader.readUInt32BE();
         }

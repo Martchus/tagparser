@@ -41,16 +41,24 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag)
         m_size = static_cast<std::uint64_t>(m_istream->tellg()) + 125u - m_startOffset;
     }
     m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
-    // parse frame header
-    m_frames.emplace_back();
-    MpegAudioFrame &frame = m_frames.back();
-    frame.parseHeader(m_reader, diag);
+    // parse frames until the first non-empty frame is reached
+    auto isFrameEmpty = false;
+    while (!isFrameEmpty && m_frames.size() < 200) {
+        MpegAudioFrame &frame = m_frames.emplace_back();
+        frame.parseHeader(m_reader, diag);
+        isFrameEmpty = frame.size();
+        if (frame.isProtectedByCrc()) {
+            m_istream->seekg(2, ios_base::cur);
+        }
+    }
+    const MpegAudioFrame &frame = m_frames.back();
     addInfo(frame, *this);
     if (frame.isXingBytesfieldPresent()) {
         std::uint32_t xingSize = frame.xingBytesfield();
         if (m_size && xingSize != m_size) {
             diag.emplace_back(DiagLevel::Warning,
-                "Real length of MPEG audio frames is not equal with value provided by Xing header. The Xing header value will be used.", context);
+                "Real length of MPEG audio frames is not in accordance with value provided by Xing header. The Xing header value will be used.",
+                context);
             m_size = xingSize;
         }
     }
