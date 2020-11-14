@@ -172,14 +172,16 @@ startParsingSignature:
         stream().read(buff, sizeof(buff));
 
         // skip zero bytes/padding
+        // note: Only skipping 4 or more consecutive zero bytes at this point because some signatures start with up to 4 zero bytes.
         size_t bytesSkipped = 0;
         for (buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped)
             ;
         if (bytesSkipped >= 4) {
+        skipZeroBytes:
             m_containerOffset += bytesSkipped;
 
             // give up after 0x100 bytes
-            if ((m_paddingSize += bytesSkipped) >= 0x100u) {
+            if ((m_paddingSize += bytesSkipped) >= 0x800u) {
                 m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
                 return;
@@ -187,9 +189,6 @@ startParsingSignature:
 
             // try again
             goto startParsingSignature;
-        }
-        if (m_paddingSize) {
-            diag.emplace_back(DiagLevel::Warning, argsToString(m_paddingSize, " zero-bytes skipped at the beginning of the file."), context);
         }
 
         // parse signature
@@ -254,7 +253,11 @@ startParsingSignature:
             static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
             break;
         case ContainerFormat::Unknown:
-            // container format is still unknown -> check for magic numbers at odd offsets
+            // skip the zero bytes after all
+            if (bytesSkipped) {
+                goto skipZeroBytes;
+            }
+            // check for magic numbers at odd offsets
             // -> check for tar (magic number at offset 0x101)
             if (size() > 0x107) {
                 stream().seekg(0x101);
@@ -267,6 +270,13 @@ startParsingSignature:
             break;
         default:;
         }
+    }
+
+    if (m_paddingSize) {
+        diag.emplace_back(DiagLevel::Warning,
+            argsToString(m_paddingSize,
+                m_id3v2Tags.empty() ? " zero-bytes skipped at the beginning of the file." : " zero-bytes skipped after the ID3v2 tag."),
+            context);
     }
 
     // set parsing status
