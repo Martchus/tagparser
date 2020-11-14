@@ -174,8 +174,7 @@ string AbstractTrack::makeDescription(bool verbose) const
                     level = "@L" + numberToString(version());
                 }
                 break;
-            default:
-                ;
+            default:;
             }
         }
         break;

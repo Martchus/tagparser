@@ -16,6 +16,6 @@ namespace MatroskaTagIds {
  */
 namespace TrackSpecific {
 }
-}
+} // namespace MatroskaTagIds
 
 } // namespace TagParser
