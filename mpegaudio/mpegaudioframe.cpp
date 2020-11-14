@@ -196,12 +196,13 @@ std::uint32_t MpegAudioFrame::sampleCount() const
 std::uint32_t MpegAudioFrame::size() const
 {
     switch (m_header & 0x60000u) {
-    case 0x60000u:
+    case 0x60000u: // layer 1
         return static_cast<std::uint32_t>(
-            ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
-            + static_cast<double>(paddingSize()));
-    case 0x40000u:
-    case 0x20000u:
+                   ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
+                   + static_cast<double>(paddingSize()))
+            * 4;
+    case 0x40000u: // layer 2
+    case 0x20000u: // layer 3
         return static_cast<std::uint32_t>(
             ((static_cast<double>(bitrate()) * 1024.0 / 8.0) / static_cast<double>(samplingFrequency())) * static_cast<double>(sampleCount())
             + static_cast<double>(paddingSize()));
