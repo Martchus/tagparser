@@ -106,6 +106,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { comment(), KnownField::Comment },
          { cover(), KnownField::Cover },
          { date(), KnownField::RecordDate },
+         { year(), KnownField::RecordDate },
          { title(), KnownField::Title },
          { genre(), KnownField::Genre },
          { trackNumber(), KnownField::TrackPosition },
@@ -181,6 +182,16 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
                 stream.ignore(); // skip framing byte
             }
             m_size = static_cast<std::uint32_t>(static_cast<std::uint64_t>(stream.tellg()) - startOffset);
+            // turn "YEAR" into "DATE" (unless "DATE" exists)
+            // note: "DATE" is an official field and "YEAR" only an inofficial one but present in some files. In consistency with
+            //       MediaInfo and VLC player it is treated like "DATE" here.
+            if (fields().find(VorbisCommentIds::date()) == fields().end()) {
+                const auto [first, end] = fields().equal_range(VorbisCommentIds::year());
+                for (auto i = first; i != end; ++i) {
+                    fields().insert(std::pair(VorbisCommentIds::date(), std::move(i->second)));
+                }
+                fields().erase(first, end);
+            }
         } else {
             diag.emplace_back(DiagLevel::Critical, "Signature is invalid.", context);
             throw InvalidDataException();

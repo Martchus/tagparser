@@ -143,6 +143,10 @@ constexpr TAG_PARSER_EXPORT const char *date()
 {
     return "DATE";
 }
+constexpr TAG_PARSER_EXPORT const char *year()
+{
+    return "YEAR"; // not mentioned in https://xiph.org/vorbis/doc/v-comment.html but seen in the wild
+}
 constexpr TAG_PARSER_EXPORT const char *location()
 {
     return "LOCATION";
