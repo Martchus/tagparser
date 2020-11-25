@@ -29,8 +29,8 @@ public:
     void make(std::ostream &targetStream, Diagnostics &diag);
 
 private:
-    void readValue(TagValue &value, size_t maxLength, const char *buffer);
-    void writeValue(const TagValue &value, size_t length, char *buffer, std::ostream &targetStream, Diagnostics &diag);
+    void readValue(TagValue &value, std::size_t maxLength, const char *buffer);
+    void writeValue(const TagValue &value, std::size_t length, char *buffer, std::ostream &targetStream, Diagnostics &diag);
 
     TagValue m_title;
     TagValue m_artist;

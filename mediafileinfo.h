@@ -133,12 +133,12 @@ public:
     void setForceFullParse(bool forceFullParse);
     bool isForcingRewrite() const;
     void setForceRewrite(bool forceRewrite);
-    size_t minPadding() const;
-    void setMinPadding(size_t minPadding);
-    size_t maxPadding() const;
-    void setMaxPadding(size_t maxPadding);
-    size_t preferredPadding() const;
-    void setPreferredPadding(size_t preferredPadding);
+    std::size_t minPadding() const;
+    void setMinPadding(std::size_t minPadding);
+    std::size_t maxPadding() const;
+    void setMaxPadding(std::size_t maxPadding);
+    std::size_t preferredPadding() const;
+    void setPreferredPadding(std::size_t preferredPadding);
     ElementPosition tagPosition() const;
     void setTagPosition(ElementPosition tagPosition);
     bool forceTagPosition() const;
@@ -183,9 +183,9 @@ private:
     std::string m_backupDirectory;
     std::string m_saveFilePath;
     std::string m_writingApplication;
-    size_t m_minPadding;
-    size_t m_maxPadding;
-    size_t m_preferredPadding;
+    std::size_t m_minPadding;
+    std::size_t m_maxPadding;
+    std::size_t m_preferredPadding;
     ElementPosition m_tagPosition;
     ElementPosition m_indexPosition;
     bool m_forceFullParse;
@@ -283,7 +283,7 @@ inline ParsingStatus MediaFileInfo::tracksParsingStatus() const
  *
  * \sa parseTracks()
  */
-inline size_t MediaFileInfo::trackCount() const
+inline std::size_t MediaFileInfo::trackCount() const
 {
     return m_singleTrack ? 1 : (m_container ? m_container->trackCount() : 0);
 }
@@ -485,7 +485,7 @@ inline void MediaFileInfo::setForceRewrite(bool forceRewrite)
  * \sa tagPosition()
  * \sa setMinPadding()
  */
-inline size_t MediaFileInfo::minPadding() const
+inline std::size_t MediaFileInfo::minPadding() const
 {
     return m_minPadding;
 }
@@ -495,7 +495,7 @@ inline size_t MediaFileInfo::minPadding() const
  * \remarks This value might be ignored if not supported by the container/tag format or the corresponding implementation.
  * \sa minPadding()
  */
-inline void MediaFileInfo::setMinPadding(size_t minPadding)
+inline void MediaFileInfo::setMinPadding(std::size_t minPadding)
 {
     m_minPadding = minPadding;
 }
@@ -513,7 +513,7 @@ inline void MediaFileInfo::setMinPadding(size_t minPadding)
  * \sa tagPosition()
  * \sa setMaxPadding()
  */
-inline size_t MediaFileInfo::maxPadding() const
+inline std::size_t MediaFileInfo::maxPadding() const
 {
     return m_maxPadding;
 }
@@ -523,7 +523,7 @@ inline size_t MediaFileInfo::maxPadding() const
  * \remarks This value might be ignored if not supported by the container/tag format or the corresponding implementation.
  * \sa maxPadding()
  */
-inline void MediaFileInfo::setMaxPadding(size_t maxPadding)
+inline void MediaFileInfo::setMaxPadding(std::size_t maxPadding)
 {
     m_maxPadding = maxPadding;
 }
@@ -534,7 +534,7 @@ inline void MediaFileInfo::setMaxPadding(size_t maxPadding)
  * Padding in front of the file allows adding additional fields afterwards whithout needing
  * to rewrite the entire file or to put tag information at the end of the file.
  */
-inline size_t MediaFileInfo::preferredPadding() const
+inline std::size_t MediaFileInfo::preferredPadding() const
 {
     return m_preferredPadding;
 }
@@ -544,7 +544,7 @@ inline size_t MediaFileInfo::preferredPadding() const
  * \remarks This value might be ignored if not supported by the container/tag format or the corresponding implementation.
  * \sa preferredPadding()
  */
-inline void MediaFileInfo::setPreferredPadding(size_t preferredPadding)
+inline void MediaFileInfo::setPreferredPadding(std::size_t preferredPadding)
 {
     m_preferredPadding = preferredPadding;
 }

@@ -166,9 +166,9 @@ protected:
 
 private:
     // private helper methods
-    std::uint64_t accumulateSampleSizes(size_t &sampleIndex, size_t count, Diagnostics &diag);
+    std::uint64_t accumulateSampleSizes(std::size_t &sampleIndex, std::size_t count, Diagnostics &diag);
     void addChunkSizeEntries(
-        std::vector<std::uint64_t> &chunkSizeTable, size_t count, size_t &sampleIndex, std::uint32_t sampleCount, Diagnostics &diag);
+        std::vector<std::uint64_t> &chunkSizeTable, std::size_t count, std::size_t &sampleIndex, std::uint32_t sampleCount, Diagnostics &diag);
     TrackHeaderInfo verifyPresentTrackHeader() const;
 
     Mp4Atom *m_trakAtom;

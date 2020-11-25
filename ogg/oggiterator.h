@@ -37,7 +37,7 @@ public:
     void removeFilter();
     bool isLastPageFetched() const;
     void read(char *buffer, std::size_t count);
-    size_t readAll(char *buffer, std::size_t max);
+    std::size_t readAll(char *buffer, std::size_t max);
     void ignore(std::size_t count = 1);
     bool bytesRemaining(std::size_t atLeast) const;
     bool resyncAt(std::uint64_t offset);
