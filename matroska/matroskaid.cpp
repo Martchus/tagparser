@@ -140,6 +140,8 @@ const char *matroskaIdName(std::uint32_t matroskaId)
         return "track name";
     case TrackLanguage:
         return "track language";
+    case TrackLanguageIETF:
+        return "track language IETF";
     case TrackFlagEnabled:
         return "track enabled";
     case TrackFlagDefault:
@@ -290,6 +292,8 @@ const char *matroskaIdName(std::uint32_t matroskaId)
         return "tag string";
     case TagLanguage:
         return "tag language";
+    case TagLanguageIETF:
+        return "tag language IETF";
     case TagDefault:
         return "tag default";
     case TagBinary:
@@ -418,6 +422,8 @@ const char *matroskaIdName(std::uint32_t matroskaId)
         return "chap string";
     case ChapLanguage:
         return "chap language";
+    case ChapLanguageIETF:
+        return "chap language IETF";
     case ChapCountry:
         return "chap country";
 
@@ -596,6 +602,7 @@ MatroskaElementLevel matroskaIdLevel(std::uint32_t matroskaId)
     case MaxBlockAdditionId:
     case TrackName:
     case TrackLanguage:
+    case TrackLanguageIETF:
     case CodecID:
     case CodecPrivate:
     case CodecName:

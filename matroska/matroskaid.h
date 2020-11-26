@@ -88,6 +88,7 @@ enum TrackEntryIds {
     MaxBlockAdditionId = 0x55EE,
     TrackName = 0x536E,
     TrackLanguage = 0x22B59C,
+    TrackLanguageIETF = 0x22B59D,
     CodecID = 0x86,
     CodecPrivate = 0x63A2,
     CodecName = 0x258688,
@@ -219,6 +220,7 @@ enum SimpleTagIds {
     TagName = 0x45A3,
     TagString = 0x4487,
     TagLanguage = 0x447A,
+    TagLanguageIETF = 0x447B,
     TagDefault = 0x4484,
     TagBinary = 0x4485,
 };
@@ -324,7 +326,7 @@ enum ChapterTrackIds { ChapterTrackNumber = 0x89 };
 /*!
  * \brief Encapsulates all ID values in the ChapterDisplay master.
  */
-enum ChapterDisplayIds { ChapString = 0x85, ChapLanguage = 0x437c, ChapCountry = 0x437e };
+enum ChapterDisplayIds { ChapString = 0x85, ChapLanguage = 0x437c, ChapLanguageIETF = 0x437D, ChapCountry = 0x437e };
 
 /*!
  * \brief Encapsulates all ID values in the ChapProcess master.
