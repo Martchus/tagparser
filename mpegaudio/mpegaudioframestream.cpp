@@ -41,15 +41,32 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag)
         m_size = static_cast<std::uint64_t>(m_istream->tellg()) + 125u - m_startOffset;
     }
     m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
-    // parse frames until the first non-empty frame is reached
-    auto isFrameEmpty = false;
-    while (!isFrameEmpty && m_frames.size() < 200) {
-        MpegAudioFrame &frame = m_frames.emplace_back();
-        frame.parseHeader(m_reader, diag);
-        isFrameEmpty = frame.size();
+    // parse frames until the first valid, non-empty frame is reached
+    for (size_t invalidByteskipped = 0; m_frames.size() < 200 && invalidByteskipped <= 0x600u;) {
+        MpegAudioFrame &frame = invalidByteskipped > 0 ? m_frames.back() : m_frames.emplace_back();
+        try {
+            frame.parseHeader(m_reader, diag);
+        } catch (const InvalidDataException &e) {
+            if (++invalidByteskipped > 1) {
+                diag.pop_back();
+            }
+            m_istream->seekg(-3, ios_base::cur);
+            continue;
+        }
+        if (invalidByteskipped > 1) {
+            diag.emplace_back(DiagLevel::Critical, argsToString("The next ", invalidByteskipped, " bytes are junk as well."), context);
+        }
+        if (!frame.size()) {
+            continue; // likely just junk, check further frames
+        }
+        invalidByteskipped = 0;
         if (frame.isProtectedByCrc()) {
             m_istream->seekg(2, ios_base::cur);
         }
+        break;
+    }
+    if (!m_frames.back().isValid()) {
+        return;
     }
     const MpegAudioFrame &frame = m_frames.back();
     addInfo(frame, *this);

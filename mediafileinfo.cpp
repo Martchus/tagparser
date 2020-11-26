@@ -172,17 +172,20 @@ startParsingSignature:
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
 
-        // skip zero bytes/padding
-        // note: Only skipping 4 or more consecutive zero bytes at this point because some signatures start with up to 4 zero bytes.
+        // skip zero/junk bytes
+        // notes:
+        // - Only skipping 4 or more consecutive zero bytes at this point because some signatures start with up to 4 zero bytes.
+        // - It seems that most players/tools¹ skip junk bytes, at least when reading MP3 files. Hence the tagparser library is following
+        //   the same approach. (¹e.g. ffmpeg: "[mp3 @ 0x559e1f4cbd80] Skipping 1670 bytes of junk at 1165.")
         size_t bytesSkipped = 0;
         for (buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped)
             ;
         if (bytesSkipped >= 4) {
-        skipZeroBytes:
+        skipJunkBytes:
             m_containerOffset += bytesSkipped;
             m_paddingSize += bytesSkipped;
 
-            // give up after 0x100 bytes
+            // give up after 0x800 bytes
             if ((bytesSkippedBeforeContainer += bytesSkipped) >= 0x800u) {
                 m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
@@ -255,10 +258,6 @@ startParsingSignature:
             static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
             break;
         case ContainerFormat::Unknown:
-            // skip the zero bytes after all
-            if (bytesSkipped) {
-                goto skipZeroBytes;
-            }
             // check for magic numbers at odd offsets
             // -> check for tar (magic number at offset 0x101)
             if (size() > 0x107) {
@@ -269,16 +268,17 @@ startParsingSignature:
                     break;
                 }
             }
-            break;
+            // skip previously determined zero-bytes or try our luck on the next byte
+            if (!bytesSkipped) {
+                ++bytesSkipped;
+            }
+            goto skipJunkBytes;
         default:;
         }
     }
 
     if (bytesSkippedBeforeContainer) {
-        diag.emplace_back(DiagLevel::Warning,
-            argsToString(bytesSkippedBeforeContainer,
-                m_id3v2Tags.empty() ? " zero-bytes skipped at the beginning of the file." : " zero-bytes skipped after the ID3v2 tag."),
-            context);
+        diag.emplace_back(DiagLevel::Warning, argsToString(bytesSkippedBeforeContainer, " bytes of junk skipped"), context);
     }
 
     // set parsing status
