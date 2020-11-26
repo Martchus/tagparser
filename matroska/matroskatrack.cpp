@@ -411,6 +411,10 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         case MatroskaIds::TrackLanguage:
             m_language = trackInfoElement->readString();
             break;
+        case MatroskaIds::TrackLanguageIETF:
+            diag.emplace_back(DiagLevel::Warning,
+                "\"TrackEntry\"-element contains a \"LanguageIETF\"-element which is not supported yet. It will be ignored.", context);
+            break;
         case MatroskaIds::CodecID:
             m_format = codecIdToMediaFormat(m_formatId = trackInfoElement->readString());
             break;

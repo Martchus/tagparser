@@ -101,6 +101,11 @@ void MatroskaChapter::internalParse(Diagnostics &diag)
                 case MatroskaIds::ChapLanguage:
                     m_names.back().languages().emplace_back(chapterDisplayElement->readString());
                     break;
+                case MatroskaIds::ChapLanguageIETF:
+                    diag.emplace_back(DiagLevel::Warning,
+                        "\"ChapterDisplay\"-element contains a \"ChapLanguageIETF\"-element which is not supported yet. It will be ignored.",
+                        context);
+                    break;
                 case MatroskaIds::ChapCountry:
                     m_names.back().countries().emplace_back(chapterDisplayElement->readString());
                     break;

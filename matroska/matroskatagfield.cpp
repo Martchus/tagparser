@@ -47,7 +47,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
 {
     string context("parsing Matroska tag field");
     simpleTagElement.parse(diag);
-    bool tagDefaultFound = false;
+    bool tagDefaultFound = false, tagLanguageFound = false, tagLanguageIETFFound = false;
     for (EbmlElement *child = simpleTagElement.firstChild(); child; child = child->nextSibling()) {
         try {
             child->parse(diag);
@@ -87,14 +87,28 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
             }
             break;
         case MatroskaIds::TagLanguage:
-            if (value().language().empty() || value().language() == "und") {
+            if (!tagLanguageFound && !tagLanguageIETFFound) {
+                tagLanguageFound = true;
                 string lng = child->readString();
                 if (lng != "und") {
                     value().setLanguage(lng);
                 }
-            } else {
+            } else if (tagLanguageFound) {
                 diag.emplace_back(DiagLevel::Warning,
                     "\"SimpleTag\"-element contains multiple \"TagLanguage\"-elements. Surplus \"TagLanguage\"-elements will be ignored.", context);
+            }
+            break;
+        case MatroskaIds::TagLanguageIETF:
+            if (!tagLanguageIETFFound) {
+                tagLanguageIETFFound = true;
+                diag.emplace_back(DiagLevel::Warning,
+                    "\"SimpleTag\"-element contains a \"TagLanguageIETF\"-element. That's not supported at this point. The element will be dropped "
+                    "when applying changes.",
+                    context);
+            } else {
+                diag.emplace_back(DiagLevel::Warning,
+                    "\"SimpleTag\"-element contains multiple \"TagLanguageIETF\"-elements. Surplus \"TagLanguageIETF\"-elements will be ignored.",
+                    context);
             }
             break;
         case MatroskaIds::TagDefault:
