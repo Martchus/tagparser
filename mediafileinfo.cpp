@@ -162,6 +162,7 @@ void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
     // file size
     m_paddingSize = 0;
     m_containerOffset = 0;
+    size_t bytesSkippedBeforeContainer = 0;
 
     // read signatrue
     char buff[16];
@@ -179,9 +180,10 @@ startParsingSignature:
         if (bytesSkipped >= 4) {
         skipZeroBytes:
             m_containerOffset += bytesSkipped;
+            m_paddingSize += bytesSkipped;
 
             // give up after 0x100 bytes
-            if ((m_paddingSize += bytesSkipped) >= 0x800u) {
+            if ((bytesSkippedBeforeContainer += bytesSkipped) >= 0x800u) {
                 m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
                 return;
@@ -272,9 +274,9 @@ startParsingSignature:
         }
     }
 
-    if (m_paddingSize) {
+    if (bytesSkippedBeforeContainer) {
         diag.emplace_back(DiagLevel::Warning,
-            argsToString(m_paddingSize,
+            argsToString(bytesSkippedBeforeContainer,
                 m_id3v2Tags.empty() ? " zero-bytes skipped at the beginning of the file." : " zero-bytes skipped after the ID3v2 tag."),
             context);
     }
