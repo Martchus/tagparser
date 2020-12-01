@@ -21,11 +21,9 @@ namespace TagParser {
 /*!
  * \brief Parses the AVC configuration using the specified \a reader.
  * \throws Throws TruncatedDataException() when the config size exceeds the specified \a maxSize.
- * \todo Implement logging/reporting parsing errors.
  */
 void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagnostics &diag)
 {
-    CPP_UTILITIES_UNUSED(diag)
     if (maxSize < 7) {
         throw TruncatedDataException();
     }
@@ -38,12 +36,14 @@ void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagno
     naluSizeLength = (reader.readByte() & 0x03) + 1;
 
     // read SPS info entries
-    std::uint8_t entryCount = reader.readByte() & 0x0f;
-    spsInfos.reserve(entryCount);
-    for (; entryCount; --entryCount) {
+    std::uint8_t spsEntryCount = reader.readByte() & 0x0f;
+    std::uint8_t ignoredSpsEntries = 0;
+    spsInfos.reserve(spsEntryCount);
+    for (; spsEntryCount; --spsEntryCount) {
         if (maxSize < SpsInfo::minSize) {
             throw TruncatedDataException();
         }
+        auto error = false;
         try {
             spsInfos.emplace_back().parse(
                 reader, maxSize > numeric_limits<std::uint32_t>::max() ? numeric_limits<std::uint32_t>::max() : static_cast<std::uint32_t>(maxSize));
@@ -51,21 +51,26 @@ void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagno
             if (spsInfos.back().size > (maxSize - SpsInfo::minSize)) {
                 throw; // sps info looks bigger than bytes to read
             }
-            spsInfos.pop_back(); // sps info exceeds denoted size
+            error = true; // sps info exceeds denoted size
         } catch (const Failure &) {
-            spsInfos.pop_back();
-            // TODO: log parsing error
+            error = true;
         }
         maxSize -= spsInfos.back().size;
+        if (error) {
+            spsInfos.pop_back();
+            ++ignoredSpsEntries;
+        }
     }
 
     // read PPS info entries
-    entryCount = reader.readByte();
-    ppsInfos.reserve(entryCount);
-    for (; entryCount; --entryCount) {
+    std::uint8_t ppsEntryCount = reader.readByte();
+    std::uint8_t ignoredPpsEntries = 0;
+    ppsInfos.reserve(ppsEntryCount);
+    for (; ppsEntryCount; --ppsEntryCount) {
         if (maxSize < PpsInfo::minSize) {
             throw TruncatedDataException();
         }
+        auto error = false;
         try {
             ppsInfos.emplace_back().parse(
                 reader, maxSize > numeric_limits<std::uint32_t>::max() ? numeric_limits<std::uint32_t>::max() : static_cast<std::uint32_t>(maxSize));
@@ -73,12 +78,23 @@ void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagno
             if (ppsInfos.back().size > (maxSize - PpsInfo::minSize)) {
                 throw; // pps info looks bigger than bytes to read
             }
-            ppsInfos.pop_back(); // pps info exceeds denoted size
+            error = true; // pps info exceeds denoted size
         } catch (const Failure &) {
-            ppsInfos.pop_back();
-            // TODO: log parsing error
+            error = true;
         }
         maxSize -= ppsInfos.back().size;
+        if (error) {
+            ppsInfos.pop_back();
+            ++ignoredPpsEntries;
+        }
+    }
+
+    // log parsing errors
+    if (ignoredSpsEntries || ignoredPpsEntries) {
+        diag.emplace_back(DiagLevel::Debug,
+            argsToString(
+                "Ignored ", ignoredSpsEntries, " SPS entries and ", ignoredPpsEntries, " PPS entries. This AVC config is likely just not supported."),
+            "parsing AVC config");
     }
 
     // ignore remaining data

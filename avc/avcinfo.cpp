@@ -234,7 +234,7 @@ void PpsInfo::parse(BinaryReader &reader, std::uint32_t maxSize)
         // read general values
         bitReader.skipBits(1); // zero bit
         if (bitReader.readBits<std::uint8_t>(5) != 8) { // nal unit type
-            throw InvalidDataException();
+            throw NotImplementedException();
         }
         id = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
         spsId = bitReader.readUnsignedExpGolombCodedBits<ugolomb>();
