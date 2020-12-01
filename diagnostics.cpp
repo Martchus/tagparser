@@ -28,6 +28,8 @@ const char *diagLevelName(DiagLevel diagLevel)
         return "warning";
     case DiagLevel::Critical:
         return "critical";
+    case DiagLevel::Debug:
+        return "debug";
     case DiagLevel::None:
     default:
         return "";
