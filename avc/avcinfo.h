@@ -93,6 +93,7 @@ struct TAG_PARSER_EXPORT SpsInfo {
     HrdParameters vclHrdParameters;
     std::uint8_t pictureStructPresent;
     std::uint16_t size;
+    static constexpr std::uint16_t minSize = 2;
 
     void parse(CppUtilities::BinaryReader &reader, std::uint32_t maxSize);
 };
@@ -124,6 +125,7 @@ struct TAG_PARSER_EXPORT PpsInfo {
     ugolomb spsId;
     std::uint8_t picOrderPresent;
     std::uint16_t size;
+    static constexpr std::uint16_t minSize = 2;
 
     void parse(CppUtilities::BinaryReader &reader, std::uint32_t maxSize);
 };

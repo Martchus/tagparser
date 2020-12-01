@@ -41,18 +41,17 @@ void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagno
     std::uint8_t entryCount = reader.readByte() & 0x0f;
     spsInfos.reserve(entryCount);
     for (; entryCount; --entryCount) {
-        if (maxSize < 2) {
+        if (maxSize < SpsInfo::minSize) {
             throw TruncatedDataException();
         }
-        spsInfos.emplace_back();
         try {
-            spsInfos.back().parse(
+            spsInfos.emplace_back().parse(
                 reader, maxSize > numeric_limits<std::uint32_t>::max() ? numeric_limits<std::uint32_t>::max() : static_cast<std::uint32_t>(maxSize));
         } catch (const TruncatedDataException &) {
-            if (spsInfos.back().size > maxSize - 2) {
-                throw;
+            if (spsInfos.back().size > (maxSize - SpsInfo::minSize)) {
+                throw; // sps info looks bigger than bytes to read
             }
-            spsInfos.pop_back();
+            spsInfos.pop_back(); // sps info exceeds denoted size
         } catch (const Failure &) {
             spsInfos.pop_back();
             // TODO: log parsing error
@@ -64,18 +63,17 @@ void AvcConfiguration::parse(BinaryReader &reader, std::uint64_t maxSize, Diagno
     entryCount = reader.readByte();
     ppsInfos.reserve(entryCount);
     for (; entryCount; --entryCount) {
-        if (maxSize < 2) {
+        if (maxSize < PpsInfo::minSize) {
             throw TruncatedDataException();
         }
-        ppsInfos.emplace_back();
         try {
-            ppsInfos.back().parse(
+            ppsInfos.emplace_back().parse(
                 reader, maxSize > numeric_limits<std::uint32_t>::max() ? numeric_limits<std::uint32_t>::max() : static_cast<std::uint32_t>(maxSize));
         } catch (const TruncatedDataException &) {
-            if (ppsInfos.back().size > maxSize - 2) {
-                throw;
+            if (ppsInfos.back().size > (maxSize - PpsInfo::minSize)) {
+                throw; // pps info looks bigger than bytes to read
             }
-            ppsInfos.pop_back();
+            ppsInfos.pop_back(); // pps info exceeds denoted size
         } catch (const Failure &) {
             ppsInfos.pop_back();
             // TODO: log parsing error

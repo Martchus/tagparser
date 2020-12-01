@@ -24,11 +24,7 @@ namespace TagParser {
 void SpsInfo::parse(BinaryReader &reader, std::uint32_t maxSize)
 {
     // read (and check) size
-    if (maxSize < 2) {
-        throw TruncatedDataException();
-    }
-    maxSize -= 2;
-    if ((size = reader.readUInt16BE()) > maxSize) {
+    if ((maxSize < minSize) || (size = reader.readUInt16BE()) > (maxSize - minSize)) {
         throw TruncatedDataException();
     }
 
@@ -225,11 +221,7 @@ void SpsInfo::parse(BinaryReader &reader, std::uint32_t maxSize)
 void PpsInfo::parse(BinaryReader &reader, std::uint32_t maxSize)
 {
     // read (and check) size
-    if (maxSize < 2) {
-        throw TruncatedDataException();
-    }
-    maxSize -= 2;
-    if ((size = reader.readUInt16BE()) > maxSize) {
+    if ((maxSize < minSize) || (size = reader.readUInt16BE()) > (maxSize - minSize)) {
         throw TruncatedDataException();
     }
 
