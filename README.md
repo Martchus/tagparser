@@ -106,8 +106,8 @@ works with all kinds of files. (When forcing rewrite a backup is always created.
 ## Build instructions
 The tagparser library depends on [c++utilities](https://github.com/Martchus/cpp-utilities) and is built
 in the same way.
-It also depends on zlib. For checking integrity of testfiles, the OpenSSL crypto
-library is required.
+It also depends on zlib, iso-codes and requires at least CMake 3.19. For checking integrity of testfiles, the OpenSSL
+crypto library is required.
 
 ## TODOs
 * Support more formats (EXIF, PDF metadata, Theora, ...)

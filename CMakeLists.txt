@@ -175,8 +175,9 @@ set(TEST_SRC_FILES
     tests/tagvalue.cpp
     tests/testfilecheck.cpp
     tests/utils.cpp)
-
 set(DOC_FILES README.md doc/adding-new-fields.md)
+set(LANGUAGE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/resources/iso_language_codes.h")
+set(RES_FILES "${LANGUAGE_HEADER}")
 
 # find c++utilities
 set(CONFIGURATION_PACKAGE_SUFFIX
@@ -203,16 +204,9 @@ include(TestTarget)
 include(Doxygen)
 include(ConfigHeader)
 
-# write languages header from CSV file
-set(LANGUAGES_HEADER "static const std::unordered_map<std::string, std::string> languages = \{")
-file(STRINGS languages.csv LANGUAGE_ROWS ENCODING UTF-8)
-foreach (LANGUAGE_ROW ${LANGUAGE_ROWS})
-    if (NOT LANGUAGE_ROW MATCHES "([a-z][a-z]) ,([a-z][a-z][a-z]) ,([a-z][a-z][a-z]) ,\"?([^\",]*) \"?,\"?([^\",]*) \"?")
-        continue()
-    endif ()
-    set(LANGUAGE_ABBREVIATION "${CMAKE_MATCH_3}")
-    set(LANGUAGE_NAME "${CMAKE_MATCH_4}")
-    set(LANGUAGES_HEADER "${LANGUAGES_HEADER}\n    \{\"${LANGUAGE_ABBREVIATION}\", \"${LANGUAGE_NAME}\"\},")
-endforeach ()
-set(LANGUAGES_HEADER "${LANGUAGES_HEADER}\n};")
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/resources/languages.h" "${LANGUAGES_HEADER}")
+# add rules to generate code for dealing with language codes
+add_custom_command(
+    OUTPUT "${LANGUAGE_HEADER}"
+    COMMENT "Generating code for ISO-639-2 language codes"
+    COMMAND "${CMAKE_COMMAND}" "-DOUTPUT_PATH=${LANGUAGE_HEADER}" -P
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/generate_iso_language_codes.cmake")

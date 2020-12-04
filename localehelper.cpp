@@ -9,10 +9,10 @@ using namespace std::literals;
 namespace TagParser {
 
 /// \cond
-static const auto &languageMapping()
+static const auto &languageNames_ISO_639_2_b()
 {
-#include "resources/languages.h"
-    return languages;
+#include "resources/iso_language_codes.h"
+    return languageNames_iso_639_2_b;
 }
 /// \endcond
 
@@ -30,7 +30,7 @@ inline static bool isLanguageDefined_ISO_639_2(const std::string &languageSpecif
  */
 static const std::string &languageName_ISO_639_2(const std::string &isoCode)
 {
-    const auto &mapping = languageMapping();
+    const auto &mapping = languageNames_ISO_639_2_b();
     const auto i = mapping.find(isoCode);
     if (i == mapping.cend()) {
         static const std::string empty;
