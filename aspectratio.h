@@ -11,9 +11,9 @@
 namespace TagParser {
 
 struct TAG_PARSER_EXPORT AspectRatio {
-    constexpr AspectRatio();
-    AspectRatio(std::uint8_t aspectRatioType);
-    constexpr AspectRatio(std::uint16_t numerator, std::uint16_t denominator);
+    constexpr explicit AspectRatio();
+    explicit AspectRatio(std::uint8_t aspectRatioType);
+    constexpr explicit AspectRatio(std::uint16_t numerator, std::uint16_t denominator);
     constexpr bool isValid() const;
     constexpr bool isExtended() const;
     std::string toString() const;

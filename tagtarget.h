@@ -22,7 +22,7 @@ public:
     using IdType = std::uint64_t;
     using IdContainerType = std::vector<IdType>;
 
-    TagTarget(std::uint64_t level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
+    explicit TagTarget(std::uint64_t level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
         IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());
 
     std::uint64_t level() const;

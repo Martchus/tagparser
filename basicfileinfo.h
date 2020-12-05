@@ -14,7 +14,7 @@ namespace TagParser {
 class TAG_PARSER_EXPORT BasicFileInfo {
 public:
     // constructor, destructor
-    BasicFileInfo(const std::string &path = std::string());
+    explicit BasicFileInfo(const std::string &path = std::string());
     BasicFileInfo(const BasicFileInfo &) = delete;
     BasicFileInfo &operator=(const BasicFileInfo &) = delete;
     virtual ~BasicFileInfo();

@@ -45,8 +45,8 @@ enum class ParsingStatus : std::uint8_t {
 class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo {
 public:
     // constructor, destructor
-    MediaFileInfo();
-    MediaFileInfo(const std::string &path);
+    explicit MediaFileInfo();
+    explicit MediaFileInfo(const std::string &path);
     MediaFileInfo(const MediaFileInfo &) = delete;
     MediaFileInfo &operator=(const MediaFileInfo &) = delete;
     ~MediaFileInfo() override;

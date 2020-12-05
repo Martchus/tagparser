@@ -14,8 +14,8 @@ template <typename ActualProgressFeedback> class BasicProgressFeedback {
 public:
     using Callback = std::function<void(ActualProgressFeedback &feedback)>;
 
-    BasicProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
-    BasicProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
+    explicit BasicProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
+    explicit BasicProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
 
     const std::string &step() const;
     std::uint8_t stepPercentage() const;

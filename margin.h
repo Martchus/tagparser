@@ -15,7 +15,7 @@ namespace TagParser {
  */
 class TAG_PARSER_EXPORT Margin {
 public:
-    constexpr Margin(std::uint32_t top = 0, std::uint32_t left = 0, std::uint32_t bottom = 0, std::uint32_t right = 0);
+    constexpr explicit Margin(std::uint32_t top = 0, std::uint32_t left = 0, std::uint32_t bottom = 0, std::uint32_t right = 0);
     constexpr std::uint32_t top() const;
     void setTop(std::uint32_t top);
     constexpr std::uint32_t left() const;

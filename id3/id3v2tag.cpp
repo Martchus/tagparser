@@ -404,11 +404,11 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
 
     // set the field values as DateTime
     try {
-        setValue(Id3v2FrameIds::lRecordingTime, DateTime::fromDateAndTime(year, month, day, hour, minute));
+        setValue(Id3v2FrameIds::lRecordingTime, TagValue(DateTime::fromDateAndTime(year, month, day, hour, minute)));
     } catch (const ConversionException &e) {
         try {
             // try to set at least the year
-            setValue(Id3v2FrameIds::lRecordingTime, DateTime::fromDate(year));
+            setValue(Id3v2FrameIds::lRecordingTime, TagValue(DateTime::fromDate(year)));
             diag.emplace_back(DiagLevel::Critical,
                 argsToString(
                     "Unable to parse the full date of the recording. Only the 'Year' frame could be parsed; related frames failed: ", e.what()),

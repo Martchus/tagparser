@@ -75,19 +75,21 @@ enum class TagValueComparisionFlags : unsigned int {
 class TAG_PARSER_EXPORT TagValue {
 public:
     // constructor, destructor
-    TagValue();
-    TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
+    explicit TagValue();
+    explicit TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
         TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    TagValue(const char *text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    TagValue(
+    explicit TagValue(
+        const char *text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    explicit TagValue(
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    TagValue(int value);
-    TagValue(const char *data, std::size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
-    TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
+    explicit TagValue(int value);
+    explicit TagValue(
+        const char *data, std::size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    explicit TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
         TagTextEncoding encoding = TagTextEncoding::Latin1);
-    TagValue(PositionInSet value);
-    TagValue(CppUtilities::DateTime value);
-    TagValue(CppUtilities::TimeSpan value);
+    explicit TagValue(PositionInSet value);
+    explicit TagValue(CppUtilities::DateTime value);
+    explicit TagValue(CppUtilities::TimeSpan value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
     ~TagValue();
