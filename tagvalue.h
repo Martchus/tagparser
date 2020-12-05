@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 namespace TagParser {
 
@@ -148,6 +149,8 @@ public:
     void setFlags(TagValueFlags flags);
     bool isLabeledAsReadonly() const;
     void setReadonly(bool readOnly);
+    const std::unordered_map<std::string, std::string> &nativeData() const;
+    std::unordered_map<std::string, std::string> &nativeData();
     TagTextEncoding dataEncoding() const;
     void convertDataEncoding(TagTextEncoding encoding);
     void convertDataEncodingForTag(const Tag *tag);
@@ -186,6 +189,7 @@ private:
     std::string m_desc;
     std::string m_mimeType;
     std::string m_language;
+    std::unordered_map<std::string, std::string> m_nativeData;
     TagDataType m_type;
     TagTextEncoding m_encoding;
     TagTextEncoding m_descEncoding;
@@ -664,6 +668,24 @@ inline bool TagValue::isLabeledAsReadonly() const
 inline void TagValue::setReadonly(bool readOnly)
 {
     readOnly ? (m_flags += TagValueFlags::ReadOnly) : (m_flags -= TagValueFlags::ReadOnly);
+}
+
+/*!
+ * \brief Holds tag format specific meta-data for that field which does not fit into any of the other
+ *        meta-data properties.
+ */
+inline const std::unordered_map<std::string, std::string> &TagValue::nativeData() const
+{
+    return m_nativeData;
+}
+
+/*!
+ * \brief Holds tag format specific meta-data for that field which does not fit into any of the other
+ *        meta-data properties.
+ */
+inline std::unordered_map<std::string, std::string> &TagValue::nativeData()
+{
+    return m_nativeData;
 }
 
 /*!
