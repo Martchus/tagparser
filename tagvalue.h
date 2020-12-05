@@ -9,6 +9,7 @@
 #include <c++utilities/misc/flagenumclass.h>
 #include <c++utilities/misc/traits.h>
 
+#include <cstdint>
 #include <cstring>
 #include <iosfwd>
 #include <memory>
@@ -29,6 +30,23 @@ enum class TagTextEncoding : unsigned int {
     Utf16BigEndian, /**< UTF-16 (big endian) */
     Unspecified /**< unspecified encoding */
 };
+
+/*!
+ * \brief Specifies additional flags about the tag value.
+ * \remarks It depends on the tag format whether these flags can be present. When setting a flag
+ *          which is not supported by the tag format, the tag implementation for that tag format
+ *          is supposed to ignore these flags.
+ */
+enum class TagValueFlags : std::uint64_t {
+    None, /**< no flags present */
+    ReadOnly, /**< the tag value is labeled as read-only */
+};
+
+} // namespace TagParser
+
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::TagValueFlags)
+
+namespace TagParser {
 
 /*!
  * \brief Returns the size of one character for the specified \a encoding in bytes.
@@ -126,6 +144,8 @@ public:
     void setMimeType(const std::string &mimeType);
     const std::string &language() const;
     void setLanguage(const std::string &language);
+    TagValueFlags flags() const;
+    void setFlags(TagValueFlags flags);
     bool isLabeledAsReadonly() const;
     void setReadonly(bool readOnly);
     TagTextEncoding dataEncoding() const;
@@ -169,7 +189,7 @@ private:
     TagDataType m_type;
     TagTextEncoding m_encoding;
     TagTextEncoding m_descEncoding;
-    bool m_labeledAsReadonly;
+    TagValueFlags m_flags;
 };
 
 /*!
@@ -180,7 +200,7 @@ inline TagValue::TagValue()
     , m_type(TagDataType::Undefined)
     , m_encoding(TagTextEncoding::Latin1)
     , m_descEncoding(TagTextEncoding::Latin1)
-    , m_labeledAsReadonly(false)
+    , m_flags(TagValueFlags::None)
 {
 }
 
@@ -203,7 +223,7 @@ inline TagValue::~TagValue()
  */
 inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
     : m_descEncoding(TagTextEncoding::Latin1)
-    , m_labeledAsReadonly(false)
+    , m_flags(TagValueFlags::None)
 {
     assignText(text, textSize, textEncoding, convertTo);
 }
@@ -233,7 +253,7 @@ inline TagValue::TagValue(const char *text, TagTextEncoding textEncoding, TagTex
  */
 inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
     : m_descEncoding(TagTextEncoding::Latin1)
-    , m_labeledAsReadonly(false)
+    , m_flags(TagValueFlags::None)
 {
     assignText(text, textEncoding, convertTo);
 }
@@ -261,7 +281,7 @@ inline TagValue::TagValue(const char *data, std::size_t length, TagDataType type
     , m_type(type)
     , m_encoding(encoding)
     , m_descEncoding(TagTextEncoding::Latin1)
-    , m_labeledAsReadonly(false)
+    , m_flags(TagValueFlags::None)
 {
     if (length) {
         if (type == TagDataType::Text) {
@@ -289,7 +309,7 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, Ta
     , m_type(type)
     , m_encoding(encoding)
     , m_descEncoding(TagTextEncoding::Latin1)
-    , m_labeledAsReadonly(false)
+    , m_flags(TagValueFlags::None)
 {
     if (length) {
         m_ptr = move(data);
@@ -587,6 +607,24 @@ inline void TagValue::setLanguage(const std::string &language)
 }
 
 /*!
+ * \brief Returns the flags.
+ * \sa TagValueFlags
+ */
+inline TagValueFlags TagValue::flags() const
+{
+    return m_flags;
+}
+
+/*!
+ * \brief Sets the flags.
+ * \sa TagValueFlags
+ */
+inline void TagValue::setFlags(TagValueFlags flags)
+{
+    m_flags = flags;
+}
+
+/*!
  * \brief Returns an indication whether the value is labeled as read-only.
  * \remarks The usage of this meta information depends on the tag implementation.
  * \remarks This is just an additional information. It has no effect on the behavior
@@ -596,7 +634,7 @@ inline void TagValue::setLanguage(const std::string &language)
  */
 inline bool TagValue::isLabeledAsReadonly() const
 {
-    return m_labeledAsReadonly;
+    return m_flags & TagValueFlags::ReadOnly;
 }
 
 /*!
@@ -609,7 +647,7 @@ inline bool TagValue::isLabeledAsReadonly() const
  */
 inline void TagValue::setReadonly(bool readOnly)
 {
-    m_labeledAsReadonly = readOnly;
+    readOnly ? (m_flags += TagValueFlags::ReadOnly) : (m_flags -= TagValueFlags::ReadOnly);
 }
 
 /*!

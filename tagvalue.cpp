@@ -101,7 +101,7 @@ TagValue::TagValue(const TagValue &other)
     , m_type(other.m_type)
     , m_encoding(other.m_encoding)
     , m_descEncoding(other.m_descEncoding)
-    , m_labeledAsReadonly(other.m_labeledAsReadonly)
+    , m_flags(TagValueFlags::None)
 {
     if (!other.isEmpty()) {
         m_ptr = make_unique<char[]>(m_size);
@@ -122,7 +122,7 @@ TagValue &TagValue::operator=(const TagValue &other)
     m_desc = other.m_desc;
     m_mimeType = other.m_mimeType;
     m_language = other.m_language;
-    m_labeledAsReadonly = other.m_labeledAsReadonly;
+    m_flags = other.m_flags;
     m_encoding = other.m_encoding;
     m_descEncoding = other.m_descEncoding;
     if (other.isEmpty()) {
@@ -183,7 +183,7 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
     // check whether meta-data is equal (except description)
     if (!(options & TagValueComparisionFlags::IgnoreMetaData)) {
         // check meta-data which always uses UTF-8 (everything but description)
-        if (m_mimeType != other.m_mimeType || m_language != other.m_language || m_labeledAsReadonly != other.m_labeledAsReadonly) {
+        if (m_mimeType != other.m_mimeType || m_language != other.m_language || m_flags != other.m_flags) {
             return false;
         }
 
@@ -299,8 +299,7 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
 
 /*!
  * \brief Wipes assigned meta data.
- *  - Clears description, mime type and language.
- *  - Resets the read-only flag to false.
+ *  - Clears description, mime type, language and flags.
  *  - Resets the encoding to TagTextEncoding::Latin1.
  *  - Resets the data type to TagDataType::Undefined.
  */
@@ -309,7 +308,7 @@ void TagValue::clearMetadata()
     m_desc.clear();
     m_mimeType.clear();
     m_language.clear();
-    m_labeledAsReadonly = false;
+    m_flags = TagValueFlags::None;
     m_encoding = TagTextEncoding::Latin1;
     m_descEncoding = TagTextEncoding::Latin1;
     m_type = TagDataType::Undefined;
