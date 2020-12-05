@@ -538,8 +538,9 @@ inline const char *TagValue::dataPointer() const
 
 /*!
  * \brief Returns the description.
- * \remarks The usage of this meta information depends on the tag implementation. It might be ignored
- *          if not supported.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
  * \sa
  * - descriptionEncoding() for the encoding of the returned string
  * - convertDescriptionEncoding() to change the encoding of the description
@@ -554,8 +555,9 @@ inline const std::string &TagValue::description() const
  * \brief Sets the description.
  * \param value Specifies the description.
  * \param encoding Specifies the encoding used to provide the description.
- * \remarks The usage of this meta information depends on the tag implementation. It might be ignored
- *          if not supported.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
  * \sa
  * - description() and descriptionEncoding()
  * - convertDescriptionEncoding() to change the description encoding after assignment
@@ -568,7 +570,9 @@ inline void TagValue::setDescription(const std::string &value, TagTextEncoding e
 
 /*!
  * \brief Returns the MIME type.
- * \remarks The usage of this meta information depends on the tag implementation.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
  * \sa setMimeType()
  */
 inline const std::string &TagValue::mimeType() const
@@ -578,7 +582,9 @@ inline const std::string &TagValue::mimeType() const
 
 /*!
  * \brief Sets the MIME type.
- * \remarks The usage of this meta information depends on the tag implementation.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
  * \sa mimeType()
  */
 inline void TagValue::setMimeType(const std::string &mimeType)
@@ -588,7 +594,11 @@ inline void TagValue::setMimeType(const std::string &mimeType)
 
 /*!
  * \brief Returns the language.
- * \remarks The usage of this meta information depends on the tag implementation.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
+ * - The format of the language is specific to the tag format. The implementation of the tag format might
+ *   store the value without further validation.
  * \sa setLanguage()
  */
 inline const std::string &TagValue::language() const
@@ -598,7 +608,11 @@ inline const std::string &TagValue::language() const
 
 /*!
  * \brief Sets the language.
- * \remarks The usage of this meta information depends on the tag implementation.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
+ * - The format of the language is specific to the tag format. The implementation of the tag format might
+ *   store the value without further validation.
  * \sa language()
  */
 inline void TagValue::setLanguage(const std::string &language)
@@ -626,10 +640,11 @@ inline void TagValue::setFlags(TagValueFlags flags)
 
 /*!
  * \brief Returns an indication whether the value is labeled as read-only.
- * \remarks The usage of this meta information depends on the tag implementation.
- * \remarks This is just an additional information. It has no effect on the behavior
- *          of the TagValue thus assignments can still be performed (to prohibit
- *          assignments simply use the "const" keyword).
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
+ * - This is just an additional information. It has no effect on the behavior of the TagValue thus
+ *   assignments can still be performed (to prohibit assignments simply use the "const" keyword).
  * \sa setReadonly()
  */
 inline bool TagValue::isLabeledAsReadonly() const
@@ -639,10 +654,11 @@ inline bool TagValue::isLabeledAsReadonly() const
 
 /*!
  * \brief Sets whether the TagValue is labeled as read-only.
- * \remarks The usage of this meta information depends on the tag implementation.
- * \remarks This is just an additional information. It has no effect on the behavior
- *          of the TagValue thus assignments can still be performed (to prohibit
- *          assignments simply use the "const" keyword).
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
+ * - This is just an additional information. It has no effect on the behavior of the TagValue thus
+ *   assignments can still be performed (to prohibit assignments simply use the "const" keyword).
  * \sa isLabeledAsReadonly()
  */
 inline void TagValue::setReadonly(bool readOnly)

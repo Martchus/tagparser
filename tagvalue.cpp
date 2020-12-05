@@ -82,7 +82,7 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
  *
  * Values of the type TagDataType::Text can be differently encoded. See TagParser::TagTextEncoding for a
  * list of supported encodings. Be sure to use an encoding which is supported by the tag implementation.
- * To ensure that the functions Tag::canEncodingBeUsed(), Tag::proposedTextEncoding() and
+ * To ensure that, the functions Tag::canEncodingBeUsed(), Tag::proposedTextEncoding() and
  * Tag::ensureTextValuesAreProperlyEncoded() can be used.
  *
  * Values of the type TagDataType::Text are not supposed to contain Byte-Order-Marks. Before assigning text
