@@ -1,7 +1,7 @@
 #ifndef TAG_PARSER_LOCALEAWARESTRING_H
 #define TAG_PARSER_LOCALEAWARESTRING_H
 
-#include "./global.h"
+#include "./localehelper.h"
 
 #include <string>
 #include <vector>
@@ -17,14 +17,11 @@ public:
     explicit LocaleAwareString(std::string &&value);
     ~LocaleAwareString();
 
-    const std::vector<std::string> &languages() const;
-    std::vector<std::string> &languages();
-    const std::vector<std::string> &countries() const;
-    std::vector<std::string> &countries();
+    const Locale &locale() const;
+    Locale &locale();
 
 private:
-    std::vector<std::string> m_languages;
-    std::vector<std::string> m_countries;
+    Locale m_locale;
 };
 
 /*!
@@ -51,35 +48,19 @@ inline LocaleAwareString::~LocaleAwareString()
 }
 
 /*!
- * \brief Returns associated languages.
+ * \brief Returns the associated locale.
  */
-inline const std::vector<std::string> &LocaleAwareString::languages() const
+inline const Locale &LocaleAwareString::locale() const
 {
-    return m_languages;
+    return m_locale;
 }
 
 /*!
- * \brief Returns associated languages.
+ * \brief Returns the associated locale.
  */
-inline std::vector<std::string> &LocaleAwareString::languages()
+inline Locale &LocaleAwareString::locale()
 {
-    return m_languages;
-}
-
-/*!
- * \brief Returns associated countries.
- */
-inline const std::vector<std::string> &LocaleAwareString::countries() const
-{
-    return m_countries;
-}
-
-/*!
- * \brief Returns associated countries.
- */
-inline std::vector<std::string> &LocaleAwareString::countries()
-{
-    return m_countries;
+    return m_locale;
 }
 
 } // namespace TagParser

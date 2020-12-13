@@ -981,7 +981,7 @@ void Id3v2Frame::parseComment(const char *buffer, std::size_t dataSize, TagValue
     }
     TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<std::uint8_t>(*buffer), diag);
     if (*(++buffer)) {
-        tagValue.setLanguage(string(buffer, 3));
+        tagValue.setLocale(Locale(std::string(buffer, 3), LocaleFormat::ISO_639_2_B)); // does standard say whether T or B?
     }
     auto substr = parseSubstring(buffer += 3, dataSize -= 4, dataEncoding, true, diag);
     tagValue.setDescription(string(get<0>(substr), get<1>(substr)), dataEncoding);
@@ -1163,8 +1163,8 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSi
         diag.emplace_back(DiagLevel::Critical, "Data encoding and description encoding aren't equal.", context);
         throw InvalidDataException();
     }
-    const string &lng = comment.language();
-    if (lng.length() > 3) {
+    const string &language = comment.locale().abbreviatedName(LocaleFormat::ISO_639_2_B, LocaleFormat::ISO_639_2_T, LocaleFormat::Unknown);
+    if (language.length() > 3) {
         diag.emplace_back(DiagLevel::Critical, "The language must be 3 bytes long (ISO-639-2).", context);
         throw InvalidDataException();
     }
@@ -1198,7 +1198,7 @@ void Id3v2Frame::makeComment(unique_ptr<char[]> &buffer, std::uint32_t &bufferSi
 
     // write language
     for (unsigned int i = 0; i < 3; ++i) {
-        *(++offset) = (lng.length() > i) ? lng[i] : 0x00;
+        *(++offset) = (language.length() > i) ? language[i] : 0x00;
     }
 
     // write description

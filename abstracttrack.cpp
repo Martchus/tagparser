@@ -1,6 +1,5 @@
 #include "./abstracttrack.h"
 #include "./exceptions.h"
-#include "./language.h"
 #include "./mediaformat.h"
 
 #include "./mp4/mp4ids.h"
@@ -130,8 +129,8 @@ string AbstractTrack::label() const
     if (!name().empty()) {
         ss << ", name: \"" << name() << "\"";
     }
-    if (isLanguageDefined(language())) {
-        ss << ", language: " << languageNameFromIsoWithFallback(language()) << "";
+    if (const auto &language = locale().fullOrSomeAbbreviatedName(); !language.empty()) {
+        ss << ", language: " << language << "";
     }
     return ss.str();
 }
@@ -173,13 +172,13 @@ string AbstractTrack::makeDescription(bool verbose) const
     case MediaType::Audio:
     case MediaType::Text:
         if (channelCount()) {
-            if (!language().empty() && language() != "und") {
-                return argsToString(formatName, '-', channelCount(), "ch-", language());
+            if (const auto &localeName = locale().someAbbreviatedName(); !localeName.empty()) {
+                return argsToString(formatName, '-', channelCount(), "ch-", localeName);
             } else {
                 return argsToString(formatName, '-', channelCount(), 'c', 'h');
             }
-        } else if (!language().empty() && language() != "und") {
-            additionalInfoRef = language().data();
+        } else if (const auto &localeName = locale().someAbbreviatedName(); !localeName.empty()) {
+            additionalInfoRef = localeName.data();
         }
         break;
     default:;

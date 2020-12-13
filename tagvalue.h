@@ -1,6 +1,7 @@
 #ifndef TAG_PARSER_TAGVALUE_H
 #define TAG_PARSER_TAGVALUE_H
 
+#include "./localehelper.h"
 #include "./positioninset.h"
 
 #include <c++utilities/chrono/datetime.h>
@@ -143,8 +144,9 @@ public:
     void setDescription(const std::string &value, TagTextEncoding encoding = TagTextEncoding::Latin1);
     const std::string &mimeType() const;
     void setMimeType(const std::string &mimeType);
-    const std::string &language() const;
-    void setLanguage(const std::string &language);
+    const Locale &locale() const;
+    Locale &locale();
+    void setLocale(const Locale &locale);
     TagValueFlags flags() const;
     void setFlags(TagValueFlags flags);
     bool isLabeledAsReadonly() const;
@@ -188,7 +190,7 @@ private:
     std::size_t m_size;
     std::string m_desc;
     std::string m_mimeType;
-    std::string m_language;
+    Locale m_locale;
     std::unordered_map<std::string, std::string> m_nativeData;
     TagDataType m_type;
     TagTextEncoding m_encoding;
@@ -597,31 +599,45 @@ inline void TagValue::setMimeType(const std::string &mimeType)
 }
 
 /*!
- * \brief Returns the language.
+ * \brief Returns the locale.
  * \remarks
  * - Whether this additional meta-data is available and can be used depends on the tag format. It will
  *   be ignored by the implementation of the tag format if not supported.
- * - The format of the language is specific to the tag format. The implementation of the tag format might
+ * - The format of the locale is specific to the tag format. The implementation of the tag format might
  *   store the value without further validation.
- * \sa setLanguage()
+ * \sa setLocale()
  */
-inline const std::string &TagValue::language() const
+inline const Locale &TagValue::locale() const
 {
-    return m_language;
+    return m_locale;
 }
 
 /*!
- * \brief Sets the language.
+ * \brief Returns the locale.
  * \remarks
  * - Whether this additional meta-data is available and can be used depends on the tag format. It will
  *   be ignored by the implementation of the tag format if not supported.
- * - The format of the language is specific to the tag format. The implementation of the tag format might
+ * - The format of the locale is specific to the tag format. The implementation of the tag format might
  *   store the value without further validation.
- * \sa language()
+ * \sa setLocale()
  */
-inline void TagValue::setLanguage(const std::string &language)
+inline Locale &TagValue::locale()
 {
-    m_language = language;
+    return m_locale;
+}
+
+/*!
+ * \brief Sets the setLocale.
+ * \remarks
+ * - Whether this additional meta-data is available and can be used depends on the tag format. It will
+ *   be ignored by the implementation of the tag format if not supported.
+ * - The format of the locale is specific to the tag format. The implementation of the tag format might
+ *   store the value without further validation.
+ * \sa locale()
+ */
+inline void TagValue::setLocale(const Locale &locale)
+{
+    m_locale = locale;
 }
 
 /*!

@@ -39,11 +39,13 @@ private:
     MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostics &diag);
 
     MatroskaTagField &m_field;
-    bool m_isBinary;
     std::string m_stringValue;
+    const std::string &m_language;
+    const std::string &m_languageIETF;
     std::uint64_t m_simpleTagSize;
     std::uint64_t m_totalSize;
     std::vector<MatroskaTagFieldMaker> m_nestedMaker;
+    bool m_isBinary;
 };
 
 /*!

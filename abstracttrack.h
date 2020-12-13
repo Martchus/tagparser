@@ -3,6 +3,7 @@
 
 #include "./aspectratio.h"
 #include "./diagnostics.h"
+#include "./localehelper.h"
 #include "./margin.h"
 #include "./mediaformat.h"
 #include "./size.h"
@@ -95,8 +96,8 @@ public:
     double maxBitrate() const;
     const CppUtilities::DateTime &creationTime() const;
     const CppUtilities::DateTime &modificationTime() const;
-    const std::string &language() const;
-    void setLanguage(const std::string &language);
+    const Locale &locale() const;
+    void setLocale(const Locale &locale);
     std::uint32_t samplingFrequency() const;
     std::uint32_t extensionSamplingFrequency() const;
     std::uint16_t bitsPerSample() const;
@@ -160,7 +161,7 @@ protected:
     double m_maxBitrate;
     CppUtilities::DateTime m_creationTime;
     CppUtilities::DateTime m_modificationTime;
-    std::string m_language;
+    Locale m_locale;
     std::uint32_t m_samplingFrequency;
     std::uint32_t m_extensionSamplingFrequency;
     std::uint16_t m_bitsPerSample;
@@ -435,22 +436,22 @@ inline const CppUtilities::DateTime &AbstractTrack::modificationTime() const
 }
 
 /*!
- * \brief Returns the language of the track if known; otherwise returns an empty string.
+ * \brief Returns the locale of the track if known; otherwise returns an empty locale.
  *
- * The format of the language denotation depends on the particular implementation.
+ * The format of the locale depends on the particular format/implementation.
  */
-inline const std::string &AbstractTrack::language() const
+inline const Locale &AbstractTrack::locale() const
 {
-    return m_language;
+    return m_locale;
 }
 
 /*!
- * \brief Sets the language of the track.
- * \remarks Whether the new value is applied when saving changes depends on the implementation.
+ * \brief Sets the locale of the track.
+ * \remarks Whether the new value is applied when saving changes depends on the format/implementation.
  */
-inline void AbstractTrack::setLanguage(const std::string &language)
+inline void AbstractTrack::setLocale(const Locale &locale)
 {
-    m_language = language;
+    m_locale = locale;
 }
 
 /*!
@@ -621,11 +622,11 @@ inline std::uint32_t AbstractTrack::timeScale() const
 }
 
 /*!
- * \brief Returns true if the track is denoted as enabled; otherwise returns false.
+ * \brief Returns true if the track is marked as enabled; otherwise returns false.
  */
 inline bool AbstractTrack::isEnabled() const
 {
-    return m_enabled;
+    return m_flags & TrackFlags::Enabled;
 }
 
 /*!
@@ -634,15 +635,15 @@ inline bool AbstractTrack::isEnabled() const
  */
 inline void AbstractTrack::setEnabled(bool enabled)
 {
-    m_enabled = enabled;
+    CppUtilities::modFlagEnum(m_flags, TrackFlags::Enabled, enabled);
 }
 
 /*!
- * \brief Returns true if the track is denoted as default; otherwise returns false.
+ * \brief Returns true if the track is marked as default; otherwise returns false.
  */
 inline bool AbstractTrack::isDefault() const
 {
-    return m_default;
+    return m_flags & TrackFlags::Default;
 }
 
 /*!
@@ -651,15 +652,15 @@ inline bool AbstractTrack::isDefault() const
  */
 inline void AbstractTrack::setDefault(bool isDefault)
 {
-    m_default = isDefault;
+    CppUtilities::modFlagEnum(m_flags, TrackFlags::Default, isDefault);
 }
 
 /*!
- * \brief Returns true if the track is denoted as forced; otherwise returns false.
+ * \brief Returns true if the track is marked as forced; otherwise returns false.
  */
 inline bool AbstractTrack::isForced() const
 {
-    return m_forced;
+    return m_flags & TrackFlags::Forced;
 }
 
 /*!
@@ -668,7 +669,7 @@ inline bool AbstractTrack::isForced() const
  */
 inline void AbstractTrack::setForced(bool forced)
 {
-    m_forced = forced;
+    CppUtilities::modFlagEnum(m_flags, TrackFlags::Forced, forced);
 }
 
 /*!
@@ -676,15 +677,15 @@ inline void AbstractTrack::setForced(bool forced)
  */
 inline bool AbstractTrack::hasLacing() const
 {
-    return m_lacing;
+    return m_flags & TrackFlags::Lacing;
 }
 
 /*!
- * \brief Returns true if the track is denoted as encrypted; otherwise returns false.
+ * \brief Returns true if the track is marked as encrypted; otherwise returns false.
  */
 inline bool AbstractTrack::isEncrypted() const
 {
-    return m_encrypted;
+    return m_flags & TrackFlags::Encrypted;
 }
 
 /*!
@@ -708,7 +709,7 @@ inline const Margin &AbstractTrack::cropping() const
  */
 inline bool AbstractTrack::isHeaderValid() const
 {
-    return m_headerValid;
+    return m_flags & TrackFlags::HeaderValid;
 }
 
 } // namespace TagParser

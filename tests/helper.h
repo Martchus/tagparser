@@ -2,6 +2,7 @@
 #define TAGPARSER_TEST_HELPER
 
 #include "../diagnostics.h"
+#include "../localehelper.h"
 #include "../size.h"
 #include "../tagvalue.h"
 
@@ -45,6 +46,14 @@ inline std::ostream &operator<<(std::ostream &os, const TagParser::Size &size)
 inline std::ostream &operator<<(std::ostream &os, const TagParser::DiagMessage &diagMessage)
 {
     return os << diagMessage.levelName() << ':' << ' ' << diagMessage.message() << ' ' << '(' << diagMessage.context() << ')';
+}
+
+/*!
+ * \brief Prints a Locale to enable using it in CPPUNIT_ASSERT_EQUAL.
+ */
+inline std::ostream &operator<<(std::ostream &os, const TagParser::Locale &locale)
+{
+    return os << locale.toString();
 }
 
 } // namespace CppUtilities

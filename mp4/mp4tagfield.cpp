@@ -541,7 +541,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                 }
             }
         }
-    } catch (ConversionException &ex) {
+    } catch (const ConversionException &ex) {
         // it was not possible to perform required conversions
         if (char_traits<char>::length(ex.what())) {
             diag.emplace_back(DiagLevel::Critical, ex.what(), context);

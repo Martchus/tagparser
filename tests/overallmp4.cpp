@@ -84,7 +84,7 @@ void OverallTests::checkMp4Testfile2()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::SpectralBandReplication));
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::ParametricStereo));
-            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("eng"sv, LocaleFormat::ISO_639_2_T), track->locale());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
@@ -92,13 +92,13 @@ void OverallTests::checkMp4Testfile2()
         case 3:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Ac3, track->format().general);
-            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("eng"sv, LocaleFormat::ISO_639_2_T), track->locale());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 4:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::DtsHd, track->format().general);
-            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("eng"sv, LocaleFormat::ISO_639_2_T), track->locale());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 6:
@@ -296,7 +296,7 @@ void OverallTests::checkMp4Testfile6()
             CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(SubFormats::AacMpeg4LowComplexityProfile), track->format().sub);
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::SpectralBandReplication));
             CPPUNIT_ASSERT(!(track->format().extension & ExtensionFormats::ParametricStereo));
-            CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("ger"sv, LocaleFormat::ISO_639_2_T), track->locale());
             CPPUNIT_ASSERT_EQUAL("test"s, track->name());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
@@ -305,13 +305,13 @@ void OverallTests::checkMp4Testfile6()
         case 3:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Ac3, track->format().general);
-            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("eng"sv, LocaleFormat::ISO_639_2_T), track->locale());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 4:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::DtsHd, track->format().general);
-            CPPUNIT_ASSERT_EQUAL("eng"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("eng"sv, LocaleFormat::ISO_639_2_T), track->locale());
             CPPUNIT_ASSERT_EQUAL(2013, track->creationTime().year());
             break;
         case 5:
@@ -513,7 +513,7 @@ void OverallTests::alterMp4Tracks()
     container->addTrack(track);
     CPPUNIT_ASSERT_EQUAL(6_st, container->trackCount());
     auto &secondTrack = container->tracks()[1];
-    secondTrack->setLanguage("ger");
+    secondTrack->setLocale(Locale("ger"sv, LocaleFormat::ISO_639_2_T));
     secondTrack->setName("test");
 }
 

@@ -22,6 +22,8 @@ private:
     MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag);
 
     const MatroskaTrack &m_track;
+    const std::string &m_language;
+    const std::string &m_languageIETF;
     std::uint64_t m_dataSize;
     std::uint64_t m_requiredSize;
     std::uint8_t m_sizeDenotationLength;

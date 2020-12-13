@@ -1293,30 +1293,31 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         writer().writeUInt32BE(static_cast<std::uint32_t>(duration));
     }
     // convert and write language
-    std::uint16_t language = 0;
+    const std::string &language = m_locale.abbreviatedName(LocaleFormat::ISO_639_2_T, LocaleFormat::Unknown);
+    std::uint16_t codedLanguage = 0;
     for (size_t charIndex = 0; charIndex != 3; ++charIndex) {
-        const char langChar = charIndex < m_language.size() ? m_language[charIndex] : 0;
+        const char langChar = charIndex < language.size() ? language[charIndex] : 0;
         if (langChar >= 'a' && langChar <= 'z') {
-            language |= static_cast<std::uint16_t>(langChar - 0x60) << (0xA - charIndex * 0x5);
+            codedLanguage |= static_cast<std::uint16_t>(langChar - 0x60) << (0xA - charIndex * 0x5);
             continue;
         }
 
         // handle invalid characters
-        if (m_language.empty()) {
+        if (language.empty()) {
             // preserve empty language field
-            language = 0;
+            codedLanguage = 0;
             break;
         }
-        diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % m_language + "\" is of an invalid format. Setting language to undefined.",
-            "making mdhd atom");
-        language = 0x55C4; // und(efined)
+        diag.emplace_back(
+            DiagLevel::Warning, "Assigned language \"" % language + "\" is of an invalid format. Setting language to undefined.", "making mdhd atom");
+        codedLanguage = 0x55C4; // und(efined)
         break;
     }
-    if (m_language.size() > 3) {
+    if (language.size() > 3) {
         diag.emplace_back(
-            DiagLevel::Warning, "Assigned language \"" % m_language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
+            DiagLevel::Warning, "Assigned language \"" % language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
     }
-    writer().writeUInt16BE(language);
+    writer().writeUInt16BE(codedLanguage);
     writer().writeUInt16BE(0); // pre defined
     // write hdlr atom
     writer().writeUInt32BE(33 + m_name.size()); // size
@@ -1588,9 +1589,9 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
             static_cast<char>(((tmp & 0x03E0) >> 0x5) + 0x60),
             static_cast<char>(((tmp & 0x001F) >> 0x0) + 0x60),
         };
-        m_language = string(buff, 3);
+        m_locale.emplace_back(std::string(buff, 3), LocaleFormat::ISO_639_2_T);
     } else {
-        m_language.clear();
+        m_locale.clear();
     }
 
     // read hdlr atom

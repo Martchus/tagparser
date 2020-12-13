@@ -186,14 +186,14 @@ void OverallTests::checkMkvTestfile4()
             switch (m_tagStatus) {
             case TagStatus::Original:
             case TagStatus::Removed:
-                CPPUNIT_ASSERT_EQUAL("und"s, track->language());
+                CPPUNIT_ASSERT_EQUAL(Locale("und"sv, LocaleFormat::ISO_639_2_B), track->locale());
                 CPPUNIT_ASSERT_EQUAL(string(), track->name());
                 CPPUNIT_ASSERT(track->isEnabled());
                 CPPUNIT_ASSERT(!track->isForced());
                 CPPUNIT_ASSERT(!track->isDefault());
                 break;
             case TagStatus::TestMetaDataPresent:
-                CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+                CPPUNIT_ASSERT_EQUAL(Locale("ger"sv, LocaleFormat::ISO_639_2_B), track->locale());
                 CPPUNIT_ASSERT_EQUAL("the name"s, track->name());
                 CPPUNIT_ASSERT(track->isEnabled());
                 CPPUNIT_ASSERT(track->isForced());
@@ -245,7 +245,7 @@ void OverallTests::checkMkvTestfile5()
         case 3554194305:
             CPPUNIT_ASSERT_EQUAL(MediaType::Text, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::TextSubtitle, track->format().general);
-            CPPUNIT_ASSERT_EQUAL("ger"s, track->language());
+            CPPUNIT_ASSERT_EQUAL(Locale("ger"sv, LocaleFormat::ISO_639_2_B), track->locale());
             break;
         default:;
         }
@@ -599,7 +599,7 @@ void OverallTests::setMkvTestMetaData()
         // also change language, name, forced and default of track "3171450505" to German
         MatroskaTrack *track = container->trackById(3171450505);
         CPPUNIT_ASSERT(track);
-        track->setLanguage("ger");
+        track->setLocale(Locale("ger"sv, LocaleFormat::ISO_639_2_B));
         track->setName("the name");
         track->setDefault(true);
         track->setEnabled(true);

@@ -3,7 +3,7 @@
 #include "./backuphelper.h"
 #include "./diagnostics.h"
 #include "./exceptions.h"
-#include "./language.h"
+#include "./locale.h"
 #include "./progressfeedback.h"
 #include "./signature.h"
 #include "./tag.h"
@@ -914,13 +914,18 @@ unordered_set<string> MediaFileInfo::availableLanguages(MediaType type) const
     unordered_set<string> res;
     if (m_container) {
         for (size_t i = 0, count = m_container->trackCount(); i != count; ++i) {
-            const AbstractTrack *track = m_container->track(i);
-            if ((type == MediaType::Unknown || track->mediaType() == type) && isLanguageDefined(track->language())) {
-                res.emplace(track->language());
+            const AbstractTrack *const track = m_container->track(i);
+            if (type != MediaType::Unknown && track->mediaType() != type) {
+                continue;
+            }
+            if (const auto &language = track->locale().someAbbreviatedName(); !language.empty()) {
+                res.emplace(language);
             }
         }
-    } else if (m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type) && isLanguageDefined(m_singleTrack->language())) {
-        res.emplace(m_singleTrack->language());
+    } else if (m_singleTrack && (type == MediaType::Unknown || m_singleTrack->mediaType() == type)) {
+        if (const auto &language = m_singleTrack->locale().someAbbreviatedName(); !language.empty()) {
+            res.emplace(language);
+        }
     }
     return res;
 }

@@ -99,15 +99,13 @@ void MatroskaChapter::internalParse(Diagnostics &diag)
                     }
                     break;
                 case MatroskaIds::ChapLanguage:
-                    m_names.back().languages().emplace_back(chapterDisplayElement->readString());
+                    m_names.back().locale().emplace_back(chapterDisplayElement->readString(), LocaleFormat::ISO_639_2_B);
                     break;
                 case MatroskaIds::ChapLanguageIETF:
-                    diag.emplace_back(DiagLevel::Warning,
-                        "\"ChapterDisplay\"-element contains a \"ChapLanguageIETF\"-element which is not supported yet. It will be ignored.",
-                        context);
+                    m_names.back().locale().emplace_back(chapterDisplayElement->readString(), LocaleFormat::BCP_47);
                     break;
                 case MatroskaIds::ChapCountry:
-                    m_names.back().countries().emplace_back(chapterDisplayElement->readString());
+                    m_names.back().locale().emplace_back(chapterDisplayElement->readString(), LocaleFormat::DomainCountry);
                     break;
                 }
             }
@@ -124,8 +122,8 @@ void MatroskaChapter::internalParse(Diagnostics &diag)
     }
     // "eng" is default language
     for (LocaleAwareString &name : m_names) {
-        if (name.languages().empty()) {
-            name.languages().emplace_back("eng");
+        if (name.locale().empty()) {
+            name.locale().emplace_back("eng"sv, LocaleFormat::ISO_639_2_B);
         }
     }
 }

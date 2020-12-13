@@ -182,7 +182,7 @@ void MediaFileInfoTests::testFullParseAndFurtherProperties()
     CPPUNIT_ASSERT_EQUAL(DiagLevel::Critical, diag.level());
 
     // track info / available languages
-    file.tracks().back()->setLanguage("eng");
+    file.tracks().back()->setLocale(Locale("eng"sv, LocaleFormat::ISO_639_2_B));
     CPPUNIT_ASSERT_EQUAL(unordered_set<string>({ "eng" }), file.availableLanguages());
     CPPUNIT_ASSERT_EQUAL(unordered_set<string>({}), file.availableLanguages(MediaType::Text));
     CPPUNIT_ASSERT_EQUAL("ID: 2422994868, type: Video"s, file.tracks()[0]->label());

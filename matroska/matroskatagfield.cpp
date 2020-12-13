@@ -87,13 +87,13 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
             }
             break;
         case MatroskaIds::TagLanguage:
-            if (!tagLanguageFound && !tagLanguageIETFFound) {
+            if (!tagLanguageFound) {
                 tagLanguageFound = true;
-                string lng = child->readString();
-                if (lng != "und") {
-                    value().setLanguage(lng);
+                auto language = child->readString();
+                if (language != "und") {
+                    value().locale().emplace_back(std::move(language), LocaleFormat::ISO_639_2_B);
                 }
-            } else if (tagLanguageFound) {
+            } else {
                 diag.emplace_back(DiagLevel::Warning,
                     "\"SimpleTag\"-element contains multiple \"TagLanguage\"-elements. Surplus \"TagLanguage\"-elements will be ignored.", context);
             }
@@ -101,10 +101,7 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
         case MatroskaIds::TagLanguageIETF:
             if (!tagLanguageIETFFound) {
                 tagLanguageIETFFound = true;
-                diag.emplace_back(DiagLevel::Warning,
-                    "\"SimpleTag\"-element contains a \"TagLanguageIETF\"-element. That's not supported at this point. The element will be dropped "
-                    "when applying changes.",
-                    context);
+                value().locale().emplace_back(child->readString(), LocaleFormat::BCP_47);
             } else {
                 diag.emplace_back(DiagLevel::Warning,
                     "\"SimpleTag\"-element contains multiple \"TagLanguageIETF\"-elements. Surplus \"TagLanguageIETF\"-elements will be ignored.",
@@ -192,6 +189,8 @@ void MatroskaTagField::make(ostream &stream, Diagnostics &diag)
  */
 MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostics &diag)
     : m_field(field)
+    , m_language(m_field.value().locale().abbreviatedName(LocaleFormat::ISO_639_2_B, LocaleFormat::Unknown))
+    , m_languageIETF(m_field.value().locale().abbreviatedName(LocaleFormat::BCP_47))
     , m_isBinary(false)
 {
     try {
@@ -203,23 +202,29 @@ MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostic
             "making Matroska \"SimpleTag\" element.");
         m_isBinary = true;
     }
-    size_t languageSize = m_field.value().language().size();
-    if (!languageSize) {
-        languageSize = 3; // if there's no language set, the 3 byte long value "und" is used
-    }
+
+    // compute size of the mandatory "TagLanguage" element (if there's no language set, the 3 byte long value "und" is used)
+    const auto languageSize = m_language.empty() ? 3 : m_language.size();
+    const auto languageElementSize = 2 + EbmlElement::calculateSizeDenotationLength(languageSize) + languageSize;
+    // compute size of the optional "TagLanguageIETF" element
+    const auto languageIETFElementSize
+        = m_languageIETF.empty() ? 0 : (2 + EbmlElement::calculateSizeDenotationLength(m_languageIETF.size()) + m_languageIETF.size());
+
+    // compute "SimpleTag" element size
     m_simpleTagSize =
         // "TagName" element
         +2 + EbmlElement::calculateSizeDenotationLength(m_field.id().size())
         + m_field.id().size()
-        // "TagLanguage" element
-        + 2 + EbmlElement::calculateSizeDenotationLength(languageSize)
-        + languageSize
+        // language elements
+        + languageElementSize
+        + languageIETFElementSize
         // "TagDefault" element
         + 2 + 1
         + 1
         // "TagString" element
         + 2 + EbmlElement::calculateSizeDenotationLength(m_stringValue.size()) + m_stringValue.size();
-    // nested tags
+
+    // compute size of nested tags
     for (auto &nestedField : field.nestedFields()) {
         m_nestedMaker.emplace_back(nestedField.prepareMaking(diag));
         m_simpleTagSize += m_nestedMaker.back().m_totalSize;
@@ -238,30 +243,37 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
 {
     BinaryWriter writer(&stream);
     char buff[8];
-    // write header of "SimpleTag" element
+    // write "SimpleTag" element
     writer.writeUInt16BE(MatroskaIds::SimpleTag);
     std::uint8_t sizeDenotationLen = EbmlElement::makeSizeDenotation(m_simpleTagSize, buff);
     stream.write(buff, sizeDenotationLen);
-    // write header of "TagName" element
+    // write "TagName" element
     writer.writeUInt16BE(MatroskaIds::TagName);
     sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.id().size(), buff);
     stream.write(buff, sizeDenotationLen);
     stream.write(m_field.id().c_str(), m_field.id().size());
-    // write header of "TagLanguage" element
+    // write "TagLanguage" element
     writer.writeUInt16BE(MatroskaIds::TagLanguage);
-    if (m_field.value().language().empty()) {
+    if (m_language.empty()) {
         stream.put(static_cast<ostream::char_type>(0x80 | 3));
         stream.write("und", 3);
     } else {
-        sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.value().language().size(), buff);
+        sizeDenotationLen = EbmlElement::makeSizeDenotation(m_language.size(), buff);
         stream.write(buff, sizeDenotationLen);
-        stream.write(m_field.value().language().c_str(), m_field.value().language().size());
+        stream.write(m_language.data(), m_language.size());
     }
-    // write header of "TagDefault" element
+    // write "TagLanguageIETF" element
+    if (!m_languageIETF.empty()) {
+        writer.writeUInt16BE(MatroskaIds::TagLanguageIETF);
+        sizeDenotationLen = EbmlElement::makeSizeDenotation(m_languageIETF.size(), buff);
+        stream.write(buff, sizeDenotationLen);
+        stream.write(m_languageIETF.data(), m_languageIETF.size());
+    }
+    // write "TagDefault" element
     writer.writeUInt16BE(MatroskaIds::TagDefault);
     stream.put(static_cast<ostream::char_type>(0x80 | 1));
     stream.put(m_field.isDefault() ? 1 : 0);
-    // write header of "TagString"/"TagBinary" element
+    // write "TagString"/"TagBinary" element
     if (m_isBinary) {
         writer.writeUInt16BE(MatroskaIds::TagBinary);
         sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.value().dataSize(), buff);

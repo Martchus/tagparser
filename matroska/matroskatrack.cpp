@@ -409,11 +409,10 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
             m_name = trackInfoElement->readString();
             break;
         case MatroskaIds::TrackLanguage:
-            m_language = trackInfoElement->readString();
+            m_locale.emplace_back(trackInfoElement->readString(), LocaleFormat::ISO_639_2_B);
             break;
         case MatroskaIds::TrackLanguageIETF:
-            diag.emplace_back(DiagLevel::Warning,
-                "\"TrackEntry\"-element contains a \"LanguageIETF\"-element which is not supported yet. It will be ignored.", context);
+            m_locale.emplace_back(trackInfoElement->readString(), LocaleFormat::BCP_47);
             break;
         case MatroskaIds::CodecID:
             m_format = codecIdToMediaFormat(m_formatId = trackInfoElement->readString());
@@ -539,8 +538,8 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
     }
 
     // set English if no language has been specified (it is default value of MatroskaIds::TrackLanguage)
-    if (m_language.empty()) {
-        m_language = "eng";
+    if (m_locale.empty()) {
+        m_locale.emplace_back("eng"sv, LocaleFormat::ISO_639_2_B);
     }
 }
 
@@ -557,6 +556,8 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
  */
 MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag)
     : m_track(track)
+    , m_language(m_track.locale().abbreviatedName(LocaleFormat::ISO_639_2_B, LocaleFormat::Unknown))
+    , m_languageIETF(m_track.locale().abbreviatedName(LocaleFormat::BCP_47))
     , m_dataSize(0)
 {
     CPP_UTILITIES_UNUSED(diag);
@@ -570,9 +571,14 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
     if (!m_track.name().empty()) {
         m_dataSize += 2 + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
     }
-    if (!m_track.language().empty()) {
-        m_dataSize += 3 + EbmlElement::calculateSizeDenotationLength(m_track.language().size()) + m_track.language().size();
-    }
+
+    // compute size of the mandatory "Language" element (if there's no language set, the 3 byte long value "und" is used)
+    const auto languageSize = m_language.empty() ? 3 : m_language.size();
+    const auto languageElementSize = 3 + EbmlElement::calculateSizeDenotationLength(languageSize) + languageSize;
+    // compute size of the optional "LanguageIETF" element
+    const auto languageIETFElementSize
+        = m_languageIETF.empty() ? 0 : (3 + EbmlElement::calculateSizeDenotationLength(m_languageIETF.size()) + m_languageIETF.size());
+    m_dataSize += languageElementSize + languageIETFElementSize;
 
     // calculate size for other elements
     for (EbmlElement *trackInfoElement = m_track.m_trackElement->firstChild(); trackInfoElement; trackInfoElement = trackInfoElement->nextSibling()) {
@@ -581,6 +587,7 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
         case MatroskaIds::TrackUID:
         case MatroskaIds::TrackName:
         case MatroskaIds::TrackLanguage:
+        case MatroskaIds::TrackLanguageIETF:
         case MatroskaIds::TrackFlagEnabled:
         case MatroskaIds::TrackFlagDefault:
         case MatroskaIds::TrackFlagForced:
@@ -619,8 +626,9 @@ void MatroskaTrackHeaderMaker::make(ostream &stream) const
     if (!m_track.name().empty()) {
         EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackName, m_track.name());
     }
-    if (!m_track.language().empty()) {
-        EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguage, m_track.language());
+    EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguage, m_language.empty() ? "und" : m_language);
+    if (!m_languageIETF.empty()) {
+        EbmlElement::makeSimpleElement(stream, MatroskaIds::TrackLanguageIETF, m_languageIETF);
     }
 
     // make other elements

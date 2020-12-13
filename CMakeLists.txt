@@ -47,7 +47,7 @@ set(HEADER_FILES
     id3/id3v2tag.h
     ivf/ivfframe.h
     ivf/ivfstream.h
-    language.h
+    localehelper.h
     localeawarestring.h
     margin.h
     matroska/ebmlelement.h
@@ -122,7 +122,7 @@ set(SRC_FILES
     id3/id3v2tag.cpp
     ivf/ivfframe.cpp
     ivf/ivfstream.cpp
-    language.cpp
+    localehelper.cpp
     localeawarestring.cpp
     matroska/ebmlelement.cpp
     matroska/matroskaattachment.cpp
