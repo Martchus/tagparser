@@ -111,8 +111,8 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 } catch (const Failure &) {
                     // tag id is unknown, it is not possible to validate parsed data type
                 }
-                m_countryIndicator = reader.readUInt16BE();
-                m_langIndicator = reader.readUInt16BE();
+                m_countryIndicator = reader.readUInt16BE(); // FIXME: use locale within the tag value
+                m_langIndicator = reader.readUInt16BE(); // FIXME: use locale within the tag value
                 switch (m_parsedRawDataType) {
                 case RawDataType::Utf8:
                 case RawDataType::Utf16:
@@ -596,8 +596,8 @@ void Mp4TagFieldMaker::make(ostream &stream)
         m_writer.writeUInt32BE(Mp4AtomIds::Data); // id of data atom
         m_writer.writeByte(0); // version
         m_writer.writeUInt24BE(m_rawDataType);
-        m_writer.writeUInt16BE(m_field.countryIndicator());
-        m_writer.writeUInt16BE(m_field.languageIndicator());
+        m_writer.writeUInt16BE(m_field.countryIndicator()); // FIXME: use locale within the tag value
+        m_writer.writeUInt16BE(m_field.languageIndicator()); // FIXME: use locale within the tag value
         if (m_convertedData.tellp()) {
             // write converted data
             stream << m_convertedData.rdbuf();

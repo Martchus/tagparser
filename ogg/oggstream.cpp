@@ -283,7 +283,6 @@ void OggStream::internalParseHeader(Diagnostics &diag)
         // calculate duration from stream size and bitrate, assuming 1 % overhead
         m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bitrate * 125.0) * 1.1);
     }
-    m_headerValid = true;
 }
 
 void OggStream::calculateDurationViaSampleCount(std::uint16_t preSkip)

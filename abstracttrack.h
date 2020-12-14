@@ -11,6 +11,7 @@
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
+#include <c++utilities/misc/flagenumclass.h>
 
 #include <iosfwd>
 #include <string>
@@ -36,6 +37,28 @@ enum class TrackType {
     IvfStream, /**< The track is a TagParser::IvfStream. */
 };
 
+/*!
+ * \brief The TrackFlags enum specifies miscellaneous boolean properties of a track.
+ */
+enum class TrackFlags : std::uint64_t {
+    None = 0, /**< No flags present */
+    HeaderValid = (1 << 0), /**< The track header is valid. Set by AbstractTrack::parseHeader() on success. */
+    Enabled = (1 << 2), /**< The track is marked as enabled. */
+    Default = (1 << 3), /**< The track is marked as default. */
+    Forced = (1 << 4), /**< The track is marked as forced. */
+    Lacing = (1 << 5), /**< The track has lacing. */
+    Encrypted = (1 << 6), /**< The track is encrypted. */
+    UsedInPresentation = (1 << 7), /**< The track is supposed to be used in presentation. */
+    UsedWhenPreviewing = (1 << 8), /**< The track is supposed to be used when previewing. */
+    Interlaced = (1 << 9), /**< The video is interlaced. */
+};
+
+} // namespace TagParser
+
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::TrackFlags)
+
+namespace TagParser {
+
 class TAG_PARSER_EXPORT AbstractTrack {
     friend class MpegAudioFrameStream;
     friend class WaveAudioStream;
@@ -52,6 +75,7 @@ public:
     CppUtilities::BinaryReader &reader();
     CppUtilities::BinaryWriter &writer();
     std::uint64_t startOffset() const;
+    TrackFlags flags() const;
     MediaFormat format() const;
     double version() const;
     const char *formatName() const;
@@ -121,7 +145,7 @@ protected:
     CppUtilities::BinaryReader m_reader;
     CppUtilities::BinaryWriter m_writer;
     std::uint64_t m_startOffset;
-    bool m_headerValid;
+    TrackFlags m_flags;
     MediaFormat m_format;
     std::string m_formatId;
     std::string m_formatName;
@@ -155,15 +179,7 @@ protected:
     std::uint32_t m_fps;
     const char *m_chromaFormat;
     AspectRatio m_pixelAspectRatio;
-    bool m_interlaced;
     std::uint32_t m_timeScale;
-    bool m_enabled;
-    bool m_default;
-    bool m_forced;
-    bool m_lacing;
-    bool m_encrypted;
-    bool m_usedInPresentation;
-    bool m_usedWhenPreviewing;
     std::uint32_t m_colorSpace;
     Margin m_cropping;
 
@@ -245,6 +261,15 @@ inline TrackType AbstractTrack::type() const
 inline std::uint64_t AbstractTrack::startOffset() const
 {
     return m_startOffset;
+}
+
+/*!
+ * \brief Returns flags (various boolean properties) of this track.
+ * \sa TrackFlags
+ */
+inline TrackFlags AbstractTrack::flags() const
+{
+    return m_flags;
 }
 
 /*!
@@ -576,13 +601,13 @@ inline const AspectRatio &AbstractTrack::pixelAspectRatio() const
 }
 
 /*!
- * \brief Returns true if the video is denoted as interlaced; otherwise returns false.
+ * \brief Returns true if the video is interlaced; otherwise returns false.
  *
  * This value only makes sense for video tracks.
  */
 inline bool AbstractTrack::isInterlaced() const
 {
-    return m_interlaced;
+    return m_flags & TrackFlags::Interlaced;
 }
 
 /*!

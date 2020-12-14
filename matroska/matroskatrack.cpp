@@ -361,7 +361,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
                     m_fps = subElement->readFloat();
                     break;
                 case MatroskaIds::FlagInterlaced:
-                    m_interlaced = subElement->readUInteger();
+                    modFlagEnum(m_flags, TrackFlags::Interlaced, subElement->readUInteger());
                     break;
                 case MatroskaIds::ColorSpace:
                     m_colorSpace = subElement->readUInteger();
@@ -424,16 +424,16 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag)
         case MatroskaIds::CodecDelay:
             break; // TODO
         case MatroskaIds::TrackFlagEnabled:
-            m_enabled = trackInfoElement->readUInteger();
+            modFlagEnum(m_flags, TrackFlags::Enabled, trackInfoElement->readUInteger());
             break;
         case MatroskaIds::TrackFlagDefault:
-            m_default = trackInfoElement->readUInteger();
+            modFlagEnum(m_flags, TrackFlags::Default, trackInfoElement->readUInteger());
             break;
         case MatroskaIds::TrackFlagForced:
-            m_forced = trackInfoElement->readUInteger();
+            modFlagEnum(m_flags, TrackFlags::Forced, trackInfoElement->readUInteger());
             break;
         case MatroskaIds::TrackFlagLacing:
-            m_lacing = trackInfoElement->readUInteger();
+            modFlagEnum(m_flags, TrackFlags::Lacing, trackInfoElement->readUInteger());
             break;
         case MatroskaIds::DefaultDuration:
             defaultDuration = trackInfoElement->readUInteger();

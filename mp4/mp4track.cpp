@@ -1203,13 +1203,13 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     // make version and flags
     writer().writeByte(version);
     std::uint32_t flags = 0;
-    if (m_enabled) {
+    if (isEnabled()) {
         flags |= 0x000001;
     }
-    if (m_usedInPresentation) {
+    if (m_flags & TrackFlags::UsedInPresentation) {
         flags |= 0x000002;
     }
-    if (m_usedWhenPreviewing) {
+    if (m_flags & TrackFlags::UsedWhenPreviewing) {
         flags |= 0x000004;
     }
     writer().writeUInt24BE(flags);
@@ -1533,9 +1533,9 @@ void Mp4Track::internalParseHeader(Diagnostics &diag)
     m_istream->seekg(static_cast<streamoff>(m_tkhdAtom->startOffset() + 8)); // seek to beg, skip size and name
     auto atomVersion = reader.readByte(); // read version
     const auto flags = reader.readUInt24BE();
-    m_enabled = flags & 0x000001;
-    m_usedInPresentation = flags & 0x000002;
-    m_usedWhenPreviewing = flags & 0x000004;
+    modFlagEnum(m_flags, TrackFlags::Enabled, flags & 0x000001);
+    modFlagEnum(m_flags, TrackFlags::UsedInPresentation, flags & 0x000002);
+    modFlagEnum(m_flags, TrackFlags::UsedWhenPreviewing, flags & 0x000004);
     switch (atomVersion) {
     case 0:
         m_creationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());

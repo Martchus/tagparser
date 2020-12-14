@@ -34,7 +34,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, std::u
     , m_reader(BinaryReader(&inputStream))
     , m_writer(BinaryWriter(&outputStream))
     , m_startOffset(startOffset)
-    , m_headerValid(false)
+    , m_flags(TrackFlags::Enabled | TrackFlags::UsedInPresentation | TrackFlags::UsedWhenPreviewing)
     , m_format()
     , m_mediaType(MediaType::Unknown)
     , m_version(0.0)
@@ -55,15 +55,7 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, std::u
     , m_depth(0)
     , m_fps(0)
     , m_chromaFormat(nullptr)
-    , m_interlaced(false)
     , m_timeScale(0)
-    , m_enabled(true)
-    , m_default(false)
-    , m_forced(false)
-    , m_lacing(false)
-    , m_encrypted(false)
-    , m_usedInPresentation(true)
-    , m_usedWhenPreviewing(true)
     , m_colorSpace(0)
 {
 }
@@ -244,12 +236,12 @@ string AbstractTrack::shortDescription() const
  */
 void AbstractTrack::parseHeader(Diagnostics &diag)
 {
-    m_headerValid = false;
+    m_flags -= TrackFlags::HeaderValid;
     m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     try {
         internalParseHeader(diag);
-        m_headerValid = true;
-    } catch (Failure &) {
+        m_flags += TrackFlags::HeaderValid;
+    } catch (const Failure &) {
         throw;
     }
 }

@@ -667,7 +667,7 @@ inline bool TagValue::isLabeledAsReadonly() const
  */
 inline void TagValue::setReadonly(bool readOnly)
 {
-    readOnly ? (m_flags += TagValueFlags::ReadOnly) : (m_flags -= TagValueFlags::ReadOnly);
+    CppUtilities::modFlagEnum(m_flags, TagValueFlags::ReadOnly, readOnly);
 }
 
 /*!
