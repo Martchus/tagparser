@@ -89,7 +89,7 @@ std::vector<const TagValue *> Id3v2Tag::internallyGetValues(const IdentifierType
 /*!
  * \brief Uses default implementation for non-text frames and applies special handling to text frames.
  *
- * - Ensure text frames are unique
+ * - Ensure text frames are unique.
  * - Allow to store multiple values inside the same text frame.
  */
 bool Id3v2Tag::internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values)

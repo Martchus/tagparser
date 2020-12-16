@@ -22,7 +22,7 @@ class WaveAudioStream;
 class Mp4Track;
 
 /*!
- * \brief Specifies the track type.
+ * \brief The TrackType enum specifies the underlying file type of a track and the concrete class of the track object.
  */
 enum class TrackType {
     Unspecified, /**< The track type is not specified. */
