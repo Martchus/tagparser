@@ -48,7 +48,7 @@ constexpr std::uint32_t WaveFormatHeader::bitrate() const
     return bitsPerSample * sampleRate * channelCount;
 }
 
-class TAG_PARSER_EXPORT WaveAudioStream : public AbstractTrack {
+class TAG_PARSER_EXPORT WaveAudioStream final : public AbstractTrack {
 public:
     WaveAudioStream(std::iostream &stream, std::uint64_t startOffset);
     ~WaveAudioStream() override;

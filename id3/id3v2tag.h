@@ -58,7 +58,7 @@ public:
     using Compare = FrameComparer;
 };
 
-class TAG_PARSER_EXPORT Id3v2Tag : public FieldMapBasedTag<Id3v2Tag> {
+class TAG_PARSER_EXPORT Id3v2Tag final : public FieldMapBasedTag<Id3v2Tag> {
     friend class FieldMapBasedTag<Id3v2Tag>;
     friend class Id3v2TagMaker;
 

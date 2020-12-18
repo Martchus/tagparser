@@ -10,7 +10,7 @@ namespace TagParser {
 class OggContainer;
 class OggIterator;
 
-class TAG_PARSER_EXPORT OggStream : public AbstractTrack {
+class TAG_PARSER_EXPORT OggStream final : public AbstractTrack {
     friend class OggContainer;
 
 public:

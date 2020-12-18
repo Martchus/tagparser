@@ -7,7 +7,7 @@
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT AdtsStream : public AbstractTrack {
+class TAG_PARSER_EXPORT AdtsStream final : public AbstractTrack {
 public:
     AdtsStream(std::iostream &stream, std::uint64_t startOffset);
     ~AdtsStream() override;

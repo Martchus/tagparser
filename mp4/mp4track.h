@@ -115,7 +115,7 @@ inline bool Mpeg4ElementaryStreamInfo::upstream() const
     return decCfgDescFlags & 0x02;
 }
 
-class TAG_PARSER_EXPORT Mp4Track : public AbstractTrack {
+class TAG_PARSER_EXPORT Mp4Track final : public AbstractTrack {
 public:
     Mp4Track(Mp4Atom &trakAtom);
     ~Mp4Track() override;

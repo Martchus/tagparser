@@ -7,7 +7,7 @@ namespace TagParser {
 
 class Diagnostics;
 
-class TAG_PARSER_EXPORT Id3v1Tag : public Tag {
+class TAG_PARSER_EXPORT Id3v1Tag final : public Tag {
 public:
     Id3v1Tag();
 

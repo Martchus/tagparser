@@ -94,7 +94,7 @@ public:
     using Compare = std::less<typename FieldType::IdentifierType>;
 };
 
-class TAG_PARSER_EXPORT Mp4Tag : public FieldMapBasedTag<Mp4Tag> {
+class TAG_PARSER_EXPORT Mp4Tag final : public FieldMapBasedTag<Mp4Tag> {
     friend class FieldMapBasedTag<Mp4Tag>;
 
 public:

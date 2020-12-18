@@ -55,7 +55,7 @@ public:
     using Compare = std::less<typename FieldType::IdentifierType>;
 };
 
-class TAG_PARSER_EXPORT MatroskaTag : public FieldMapBasedTag<MatroskaTag> {
+class TAG_PARSER_EXPORT MatroskaTag final : public FieldMapBasedTag<MatroskaTag> {
     friend class FieldMapBasedTag<MatroskaTag>;
 
 public:

@@ -7,7 +7,7 @@
 
 namespace TagParser {
 
-class TAG_PARSER_EXPORT IvfStream : public AbstractTrack {
+class TAG_PARSER_EXPORT IvfStream final : public AbstractTrack {
 public:
     IvfStream(std::iostream &stream, std::uint64_t startOffset);
     ~IvfStream() override;

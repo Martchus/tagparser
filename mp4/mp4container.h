@@ -15,7 +15,7 @@ namespace TagParser {
 
 class MediaFileInfo;
 
-class TAG_PARSER_EXPORT Mp4Container : public GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom> {
+class TAG_PARSER_EXPORT Mp4Container final : public GenericContainer<MediaFileInfo, Mp4Tag, Mp4Track, Mp4Atom> {
 public:
     Mp4Container(MediaFileInfo &fileInfo, std::uint64_t startOffset);
     ~Mp4Container() override;

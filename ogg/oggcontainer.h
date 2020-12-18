@@ -64,7 +64,7 @@ inline void OggParameter::set(std::size_t pageIndex, std::size_t segmentIndex, b
     this->streamFormat = streamFormat;
 }
 
-class TAG_PARSER_EXPORT OggVorbisComment : public VorbisComment {
+class TAG_PARSER_EXPORT OggVorbisComment final : public VorbisComment {
     friend class OggContainer;
 
 public:
@@ -126,7 +126,7 @@ inline const OggParameter &OggVorbisComment::oggParams() const
     return m_oggParams;
 }
 
-class TAG_PARSER_EXPORT OggContainer : public GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage> {
+class TAG_PARSER_EXPORT OggContainer final : public GenericContainer<MediaFileInfo, OggVorbisComment, OggStream, OggPage> {
     friend class OggStream;
 
 public:

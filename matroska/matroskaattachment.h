@@ -41,7 +41,7 @@ inline std::uint64_t MatroskaAttachmentMaker::requiredSize() const
     return m_totalSize;
 }
 
-class TAG_PARSER_EXPORT MatroskaAttachment : public AbstractAttachment {
+class TAG_PARSER_EXPORT MatroskaAttachment final : public AbstractAttachment {
 public:
     MatroskaAttachment();
 

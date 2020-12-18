@@ -21,7 +21,7 @@ class MatroskaEditionEntry;
 
 class MediaFileInfo;
 
-class TAG_PARSER_EXPORT MatroskaContainer : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement> {
+class TAG_PARSER_EXPORT MatroskaContainer final : public GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement> {
 public:
     MatroskaContainer(MediaFileInfo &stream, std::uint64_t startOffset);
     ~MatroskaContainer() override;
