@@ -30,10 +30,13 @@ inline static bool isLanguageDefined_ISO_639_2(const std::string &languageSpecif
  */
 static const std::string &languageName_ISO_639_2(const std::string &isoCode)
 {
+    static const std::string empty;
+    if (!isLanguageDefined_ISO_639_2(isoCode)) {
+        return empty;
+    }
     const auto &mapping = languageNames_ISO_639_2_b();
     const auto i = mapping.find(isoCode);
     if (i == mapping.cend()) {
-        static const std::string empty;
         return empty;
     }
     return i->second;
