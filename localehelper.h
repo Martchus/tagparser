@@ -11,17 +11,6 @@
 
 namespace TagParser {
 
-/*!
- * \brief Returns whether an ISO-639-2 \a languageSpecification is not empty or undefined.
- */
-inline bool isLanguageDefined(const std::string &languageSpecification)
-{
-    return !languageSpecification.empty() && languageSpecification != "und" && languageSpecification != "XXX";
-}
-
-TAG_PARSER_EXPORT const std::string &languageNameFromIso(const std::string &isoCode);
-TAG_PARSER_EXPORT const std::string &languageNameFromIsoWithFallback(const std::string &isoCode);
-
 /// \brief The LocaleFormat enum class specifies the format used by a LocaleDetail.
 enum class LocaleFormat : std::uint64_t {
     Unknown, /**< the format is unknown */

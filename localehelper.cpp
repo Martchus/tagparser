@@ -17,30 +17,24 @@ static const auto &languageMapping()
 /// \endcond
 
 /*!
+ * \brief Returns whether an ISO-639-2 \a languageSpecification is not empty or undefined.
+ */
+inline static bool isLanguageDefined_ISO_639_2(const std::string &languageSpecification)
+{
+    return !languageSpecification.empty() && languageSpecification != "und" && languageSpecification != "XXX";
+}
+
+/*!
  * \brief Returns the language name for the specified ISO-639-2 code (bibliographic, 639-2/B).
  * \remarks If \a isoCode is unknown an empty string is returned.
  */
-const std::string &languageNameFromIso(const std::string &isoCode)
+static const std::string &languageName_ISO_639_2(const std::string &isoCode)
 {
     const auto &mapping = languageMapping();
     const auto i = mapping.find(isoCode);
     if (i == mapping.cend()) {
         static const std::string empty;
         return empty;
-    }
-    return i->second;
-}
-
-/*!
- * \brief Returns the language name for the specified ISO-639-2 code (bibliographic, 639-2/B).
- * \remarks If \a isoCode is unknown the \a isoCode itself is returned.
- */
-const std::string &languageNameFromIsoWithFallback(const std::string &isoCode)
-{
-    const auto &mapping = languageMapping();
-    const auto i = mapping.find(isoCode);
-    if (i == mapping.cend()) {
-        return isoCode;
     }
     return i->second;
 }
@@ -65,7 +59,7 @@ const LocaleDetail &LocaleDetail::getEmpty()
 const LocaleDetail &Locale::abbreviatedName(LocaleFormat format) const
 {
     for (const auto &detail : *this) {
-        if (!detail.empty() && detail.format == format && isLanguageDefined(detail)) {
+        if (!detail.empty() && detail.format == format && isLanguageDefined_ISO_639_2(detail)) {
             return detail;
         }
     }
@@ -99,7 +93,7 @@ const LocaleDetail &Locale::someAbbreviatedName(LocaleFormat preferredFormat) co
             mostRelevantDetail = &detail;
         }
     }
-    if (!mostRelevantDetail || !isLanguageDefined(*mostRelevantDetail)) {
+    if (!mostRelevantDetail || !isLanguageDefined_ISO_639_2(*mostRelevantDetail)) {
         return LocaleDetail::getEmpty();
     }
     return *mostRelevantDetail;
@@ -114,7 +108,7 @@ const std::string &TagParser::Locale::fullName() const
 {
     for (const auto &detail : *this) {
         if (detail.format == LocaleFormat::ISO_639_2_B || detail.format == LocaleFormat::ISO_639_2_T) {
-            return languageNameFromIso(detail);
+            return languageName_ISO_639_2(detail);
         }
     }
     return LocaleDetail::getEmpty();
