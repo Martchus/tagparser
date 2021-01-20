@@ -176,8 +176,8 @@ set(TEST_SRC_FILES
     tests/testfilecheck.cpp
     tests/utils.cpp)
 set(DOC_FILES README.md doc/adding-new-fields.md)
-set(LANGUAGE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/resources/iso_language_codes.h")
-set(RES_FILES "${LANGUAGE_HEADER}")
+set(LANGUAGE_HEADER_ISO_639_2 "${CMAKE_CURRENT_BINARY_DIR}/resources/iso_language_codes.h")
+set(RES_FILES "${LANGUAGE_HEADER_ISO_639_2}")
 
 # find c++utilities
 set(CONFIGURATION_PACKAGE_SUFFIX
@@ -205,8 +205,11 @@ include(Doxygen)
 include(ConfigHeader)
 
 # add rules to generate code for dealing with language codes
+set(LANGUAGE_FILE_ISO_639_2
+    ""
+    CACHE STRING "path to JSON document from https://salsa.debian.org/iso-codes-team/iso-codes for ISO-639-2")
 add_custom_command(
-    OUTPUT "${LANGUAGE_HEADER}"
+    OUTPUT "${LANGUAGE_HEADER_ISO_639_2}"
     COMMENT "Generating code for ISO-639-2 language codes"
-    COMMAND "${CMAKE_COMMAND}" "-DOUTPUT_PATH=${LANGUAGE_HEADER}" -P
+    COMMAND "${CMAKE_COMMAND}" "-DLANGUAGE_FILE=${LANGUAGE_FILE_ISO_639_2}" "-DOUTPUT_PATH=${LANGUAGE_HEADER_ISO_639_2}" -P
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/generate_iso_language_codes.cmake")
