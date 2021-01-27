@@ -171,11 +171,11 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
  */
 bool MatroskaCuePositionUpdater::updateOffsets(std::uint64_t originalOffset, std::uint64_t newOffset)
 {
-    bool updated = false;
+    auto updated = false;
+    const auto newOffsetLength = static_cast<int>(EbmlElement::calculateUIntegerLength(newOffset));
     for (auto &offset : m_offsets) {
         if (offset.second.initialValue() == originalOffset && offset.second.currentValue() != newOffset) {
-            updated = updateSize(offset.first->parent(),
-                          static_cast<int>(EbmlElement::calculateUIntegerLength(newOffset))
+            updated = updateSize(offset.first->parent(), newOffsetLength
                               - static_cast<int>(EbmlElement::calculateUIntegerLength(offset.second.currentValue())))
                 || updated;
             offset.second.update(newOffset);
@@ -191,12 +191,12 @@ bool MatroskaCuePositionUpdater::updateOffsets(std::uint64_t originalOffset, std
 bool MatroskaCuePositionUpdater::updateRelativeOffsets(
     std::uint64_t referenceOffset, std::uint64_t originalRelativeOffset, std::uint64_t newRelativeOffset)
 {
-    bool updated = false;
+    auto updated = false;
+    const auto newRelativeOffsetLength = static_cast<int>(EbmlElement::calculateUIntegerLength(newRelativeOffset));
     for (auto &offset : m_relativeOffsets) {
         if (offset.second.referenceOffset() == referenceOffset && offset.second.initialValue() == originalRelativeOffset
             && offset.second.currentValue() != newRelativeOffset) {
-            updated = updateSize(offset.first->parent(),
-                          static_cast<int>(EbmlElement::calculateUIntegerLength(newRelativeOffset))
+            updated = updateSize(offset.first->parent(), newRelativeOffsetLength
                               - static_cast<int>(EbmlElement::calculateUIntegerLength(offset.second.currentValue())))
                 || updated;
             offset.second.update(newRelativeOffset);
@@ -212,34 +212,32 @@ bool MatroskaCuePositionUpdater::updateRelativeOffsets(
 bool MatroskaCuePositionUpdater::updateSize(EbmlElement *element, int shift)
 {
     if (!shift) {
-        // shift is gone
-        return false;
+        return false; // shift is gone
     }
     if (!element) {
         // there was no parent (shouldn't happen in a normal file structure since the Segment element should
         // be parent of the Cues element)
         return shift;
     }
-    try {
-        // get size info
-        std::uint64_t &size = m_sizes.at(element);
-        // calculate new size
-        const std::uint64_t newSize = shift > 0 ? size + static_cast<std::uint64_t>(shift) : size - static_cast<std::uint64_t>(-shift);
-        // shift parent
-        const bool updated = updateSize(element->parent(),
-            shift + static_cast<int>(EbmlElement::calculateSizeDenotationLength(newSize))
-                - static_cast<int>(EbmlElement::calculateSizeDenotationLength(size)));
-        // apply new size
-        size = newSize;
-        return updated;
-    } catch (const out_of_range &) {
-        // the element is out of the scope of the cue position updater (likely the Segment element)
-        return shift;
+    // get size info
+    const auto sizeIterator = m_sizes.find(element);
+    if (sizeIterator == m_sizes.end()) {
+        return shift; // the element is out of the scope of the cue position updater (likely the Segment element)
     }
+    std::uint64_t &size = sizeIterator->second;
+    // calculate new size
+    const std::uint64_t newSize = shift > 0 ? size + static_cast<std::uint64_t>(shift) : size - static_cast<std::uint64_t>(-shift);
+    // shift parent
+    const bool updated = updateSize(element->parent(),
+        shift + static_cast<int>(EbmlElement::calculateSizeDenotationLength(newSize))
+            - static_cast<int>(EbmlElement::calculateSizeDenotationLength(size)));
+    // apply new size
+    size = newSize;
+    return updated;
 }
 
 /*!
- * \brief Writes the previously parsed "Cues"-element with updates positions to the specified \a stream.
+ * \brief Writes the previously parsed "Cues"-element with updated positions to the specified \a stream.
  */
 void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
 {
@@ -279,7 +277,6 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                         // write "CueTime"-element
                         cuePointChild->copyBuffer(stream);
                         cuePointChild->discardBuffer();
-                        //cuePointChild->copyEntirely(stream);
                         break;
                     case MatroskaIds::CueTrackPositions:
                         // write "CueTrackPositions"-element
@@ -296,16 +293,14 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                                 // write unchanged children of "CueTrackPositions"-element
                                 cueTrackPositionsChild->copyBuffer(stream);
                                 cueTrackPositionsChild->discardBuffer();
-                                //cueTrackPositionsChild->copyEntirely(stream);
                                 break;
                             case MatroskaIds::CueRelativePosition:
-                                try {
-                                    EbmlElement::makeSimpleElement(
-                                        stream, cueTrackPositionsChild->id(), m_relativeOffsets.at(cueTrackPositionsChild).currentValue());
-                                } catch (const out_of_range &) {
-                                    // we were not able parse the relative offset because the absolute offset is missing
-                                    // continue anyways
+                                if (const auto relativeOffset = m_relativeOffsets.find(cueTrackPositionsChild);
+                                    relativeOffset != m_relativeOffsets.end()) {
+                                    EbmlElement::makeSimpleElement(stream, cueTrackPositionsChild->id(), relativeOffset->second.currentValue());
                                 }
+                                // we were not able parse the relative offset because the absolute offset is missing
+                                // continue anyways
                                 break;
                             case MatroskaIds::CueClusterPosition:
                             case MatroskaIds::CueCodecState:
