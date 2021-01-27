@@ -75,11 +75,23 @@ public:
     void clear();
 
 private:
+    struct PairHash {
+        template <class T1, class T2> inline std::size_t operator()(const std::pair<T1, T2> &pair) const
+        {
+            std::size_t seed = 0;
+            seed ^= std::hash<T1>()(pair.first) + 0x9e3779b9;
+            seed ^= std::hash<T2>()(pair.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            return seed;
+        }
+    };
+
     bool updateSize(EbmlElement *element, int shift);
 
     EbmlElement *m_cuesElement;
     std::unordered_map<EbmlElement *, MatroskaOffsetStates> m_offsets;
+    std::unordered_multimap<std::uint64_t, EbmlElement *> m_cueElementByOriginalOffset;
     std::unordered_map<EbmlElement *, MatroskaReferenceOffsetPair> m_relativeOffsets;
+    std::unordered_multimap<std::pair<std::uint64_t, std::uint64_t>, EbmlElement *, PairHash> m_cueRelativePositionElementByOriginalOffsets;
     std::unordered_map<EbmlElement *, std::uint64_t> m_sizes;
 };
 

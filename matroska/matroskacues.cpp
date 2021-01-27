@@ -96,11 +96,13 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                             pos = (cueClusterPositionElement = cueTrackPositionsChild)->readUInteger();
                             cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(pos);
                             m_offsets.emplace(cueTrackPositionsChild, pos);
+                            m_cueElementByOriginalOffset.emplace(pos, cueTrackPositionsChild);
                             break;
                         case MatroskaIds::CueCodecState:
                             statePos = cueTrackPositionsChild->readUInteger();
                             cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(statePos);
                             m_offsets.emplace(cueTrackPositionsChild, statePos);
+                            m_cueElementByOriginalOffset.emplace(statePos, cueTrackPositionsChild);
                             break;
                         case MatroskaIds::CueReference:
                             cueReferenceElementSize = 0;
@@ -122,6 +124,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                                     statePos = cueReferenceChild->readUInteger();
                                     cueReferenceElementSize += 2 + EbmlElement::calculateUIntegerLength(statePos);
                                     m_offsets.emplace(cueReferenceChild, statePos);
+                                    m_cueElementByOriginalOffset.emplace(statePos, cueReferenceChild);
                                     break;
                                 default:
                                     diag.emplace_back(DiagLevel::Warning,
@@ -143,6 +146,8 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                     } else if (cueRelativePositionElement) {
                         cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(relPos);
                         m_relativeOffsets.emplace(piecewise_construct, forward_as_tuple(cueRelativePositionElement), forward_as_tuple(pos, relPos));
+                        m_cueRelativePositionElementByOriginalOffsets.emplace(
+                            piecewise_construct, forward_as_tuple(pos, relPos), forward_as_tuple(cueRelativePositionElement));
                     }
                     cuePointElementSize
                         += 1 + EbmlElement::calculateSizeDenotationLength(cueTrackPositionsElementSize) + cueTrackPositionsElementSize;
@@ -173,12 +178,19 @@ bool MatroskaCuePositionUpdater::updateOffsets(std::uint64_t originalOffset, std
 {
     auto updated = false;
     const auto newOffsetLength = static_cast<int>(EbmlElement::calculateUIntegerLength(newOffset));
-    for (auto &offset : m_offsets) {
-        if (offset.second.initialValue() == originalOffset && offset.second.currentValue() != newOffset) {
-            updated = updateSize(offset.first->parent(), newOffsetLength
-                              - static_cast<int>(EbmlElement::calculateUIntegerLength(offset.second.currentValue())))
+    for (auto cueElementRange = m_cueElementByOriginalOffset.equal_range(originalOffset); cueElementRange.first != cueElementRange.second;
+         ++cueElementRange.first) {
+        auto *const cueElement = cueElementRange.first->second;
+        const auto offsetIterator = m_offsets.find(cueElement);
+        if (offsetIterator == m_offsets.end()) {
+            continue;
+        }
+        auto &offset = offsetIterator->second;
+        if (offset.currentValue() != newOffset) {
+            updated
+                = updateSize(cueElement->parent(), newOffsetLength - static_cast<int>(EbmlElement::calculateUIntegerLength(offset.currentValue())))
                 || updated;
-            offset.second.update(newOffset);
+            offset.update(newOffset);
         }
     }
     return updated;
@@ -193,13 +205,19 @@ bool MatroskaCuePositionUpdater::updateRelativeOffsets(
 {
     auto updated = false;
     const auto newRelativeOffsetLength = static_cast<int>(EbmlElement::calculateUIntegerLength(newRelativeOffset));
-    for (auto &offset : m_relativeOffsets) {
-        if (offset.second.referenceOffset() == referenceOffset && offset.second.initialValue() == originalRelativeOffset
-            && offset.second.currentValue() != newRelativeOffset) {
-            updated = updateSize(offset.first->parent(), newRelativeOffsetLength
-                              - static_cast<int>(EbmlElement::calculateUIntegerLength(offset.second.currentValue())))
+    for (auto cueElementRange = m_cueRelativePositionElementByOriginalOffsets.equal_range(std::make_pair(referenceOffset, originalRelativeOffset));
+         cueElementRange.first != cueElementRange.second; ++cueElementRange.first) {
+        auto *const cueRelativePositionElement = cueElementRange.first->second;
+        const auto offsetIterator = m_relativeOffsets.find(cueRelativePositionElement);
+        if (offsetIterator == m_relativeOffsets.end()) {
+            continue;
+        }
+        auto &offset = offsetIterator->second;
+        if (offset.currentValue() != newRelativeOffset) {
+            updated = updateSize(cueRelativePositionElement->parent(),
+                          newRelativeOffsetLength - static_cast<int>(EbmlElement::calculateUIntegerLength(offset.currentValue())))
                 || updated;
-            offset.second.update(newRelativeOffset);
+            offset.update(newRelativeOffset);
         }
     }
     return updated;
