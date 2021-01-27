@@ -105,7 +105,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
         // check whether this element is actually a sibling of one of its parents rather then a child
         // (might be the case if the parent's size is unknown and hence assumed to be the max file size)
         if (m_parent && m_parent->m_sizeUnknown) {
-            // check at which level in the hierarchy the element is supposed to occour using its ID
+            // check at which level in the hierarchy the element is supposed to occur using its ID
             // (the only chance to find out whether the element belongs higher up in the hierarchy)
             const MatroskaElementLevel supposedLevel = matroskaIdLevel(m_id);
             const std::uint8_t actualLevel = level();
