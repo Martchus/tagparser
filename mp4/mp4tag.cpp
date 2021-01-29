@@ -418,8 +418,7 @@ Mp4TagMaker::Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag)
     for (auto &field : m_tag.fields()) {
         if (!field.second.value().isEmpty() && (!m_omitPreDefinedGenre || field.first != Mp4TagAtomIds::PreDefinedGenre)) {
             try {
-                m_maker.emplace_back(field.second.prepareMaking(diag));
-                m_ilstSize += m_maker.back().requiredSize();
+                m_ilstSize += m_maker.emplace_back(field.second.prepareMaking(diag)).requiredSize();
             } catch (const Failure &) {
             }
         }

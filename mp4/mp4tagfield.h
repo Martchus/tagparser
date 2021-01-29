@@ -64,18 +64,32 @@ class TAG_PARSER_EXPORT Mp4TagFieldMaker {
     friend class Mp4TagField;
 
 public:
+    Mp4TagFieldMaker(Mp4TagFieldMaker &&) = default;
     void make(std::ostream &stream);
     const Mp4TagField &field() const;
     std::uint64_t requiredSize() const;
 
 private:
+    /// \cond
+    struct Data {
+        Data();
+        Data(Data &&) = default;
+        std::string_view rawData;
+        std::stringstream convertedData;
+        std::uint64_t size = 0;
+        std::uint32_t rawType = 0;
+        std::uint16_t countryIndicator = 0;
+        std::uint16_t languageIndicator = 0;
+    };
+    /// \endcond
+
     Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag);
+    std::uint64_t prepareDataAtom(
+        const TagValue &value, std::uint16_t countryIndicator, std::uint16_t languageIndicator, const std::string &context, Diagnostics &diag);
 
     Mp4TagField &m_field;
-    std::stringstream m_convertedData;
     CppUtilities::BinaryWriter m_writer;
-    std::uint32_t m_rawDataType;
-    std::uint64_t m_dataSize;
+    std::vector<Data> m_data;
     std::uint64_t m_totalSize;
 };
 
@@ -99,6 +113,13 @@ class TAG_PARSER_EXPORT Mp4TagField : public TagField<Mp4TagField> {
     friend class TagField<Mp4TagField>;
 
 public:
+    struct AdditionalData {
+        TagValue value;
+        std::uint32_t rawDataType = 0;
+        std::uint16_t countryIndicator = 0;
+        std::uint16_t languageIndicator = 0;
+    };
+
     Mp4TagField();
     Mp4TagField(IdentifierType id, const TagValue &value);
     Mp4TagField(const std::string &mean, const std::string &name, const TagValue &value);
@@ -107,6 +128,8 @@ public:
     Mp4TagFieldMaker prepareMaking(Diagnostics &diag);
     void make(std::ostream &stream, Diagnostics &diag);
 
+    const std::vector<AdditionalData> &additionalData() const;
+    std::vector<AdditionalData> &additionalData();
     bool isAdditionalTypeInfoUsed() const;
     const std::string &name() const;
     void setName(const std::string &name);
@@ -118,6 +141,7 @@ public:
     bool supportsNestedFields() const;
     std::vector<std::uint32_t> expectedRawDataTypes() const;
     std::uint32_t appropriateRawDataType() const;
+    std::uint32_t appropriateRawDataTypeForValue(const TagValue &value) const;
 
     static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(IdentifierType id);
@@ -126,10 +150,29 @@ private:
     void reset();
     std::string m_name;
     std::string m_mean;
+    std::vector<AdditionalData> m_additionalData;
     std::uint32_t m_parsedRawDataType;
     std::uint16_t m_countryIndicator;
     std::uint16_t m_langIndicator;
 };
+
+/*!
+ * \brief Returns additional data (and the corresponding raw data type, country and language).
+ * \remarks Some files seen in the wild have multiple data atoms. This function allows to access the data from additional atoms.
+ */
+inline const std::vector<Mp4TagField::AdditionalData> &Mp4TagField::additionalData() const
+{
+    return m_additionalData;
+}
+
+/*!
+ * \brief Returns additional data (and the corresponding raw data type, country and language).
+ * \remarks Some files seen in the wild have multiple data atoms. This function allows to access the data from additional atoms.
+ */
+inline std::vector<Mp4TagField::AdditionalData> &Mp4TagField::additionalData()
+{
+    return m_additionalData;
+}
 
 /*!
  * \brief Returns whether the additional type info is used.

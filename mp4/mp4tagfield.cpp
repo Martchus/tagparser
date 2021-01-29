@@ -90,19 +90,27 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"data\" in tag atom (ilst child) found. (will be ignored)", context);
                     continue;
                 }
+                auto *val = &value();
+                auto *rawDataType = &m_parsedRawDataType;
+                auto *countryIndicator = &m_countryIndicator;
+                auto *languageIndicator = &m_langIndicator;
                 if (++dataAtomFound > 1) {
                     if (dataAtomFound == 2) {
                         diag.emplace_back(
                             DiagLevel::Warning, "Multiple \"data\" child atom in tag atom (ilst child) found. (will be ignored)", context);
                     }
-                    continue;
+                    auto &additionalData = m_additionalData.emplace_back();
+                    val = &additionalData.value;
+                    rawDataType = &additionalData.rawDataType;
+                    countryIndicator = &additionalData.countryIndicator;
+                    languageIndicator = &additionalData.languageIndicator;
                 }
                 stream.seekg(static_cast<streamoff>(dataAtom->dataOffset()));
                 if (reader.readByte() != 0) {
                     diag.emplace_back(DiagLevel::Warning,
                         "The version indicator byte is not zero, the tag atom might be unsupported and hence not be parsed correctly.", context);
                 }
-                setTypeInfo(m_parsedRawDataType = reader.readUInt24BE());
+                setTypeInfo(*rawDataType = reader.readUInt24BE());
                 try { // try to show warning if parsed raw data type differs from expected raw data type for this atom id
                     const vector<std::uint32_t> expectedRawDataTypes = this->expectedRawDataTypes();
                     if (find(expectedRawDataTypes.cbegin(), expectedRawDataTypes.cend(), m_parsedRawDataType) == expectedRawDataTypes.cend()) {
@@ -111,13 +119,13 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 } catch (const Failure &) {
                     // tag id is unknown, it is not possible to validate parsed data type
                 }
-                m_countryIndicator = reader.readUInt16BE(); // FIXME: use locale within the tag value
-                m_langIndicator = reader.readUInt16BE(); // FIXME: use locale within the tag value
-                switch (m_parsedRawDataType) {
+                *countryIndicator = reader.readUInt16BE(); // FIXME: use locale within the tag value
+                *languageIndicator = reader.readUInt16BE(); // FIXME: use locale within the tag value
+                switch (*rawDataType) {
                 case RawDataType::Utf8:
                 case RawDataType::Utf16:
                     stream.seekg(static_cast<streamoff>(dataAtom->dataOffset() + 8));
-                    value().assignText(reader.readString(dataAtom->dataSize() - 8),
+                    val->assignText(reader.readString(dataAtom->dataSize() - 8),
                         (m_parsedRawDataType == RawDataType::Utf16) ? TagTextEncoding::Utf16BigEndian : TagTextEncoding::Utf8);
                     break;
                 case RawDataType::Gif:
@@ -126,23 +134,23 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 case RawDataType::Bmp: {
                     switch (m_parsedRawDataType) {
                     case RawDataType::Gif:
-                        value().setMimeType("image/gif");
+                        val->setMimeType("image/gif");
                         break;
                     case RawDataType::Jpeg:
-                        value().setMimeType("image/jpeg");
+                        val->setMimeType("image/jpeg");
                         break;
                     case RawDataType::Png:
-                        value().setMimeType("image/png");
+                        val->setMimeType("image/png");
                         break;
                     case RawDataType::Bmp:
-                        value().setMimeType("image/bmp");
+                        val->setMimeType("image/bmp");
                         break;
                     default:;
                     }
                     const auto coverSize = static_cast<streamoff>(dataAtom->dataSize() - 8);
                     auto coverData = make_unique<char[]>(static_cast<size_t>(coverSize));
                     stream.read(coverData.get(), coverSize);
-                    value().assignData(move(coverData), static_cast<size_t>(coverSize), TagDataType::Picture);
+                    val->assignData(move(coverData), static_cast<size_t>(coverSize), TagDataType::Picture);
                     break;
                 }
                 case RawDataType::BeSignedInt: {
@@ -159,10 +167,10 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     }
                     switch (ilstChild.id()) {
                     case PreDefinedGenre: // consider number as standard genre index
-                        value().assignStandardGenreIndex(number);
+                        val->assignStandardGenreIndex(number);
                         break;
                     default:
-                        value().assignInteger(number);
+                        val->assignInteger(number);
                     }
                     break;
                 }
@@ -180,10 +188,10 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     }
                     switch (ilstChild.id()) {
                     case PreDefinedGenre: // consider number as standard genre index
-                        value().assignStandardGenreIndex(number - 1);
+                        val->assignStandardGenreIndex(number - 1);
                         break;
                     default:
-                        value().assignInteger(number);
+                        val->assignInteger(number);
                     }
                     break;
                 }
@@ -203,14 +211,14 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                         if (dataAtom->dataSize() >= (8 + 6)) {
                             total = reader.readUInt16BE();
                         }
-                        value().assignPosition(PositionInSet(pos, total));
+                        val->assignPosition(PositionInSet(pos, total));
                         break;
                     }
                     case PreDefinedGenre:
                         if (dataAtom->dataSize() < (8 + 2)) {
                             diag.emplace_back(DiagLevel::Warning, "Genre index is truncated.", context);
                         } else {
-                            value().assignStandardGenreIndex(reader.readUInt16BE() - 1);
+                            val->assignStandardGenreIndex(reader.readUInt16BE() - 1);
                         }
                         break;
                     default: // no supported data type, read raw data
@@ -218,9 +226,9 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                         auto data = make_unique<char[]>(static_cast<size_t>(dataSize));
                         stream.read(data.get(), dataSize);
                         if (ilstChild.id() == Mp4TagAtomIds::Cover) {
-                            value().assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Picture);
+                            val->assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Picture);
                         } else {
-                            value().assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Undefined);
+                            val->assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Undefined);
                         }
                     }
                 }
@@ -349,14 +357,13 @@ std::vector<std::uint32_t> Mp4TagField::expectedRawDataTypes() const
 
 /*!
  * \brief Returns an appropriate raw data type.
- *
- * Returns the type info if assigned; otherwise returns a raw data type considered as appropriate for
- * the ID of the field. The latter is supposed to work for all supported tag fields IDs (those where a
- * conversion to KnownField via Mp4Tag exists).
+ * \return
+ * Returns the type info if assigned; otherwise returns a raw data type considered as appropriate for the
+ * ID of the field and its value.
+ * \sa See Mp4TagField::appropriateRawDataTypeForValue() for the behavior if no type info is assigned.
  */
 std::uint32_t Mp4TagField::appropriateRawDataType() const
 {
-    using namespace Mp4TagAtomIds;
     if (isTypeInfoAssigned()) {
         // obtain raw data type from tag field if present
         return typeInfo();
@@ -365,6 +372,20 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
     // there is no raw data type assigned (tag field was not present in original file and
     // has been inserted by the library's user without type)
     // -> try to derive appropriate raw data type from atom ID
+    return appropriateRawDataTypeForValue(value());
+}
+
+/*!
+ * \brief Returns an appropriate raw data type.
+ * \returns
+ * Returns a raw data type considered as appropriate for the ID of the field and the specified \a value.
+ * \throws
+ * Throws TagParser::Failure if an appropriate raw data type can not be determined. It is possible to determine
+ * the raw data type for all supported tag field IDs (those where a conversion to KnownField via Mp4Tag exists).
+ */
+std::uint32_t Mp4TagField::appropriateRawDataTypeForValue(const TagValue &value) const
+{
+    using namespace Mp4TagAtomIds;
     switch (id()) {
     case Album:
     case Artist:
@@ -381,7 +402,7 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
     case Performers:
     case Lyricist:
     case AlbumArtist:
-        switch (value().dataEncoding()) {
+        switch (value.dataEncoding()) {
         case TagTextEncoding::Utf8:
             return RawDataType::Utf8;
         case TagTextEncoding::Utf16BigEndian:
@@ -397,7 +418,7 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
     case Rating:
         return RawDataType::BeSignedInt;
     case Cover: {
-        const string &mimeType = value().mimeType();
+        const string &mimeType = value.mimeType();
         if (mimeType == "image/jpg" || mimeType == "image/jpeg") { // "well-known" type
             return RawDataType::Jpeg;
         } else if (mimeType == "image/png") {
@@ -410,7 +431,7 @@ std::uint32_t Mp4TagField::appropriateRawDataType() const
         if (mean() != Mp4TagExtendedMeanIds::iTunes) {
             throw Failure();
         }
-        switch (value().dataEncoding()) {
+        switch (value.dataEncoding()) {
         case TagTextEncoding::Utf8:
             return RawDataType::Utf8;
         case TagTextEncoding::Utf16BigEndian:
@@ -438,6 +459,13 @@ void Mp4TagField::reset()
     m_langIndicator = 0;
 }
 
+/// \cond
+Mp4TagFieldMaker::Data::Data()
+    : convertedData(stringstream::in | stringstream::out | stringstream::binary)
+{
+}
+/// \endcond
+
 /*!
  * \class TagParser::Mp4TagFieldMaker
  * \brief The Mp4TagFieldMaker class helps making tag fields.
@@ -451,12 +479,11 @@ void Mp4TagField::reset()
  */
 Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
     : m_field(field)
-    , m_convertedData(stringstream::in | stringstream::out | stringstream::binary)
-    , m_writer(&m_convertedData)
-    , m_rawDataType(0)
+    , m_writer(nullptr)
+    , m_totalSize(0)
 {
     if (!m_field.id()) {
-        diag.emplace_back(DiagLevel::Warning, "Invalid tag atom id.", "making MP4 tag field");
+        diag.emplace_back(DiagLevel::Warning, "Invalid tag atom ID.", "making MP4 tag field");
         throw InvalidDataException();
     }
     const string context("making MP4 tag field " + Mp4TagField::fieldIdToString(m_field.id()));
@@ -465,33 +492,63 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
         throw InvalidDataException();
     }
 
+    // calculate size for name and mean
+    m_totalSize = 8 + (m_field.name().empty() ? 0 : (12 + m_field.name().size())) + (m_field.mean().empty() ? 0 : (12 + m_field.mean().size()));
+
+    // prepare making data atom and calculate the expected size
+    m_totalSize += prepareDataAtom(field.value(), field.countryIndicator(), field.languageIndicator(), context, diag);
+    for (const auto &additionalData : m_field.additionalData()) {
+        m_totalSize += prepareDataAtom(additionalData.value, additionalData.countryIndicator, additionalData.languageIndicator, context, diag);
+    }
+
+    if (m_totalSize > numeric_limits<std::uint32_t>::max()) {
+        diag.emplace_back(DiagLevel::Critical, "Making a such big MP4 tag field is not possible.", context);
+        throw NotImplementedException();
+    }
+}
+
+/*!
+ * \brief Prepares making a data atom for the specified \a value.
+ */
+std::uint64_t Mp4TagFieldMaker::prepareDataAtom(
+    const TagValue &value, std::uint16_t countryIndicator, std::uint16_t languageIndicator, const std::string &context, Diagnostics &diag)
+{
+    // add new data entry
+    auto &data = m_data.emplace_back();
+    m_writer.setStream(&data.convertedData);
+
+    // assign local info
+    // FIXME: use locale within the tag value instead of just passing through current values
+    data.countryIndicator = countryIndicator;
+    data.languageIndicator = languageIndicator;
+
     try {
         // try to use appropriate raw data type
-        m_rawDataType = m_field.appropriateRawDataType();
+        data.rawType = m_field.isTypeInfoAssigned() ? m_field.typeInfo() : m_field.appropriateRawDataTypeForValue(value);
     } catch (const Failure &) {
         // unable to obtain appropriate raw data type
         if (m_field.id() == Mp4TagAtomIds::Cover) {
             // assume JPEG image
-            m_rawDataType = RawDataType::Utf8;
+            data.rawType = RawDataType::Jpeg;
             diag.emplace_back(
                 DiagLevel::Warning, "It was not possible to find an appropriate raw data type id. JPEG image will be assumed.", context);
         } else {
             // assume UTF-8 text
-            m_rawDataType = RawDataType::Utf8;
+            data.rawType = RawDataType::Utf8;
             diag.emplace_back(DiagLevel::Warning, "It was not possible to find an appropriate raw data type id. UTF-8 will be assumed.", context);
         }
     }
 
     try {
-        if (!m_field.value().isEmpty()) { // there might be only mean and name info, but no data
-            m_convertedData.exceptions(std::stringstream::failbit | std::stringstream::badbit);
-            switch (m_rawDataType) {
+        if (!value.isEmpty()) { // there might be only mean and name info, but no data
+            data.convertedData.exceptions(std::stringstream::failbit | std::stringstream::badbit);
+            switch (data.rawType) {
             case RawDataType::Utf8:
             case RawDataType::Utf16:
-                m_writer.writeString(m_field.value().toString());
+                m_writer.writeString(value.toString());
                 break;
             case RawDataType::BeSignedInt: {
-                int number = m_field.value().toInteger();
+                int number = value.toInteger();
                 if (number <= numeric_limits<std::int16_t>::max() && number >= numeric_limits<std::int16_t>::min()) {
                     m_writer.writeInt16BE(static_cast<std::int16_t>(number));
                 } else {
@@ -500,7 +557,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                 break;
             }
             case RawDataType::BeUnsignedInt: {
-                int number = m_field.value().toInteger();
+                int number = value.toInteger();
                 if (number <= numeric_limits<std::uint16_t>::max() && number >= numeric_limits<std::uint16_t>::min()) {
                     m_writer.writeUInt16BE(static_cast<std::uint16_t>(number));
                 } else if (number > 0) {
@@ -522,7 +579,7 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                 // raw data type 0 is used, information is stored as pair of unsigned integers
                 case Mp4TagAtomIds::TrackPosition:
                 case Mp4TagAtomIds::DiskPosition: {
-                    PositionInSet pos = m_field.value().toPositionInSet();
+                    PositionInSet pos = value.toPositionInSet();
                     m_writer.writeInt32BE(pos.position());
                     if (pos.total() <= numeric_limits<std::int16_t>::max()) {
                         m_writer.writeInt16BE(static_cast<std::int16_t>(pos.total()));
@@ -535,32 +592,31 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
                     break;
                 }
                 case Mp4TagAtomIds::PreDefinedGenre:
-                    m_writer.writeUInt16BE(static_cast<std::uint16_t>(m_field.value().toStandardGenreIndex()));
+                    m_writer.writeUInt16BE(static_cast<std::uint16_t>(value.toStandardGenreIndex()));
                     break;
                 default:; // leave converted data empty to write original data later
                 }
             }
         }
-    } catch (const ConversionException &ex) {
+    } catch (const ConversionException &e) {
         // it was not possible to perform required conversions
-        if (char_traits<char>::length(ex.what())) {
-            diag.emplace_back(DiagLevel::Critical, ex.what(), context);
+        if (char_traits<char>::length(e.what())) {
+            diag.emplace_back(DiagLevel::Critical, e.what(), context);
         } else {
             diag.emplace_back(DiagLevel::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
         }
         throw InvalidDataException();
     }
 
-    // calculate data size
-    m_dataSize
-        = m_field.value().isEmpty() ? 0 : (m_convertedData.tellp() ? static_cast<size_t>(m_convertedData.tellp()) : m_field.value().dataSize());
-    m_totalSize = 8 // calculate entire size
-        + (m_field.name().empty() ? 0 : (12 + m_field.name().length())) + (m_field.mean().empty() ? 0 : (12 + m_field.mean().length()))
-        + (m_dataSize ? (16 + m_dataSize) : 0);
-    if (m_totalSize > numeric_limits<std::uint32_t>::max()) {
-        diag.emplace_back(DiagLevel::Critical, "Making a such big MP4 tag field is not supported.", context);
-        throw NotImplementedException();
+    // calculate data size; assign raw data
+    if (value.isEmpty()) {
+        return data.size = 0;
+    } else if (data.convertedData.tellp()) {
+        data.size = static_cast<std::size_t>(data.convertedData.tellp());
+    } else {
+        data.rawData = std::string_view(value.dataPointer(), data.size = value.dataSize());
     }
+    return data.size += 16;
 }
 
 /*!
@@ -577,33 +633,37 @@ void Mp4TagFieldMaker::make(ostream &stream)
     m_writer.writeUInt32BE(static_cast<std::uint32_t>(m_totalSize));
     // id of tag atom
     m_writer.writeUInt32BE(m_field.id());
+    // write "mean" atom
     if (!m_field.mean().empty()) {
-        // write "mean"
         m_writer.writeUInt32BE(static_cast<std::uint32_t>(12 + m_field.mean().size()));
         m_writer.writeUInt32BE(Mp4AtomIds::Mean);
         m_writer.writeUInt32BE(0);
         m_writer.writeString(m_field.mean());
     }
+    // write "name" atom
     if (!m_field.name().empty()) {
-        // write "name"
         m_writer.writeUInt32BE(static_cast<std::uint32_t>(12 + m_field.name().length()));
         m_writer.writeUInt32BE(Mp4AtomIds::Name);
         m_writer.writeUInt32BE(0);
         m_writer.writeString(m_field.name());
     }
-    if (!m_field.value().isEmpty()) { // write data
-        m_writer.writeUInt32BE(static_cast<std::uint32_t>(16 + m_dataSize)); // size of data atom
+    // write "data" atoms
+    for (auto &data : m_data) {
+        if (!data.size) {
+            continue;
+        }
+        m_writer.writeUInt32BE(static_cast<std::uint32_t>(data.size)); // size of data atom
         m_writer.writeUInt32BE(Mp4AtomIds::Data); // id of data atom
         m_writer.writeByte(0); // version
-        m_writer.writeUInt24BE(m_rawDataType);
-        m_writer.writeUInt16BE(m_field.countryIndicator()); // FIXME: use locale within the tag value
-        m_writer.writeUInt16BE(m_field.languageIndicator()); // FIXME: use locale within the tag value
-        if (m_convertedData.tellp()) {
+        m_writer.writeUInt24BE(data.rawType);
+        m_writer.writeUInt16BE(data.countryIndicator);
+        m_writer.writeUInt16BE(data.languageIndicator);
+        if (data.convertedData.tellp()) {
             // write converted data
-            stream << m_convertedData.rdbuf();
+            stream << data.convertedData.rdbuf();
         } else {
             // no conversion was needed, write data directly from tag value
-            stream.write(m_field.value().dataPointer(), static_cast<streamoff>(m_field.value().dataSize()));
+            stream.write(data.rawData.data(), static_cast<std::streamoff>(data.rawData.size()));
         }
     }
 }
