@@ -25,6 +25,7 @@ class AbstractChapter;
 class AbstractAttachment;
 class Diagnostics;
 class AbortableProgressFeedback;
+enum class KnownField : unsigned int;
 
 class TAG_PARSER_EXPORT AbstractContainer {
 public:
@@ -69,6 +70,10 @@ public:
     virtual AbstractAttachment *createAttachment();
     virtual AbstractAttachment *attachment(std::size_t index);
     virtual std::size_t attachmentCount() const;
+
+    virtual std::initializer_list<KnownField> tagFieldsStoredAsAttachments() const;
+    virtual bool mapTagsToAttachments(Diagnostics &diag, std::initializer_list<KnownField> tagFields = {});
+    virtual bool mapAttachmentsToTags(Diagnostics &diag, std::initializer_list<KnownField> tagFields = {});
 
     std::uint64_t version() const;
     std::uint64_t readVersion() const;
@@ -193,6 +198,48 @@ inline bool AbstractContainer::areChaptersParsed() const
 inline bool AbstractContainer::areAttachmentsParsed() const
 {
     return m_attachmentsParsed;
+}
+
+/*!
+ * \brief Returns tag fields which are actually stored as attachments by the underlying format.
+ */
+inline std::initializer_list<KnownField> AbstractContainer::tagFieldsStoredAsAttachments() const
+{
+    static constexpr auto tagFields = std::initializer_list<KnownField>();
+    return tagFields;
+}
+
+/*!
+ * \brief Turns assigned tags which actually need to be treated as attachments by the underlying format into attachments.
+ * \remarks
+ * - Affects all tag fields returned by tagFieldsStoredAsAttachments() if \a tagFields is empty. Otherwise affects only the
+ *   specified \a tagFields (if those are convertible to attachments).
+ * - Call this function before applying changes to be able to store the specified \a tagFields as attachments if that is how
+ *   these tags are actually stored by the underlying format.
+ * - The affected tags will no longer be accessible as tags.
+ */
+inline bool AbstractContainer::mapTagsToAttachments(Diagnostics &diag, std::initializer_list<KnownField> tagFields)
+{
+    CPP_UTILITIES_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(tagFields)
+    return true;
+}
+
+/*!
+ * \brief Turns assigned attachments which are commonly treated as tags into tags.
+ * \remarks
+ * - Call this function after parsing a file to be able to obtain the specified \a tagFields as tags.
+ * - Affects all tag fields returned by tagFieldsStoredAsAttachments() if \a tagFields is empty. Otherwise affects only the
+ *   specified \a tagFields (if those are convertible to attachments).
+ * - The affected attachments will no longer be accessible as attachments.
+ * - If you've been calling this function, be sure to call the inverse function mapTagsToAttachments() before applying
+ *   changes.
+ */
+inline bool AbstractContainer::mapAttachmentsToTags(Diagnostics &diag, std::initializer_list<KnownField> tagFields)
+{
+    CPP_UTILITIES_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(tagFields)
+    return true;
 }
 
 /*!
