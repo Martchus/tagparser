@@ -99,6 +99,10 @@ constexpr TAG_PARSER_EXPORT const char *encoder()
 {
     return "ENCODER";
 }
+constexpr TAG_PARSER_EXPORT const char *encoderSettings()
+{
+    return "ENCODER_OPTIONS";
+}
 constexpr TAG_PARSER_EXPORT const char *publisher()
 {
     return "PUBLISHER";
@@ -134,10 +138,6 @@ constexpr TAG_PARSER_EXPORT const char *eanupn()
 constexpr TAG_PARSER_EXPORT const char *comment()
 {
     return "COMMENT";
-}
-constexpr TAG_PARSER_EXPORT const char *encoderSettings()
-{
-    return "ENCODING";
 }
 constexpr TAG_PARSER_EXPORT const char *date()
 {
