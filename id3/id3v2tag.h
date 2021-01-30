@@ -95,7 +95,7 @@ protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
     KnownField internallyGetKnownField(const IdentifierType &id) const;
     TagDataType internallyGetProposedDataType(const std::uint32_t &id) const;
-    std::vector<const TagValue *> internallyGetValues(const IdentifierType &id) const;
+    void internallyGetValuesFromField(const FieldType &field, std::vector<const TagValue *> &values) const;
     bool internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values);
 
 private:

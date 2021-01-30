@@ -68,6 +68,7 @@ protected:
     using CRTPBase = FieldMapBasedTag<ImplementationType>;
 
     const TagValue &internallyGetValue(const IdentifierType &id) const;
+    void internallyGetValuesFromField(const FieldType &field, std::vector<const TagValue *> &values) const;
     std::vector<const TagValue *> internallyGetValues(const IdentifierType &id) const;
     bool internallySetValue(const IdentifierType &id, const TagValue &value);
     bool internallySetValues(const IdentifierType &id, const std::vector<TagValue> &values);
@@ -127,6 +128,19 @@ template <class ImplementationType> const TagValue &FieldMapBasedTag<Implementat
 }
 
 /*!
+ * \brief Default way to gather values from a field in internallyGetValues().
+ * \remarks Shadow in subclass to provide custom implementation.
+ */
+template <class ImplementationType>
+void FieldMapBasedTag<ImplementationType>::internallyGetValuesFromField(
+    const FieldMapBasedTag<ImplementationType>::FieldType &field, std::vector<const TagValue *> &values) const
+{
+    if (!field.value().isEmpty()) {
+        values.emplace_back(&field.value());
+    }
+}
+
+/*!
  * \brief Default implementation for values().
  * \remarks Shadow in subclass to provide custom implementation.
  */
@@ -136,9 +150,7 @@ std::vector<const TagValue *> FieldMapBasedTag<ImplementationType>::internallyGe
     auto range = m_fields.equal_range(id);
     std::vector<const TagValue *> values;
     for (auto i = range.first; i != range.second; ++i) {
-        if (!i->second.value().isEmpty()) {
-            values.push_back(&i->second.value());
-        }
+        static_cast<const ImplementationType *>(this)->internallyGetValuesFromField(i->second, values);
     }
     return values;
 }

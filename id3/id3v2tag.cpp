@@ -68,22 +68,18 @@ void Id3v2Tag::ensureTextValuesAreProperlyEncoded()
 }
 
 /*!
- * \brief Works like the default implementation but adds additional values as well.
+ * \brief Adds additional values as well.
  */
-std::vector<const TagValue *> Id3v2Tag::internallyGetValues(const IdentifierType &id) const
+void Id3v2Tag::internallyGetValuesFromField(const Id3v2Tag::FieldType &field, std::vector<const TagValue *> &values) const
 {
-    auto range = fields().equal_range(id);
-    std::vector<const TagValue *> values;
-    for (auto i = range.first; i != range.second; ++i) {
-        const auto &frame(i->second);
-        if (!frame.value().isEmpty()) {
-            values.push_back(&frame.value());
-        }
-        for (const auto &value : frame.additionalValues()) {
-            values.push_back(&value);
+    if (!field.value().isEmpty()) {
+        values.emplace_back(&field.value());
+    }
+    for (const auto &value : field.additionalValues()) {
+        if (!value.isEmpty()) {
+            values.emplace_back(&value);
         }
     }
-    return values;
 }
 
 /*!
