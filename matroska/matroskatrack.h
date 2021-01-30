@@ -65,7 +65,7 @@ protected:
 
 private:
     template <typename PropertyType, typename ConversionFunction>
-    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &integer,
+    void assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, std::string_view fieldId, PropertyType &integer,
         const ConversionFunction &conversionFunction, Diagnostics &diag);
 
     EbmlElement *m_trackElement;

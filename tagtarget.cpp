@@ -14,7 +14,7 @@ namespace TagParser {
 /*!
  * \brief Returns a string representation for the specified \a tagTargetLevel.
  */
-const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
+std::string_view tagTargetLevelName(TagTargetLevel tagTargetLevel)
 {
     switch (tagTargetLevel) {
     case TagTargetLevel::Shot:
@@ -32,7 +32,7 @@ const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
     case TagTargetLevel::Collection:
         return "collection";
     default:
-        return "";
+        return std::string_view();
     }
 }
 
@@ -57,15 +57,15 @@ const char *tagTargetLevelName(TagTargetLevel tagTargetLevel)
  * \brief Returns the string representation of the current instance.
  * \remarks Uses the specified \a tagTargetLevel if no levelName() is assigned.
  */
-string TagTarget::toString(TagTargetLevel tagTargetLevel) const
+std::string TagTarget::toString(TagTargetLevel tagTargetLevel) const
 {
-    string levelString;
+    auto levelString = std::string();
     if (level()) {
         levelString += "level ";
         levelString += numberToString(level());
     }
-    const char *defaultLevelName;
-    if (!levelName().empty() || *(defaultLevelName = tagTargetLevelName(tagTargetLevel))) {
+    auto defaultLevelName = std::string_view();
+    if (!levelName().empty() || !(defaultLevelName = tagTargetLevelName(tagTargetLevel)).empty()) {
         if (!levelString.empty()) {
             levelString += ' ';
         }

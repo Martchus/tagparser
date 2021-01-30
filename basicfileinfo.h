@@ -14,7 +14,7 @@ namespace TagParser {
 class TAG_PARSER_EXPORT BasicFileInfo {
 public:
     // constructor, destructor
-    explicit BasicFileInfo(const std::string &path = std::string());
+    explicit BasicFileInfo(std::string_view path = std::string_view());
     BasicFileInfo(const BasicFileInfo &) = delete;
     BasicFileInfo &operator=(const BasicFileInfo &) = delete;
     virtual ~BasicFileInfo();
@@ -31,16 +31,16 @@ public:
 
     // methods to get, set path (components)
     const std::string &path() const;
-    void setPath(const std::string &path);
+    void setPath(std::string_view path);
     static std::string fileName(const std::string &path, bool cutExtension = false);
     std::string fileName(bool cutExtension = false) const;
-    static std::string extension(const std::string &path);
+    static std::string extension(std::string_view path);
     std::string extension() const;
     static std::string pathWithoutExtension(const std::string &fullPath);
     std::string pathWithoutExtension() const;
     static std::string containingDirectory(const std::string &path);
     std::string containingDirectory() const;
-    static const char *pathForOpen(const std::string &url);
+    static std::string_view pathForOpen(const std::string &url);
 
     // methods to get, set the file size
     std::uint64_t size() const;
@@ -137,7 +137,7 @@ inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
  * \remarks If \a url is already a plain path it won't changed.
  * \returns Returns a pointer the URL data itself. No copy is made.
  */
-inline const char *BasicFileInfo::pathForOpen(const std::string &url)
+inline std::string_view BasicFileInfo::pathForOpen(const std::string &url)
 {
     return CppUtilities::startsWith(url, "file:/") ? url.data() + 6 : url.data();
 }

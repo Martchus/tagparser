@@ -12,11 +12,11 @@ OverallTests::OverallTests()
  */
 void OverallTests::setUp()
 {
-    m_testTitle.assignText("some title", TagTextEncoding::Utf8);
-    m_testComment.assignText("some cómment", TagTextEncoding::Utf8);
-    m_testComment.setDescription("some descriptión", TagTextEncoding::Utf8);
-    m_testCommentWithoutDescription.assignText("some cómment", TagTextEncoding::Utf8);
-    m_testAlbum.assignText("some album", TagTextEncoding::Utf8);
+    m_testTitle.assignText("some title"sv, TagTextEncoding::Utf8);
+    m_testComment.assignText("some cómment"sv, TagTextEncoding::Utf8);
+    m_testComment.setDescription("some descriptión"sv, TagTextEncoding::Utf8);
+    m_testCommentWithoutDescription.assignText("some cómment"sv, TagTextEncoding::Utf8);
+    m_testAlbum.assignText("some album"sv, TagTextEncoding::Utf8);
     m_testPartNumber.assignInteger(41);
     m_testTotalParts.assignInteger(61);
     m_testPosition.assignPosition(PositionInSet(41, 61));

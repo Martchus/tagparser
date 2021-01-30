@@ -4,6 +4,7 @@
 #include "./mediaformat.h"
 
 #include <cstdint>
+#include <string_view>
 
 namespace TagParser {
 
@@ -66,14 +67,20 @@ enum class ContainerFormat : unsigned int {
     Zip, /**< ZIP archive */
 };
 
-TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, int bufferSize);
-TAG_PARSER_EXPORT const char *containerFormatName(ContainerFormat containerFormat);
-TAG_PARSER_EXPORT const char *containerFormatAbbreviation(
+TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, std::size_t bufferSize);
+TAG_PARSER_EXPORT ContainerFormat parseSignature(std::string_view buffer);
+TAG_PARSER_EXPORT std::string_view containerFormatName(ContainerFormat containerFormat);
+TAG_PARSER_EXPORT std::string_view containerFormatAbbreviation(
     ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown, unsigned int version = 0);
-TAG_PARSER_EXPORT const char *containerFormatSubversion(ContainerFormat containerFormat);
-TAG_PARSER_EXPORT const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
+TAG_PARSER_EXPORT std::string_view containerFormatSubversion(ContainerFormat containerFormat);
+TAG_PARSER_EXPORT std::string_view containerMimeType(ContainerFormat containerFormat, MediaType mediaType = MediaType::Unknown);
 TAG_PARSER_EXPORT TagTargetLevel containerTargetLevel(ContainerFormat containerFormat, std::uint64_t targetLevelValue);
 TAG_PARSER_EXPORT std::uint64_t containerTargetLevelValue(ContainerFormat containerFormat, TagTargetLevel targetLevel);
+
+inline ContainerFormat parseSignature(const char *buffer, std::size_t bufferSize)
+{
+    return parseSignature(std::string_view(buffer, bufferSize));
+}
 
 } // namespace TagParser
 

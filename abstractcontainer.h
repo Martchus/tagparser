@@ -76,7 +76,7 @@ public:
     std::uint64_t doctypeVersion() const;
     std::uint64_t doctypeReadVersion() const;
     const std::vector<std::string> &titles() const;
-    void setTitle(const std::string &title, std::size_t segmentIndex = 0);
+    void setTitle(std::string_view title, std::size_t segmentIndex = 0);
     virtual bool supportsTitle() const;
     virtual std::size_t segmentCount() const;
     CppUtilities::TimeSpan duration() const;
@@ -265,7 +265,7 @@ inline const std::vector<std::string> &AbstractContainer::titles() const
  * \throws Throws out_of_range if the segment does not exist.
  * \sa titles()
  */
-inline void AbstractContainer::setTitle(const std::string &title, std::size_t segmentIndex)
+inline void AbstractContainer::setTitle(std::string_view title, std::size_t segmentIndex)
 {
     m_titles.at(segmentIndex) = title;
 }

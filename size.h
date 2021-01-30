@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace TagParser {
 
@@ -23,7 +24,7 @@ public:
     void setWidth(std::uint32_t value);
     void setHeight(std::uint32_t value);
     constexpr std::uint32_t resolution() const;
-    const char *abbreviation() const;
+    std::string_view abbreviation() const;
 
     bool constexpr isNull() const;
     bool constexpr operator==(const Size &other) const;

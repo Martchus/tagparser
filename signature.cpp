@@ -101,17 +101,17 @@ enum Sig16 : std::uint16_t {
  * \return Returns the container format denoted by the signature. If the
  *         signature is unknown ContainerFormat::Unknown is returned.
  */
-ContainerFormat parseSignature(const char *buffer, int bufferSize)
+ContainerFormat parseSignature(std::string_view buffer)
 {
     // read signature
     std::uint64_t sig = 0;
-    if (bufferSize >= 8) {
-        sig = BE::toUInt64(buffer);
-    } else if (bufferSize >= 4) {
-        sig = BE::toUInt32(buffer);
+    if (buffer.size() >= 8) {
+        sig = BE::toUInt64(buffer.data());
+    } else if (buffer.size() >= 4) {
+        sig = BE::toUInt32(buffer.data());
         sig <<= 4;
-    } else if (bufferSize >= 2) {
-        sig = BE::toUInt16(buffer);
+    } else if (buffer.size() >= 2) {
+        sig = BE::toUInt16(buffer.data());
         sig <<= 6;
     } else {
         return ContainerFormat::Unknown;
@@ -127,7 +127,7 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case Png:
         return ContainerFormat::Png;
     case YUV4Mpeg2:
-        if (bufferSize >= 10 && buffer[8] == 0x32 && buffer[9] == 0x20) {
+        if (buffer.size() >= 10 && buffer[8] == 0x32 && buffer[9] == 0x20) {
             return ContainerFormat::YUV4Mpeg2;
         }
         break;
@@ -178,9 +178,9 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
     case PhotoshopDocument:
         return ContainerFormat::PhotoshopDocument;
     case Riff:
-        if (bufferSize >= 16 && BE::toUInt64(buffer + 8) == Sig64::RiffAvi) {
+        if (buffer.size() >= 16 && BE::toUInt64(buffer.data() + 8) == Sig64::RiffAvi) {
             return ContainerFormat::RiffAvi;
-        } else if (bufferSize >= 12 && BE::toUInt32(buffer + 8) == RiffWave) {
+        } else if (buffer.size() >= 12 && BE::toUInt32(buffer.data() + 8) == RiffWave) {
             return ContainerFormat::RiffWave;
         } else {
             return ContainerFormat::Riff;
@@ -248,7 +248,7 @@ ContainerFormat parseSignature(const char *buffer, int bufferSize)
  * \remarks The abbreviation might be used as file extension.
  * \returns Returns an empty string if no abbreviation is available.
  */
-const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType, unsigned int version)
+std::string_view containerFormatAbbreviation(ContainerFormat containerFormat, MediaType mediaType, unsigned int version)
 {
     switch (containerFormat) {
     case ContainerFormat::Ac3Frames:
@@ -370,7 +370,7 @@ const char *containerFormatAbbreviation(ContainerFormat containerFormat, MediaTy
  *
  * Returns "unknown" if no name is available.
  */
-const char *containerFormatName(ContainerFormat containerFormat)
+std::string_view containerFormatName(ContainerFormat containerFormat)
 {
     switch (containerFormat) {
     case ContainerFormat::Ac3Frames:
@@ -475,7 +475,7 @@ const char *containerFormatName(ContainerFormat containerFormat)
  *
  * Returns an empty string if there is no subversion available.
  */
-const char *containerFormatSubversion(ContainerFormat containerFormat)
+std::string_view containerFormatSubversion(ContainerFormat containerFormat)
 {
     switch (containerFormat) {
     case ContainerFormat::Gif87a:
@@ -496,7 +496,7 @@ const char *containerFormatSubversion(ContainerFormat containerFormat)
  *
  * Returns an empty string if there is no MIME-type available.
  */
-const char *containerMimeType(ContainerFormat containerFormat, MediaType mediaType)
+std::string_view containerMimeType(ContainerFormat containerFormat, MediaType mediaType)
 {
     switch (containerFormat) {
     case ContainerFormat::Ac3Frames:

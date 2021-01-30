@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <string_view>
 
 namespace TagParser {
 
@@ -51,8 +52,7 @@ public:
     static std::uint8_t makeUInteger(std::uint64_t value, char *buff);
     static std::uint8_t makeUInteger(std::uint64_t value, char *buff, std::uint8_t minBytes);
     static void makeSimpleElement(std::ostream &stream, IdentifierType id, std::uint64_t content);
-    static void makeSimpleElement(std::ostream &stream, IdentifierType id, const std::string &content);
-    static void makeSimpleElement(std::ostream &stream, IdentifierType id, const char *data, std::size_t dataSize);
+    static void makeSimpleElement(std::ostream &stream, IdentifierType id, std::string_view content);
     static std::uint64_t bytesToBeSkipped;
 
 protected:
@@ -71,8 +71,7 @@ private:
 inline std::string EbmlElement::idToString() const
 {
     using namespace CppUtilities;
-    const char *const name = matroskaIdName(id());
-    if (*name) {
+    if (const auto name = matroskaIdName(id()); !name.empty()) {
         return argsToString('0', 'x', numberToString(id(), 16), ' ', '\"', name, '\"');
     } else {
         return "0x" + numberToString(id(), 16);

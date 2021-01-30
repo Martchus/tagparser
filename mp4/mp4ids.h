@@ -4,6 +4,7 @@
 #include "../global.h"
 
 #include <cstdint>
+#include <string_view>
 
 namespace TagParser {
 
@@ -124,12 +125,12 @@ enum KnownValue : std::uint32_t {
 }
 
 namespace Mp4TagExtendedMeanIds {
-extern const char *iTunes;
+extern std::string_view iTunes;
 }
 
 namespace Mp4TagExtendedNameIds {
-extern const char *cdec;
-extern const char *label;
+extern std::string_view cdec;
+extern std::string_view label;
 } // namespace Mp4TagExtendedNameIds
 
 namespace Mp4MediaTypeIds {
@@ -508,7 +509,7 @@ enum KnownValue : std::uint8_t {
     StreamingText
 };
 
-TAG_PARSER_EXPORT const char *streamTypeName(std::uint8_t streamTypeId);
+TAG_PARSER_EXPORT std::string_view streamTypeName(std::uint8_t streamTypeId);
 
 } // namespace Mpeg4ElementaryStreamTypeIds
 
@@ -623,7 +624,7 @@ enum Mpeg4ChannelConfig : std::uint8_t {
     FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel
 };
 
-TAG_PARSER_EXPORT const char *channelConfigString(std::uint8_t config);
+TAG_PARSER_EXPORT std::string_view channelConfigString(std::uint8_t config);
 TAG_PARSER_EXPORT std::uint8_t channelCount(std::uint8_t config);
 
 } // namespace Mpeg4ChannelConfigs

@@ -14,7 +14,7 @@ using namespace SubFormats;
  *
  * Returns an empty string if no name is available.
  */
-const char *MediaFormat::name() const
+std::string_view MediaFormat::name() const
 {
     switch (general) {
     case GeneralMediaFormat::Aac:
@@ -443,7 +443,7 @@ const char *MediaFormat::name() const
  *
  * Returns an empty string if no abbreviation is available.
  */
-const char *MediaFormat::abbreviation() const
+std::string_view MediaFormat::abbreviation() const
 {
     switch (general) {
     case GeneralMediaFormat::Aac:
@@ -758,7 +758,7 @@ const char *MediaFormat::abbreviation() const
  *
  * Returns an empty string if no abbreviation is available.
  */
-const char *MediaFormat::shortAbbreviation() const
+std::string_view MediaFormat::shortAbbreviation() const
 {
     switch (general) {
     case GeneralMediaFormat::Aac:
@@ -1033,7 +1033,7 @@ const char *MediaFormat::shortAbbreviation() const
  *
  * Returns an empty string if no abbreviation is available.
  */
-const char *MediaFormat::extensionName() const
+std::string_view MediaFormat::extensionName() const
 {
     switch (general) {
         using namespace ExtensionFormats;
@@ -1056,7 +1056,7 @@ const char *MediaFormat::extensionName() const
 /*!
  * \brief Returns the string representation for the specified \a mediaType.
  */
-const char *mediaTypeName(MediaType mediaType)
+std::string_view mediaTypeName(MediaType mediaType)
 {
     switch (mediaType) {
     case MediaType::Unknown:

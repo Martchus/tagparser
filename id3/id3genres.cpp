@@ -12,9 +12,9 @@ namespace TagParser {
 /*!
  * \brief Returns all known genre names.
  */
-const char *const *Id3Genres::genreNames()
+const std::string_view *Id3Genres::genreNames()
 {
-    static const char *const names[] = { "Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk", "Grunge", "Hip-Hop", "Jazz", "Metal",
+    static const std::string_view names[] = { "Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk", "Grunge", "Hip-Hop", "Jazz", "Metal",
         "New Age", "Oldies", "Other", "Pop", "R&B", "Rap", "Reggae", "Rock", "Techno", "Industrial", "Alternative", "Ska", "Death Metal", "Pranks",
         "Soundtrack", "Euro-Techno", "Ambient", "Trip-Hop", "Vocal", "Jazz+Funk", "Fusion", "Trance", "Classical", "Instrumental", "Acid", "House",
         "Game", "Sound Clip", "Gospel", "Noise", "AlternRock", "Bass", "Soul", "Punk", "Space", "Meditative", "Instrumental Pop", "Instrumental Rock",
@@ -39,12 +39,12 @@ const char *const *Id3Genres::genreNames()
  * \brief Returns the numerical denotation of the specified \a genre or -1 if \a genre is unknown.
  * \remarks If \a string is empty, the non-standard Id3Genres::emptyGenreIndex() is returned.
  */
-int Id3Genres::indexFromString(const string &genre)
+int Id3Genres::indexFromString(std::string_view genre)
 {
     if (genre.empty()) {
         return emptyGenreIndex();
     }
-    const char *const *ptr = genreNames();
+    const string_view *ptr = genreNames();
     for (int index = 0; index < genreCount(); ++ptr, ++index) {
         if (genre == *ptr) {
             return index;

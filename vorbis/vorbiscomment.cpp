@@ -49,50 +49,50 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
     using namespace VorbisCommentIds;
     switch (field) {
     case KnownField::Album:
-        return album();
+        return std::string(album());
     case KnownField::Artist:
-        return artist();
+        return std::string(artist());
     case KnownField::Comment:
-        return comment();
+        return std::string(comment());
     case KnownField::Cover:
-        return cover();
+        return std::string(cover());
     case KnownField::RecordDate:
     case KnownField::Year:
-        return date();
+        return std::string(date());
     case KnownField::Title:
-        return title();
+        return std::string(title());
     case KnownField::Genre:
-        return genre();
+        return std::string(genre());
     case KnownField::TrackPosition:
-        return trackNumber();
+        return std::string(trackNumber());
     case KnownField::DiskPosition:
-        return diskNumber();
+        return std::string(diskNumber());
     case KnownField::PartNumber:
-        return partNumber();
+        return std::string(partNumber());
     case KnownField::Composer:
-        return composer();
+        return std::string(composer());
     case KnownField::Encoder:
-        return encoder();
+        return std::string(encoder());
     case KnownField::EncoderSettings:
-        return encoderSettings();
+        return std::string(encoderSettings());
     case KnownField::Description:
-        return description();
+        return std::string(description());
     case KnownField::Grouping:
-        return grouping();
+        return std::string(grouping());
     case KnownField::RecordLabel:
-        return label();
+        return std::string(label());
     case KnownField::Performers:
-        return performer();
+        return std::string(performer());
     case KnownField::Language:
-        return language();
+        return std::string(language());
     case KnownField::Lyricist:
-        return lyricist();
+        return std::string(lyricist());
     case KnownField::Lyrics:
-        return lyrics();
+        return std::string(lyrics());
     case KnownField::AlbumArtist:
-        return albumArtist();
+        return std::string(albumArtist());
     default:
-        return string();
+        return std::string();
     }
 }
 
@@ -100,7 +100,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
 {
     using namespace VorbisCommentIds;
     // clang-format off
-    static const map<string, KnownField, CaseInsensitiveStringComparer> fieldMap({
+    static const std::map<std::string_view, KnownField, CaseInsensitiveStringComparer> fieldMap({
          { album(), KnownField::Album },
          { artist(), KnownField::Artist },
          { comment(), KnownField::Comment },
@@ -185,8 +185,8 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             // turn "YEAR" into "DATE" (unless "DATE" exists)
             // note: "DATE" is an official field and "YEAR" only an inofficial one but present in some files. In consistency with
             //       MediaInfo and VLC player it is treated like "DATE" here.
-            if (fields().find(VorbisCommentIds::date()) == fields().end()) {
-                const auto [first, end] = fields().equal_range(VorbisCommentIds::year());
+            if (fields().find(std::string(VorbisCommentIds::date())) == fields().end()) {
+                const auto [first, end] = fields().equal_range(std::string(VorbisCommentIds::year()));
                 for (auto i = first; i != end; ++i) {
                     fields().insert(std::pair(VorbisCommentIds::date(), std::move(i->second)));
                 }

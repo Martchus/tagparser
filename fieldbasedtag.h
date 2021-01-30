@@ -39,7 +39,7 @@ public:
     FieldMapBasedTag();
 
     TagType type() const;
-    const char *typeName() const;
+    std::string_view typeName() const;
     TagTextEncoding proposedTextEncoding() const;
     const TagValue &value(const IdentifierType &id) const;
     const TagValue &value(KnownField field) const;
@@ -107,7 +107,7 @@ template <class ImplementationType> TagType FieldMapBasedTag<ImplementationType>
     return ImplementationType::tagType;
 }
 
-template <class ImplementationType> const char *FieldMapBasedTag<ImplementationType>::typeName() const
+template <class ImplementationType> std::string_view FieldMapBasedTag<ImplementationType>::typeName() const
 {
     return ImplementationType::tagName;
 }

@@ -14,7 +14,7 @@ namespace TagParser {
 /*!
  * \brief Returns the string representation for the specified \a channelMode.
  */
-const char *mpegChannelModeString(MpegChannelMode channelMode)
+std::string_view mpegChannelModeString(MpegChannelMode channelMode)
 {
     switch (channelMode) {
     case MpegChannelMode::Stereo:

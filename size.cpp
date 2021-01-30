@@ -6,7 +6,7 @@ namespace TagParser {
  * \brief Returns an abbreviation for the current instance, eg. 720p for sizes greather than 1280×720
  *        and 1080p for sizes greather than 1920×1080.
  */
-const char *Size::abbreviation() const
+std::string_view Size::abbreviation() const
 {
     if (*this >= Size(7680, 4320)) {
         return "8k";

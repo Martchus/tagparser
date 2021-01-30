@@ -66,7 +66,7 @@ public:
     Id3v2Tag();
 
     static constexpr TagType tagType = TagType::Id3v2Tag;
-    static constexpr const char *tagName = "ID3v2 tag";
+    static constexpr std::string_view tagName = "ID3v2 tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf16LittleEndian;
     TagTextEncoding proposedTextEncoding() const override;
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;

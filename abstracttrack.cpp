@@ -53,7 +53,6 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, std::u
     , m_quality(0)
     , m_depth(0)
     , m_fps(0)
-    , m_chromaFormat(nullptr)
     , m_timeScale(0)
     , m_colorSpace(0)
 {
@@ -81,16 +80,16 @@ AbstractTrack::~AbstractTrack()
 /*!
  * \brief Returns a string with the channel configuration if available; otherwise returns nullptr.
  */
-const char *AbstractTrack::channelConfigString() const
+std::string_view AbstractTrack::channelConfigString() const
 {
     switch (m_format.general) {
     case GeneralMediaFormat::Aac:
-        return m_channelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_channelConfig) : nullptr;
+        return m_channelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_channelConfig) : std::string_view();
     case GeneralMediaFormat::Mpeg1Audio:
     case GeneralMediaFormat::Mpeg2Audio:
         return mpegChannelModeString(static_cast<MpegChannelMode>(m_channelConfig));
     default:
-        return nullptr;
+        return std::string_view();
     }
 }
 
@@ -105,13 +104,13 @@ std::uint8_t AbstractTrack::extensionChannelConfig() const
 /*!
  * \brief Returns a string with the extension channel configuration if available; otherwise returns nullptr.
  */
-const char *AbstractTrack::extensionChannelConfigString() const
+std::string_view AbstractTrack::extensionChannelConfigString() const
 {
     switch (m_format.general) {
     case GeneralMediaFormat::Aac:
-        return m_extensionChannelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_extensionChannelConfig) : nullptr;
+        return m_extensionChannelConfig ? Mpeg4ChannelConfigs::channelConfigString(m_extensionChannelConfig) : std::string_view();
     default:
-        return nullptr;
+        return std::string_view();
     }
 }
 
@@ -140,15 +139,15 @@ string AbstractTrack::makeDescription(bool verbose) const
 {
     // use abbreviated format
     const auto format = MediaFormat(m_format.general, verbose ? m_format.sub : 0, verbose ? m_format.extension : 0);
-    const char *formatName = format.shortAbbreviation();
-    if (!formatName || !*formatName) {
+    auto formatName = format.shortAbbreviation();
+    if (formatName.empty()) {
         // fall back to media type name if no abbreviation available
         formatName = mediaTypeName();
     }
 
     // find additional info and level
-    const char *additionalInfoRef = nullptr;
-    string level;
+    auto additionalInfoRef = std::string_view();
+    auto level = std::string();
     switch (m_mediaType) {
     case MediaType::Video:
         if (!displaySize().isNull()) {
@@ -178,13 +177,13 @@ string AbstractTrack::makeDescription(bool verbose) const
                 return argsToString(formatName, '-', channelCount(), 'c', 'h');
             }
         } else if (const auto &localeName = locale().someAbbreviatedName(); !localeName.empty()) {
-            additionalInfoRef = localeName.data();
+            additionalInfoRef = localeName;
         }
         break;
     default:;
     }
 
-    if (additionalInfoRef) {
+    if (!additionalInfoRef.empty()) {
         return argsToString(formatName, level, '-', additionalInfoRef);
     }
     return argsToString(formatName, level);

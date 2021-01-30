@@ -102,6 +102,8 @@ public:
         const char *text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     explicit TagValue(
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    explicit TagValue(
+        std::string_view text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     explicit TagValue(int value);
     explicit TagValue(
         const char *data, std::size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
@@ -140,10 +142,11 @@ public:
     std::size_t dataSize() const;
     char *dataPointer();
     const char *dataPointer() const;
+    std::string_view data() const;
     const std::string &description() const;
-    void setDescription(const std::string &value, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    void setDescription(std::string_view value, TagTextEncoding encoding = TagTextEncoding::Latin1);
     const std::string &mimeType() const;
-    void setMimeType(const std::string &mimeType);
+    void setMimeType(std::string_view mimeType);
     const Locale &locale() const;
     Locale &locale();
     void setLocale(const Locale &locale);
@@ -164,6 +167,8 @@ public:
         TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignText(
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
+    void assignText(
+        std::string_view text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
     void assignStandardGenreIndex(int index);
     void assignData(const char *data, std::size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
@@ -258,6 +263,22 @@ inline TagValue::TagValue(const char *text, TagTextEncoding textEncoding, TagTex
  * \remarks Strips the BOM of the specified \a text.
  */
 inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+    : m_descEncoding(TagTextEncoding::Latin1)
+    , m_flags(TagValueFlags::None)
+{
+    assignText(text, textEncoding, convertTo);
+}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given \a text.
+ * \param text Specifies the text to be assigned.
+ * \param textEncoding Specifies the encoding of the given \a text.
+ * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
+ *                  use \a textEncoding without any character set conversions.
+ * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
+ */
+inline TagValue::TagValue(std::string_view text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
     : m_descEncoding(TagTextEncoding::Latin1)
     , m_flags(TagValueFlags::None)
 {
@@ -383,6 +404,20 @@ inline TagParser::TagValue::operator bool() const
  * \remarks Strips the BOM of the specified \a text.
  */
 inline void TagValue::assignText(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
+{
+    assignText(text.data(), text.size(), textEncoding, convertTo);
+}
+
+/*!
+ * \brief Assigns a copy of the given \a text.
+ * \param text Specifies the text to be assigned.
+ * \param textEncoding Specifies the encoding of the given \a text.
+ * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
+ *                  use \a textEncoding without any character set conversions.
+ * \throws Throws a ConversionException if the conversion the specified character set fails.
+ * \remarks Strips the BOM of the specified \a text.
+ */
+inline void TagValue::assignText(std::string_view text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
 {
     assignText(text.data(), text.size(), textEncoding, convertTo);
 }
@@ -543,6 +578,14 @@ inline const char *TagValue::dataPointer() const
 }
 
 /*!
+ * \brief Returns the currently assigned raw data.
+ */
+inline std::string_view TagValue::data() const
+{
+    return std::string_view(m_ptr.get(), m_size);
+}
+
+/*!
  * \brief Returns the description.
  * \remarks
  * - Whether this additional meta-data is available and can be used depends on the tag format. It will
@@ -568,7 +611,7 @@ inline const std::string &TagValue::description() const
  * - description() and descriptionEncoding()
  * - convertDescriptionEncoding() to change the description encoding after assignment
  */
-inline void TagValue::setDescription(const std::string &value, TagTextEncoding encoding)
+inline void TagValue::setDescription(std::string_view value, TagTextEncoding encoding)
 {
     m_desc = value;
     m_descEncoding = encoding;
@@ -593,7 +636,7 @@ inline const std::string &TagValue::mimeType() const
  *   be ignored by the implementation of the tag format if not supported.
  * \sa mimeType()
  */
-inline void TagValue::setMimeType(const std::string &mimeType)
+inline void TagValue::setMimeType(std::string_view mimeType)
 {
     m_mimeType = mimeType;
 }

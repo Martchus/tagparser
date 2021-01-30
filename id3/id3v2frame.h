@@ -140,7 +140,7 @@ public:
     static void makeComment(
         std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &comment, std::uint8_t version, Diagnostics &diag);
 
-    static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static IdentifierType fieldIdFromString(std::string_view idString);
     static std::string fieldIdToString(IdentifierType id);
 
 private:
@@ -332,13 +332,13 @@ inline bool Id3v2Frame::supportsNestedFields() const
 /*!
  * \brief Converts the specified ID string representation to an actual ID.
  */
-inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(const char *idString, std::size_t idStringSize)
+inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(std::string_view idString)
 {
-    switch (idStringSize != std::string::npos ? idStringSize : std::strlen(idString)) {
+    switch (idString.size()) {
     case 3:
-        return CppUtilities::BE::toUInt24(idString);
+        return CppUtilities::BE::toUInt24(idString.data());
     case 4:
-        return CppUtilities::BE::toUInt32(idString);
+        return CppUtilities::BE::toUInt32(idString.data());
     default:
         throw CppUtilities::ConversionException("ID3v2 ID must be 3 or 4 chars");
     }

@@ -32,6 +32,10 @@ struct TAG_PARSER_EXPORT CaseInsensitiveStringComparer {
     {
         return std::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), CaseInsensitiveCharComparer());
     }
+    bool operator()(std::string_view lhs, std::string_view rhs) const
+    {
+        return std::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), CaseInsensitiveCharComparer());
+    }
 };
 
 } // namespace TagParser

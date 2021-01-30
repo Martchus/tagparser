@@ -4,8 +4,8 @@
 #include "../diagnostics.h"
 
 #include <initializer_list>
-#include <map>
 #include <stdexcept>
+#include <unordered_map>
 
 using namespace std;
 using namespace CppUtilities;
@@ -22,59 +22,59 @@ MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) 
     using namespace MatroskaTagIds;
     switch (field) {
     case KnownField::Artist:
-        return artist();
+        return std::string(artist());
     case KnownField::Album:
-        return album();
+        return std::string(album());
     case KnownField::Comment:
-        return comment();
+        return std::string(comment());
     case KnownField::RecordDate:
     case KnownField::Year:
-        return dateRecorded();
+        return std::string(dateRecorded());
     case KnownField::ReleaseDate:
-        return dateRelease();
+        return std::string(dateRelease());
     case KnownField::Title:
-        return title();
+        return std::string(title());
     case KnownField::Genre:
-        return genre();
+        return std::string(genre());
     case KnownField::PartNumber:
-        return partNumber();
+        return std::string(partNumber());
     case KnownField::TotalParts:
-        return totalParts();
+        return std::string(totalParts());
     case KnownField::Encoder:
-        return encoder();
+        return std::string(encoder());
     case KnownField::EncoderSettings:
-        return encoderSettings();
+        return std::string(encoderSettings());
     case KnownField::Bpm:
-        return bpm();
+        return std::string(bpm());
     case KnownField::Bps:
-        return bps();
+        return std::string(bps());
     case KnownField::Rating:
-        return rating();
+        return std::string(rating());
     case KnownField::Description:
-        return description();
+        return std::string(description());
     case KnownField::Lyrics:
-        return lyrics();
+        return std::string(lyrics());
     case KnownField::RecordLabel:
-        return label();
+        return std::string(label());
     case KnownField::Performers:
-        return actor();
+        return std::string(actor());
     case KnownField::Lyricist:
-        return lyricist();
+        return std::string(lyricist());
     case KnownField::Composer:
-        return composer();
+        return std::string(composer());
     case KnownField::Length:
-        return duration();
+        return std::string(duration());
     case KnownField::Language:
-        return language();
+        return std::string(language());
     default:
-        return string();
+        return std::string();
     }
 }
 
 KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
 {
     using namespace MatroskaTagIds;
-    static const map<string, KnownField> fieldMap({
+    static const std::unordered_map<std::string_view, KnownField> fieldMap({
         { artist(), KnownField::Artist },
         { album(), KnownField::Album },
         { comment(), KnownField::Comment },

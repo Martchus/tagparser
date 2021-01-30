@@ -71,9 +71,9 @@ public:
     OggVorbisComment();
 
     static constexpr TagType tagType = TagType::OggVorbisComment;
-    static constexpr const char *tagName = "OGG Vorbis comment";
+    static constexpr std::string_view tagName = "OGG Vorbis comment";
     TagType type() const override;
-    const char *typeName() const override;
+    std::string_view typeName() const override;
     bool supportsTarget() const override;
 
     OggParameter &oggParams();

@@ -19,7 +19,7 @@ namespace TagParser {
 /*!
  * \brief Returns the string representation of the specified \a diagLevel.
  */
-const char *diagLevelName(DiagLevel diagLevel)
+std::string_view diagLevelName(DiagLevel diagLevel)
 {
     switch (diagLevel) {
     case DiagLevel::Information:
@@ -32,7 +32,7 @@ const char *diagLevelName(DiagLevel diagLevel)
         return "debug";
     case DiagLevel::None:
     default:
-        return "";
+        return std::string_view();
     }
 }
 

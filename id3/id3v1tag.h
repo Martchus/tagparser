@@ -12,9 +12,9 @@ public:
     Id3v1Tag();
 
     static constexpr TagType tagType = TagType::Id3v1Tag;
-    static constexpr const char *tagName = "ID3v1 tag";
+    static constexpr std::string_view tagName = "ID3v1 tag";
     TagType type() const override;
-    const char *typeName() const override;
+    std::string_view typeName() const override;
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;
     const TagValue &value(KnownField value) const override;
     bool setValue(KnownField field, const TagValue &value) override;

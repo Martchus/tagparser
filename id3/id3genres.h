@@ -4,29 +4,29 @@
 #include "../global.h"
 
 #include <cstdint>
-#include <string>
+#include <string_view>
 
 namespace TagParser {
 
 class TAG_PARSER_EXPORT Id3Genres {
 public:
-    static inline const char *stringFromIndex(int index);
-    static int indexFromString(const std::string &genre);
+    static inline std::string_view stringFromIndex(int index);
+    static int indexFromString(std::string_view genre);
     static constexpr int genreCount();
     static constexpr int emptyGenreIndex();
     static constexpr bool isEmptyGenre(int index);
     static constexpr bool isIndexSupported(int index);
 
 private:
-    static const char *const *genreNames();
+    static const std::string_view *genreNames();
 };
 
 /*!
  * \brief Returns the genre name for the specified numerical denotation as C-style string.
  */
-inline const char *Id3Genres::stringFromIndex(int index)
+inline std::string_view Id3Genres::stringFromIndex(int index)
 {
-    return isIndexSupported(index) ? genreNames()[index] : nullptr;
+    return isIndexSupported(index) ? genreNames()[index] : std::string_view();
 }
 
 /*!

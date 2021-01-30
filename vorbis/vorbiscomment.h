@@ -29,7 +29,7 @@ public:
     VorbisComment();
 
     static constexpr TagType tagType = TagType::VorbisComment;
-    static constexpr const char *tagName = "Vorbis comment";
+    static constexpr std::string_view tagName = "Vorbis comment";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;
 

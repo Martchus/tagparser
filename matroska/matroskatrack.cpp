@@ -212,10 +212,10 @@ MediaFormat MatroskaTrack::codecIdToMediaFormat(const string &codecId)
 /// \cond
 
 template <typename PropertyType, typename ConversionFunction>
-void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, const char *fieldId, PropertyType &property,
+void MatroskaTrack::assignPropertyFromTagValue(const std::unique_ptr<MatroskaTag> &tag, std::string_view fieldId, PropertyType &property,
     const ConversionFunction &conversionFunction, Diagnostics &diag)
 {
-    const TagValue &value = tag->value(fieldId);
+    const TagValue &value = tag->value(std::string(fieldId));
     if (!value.isEmpty()) {
         try {
             property = conversionFunction(value);

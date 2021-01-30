@@ -62,7 +62,7 @@ public:
     MatroskaTag();
 
     static constexpr TagType tagType = TagType::MatroskaTag;
-    static constexpr const char *tagName = "Matroska tag";
+    static constexpr std::string_view tagName = "Matroska tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;
     bool supportsTarget() const override;

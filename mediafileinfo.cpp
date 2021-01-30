@@ -734,7 +734,7 @@ void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &p
  * \sa containerFormatName()
  * \sa parseContainerFormat()
  */
-const char *MediaFileInfo::containerFormatAbbreviation() const
+string_view MediaFileInfo::containerFormatAbbreviation() const
 {
     MediaType mediaType = MediaType::Unknown;
     unsigned int version = 0;
@@ -788,7 +788,7 @@ const char *MediaFileInfo::containerFormatAbbreviation() const
  * \sa containerFormatName()
  * \sa parseContainerFormat()
  */
-const char *MediaFileInfo::mimeType() const
+string_view MediaFileInfo::mimeType() const
 {
     MediaType mediaType;
     switch (m_containerFormat) {
@@ -1531,7 +1531,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             }
             progress.updateStep("Removing ID3v1 tag ...");
             stream().close();
-            if (truncate(BasicFileInfo::pathForOpen(path()), static_cast<std::streamoff>(size() - 128)) == 0) {
+            if (truncate(BasicFileInfo::pathForOpen(path()).data(), static_cast<std::streamoff>(size() - 128)) == 0) {
                 reportSizeChanged(size() - 128);
             } else {
                 diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
@@ -1647,7 +1647,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             try {
                 BackupHelper::createBackupFile(backupDirectory(), path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
-                outputStream.open(BasicFileInfo::pathForOpen(path()), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(BasicFileInfo::pathForOpen(path()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(
                     DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -1658,8 +1658,8 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             try {
                 close();
                 backupStream.exceptions(ios_base::badbit | ios_base::failbit);
-                backupStream.open(BasicFileInfo::pathForOpen(path()), ios_base::in | ios_base::binary);
-                outputStream.open(BasicFileInfo::pathForOpen(m_saveFilePath), ios_base::out | ios_base::binary | ios_base::trunc);
+                backupStream.open(BasicFileInfo::pathForOpen(path()).data(), ios_base::in | ios_base::binary);
+                outputStream.open(BasicFileInfo::pathForOpen(m_saveFilePath).data(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
                 throw;
@@ -1670,7 +1670,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         // reopen original file to ensure it is opened for writing
         try {
             close();
-            outputStream.open(BasicFileInfo::pathForOpen(path()), ios_base::in | ios_base::out | ios_base::binary);
+            outputStream.open(BasicFileInfo::pathForOpen(path()).data(), ios_base::in | ios_base::out | ios_base::binary);
         } catch (const std::ios_base::failure &failure) {
             diag.emplace_back(DiagLevel::Critical, argsToString("Opening the file with write permissions failed: ", failure.what()), context);
             throw;
@@ -1776,7 +1776,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 // -> prevent deferring final write operations
                 outputStream.close();
                 // -> truncate file
-                if (truncate(BasicFileInfo::pathForOpen(path()), static_cast<streamoff>(newSize)) == 0) {
+                if (truncate(BasicFileInfo::pathForOpen(path()).data(), static_cast<streamoff>(newSize)) == 0) {
                     reportSizeChanged(newSize);
                 } else {
                     diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);

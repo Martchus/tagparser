@@ -65,10 +65,10 @@ public:
     // methods to get parsed information regarding ...
     // ... the container
     ContainerFormat containerFormat() const;
-    const char *containerFormatName() const;
-    const char *containerFormatAbbreviation() const;
-    const char *containerFormatSubversion() const;
-    const char *mimeType() const;
+    std::string_view containerFormatName() const;
+    std::string_view containerFormatAbbreviation() const;
+    std::string_view containerFormatSubversion() const;
+    std::string_view mimeType() const;
     std::uint64_t containerOffset() const;
     std::uint64_t paddingSize() const;
     AbstractContainer *container() const;
@@ -126,9 +126,8 @@ public:
     void setBackupDirectory(const std::string &backupDirectory);
     const std::string &saveFilePath() const;
     void setSaveFilePath(const std::string &saveFilePath);
-    const std::string writingApplication() const;
-    void setWritingApplication(const std::string &writingApplication);
-    void setWritingApplication(const char *writingApplication);
+    const std::string &writingApplication() const;
+    void setWritingApplication(std::string_view writingApplication);
     bool isForcingFullParse() const;
     void setForceFullParse(bool forceFullParse);
     bool isForcingRewrite() const;
@@ -223,7 +222,7 @@ inline ContainerFormat MediaFileInfo::containerFormat() const
  * \sa containerFormatAbbreviation()
  * \sa parseContainerFormat()
  */
-inline const char *MediaFileInfo::containerFormatName() const
+inline std::string_view MediaFileInfo::containerFormatName() const
 {
     return TagParser::containerFormatName(m_containerFormat);
 }
@@ -238,7 +237,7 @@ inline const char *MediaFileInfo::containerFormatName() const
  * \sa containerFormatName()
  * \sa parseContainerFormat()
  */
-inline const char *MediaFileInfo::containerFormatSubversion() const
+inline std::string_view MediaFileInfo::containerFormatSubversion() const
 {
     return TagParser::containerFormatSubversion(m_containerFormat);
 }
@@ -396,7 +395,7 @@ inline void MediaFileInfo::setSaveFilePath(const std::string &saveFilePath)
  * \remarks This is not read from the file when parsing and only used when saving changes.
  * \sa setWritingApplication() for more details
  */
-inline const std::string MediaFileInfo::writingApplication() const
+inline const std::string &MediaFileInfo::writingApplication() const
 {
     return m_writingApplication;
 }
@@ -405,16 +404,7 @@ inline const std::string MediaFileInfo::writingApplication() const
  * \brief Sets the writing application as container-level meta-data. Put the name of your application here.
  * \remarks Might not be used (depends on the format).
  */
-inline void MediaFileInfo::setWritingApplication(const std::string &writingApplication)
-{
-    m_writingApplication = writingApplication;
-}
-
-/*!
- * \brief Sets the writing application as container-level meta-data. Put the name of your application here.
- * \remarks Might not be used (depends on the format).
- */
-inline void MediaFileInfo::setWritingApplication(const char *writingApplication)
+inline void MediaFileInfo::setWritingApplication(std::string_view writingApplication)
 {
     m_writingApplication = writingApplication;
 }

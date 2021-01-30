@@ -89,7 +89,7 @@ inline void StreamDataBlock::discardBuffer()
 
 class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock {
 public:
-    FileDataBlock(const std::string &path, Diagnostics &diag);
+    FileDataBlock(std::string_view path, Diagnostics &diag);
     ~FileDataBlock();
     const MediaFileInfo *fileInfo() const;
 
@@ -105,16 +105,16 @@ inline const MediaFileInfo *FileDataBlock::fileInfo() const
 class TAG_PARSER_EXPORT AbstractAttachment {
 public:
     const std::string &description() const;
-    void setDescription(const std::string &description);
+    void setDescription(std::string_view description);
     const std::string &name() const;
-    void setName(const std::string &name);
+    void setName(std::string_view name);
     const std::string &mimeType() const;
-    void setMimeType(const std::string &mimeType);
+    void setMimeType(std::string_view mimeType);
     std::uint64_t id() const;
-    void setId(const std::uint64_t &id);
+    void setId(std::uint64_t id);
     const StreamDataBlock *data() const;
     void setData(std::unique_ptr<StreamDataBlock> &&data);
-    void setFile(const std::string &path, Diagnostics &diag);
+    void setFile(std::string_view path, Diagnostics &diag);
     bool isDataFromFile() const;
     std::string label() const;
     void clear();
@@ -156,7 +156,7 @@ inline const std::string &AbstractAttachment::description() const
 /*!
  * \brief Sets a description of the attachment.
  */
-inline void AbstractAttachment::setDescription(const std::string &description)
+inline void AbstractAttachment::setDescription(std::string_view description)
 {
     m_description = description;
 }
@@ -172,7 +172,7 @@ inline const std::string &AbstractAttachment::name() const
 /*!
  * \brief Sets the (file) name of the attachment.
  */
-inline void AbstractAttachment::setName(const std::string &name)
+inline void AbstractAttachment::setName(std::string_view name)
 {
     m_name = name;
 }
@@ -188,7 +188,7 @@ inline const std::string &AbstractAttachment::mimeType() const
 /*!
  * \brief Sets the MIME-type of the attachment.
  */
-inline void AbstractAttachment::setMimeType(const std::string &mimeType)
+inline void AbstractAttachment::setMimeType(std::string_view mimeType)
 {
     m_mimeType = mimeType;
 }
@@ -204,7 +204,7 @@ inline std::uint64_t AbstractAttachment::id() const
 /*!
  * \brief Sets the ID of the attachment.
  */
-inline void AbstractAttachment::setId(const std::uint64_t &id)
+inline void AbstractAttachment::setId(uint64_t id)
 {
     m_id = id;
 }

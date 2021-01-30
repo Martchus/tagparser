@@ -923,13 +923,12 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     const std::uint64_t ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
 
     // calculate size of "WritingLib"-element
-    constexpr const char muxingAppName[] = APP_NAME " v" APP_VERSION;
-    constexpr std::uint64_t muxingAppElementDataSize = sizeof(muxingAppName) - 1;
-    constexpr std::uint64_t muxingAppElementTotalSize = 2 + 1 + muxingAppElementDataSize;
+    constexpr std::string_view muxingAppName = APP_NAME " v" APP_VERSION;
+    constexpr std::uint64_t muxingAppElementTotalSize = 2 + 1 + muxingAppName.size();
 
     // calculate size of "WritingApp"-element
     const std::uint64_t writingAppElementDataSize
-        = fileInfo().writingApplication().empty() ? muxingAppElementDataSize : fileInfo().writingApplication().size() - 1;
+        = fileInfo().writingApplication().empty() ? muxingAppName.size() : fileInfo().writingApplication().size();
     const std::uint64_t writingAppElementTotalSize = 2 + 1 + writingAppElementDataSize;
 
     try {
@@ -1496,7 +1495,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
             try {
                 BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
-                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(
                     DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -1506,9 +1505,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
             // open the current file as backupStream and create a new outputStream at the specified "save file path"
             try {
                 backupStream.exceptions(ios_base::badbit | ios_base::failbit);
-                backupStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::in | ios_base::binary);
+                backupStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::binary);
                 fileInfo().close();
-                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().saveFilePath()), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().saveFilePath()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
                 throw;
@@ -1618,9 +1617,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         }
                     }
                     // -> write "MuxingApp"- and "WritingApp"-element
-                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, muxingAppName, muxingAppElementDataSize);
+                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, muxingAppName);
                     EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp,
-                        fileInfo().writingApplication().empty() ? muxingAppName : fileInfo().writingApplication().data(), writingAppElementDataSize);
+                        fileInfo().writingApplication().empty() ? muxingAppName : fileInfo().writingApplication());
                 }
 
                 // write "Tracks"-element

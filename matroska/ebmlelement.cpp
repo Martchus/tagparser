@@ -528,31 +528,14 @@ void EbmlElement::makeSimpleElement(ostream &stream, IdentifierType id, std::uin
  * \param id Specifies the element ID.
  * \param content Specifies the value of the element as string.
  */
-void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::IdentifierType id, const std::string &content)
+void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::IdentifierType id, string_view content)
 {
     char buff1[8];
     std::uint8_t sizeLength = EbmlElement::makeId(id, buff1);
     stream.write(buff1, sizeLength);
     sizeLength = EbmlElement::makeSizeDenotation(content.size(), buff1);
     stream.write(buff1, sizeLength);
-    stream.write(content.c_str(), content.size());
-}
-
-/*!
- * \brief Makes a simple EBML element.
- * \param stream Specifies the stream to write the data to.
- * \param id Specifies the element ID.
- * \param data Specifies the data of the element.
- * \param dataSize Specifies the size of \a data.
- */
-void EbmlElement::makeSimpleElement(ostream &stream, GenericFileElement::IdentifierType id, const char *data, std::size_t dataSize)
-{
-    char buff1[8];
-    std::uint8_t sizeLength = EbmlElement::makeId(id, buff1);
-    stream.write(buff1, sizeLength);
-    sizeLength = EbmlElement::makeSizeDenotation(dataSize, buff1);
-    stream.write(buff1, sizeLength);
-    stream.write(data, dataSize);
+    stream.write(content.data(), content.size());
 }
 
 } // namespace TagParser

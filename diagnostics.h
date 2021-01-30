@@ -25,7 +25,7 @@ enum class DiagLevel {
 /// \brief The worst diag level.
 constexpr auto worstDiagLevel = DiagLevel::Fatal;
 
-TAG_PARSER_EXPORT const char *diagLevelName(DiagLevel diagLevel);
+TAG_PARSER_EXPORT std::string_view diagLevelName(DiagLevel diagLevel);
 
 /*!
  * \brief Sets \a lhs to \a rhs if \a rhs is more critical than \a lhs and returns \a lhs.
@@ -46,7 +46,7 @@ public:
     DiagMessage(DiagLevel level, std::string &&message, std::string &&context);
 
     DiagLevel level() const;
-    const char *levelName() const;
+    std::string_view levelName() const;
     const std::string &message() const;
     const std::string &context() const;
     const CppUtilities::DateTime &creationTime() const;
@@ -116,7 +116,7 @@ inline DiagLevel DiagMessage::level() const
 /*!
  * \brief Returns the string representation of the level().
  */
-inline const char *DiagMessage::levelName() const
+inline std::string_view DiagMessage::levelName() const
 {
     return diagLevelName(m_level);
 }

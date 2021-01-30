@@ -122,7 +122,7 @@ public:
 
     Mp4TagField();
     Mp4TagField(IdentifierType id, const TagValue &value);
-    Mp4TagField(const std::string &mean, const std::string &name, const TagValue &value);
+    Mp4TagField(std::string_view mean, std::string_view name, const TagValue &value);
 
     void reparse(Mp4Atom &ilstChild, Diagnostics &diag);
     Mp4TagFieldMaker prepareMaking(Diagnostics &diag);
@@ -143,7 +143,7 @@ public:
     std::uint32_t appropriateRawDataType() const;
     std::uint32_t appropriateRawDataTypeForValue(const TagValue &value) const;
 
-    static IdentifierType fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static IdentifierType fieldIdFromString(std::string_view idString);
     static std::string fieldIdToString(IdentifierType id);
 
 private:
@@ -252,9 +252,9 @@ inline bool Mp4TagField::supportsNestedFields() const
  * \remarks The specified \a idString is assumed to be UTF-8 encoded. In order to get the ©-sign
  *          correctly, it is converted to Latin-1.
  */
-inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
+inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(std::string_view idString)
 {
-    const auto latin1 = CppUtilities::convertUtf8ToLatin1(idString, idStringSize != std::string::npos ? idStringSize : std::strlen(idString));
+    const auto latin1 = CppUtilities::convertUtf8ToLatin1(idString.data(), idString.size());
     switch (latin1.second) {
     case 4:
         return CppUtilities::BE::toUInt32(latin1.first.get());

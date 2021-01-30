@@ -4,6 +4,7 @@
 #include "../global.h"
 
 #include <cstdint>
+#include <string_view>
 
 namespace TagParser {
 
@@ -448,7 +449,7 @@ constexpr bool operator<=(MatroskaElementLevel lhs, MatroskaElementLevel rhs)
     return lhs == rhs || lhs < rhs;
 }
 
-TAG_PARSER_EXPORT const char *matroskaIdName(std::uint32_t matroskaId);
+TAG_PARSER_EXPORT std::string_view matroskaIdName(std::uint32_t matroskaId);
 TAG_PARSER_EXPORT MatroskaElementLevel matroskaIdLevel(std::uint32_t matroskaId);
 
 } // namespace TagParser

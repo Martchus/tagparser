@@ -110,7 +110,7 @@ public:
     virtual ~Tag();
 
     virtual TagType type() const;
-    virtual const char *typeName() const;
+    virtual std::string_view typeName() const;
     std::string toString() const;
     virtual TagTextEncoding proposedTextEncoding() const;
     virtual bool canEncodingBeUsed(TagTextEncoding encoding) const;
@@ -126,7 +126,7 @@ public:
     const TagTarget &target() const;
     void setTarget(const TagTarget &target);
     virtual TagTargetLevel targetLevel() const;
-    const char *targetLevelName() const;
+    std::string_view targetLevelName() const;
     bool isTargetingLevel(TagTargetLevel tagTargetLevel) const;
     std::string targetString() const;
     virtual unsigned int fieldCount() const = 0;
@@ -151,7 +151,7 @@ inline TagType Tag::type() const
     return TagType::Unspecified;
 }
 
-inline const char *Tag::typeName() const
+inline std::string_view Tag::typeName() const
 {
     return "unspecified";
 }
@@ -196,9 +196,9 @@ inline TagTargetLevel Tag::targetLevel() const
     return TagTargetLevel::Unspecified;
 }
 
-inline const char *Tag::targetLevelName() const
+inline std::string_view Tag::targetLevelName() const
 {
-    return supportsTarget() ? tagTargetLevelName(targetLevel()) : nullptr;
+    return supportsTarget() ? tagTargetLevelName(targetLevel()) : std::string_view();
 }
 
 inline bool Tag::isTargetingLevel(TagTargetLevel tagTargetLevel) const

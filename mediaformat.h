@@ -3,6 +3,7 @@
 
 #include "./global.h"
 
+#include <string_view>
 #include <utility>
 
 namespace TagParser {
@@ -21,7 +22,7 @@ enum class MediaType : unsigned int {
     Meta, /**< (timed) metadata */
 };
 
-TAG_PARSER_EXPORT const char *mediaTypeName(MediaType mediaType);
+TAG_PARSER_EXPORT std::string_view mediaTypeName(MediaType mediaType);
 
 /*!
  * \brief The GeneralMediaFormat enum specifies the general format of media data (PCM, MPEG-4, PNG, ...).
@@ -246,10 +247,10 @@ class TAG_PARSER_EXPORT MediaFormat {
 public:
     constexpr MediaFormat(GeneralMediaFormat general = GeneralMediaFormat::Unknown, unsigned char sub = 0, unsigned char extension = 0);
 
-    const char *name() const;
-    const char *abbreviation() const;
-    const char *shortAbbreviation() const;
-    const char *extensionName() const;
+    std::string_view name() const;
+    std::string_view abbreviation() const;
+    std::string_view shortAbbreviation() const;
+    std::string_view extensionName() const;
     constexpr operator bool() const;
     constexpr MediaFormat &operator+=(const MediaFormat &other);
     constexpr bool operator==(GeneralMediaFormat general) const;

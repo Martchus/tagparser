@@ -77,7 +77,7 @@ public:
     bool isAdditionalTypeInfoUsed() const;
     bool supportsNestedFields() const;
 
-    static typename std::string fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
+    static typename std::string fieldIdFromString(std::string_view idString);
     static std::string fieldIdToString(const std::string &id);
 };
 
@@ -101,9 +101,9 @@ inline bool MatroskaTagField::supportsNestedFields() const
  * \brief Converts the specified ID string representation to an actual ID.
  * \remarks As Matroska field IDs are text strings the string is just passed.
  */
-inline std::string MatroskaTagField::fieldIdFromString(const char *idString, std::size_t idStringSize)
+inline std::string MatroskaTagField::fieldIdFromString(std::string_view idString)
 {
-    return idStringSize != std::string::npos ? std::string(idString, idStringSize) : std::string(idString);
+    return std::string(idString);
 }
 
 /*!

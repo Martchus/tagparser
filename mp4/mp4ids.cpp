@@ -21,15 +21,15 @@ namespace Mp4TagAtomIds {
  * \brief Encapsulates "mean values" used in iTunes style MP4 tags.
  */
 namespace Mp4TagExtendedMeanIds {
-const char *iTunes = "com.apple.iTunes";
+std::string_view iTunes = "com.apple.iTunes";
 }
 
 /*!
  * \brief Encapsulates "name values" used in iTunes style MP4 tags.
  */
 namespace Mp4TagExtendedNameIds {
-const char *cdec = "cdec";
-const char *label = "LABEL";
+std::string_view cdec = "cdec";
+std::string_view label = "LABEL";
 } // namespace Mp4TagExtendedNameIds
 
 /*!
@@ -322,7 +322,7 @@ namespace Mpeg4ElementaryStreamTypeIds {
 /*!
  * \brief Returns the name of the stream type denoted by the specified MPEG-4 stream type ID.
  */
-const char *streamTypeName(std::uint8_t streamTypeId)
+std::string_view streamTypeName(std::uint8_t streamTypeId)
 {
     switch (streamTypeId) {
     case ObjectDescriptor:
@@ -430,7 +430,7 @@ namespace Mpeg4ChannelConfigs {
 /*!
  * \brief Returns the string representation for the specified MPEG-4 channel config.
  */
-const char *channelConfigString(std::uint8_t config)
+std::string_view channelConfigString(std::uint8_t config)
 {
     switch (config) {
     case AotSpecificConfig:

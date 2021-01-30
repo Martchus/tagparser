@@ -19,7 +19,7 @@ namespace MatroskaTrackType {
  * \brief Returns a string for the specified \a matroskaId
  *        if known; otherwise returns an empty string.
  */
-const char *matroskaIdName(std::uint32_t matroskaId)
+std::string_view matroskaIdName(std::uint32_t matroskaId)
 {
     using namespace EbmlIds;
     using namespace MatroskaIds;
@@ -518,7 +518,7 @@ const char *matroskaIdName(std::uint32_t matroskaId)
         return "reference time code";
 
     default:
-        return "";
+        return std::string_view();
     }
 }
 

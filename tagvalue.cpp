@@ -22,7 +22,7 @@ namespace TagParser {
 /*!
  * \brief Returns the string representation of the specified \a dataType.
  */
-const char *tagDataTypeString(TagDataType dataType)
+std::string_view tagDataTypeString(TagDataType dataType)
 {
     switch (dataType) {
     case TagDataType::Text:
@@ -655,7 +655,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         const auto genreIndex = toInteger();
         if (Id3Genres::isEmptyGenre(genreIndex)) {
             result.clear();
-        } else if (const char *genreName = Id3Genres::stringFromIndex(genreIndex)) {
+        } else if (const auto genreName = Id3Genres::stringFromIndex(genreIndex); !genreName.empty()) {
             result.assign(genreName);
         } else {
             throw ConversionException("No string representation for the assigned standard genre index available.");
@@ -739,7 +739,7 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         const auto genreIndex = toInteger();
         if (Id3Genres::isEmptyGenre(genreIndex)) {
             regularStrRes.clear();
-        } else if (const char *genreName = Id3Genres::stringFromIndex(genreIndex)) {
+        } else if (const auto genreName = Id3Genres::stringFromIndex(genreIndex); !genreName.empty()) {
             regularStrRes.assign(genreName);
         } else {
             throw ConversionException("No string representation for the assigned standard genre index available.");

@@ -516,7 +516,7 @@ calculatePadding:
             try {
                 BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
-                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(
                     DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -526,9 +526,9 @@ calculatePadding:
             // open the current file as backupStream and create a new outputStream at the specified "save file path"
             try {
                 backupStream.exceptions(ios_base::badbit | ios_base::failbit);
-                backupStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::in | ios_base::binary);
+                backupStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::binary);
                 fileInfo().close();
-                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().saveFilePath()), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().saveFilePath()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(DiagLevel::Critical, argsToString("Opening streams to write output file failed: ", failure.what()), context);
                 throw;
@@ -819,7 +819,7 @@ calculatePadding:
             }
             // the outputStream needs to be reopened to be able to read again
             outputStream.close();
-            outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::in | ios_base::out | ios_base::binary);
+            outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
             setStream(outputStream);
         } else {
             const auto newSize = static_cast<std::uint64_t>(outputStream.tellp());
@@ -828,13 +828,13 @@ calculatePadding:
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if (truncate(BasicFileInfo::pathForOpen(fileInfo().path()), static_cast<iostream::off_type>(newSize)) == 0) {
+                if (truncate(BasicFileInfo::pathForOpen(fileInfo().path()).data(), static_cast<iostream::off_type>(newSize)) == 0) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
                     diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
                 }
                 // -> reopen the stream again
-                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()), ios_base::in | ios_base::out | ios_base::binary);
+                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
             } else {
                 // file is longer after the modification -> just report new size
                 fileInfo().reportSizeChanged(newSize);

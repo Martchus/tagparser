@@ -32,7 +32,7 @@ TagType Id3v1Tag::type() const
     return TagType::Id3v1Tag;
 }
 
-const char *Id3v1Tag::typeName() const
+std::string_view Id3v1Tag::typeName() const
 {
     return tagName;
 }

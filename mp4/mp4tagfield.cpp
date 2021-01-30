@@ -53,7 +53,7 @@ Mp4TagField::Mp4TagField(IdentifierType id, const TagValue &value)
  * \sa The last paragraph of <a href="http://atomicparsley.sourceforge.net/mpeg-4files.html">Known iTunes Metadata Atoms</a>
  *     gives additional information about this form of MP4 tag fields.
  */
-Mp4TagField::Mp4TagField(const string &mean, const string &name, const TagValue &value)
+Mp4TagField::Mp4TagField(std::string_view mean, std::string_view name, const TagValue &value)
     : Mp4TagField(Mp4TagAtomIds::Extended, value)
 {
     m_name = name;

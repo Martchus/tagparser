@@ -16,6 +16,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <string_view>
 
 namespace TagParser {
 
@@ -79,18 +80,18 @@ public:
     TrackFlags flags() const;
     MediaFormat format() const;
     double version() const;
-    const char *formatName() const;
-    const char *formatAbbreviation() const;
+    std::string_view formatName() const;
+    std::string_view formatAbbreviation() const;
     const std::string &formatId() const;
     MediaType mediaType() const;
-    const char *mediaTypeName() const;
+    std::string_view mediaTypeName() const;
     std::uint64_t size() const;
     std::uint32_t trackNumber() const;
     void setTrackNumber(std::uint32_t trackNumber);
     std::uint64_t id() const;
     void setId(std::uint64_t id);
     const std::string name() const;
-    void setName(const std::string &name);
+    void setName(std::string_view name);
     const CppUtilities::TimeSpan &duration() const;
     double bitrate() const;
     double maxBitrate() const;
@@ -103,19 +104,19 @@ public:
     std::uint16_t bitsPerSample() const;
     std::uint16_t channelCount() const;
     std::uint8_t channelConfig() const;
-    const char *channelConfigString() const;
+    std::string_view channelConfigString() const;
     std::uint8_t extensionChannelConfig() const;
-    const char *extensionChannelConfigString() const;
+    std::string_view extensionChannelConfigString() const;
     std::uint64_t sampleCount() const;
     int quality() const;
     const Size &pixelSize() const;
     const Size &displaySize() const;
     const Size &resolution() const;
     const std::string &compressorName() const;
-    void setCompressorName(const std::string &compressorName);
+    void setCompressorName(std::string_view compressorName);
     std::uint16_t depth() const;
     std::uint32_t fps() const;
-    const char *chromaFormat() const;
+    std::string_view chromaFormat() const;
     const AspectRatio &pixelAspectRatio() const;
     bool isInterlaced() const;
     std::uint32_t timeScale() const;
@@ -178,7 +179,7 @@ protected:
     std::string m_compressorName;
     std::uint16_t m_depth;
     std::uint32_t m_fps;
-    const char *m_chromaFormat;
+    std::string_view m_chromaFormat;
     AspectRatio m_pixelAspectRatio;
     std::uint32_t m_timeScale;
     std::uint32_t m_colorSpace;
@@ -293,22 +294,21 @@ inline double AbstractTrack::version() const
  * \brief Returns the format of the track as C-style string if known; otherwise
  *        returns the format abbreviation or an empty string.
  * \remarks
- *  - The caller must not free the returned string.
  *  - The string might get invalidated when the track is (re)parsed.
  */
-inline const char *AbstractTrack::formatName() const
+inline std::string_view AbstractTrack::formatName() const
 {
-    return m_format || m_formatName.empty() ? m_format.name() : m_formatName.c_str();
+    return m_format || m_formatName.empty() ? m_format.name() : m_formatName;
 }
 
 /*!
  * \brief Returns the a more or less common abbreviation for the format of the track
- *        as C-style string if known; otherwise returns an empty string.
+ *        if known; otherwise returns an empty string.
  */
-inline const char *AbstractTrack::formatAbbreviation() const
+inline std::string_view AbstractTrack::formatAbbreviation() const
 {
-    const char *abbr = m_format.abbreviation();
-    return *abbr || m_formatId.empty() ? m_format.abbreviation() : m_formatId.c_str();
+    const auto abbr = m_format.abbreviation();
+    return !abbr.empty() || m_formatId.empty() ? abbr : m_formatId;
 }
 
 /*!
@@ -331,7 +331,7 @@ inline MediaType AbstractTrack::mediaType() const
 /*!
  * \brief Returns the string representation of the media type of the track.
  */
-inline const char *AbstractTrack::mediaTypeName() const
+inline std::string_view AbstractTrack::mediaTypeName() const
 {
     return ::TagParser::mediaTypeName(m_mediaType);
 }
@@ -390,7 +390,7 @@ inline const std::string AbstractTrack::name() const
  * \brief Sets the name.
  * \remarks Whether the new value is applied when saving changes depends on the implementation.
  */
-inline void AbstractTrack::setName(const std::string &name)
+inline void AbstractTrack::setName(std::string_view name)
 {
     m_name = name;
 }
@@ -560,7 +560,7 @@ inline const std::string &AbstractTrack::compressorName() const
  * \brief Returns the compressor name if known; otherwise returns an empty string.
  * \remarks Whether the new value is applied when saving changes depends on the implementation.
  */
-inline void AbstractTrack::setCompressorName(const std::string &compressorName)
+inline void AbstractTrack::setCompressorName(std::string_view compressorName)
 {
     m_compressorName = compressorName;
 }
@@ -588,7 +588,7 @@ inline std::uint32_t AbstractTrack::fps() const
  *
  * This value only makes sense for video tracks.
  */
-inline const char *AbstractTrack::chromaFormat() const
+inline std::string_view AbstractTrack::chromaFormat() const
 {
     return m_chromaFormat;
 }

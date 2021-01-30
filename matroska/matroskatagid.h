@@ -3,469 +3,471 @@
 
 #include "../tagtarget.h"
 
+#include <string_view>
+
 namespace TagParser {
 
 namespace MatroskaTagIds {
 
-constexpr TAG_PARSER_EXPORT const char *original()
+constexpr TAG_PARSER_EXPORT std::string_view original()
 {
     return "ORIGINAL";
 }
-constexpr TAG_PARSER_EXPORT const char *sample()
+constexpr TAG_PARSER_EXPORT std::string_view sample()
 {
     return "SAMPLE";
 }
-constexpr TAG_PARSER_EXPORT const char *country()
+constexpr TAG_PARSER_EXPORT std::string_view country()
 {
     return "COUNTRY";
 }
 
-constexpr TAG_PARSER_EXPORT const char *totalParts()
+constexpr TAG_PARSER_EXPORT std::string_view totalParts()
 {
     return "TOTAL_PARTS";
 }
-constexpr TAG_PARSER_EXPORT const char *partNumber()
+constexpr TAG_PARSER_EXPORT std::string_view partNumber()
 {
     return "PART_NUMBER";
 }
-constexpr TAG_PARSER_EXPORT const char *partOffset()
+constexpr TAG_PARSER_EXPORT std::string_view partOffset()
 {
     return "PART_OFFSET";
 }
 
-constexpr TAG_PARSER_EXPORT const char *title()
+constexpr TAG_PARSER_EXPORT std::string_view title()
 {
     return "TITLE";
 }
-constexpr TAG_PARSER_EXPORT const char *subtitle()
+constexpr TAG_PARSER_EXPORT std::string_view subtitle()
 {
     return "SUBTITLE";
 }
 
-constexpr TAG_PARSER_EXPORT const char *url()
+constexpr TAG_PARSER_EXPORT std::string_view url()
 {
     return "URL";
 }
-constexpr TAG_PARSER_EXPORT const char *sortWith()
+constexpr TAG_PARSER_EXPORT std::string_view sortWith()
 {
     return "SORT_WITH";
 }
-constexpr TAG_PARSER_EXPORT const char *instruments()
+constexpr TAG_PARSER_EXPORT std::string_view instruments()
 {
     return "INSTRUMENTS";
 }
-constexpr TAG_PARSER_EXPORT const char *email()
+constexpr TAG_PARSER_EXPORT std::string_view email()
 {
     return "EMAIL";
 }
-constexpr TAG_PARSER_EXPORT const char *address()
+constexpr TAG_PARSER_EXPORT std::string_view address()
 {
     return "ADDRESS";
 }
-constexpr TAG_PARSER_EXPORT const char *fax()
+constexpr TAG_PARSER_EXPORT std::string_view fax()
 {
     return "FAX";
 }
-constexpr TAG_PARSER_EXPORT const char *phone()
+constexpr TAG_PARSER_EXPORT std::string_view phone()
 {
     return "PHONE";
 }
 
-constexpr TAG_PARSER_EXPORT const char *artist()
+constexpr TAG_PARSER_EXPORT std::string_view artist()
 {
     return "ARTIST";
 }
-constexpr TAG_PARSER_EXPORT const char *album()
+constexpr TAG_PARSER_EXPORT std::string_view album()
 {
     return "ALBUM";
 }
-constexpr TAG_PARSER_EXPORT const char *leadPerformer()
+constexpr TAG_PARSER_EXPORT std::string_view leadPerformer()
 {
     return "LEAD_PERFORMER";
 }
-constexpr TAG_PARSER_EXPORT const char *accompaniment()
+constexpr TAG_PARSER_EXPORT std::string_view accompaniment()
 {
     return "ACCOMPANIMENT";
 }
-constexpr TAG_PARSER_EXPORT const char *composer()
+constexpr TAG_PARSER_EXPORT std::string_view composer()
 {
     return "COMPOSER";
 }
-constexpr TAG_PARSER_EXPORT const char *arranger()
+constexpr TAG_PARSER_EXPORT std::string_view arranger()
 {
     return "ARRANGER";
 }
-constexpr TAG_PARSER_EXPORT const char *lyrics()
+constexpr TAG_PARSER_EXPORT std::string_view lyrics()
 {
     return "LYRICS";
 }
-constexpr TAG_PARSER_EXPORT const char *lyricist()
+constexpr TAG_PARSER_EXPORT std::string_view lyricist()
 {
     return "LYRICIST";
 }
-constexpr TAG_PARSER_EXPORT const char *conductor()
+constexpr TAG_PARSER_EXPORT std::string_view conductor()
 {
     return "CONDUCTOR";
 }
-constexpr TAG_PARSER_EXPORT const char *director()
+constexpr TAG_PARSER_EXPORT std::string_view director()
 {
     return "DIRECTOR";
 }
-constexpr TAG_PARSER_EXPORT const char *assistantDirector()
+constexpr TAG_PARSER_EXPORT std::string_view assistantDirector()
 {
     return "ASSISTANT_DIRECTOR";
 }
-constexpr TAG_PARSER_EXPORT const char *directorOfPhotography()
+constexpr TAG_PARSER_EXPORT std::string_view directorOfPhotography()
 {
     return "DIRECTOR_OF_PHOTOGRAPHY";
 }
-constexpr TAG_PARSER_EXPORT const char *soundEngineer()
+constexpr TAG_PARSER_EXPORT std::string_view soundEngineer()
 {
     return "SOUND_ENGINEER";
 }
-constexpr TAG_PARSER_EXPORT const char *artDirector()
+constexpr TAG_PARSER_EXPORT std::string_view artDirector()
 {
     return "ART_DIRECTOR";
 }
-constexpr TAG_PARSER_EXPORT const char *productionDesigner()
+constexpr TAG_PARSER_EXPORT std::string_view productionDesigner()
 {
     return "PRODUCTION_DESIGNER";
 }
-constexpr TAG_PARSER_EXPORT const char *choregrapher()
+constexpr TAG_PARSER_EXPORT std::string_view choregrapher()
 {
     return "CHOREGRAPHER";
 }
-constexpr TAG_PARSER_EXPORT const char *costumeDesigner()
+constexpr TAG_PARSER_EXPORT std::string_view costumeDesigner()
 {
     return "COSTUME_DESIGNER";
 }
-constexpr TAG_PARSER_EXPORT const char *actor()
+constexpr TAG_PARSER_EXPORT std::string_view actor()
 {
     return "ACTOR";
 }
-constexpr TAG_PARSER_EXPORT const char *character()
+constexpr TAG_PARSER_EXPORT std::string_view character()
 {
     return "CHARACTER";
 }
-constexpr TAG_PARSER_EXPORT const char *writtenBy()
+constexpr TAG_PARSER_EXPORT std::string_view writtenBy()
 {
     return "WRITTEN_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *screenplayBy()
+constexpr TAG_PARSER_EXPORT std::string_view screenplayBy()
 {
     return "SCREENPLAY_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *editedBy()
+constexpr TAG_PARSER_EXPORT std::string_view editedBy()
 {
     return "EDITED_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *producer()
+constexpr TAG_PARSER_EXPORT std::string_view producer()
 {
     return "PRODUCER";
 }
-constexpr TAG_PARSER_EXPORT const char *coproducer()
+constexpr TAG_PARSER_EXPORT std::string_view coproducer()
 {
     return "COPRODUCER";
 }
-constexpr TAG_PARSER_EXPORT const char *executiveProducer()
+constexpr TAG_PARSER_EXPORT std::string_view executiveProducer()
 {
     return "EXECUTIVE_PRODUCER";
 }
-constexpr TAG_PARSER_EXPORT const char *distributedBy()
+constexpr TAG_PARSER_EXPORT std::string_view distributedBy()
 {
     return "DISTRIBUTED_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *masteredBy()
+constexpr TAG_PARSER_EXPORT std::string_view masteredBy()
 {
     return "MASTERED_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *encodedBy()
+constexpr TAG_PARSER_EXPORT std::string_view encodedBy()
 {
     return "ENCODED_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *mixedBy()
+constexpr TAG_PARSER_EXPORT std::string_view mixedBy()
 {
     return "MIXED_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *remixedBy()
+constexpr TAG_PARSER_EXPORT std::string_view remixedBy()
 {
     return "REMIXED_BY";
 }
-constexpr TAG_PARSER_EXPORT const char *productionStudio()
+constexpr TAG_PARSER_EXPORT std::string_view productionStudio()
 {
     return "PRODUCTION_STUDIO";
 }
-constexpr TAG_PARSER_EXPORT const char *thanksTo()
+constexpr TAG_PARSER_EXPORT std::string_view thanksTo()
 {
     return "THANKS_TO";
 }
-constexpr TAG_PARSER_EXPORT const char *publisher()
+constexpr TAG_PARSER_EXPORT std::string_view publisher()
 {
     return "PUBLISHER";
 }
-constexpr TAG_PARSER_EXPORT const char *label()
+constexpr TAG_PARSER_EXPORT std::string_view label()
 {
     return "LABEL";
 }
 
-constexpr TAG_PARSER_EXPORT const char *genre()
+constexpr TAG_PARSER_EXPORT std::string_view genre()
 {
     return "GENRE";
 }
-constexpr TAG_PARSER_EXPORT const char *mood()
+constexpr TAG_PARSER_EXPORT std::string_view mood()
 {
     return "MOOD";
 }
-constexpr TAG_PARSER_EXPORT const char *originalMediaType()
+constexpr TAG_PARSER_EXPORT std::string_view originalMediaType()
 {
     return "ORIGINAL_TAG_PARSER_TYPE";
 }
-constexpr TAG_PARSER_EXPORT const char *contentType()
+constexpr TAG_PARSER_EXPORT std::string_view contentType()
 {
     return "CONTENT_TYPE";
 }
-constexpr TAG_PARSER_EXPORT const char *subject()
+constexpr TAG_PARSER_EXPORT std::string_view subject()
 {
     return "SUBJECT";
 }
-constexpr TAG_PARSER_EXPORT const char *description()
+constexpr TAG_PARSER_EXPORT std::string_view description()
 {
     return "DESCRIPTION";
 }
-constexpr TAG_PARSER_EXPORT const char *keywords()
+constexpr TAG_PARSER_EXPORT std::string_view keywords()
 {
     return "KEYWORDS";
 }
-constexpr TAG_PARSER_EXPORT const char *summary()
+constexpr TAG_PARSER_EXPORT std::string_view summary()
 {
     return "SUMMARY";
 }
-constexpr TAG_PARSER_EXPORT const char *synopsis()
+constexpr TAG_PARSER_EXPORT std::string_view synopsis()
 {
     return "SYNOPSIS";
 }
-constexpr TAG_PARSER_EXPORT const char *initialKey()
+constexpr TAG_PARSER_EXPORT std::string_view initialKey()
 {
     return "INITIAL_KEY";
 }
-constexpr TAG_PARSER_EXPORT const char *period()
+constexpr TAG_PARSER_EXPORT std::string_view period()
 {
     return "PERIOD";
 }
-constexpr TAG_PARSER_EXPORT const char *lawRating()
+constexpr TAG_PARSER_EXPORT std::string_view lawRating()
 {
     return "LAW_RATING";
 }
-constexpr TAG_PARSER_EXPORT const char *icra()
+constexpr TAG_PARSER_EXPORT std::string_view icra()
 {
     return "ICRA";
 }
 
-constexpr TAG_PARSER_EXPORT const char *dateRelease()
+constexpr TAG_PARSER_EXPORT std::string_view dateRelease()
 {
     return "DATE_RELEASED";
 }
-constexpr TAG_PARSER_EXPORT const char *dateRecorded()
+constexpr TAG_PARSER_EXPORT std::string_view dateRecorded()
 {
     return "DATE_RECORDED";
 }
-constexpr TAG_PARSER_EXPORT const char *dateEncoded()
+constexpr TAG_PARSER_EXPORT std::string_view dateEncoded()
 {
     return "DATE_ENCODED";
 }
-constexpr TAG_PARSER_EXPORT const char *dateTagged()
+constexpr TAG_PARSER_EXPORT std::string_view dateTagged()
 {
     return "DATE_TAGGED";
 }
-constexpr TAG_PARSER_EXPORT const char *dateDigitized()
+constexpr TAG_PARSER_EXPORT std::string_view dateDigitized()
 {
     return "DATE_DIGITIZED";
 }
-constexpr TAG_PARSER_EXPORT const char *dateWritten()
+constexpr TAG_PARSER_EXPORT std::string_view dateWritten()
 {
     return "DATE_WRITTEN";
 }
-constexpr TAG_PARSER_EXPORT const char *datePurchased()
+constexpr TAG_PARSER_EXPORT std::string_view datePurchased()
 {
     return "DATE_PURCHASED";
 }
 
-constexpr TAG_PARSER_EXPORT const char *recordingLocation()
+constexpr TAG_PARSER_EXPORT std::string_view recordingLocation()
 {
     return "RECORDING_LOCATION";
 }
-constexpr TAG_PARSER_EXPORT const char *compositionLocation()
+constexpr TAG_PARSER_EXPORT std::string_view compositionLocation()
 {
     return "COMPOSITION_LOCATION";
 }
-constexpr TAG_PARSER_EXPORT const char *composerNationality()
+constexpr TAG_PARSER_EXPORT std::string_view composerNationality()
 {
     return "COMPOSER_NATIONALITY";
 }
 
-constexpr TAG_PARSER_EXPORT const char *comment()
+constexpr TAG_PARSER_EXPORT std::string_view comment()
 {
     return "COMMENT";
 }
-constexpr TAG_PARSER_EXPORT const char *playCounter()
+constexpr TAG_PARSER_EXPORT std::string_view playCounter()
 {
     return "PLAY_COUNTER";
 }
-constexpr TAG_PARSER_EXPORT const char *rating()
+constexpr TAG_PARSER_EXPORT std::string_view rating()
 {
     return "RATING";
 }
 
-constexpr TAG_PARSER_EXPORT const char *encoder()
+constexpr TAG_PARSER_EXPORT std::string_view encoder()
 {
     return "ENCODER";
 }
-constexpr TAG_PARSER_EXPORT const char *encoderSettings()
+constexpr TAG_PARSER_EXPORT std::string_view encoderSettings()
 {
     return "ENCODER_SETTINGS";
 }
-constexpr TAG_PARSER_EXPORT const char *bps()
+constexpr TAG_PARSER_EXPORT std::string_view bps()
 {
     return "BPS";
 }
-constexpr TAG_PARSER_EXPORT const char *fps()
+constexpr TAG_PARSER_EXPORT std::string_view fps()
 {
     return "FPS";
 }
-constexpr TAG_PARSER_EXPORT const char *bpm()
+constexpr TAG_PARSER_EXPORT std::string_view bpm()
 {
     return "BPM";
 }
-constexpr TAG_PARSER_EXPORT const char *duration()
+constexpr TAG_PARSER_EXPORT std::string_view duration()
 {
     return "DURATION";
 }
-constexpr TAG_PARSER_EXPORT const char *language()
+constexpr TAG_PARSER_EXPORT std::string_view language()
 {
     return "LANGUAGE";
 }
-constexpr TAG_PARSER_EXPORT const char *numberOfFrames()
+constexpr TAG_PARSER_EXPORT std::string_view numberOfFrames()
 {
     return "NUMBER_OF_FRAMES";
 }
-constexpr TAG_PARSER_EXPORT const char *numberOfBytes()
+constexpr TAG_PARSER_EXPORT std::string_view numberOfBytes()
 {
     return "NUMBER_OF_BYTES";
 }
-constexpr TAG_PARSER_EXPORT const char *measure()
+constexpr TAG_PARSER_EXPORT std::string_view measure()
 {
     return "MEASURE";
 }
-constexpr TAG_PARSER_EXPORT const char *tuning()
+constexpr TAG_PARSER_EXPORT std::string_view tuning()
 {
     return "TUNING";
 }
-constexpr TAG_PARSER_EXPORT const char *replaygainGain()
+constexpr TAG_PARSER_EXPORT std::string_view replaygainGain()
 {
     return "REPLAYGAIN_GAIN";
 }
-constexpr TAG_PARSER_EXPORT const char *replaygainPeak()
+constexpr TAG_PARSER_EXPORT std::string_view replaygainPeak()
 {
     return "REPLAYGAIN_PEAK";
 }
-constexpr TAG_PARSER_EXPORT const char *identifiers()
+constexpr TAG_PARSER_EXPORT std::string_view identifiers()
 {
     return "Identifiers";
 }
-constexpr TAG_PARSER_EXPORT const char *isrc()
+constexpr TAG_PARSER_EXPORT std::string_view isrc()
 {
     return "ISRC";
 }
-constexpr TAG_PARSER_EXPORT const char *mcdi()
+constexpr TAG_PARSER_EXPORT std::string_view mcdi()
 {
     return "MCDI";
 }
-constexpr TAG_PARSER_EXPORT const char *isbn()
+constexpr TAG_PARSER_EXPORT std::string_view isbn()
 {
     return "ISBN";
 }
-constexpr TAG_PARSER_EXPORT const char *barcode()
+constexpr TAG_PARSER_EXPORT std::string_view barcode()
 {
     return "BARCODE";
 }
-constexpr TAG_PARSER_EXPORT const char *catalogNumber()
+constexpr TAG_PARSER_EXPORT std::string_view catalogNumber()
 {
     return "CATALOG_NUMBER";
 }
-constexpr TAG_PARSER_EXPORT const char *labelCode()
+constexpr TAG_PARSER_EXPORT std::string_view labelCode()
 {
     return "LABEL_CODE";
 }
-constexpr TAG_PARSER_EXPORT const char *lccn()
+constexpr TAG_PARSER_EXPORT std::string_view lccn()
 {
     return "LCCN";
 }
 
-constexpr TAG_PARSER_EXPORT const char *purchaseItem()
+constexpr TAG_PARSER_EXPORT std::string_view purchaseItem()
 {
     return "PURCHASE_ITEM";
 }
-constexpr TAG_PARSER_EXPORT const char *purchaseInfo()
+constexpr TAG_PARSER_EXPORT std::string_view purchaseInfo()
 {
     return "PURCHASE_INFO";
 }
-constexpr TAG_PARSER_EXPORT const char *purchaseOwner()
+constexpr TAG_PARSER_EXPORT std::string_view purchaseOwner()
 {
     return "PURCHASE_OWNER";
 }
-constexpr TAG_PARSER_EXPORT const char *purchasePrice()
+constexpr TAG_PARSER_EXPORT std::string_view purchasePrice()
 {
     return "PURCHASE_PRICE";
 }
-constexpr TAG_PARSER_EXPORT const char *purchaseCurrency()
+constexpr TAG_PARSER_EXPORT std::string_view purchaseCurrency()
 {
     return "PURCHASE_CURRENCY";
 }
 
-constexpr TAG_PARSER_EXPORT const char *copyright()
+constexpr TAG_PARSER_EXPORT std::string_view copyright()
 {
     return "COPYRIGHT";
 }
-constexpr TAG_PARSER_EXPORT const char *productionCopyright()
+constexpr TAG_PARSER_EXPORT std::string_view productionCopyright()
 {
     return "PRODUCTION_COPYRIGHT";
 }
-constexpr TAG_PARSER_EXPORT const char *license()
+constexpr TAG_PARSER_EXPORT std::string_view license()
 {
     return "LICENSE";
 }
-constexpr TAG_PARSER_EXPORT const char *termsOfUse()
+constexpr TAG_PARSER_EXPORT std::string_view termsOfUse()
 {
     return "TERMS_OF_USE";
 }
 
 namespace TrackSpecific {
-constexpr TAG_PARSER_EXPORT const char *numberOfBytes()
+constexpr TAG_PARSER_EXPORT std::string_view numberOfBytes()
 {
     return "NUMBER_OF_BYTES";
 }
-constexpr TAG_PARSER_EXPORT const char *numberOfFrames()
+constexpr TAG_PARSER_EXPORT std::string_view numberOfFrames()
 {
     return "NUMBER_OF_FRAMES";
 }
-constexpr TAG_PARSER_EXPORT const char *duration()
+constexpr TAG_PARSER_EXPORT std::string_view duration()
 {
     return "DURATION";
 }
 /// \brief The track's bit rate in bits per second.
-constexpr TAG_PARSER_EXPORT const char *bitrate()
+constexpr TAG_PARSER_EXPORT std::string_view bitrate()
 {
     return "BPS";
 }
-constexpr TAG_PARSER_EXPORT const char *writingApp()
+constexpr TAG_PARSER_EXPORT std::string_view writingApp()
 {
     return "_STATISTICS_WRITING_APP";
 }
-constexpr TAG_PARSER_EXPORT const char *writingDate()
+constexpr TAG_PARSER_EXPORT std::string_view writingDate()
 {
     return "_STATISTICS_WRITING_DATE_UTC";
 }
-constexpr TAG_PARSER_EXPORT const char *statisticsTags()
+constexpr TAG_PARSER_EXPORT std::string_view statisticsTags()
 {
     return "_STATISTICS_TAGS";
 }

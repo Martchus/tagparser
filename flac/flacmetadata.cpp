@@ -26,11 +26,11 @@ namespace TagParser {
  * \brief Parses the FLAC "METADATA_BLOCK_HEADER" which is read using the specified \a iterator.
  * \remarks The specified \a buffer must be at least 4 bytes long.
  */
-void FlacMetaDataBlockHeader::parseHeader(const char *buffer)
+void FlacMetaDataBlockHeader::parseHeader(std::string_view buffer)
 {
-    m_last = *buffer & 0x80;
-    m_type = *buffer & (0x80 - 1);
-    m_dataSize = BE::toUInt24(buffer + 1);
+    m_last = buffer[0] & 0x80;
+    m_type = buffer[0] & (0x80 - 1);
+    m_dataSize = BE::toUInt24(buffer.data() + 1);
 }
 
 /*!
@@ -55,9 +55,9 @@ void FlacMetaDataBlockHeader::makeHeader(std::ostream &outputStream)
  * \brief Parses the FLAC "METADATA_BLOCK_STREAMINFO" which is read using the specified \a iterator.
  * \remarks The specified \a buffer must be at least 0x22 bytes long.
  */
-void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
+void FlacMetaDataBlockStreamInfo::parse(std::string_view buffer)
 {
-    BitReader reader(buffer, 0x22);
+    auto reader = BitReader(buffer.data(), 0x22);
     m_minBlockSize = reader.readBits<std::uint16_t>(16);
     m_maxBlockSize = reader.readBits<std::uint16_t>(16);
     m_minFrameSize = reader.readBits<std::uint32_t>(24);
@@ -66,7 +66,7 @@ void FlacMetaDataBlockStreamInfo::parse(const char *buffer)
     m_channelCount = reader.readBits<std::uint8_t>(3) + 1;
     m_bitsPerSample = reader.readBits<std::uint8_t>(5) + 1;
     m_totalSampleCount = reader.readBits<std::uint64_t>(36);
-    memcpy(m_md5Sum, buffer + 0x22 - sizeof(m_md5Sum), sizeof(m_md5Sum));
+    std::memcpy(m_md5Sum, buffer.data() + 0x22 - sizeof(m_md5Sum), sizeof(m_md5Sum));
 }
 
 /*!

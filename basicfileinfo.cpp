@@ -20,7 +20,7 @@ namespace TagParser {
  *
  * \param path Specifies the absolute or relative path of the file.
  */
-BasicFileInfo::BasicFileInfo(const std::string &path)
+BasicFileInfo::BasicFileInfo(std::string_view path)
     : m_path(path)
     , m_size(0)
     , m_readOnly(false)
@@ -59,7 +59,8 @@ void BasicFileInfo::open(bool readOnly)
 void BasicFileInfo::reopen(bool readOnly)
 {
     invalidated();
-    m_file.open(pathForOpen(path()), (m_readOnly = readOnly) ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
+    m_file.open(
+        pathForOpen(path()).data(), (m_readOnly = readOnly) ? ios_base::in | ios_base::binary : ios_base::in | ios_base::out | ios_base::binary);
     m_file.seekg(0, ios_base::end);
     m_size = static_cast<std::uint64_t>(m_file.tellg());
     m_file.seekg(0, ios_base::beg);
@@ -91,7 +92,7 @@ void BasicFileInfo::invalidate()
  *
  * \param path Specifies the absolute or relative path of the file to be set.
  */
-void BasicFileInfo::setPath(const string &path)
+void BasicFileInfo::setPath(std::string_view path)
 {
     if (path != m_path) {
         invalidated();
@@ -138,13 +139,13 @@ string BasicFileInfo::fileName(bool cutExtension) const
  *
  * \param path Specifies the path of the file.
  */
-string BasicFileInfo::extension(const string &path)
+std::string BasicFileInfo::extension(std::string_view path)
 {
-    size_t lastPoint = path.rfind('.');
-    if (lastPoint == string::npos) {
-        return string();
+    std::size_t lastPoint = path.rfind('.');
+    if (lastPoint == std::string::npos) {
+        return std::string();
     } else {
-        return path.substr(lastPoint);
+        return std::string(path.data() + lastPoint, path.size() - lastPoint);
     }
 }
 

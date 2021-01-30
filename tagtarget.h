@@ -15,7 +15,7 @@ namespace TagParser {
  */
 enum class TagTargetLevel : unsigned char { Unspecified, Shot, Subtrack, Track, Part, Album, Edition, Collection };
 
-TAG_PARSER_EXPORT const char *tagTargetLevelName(TagTargetLevel tagTargetLevel);
+TAG_PARSER_EXPORT std::string_view tagTargetLevelName(TagTargetLevel tagTargetLevel);
 
 class TAG_PARSER_EXPORT TagTarget {
 public:

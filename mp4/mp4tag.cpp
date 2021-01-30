@@ -35,10 +35,7 @@ Mp4ExtendedFieldId::Mp4ExtendedFieldId(KnownField field)
         name = Mp4TagExtendedNameIds::label;
         updateOnly = true; // set record label via extended field only if extended field is already present
         break;
-    default:
-        mean = nullptr;
-        name = nullptr;
-        updateOnly = false;
+    default:;
     }
 }
 
@@ -109,7 +106,7 @@ std::vector<const TagValue *> Mp4Tag::values(KnownField field) const
  * \remarks
  * - If there are multiple fields with specified \a mean and \a name only the first value will be returned.
  */
-const TagValue &Mp4Tag::value(const char *mean, const char *name) const
+const TagValue &Mp4Tag::value(std::string_view mean, std::string_view name) const
 {
     auto range = fields().equal_range(Mp4TagAtomIds::Extended);
     for (auto i = range.first; i != range.second; ++i) {
@@ -301,7 +298,7 @@ bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
  * - If no field is present, a new one will be created.
  * - If \a value is empty, the field will be removed.
  */
-bool Mp4Tag::setValue(const char *mean, const char *name, const TagValue &value)
+bool Mp4Tag::setValue(std::string_view mean, std::string_view name, const TagValue &value)
 {
     auto range = fields().equal_range(Mp4TagAtomIds::Extended);
     for (auto i = range.first; i != range.second; ++i) {

@@ -3,6 +3,8 @@
 
 #include "../global.h"
 
+#include <string_view>
+
 namespace TagParser {
 
 /*!
@@ -11,163 +13,163 @@ namespace TagParser {
  */
 namespace VorbisCommentIds {
 
-constexpr TAG_PARSER_EXPORT const char *trackNumber()
+constexpr TAG_PARSER_EXPORT std::string_view trackNumber()
 {
     return "TRACKNUMBER";
 }
-constexpr TAG_PARSER_EXPORT const char *diskNumber()
+constexpr TAG_PARSER_EXPORT std::string_view diskNumber()
 {
     return "DISCNUMBER";
 }
-constexpr TAG_PARSER_EXPORT const char *part()
+constexpr TAG_PARSER_EXPORT std::string_view part()
 {
     return "PART";
 }
-constexpr TAG_PARSER_EXPORT const char *partNumber()
+constexpr TAG_PARSER_EXPORT std::string_view partNumber()
 {
     return "PARTNUMBER";
 }
-constexpr TAG_PARSER_EXPORT const char *title()
+constexpr TAG_PARSER_EXPORT std::string_view title()
 {
     return "TITLE";
 }
-constexpr TAG_PARSER_EXPORT const char *version()
+constexpr TAG_PARSER_EXPORT std::string_view version()
 {
     return "VERSION";
 }
-constexpr TAG_PARSER_EXPORT const char *artist()
+constexpr TAG_PARSER_EXPORT std::string_view artist()
 {
     return "ARTIST";
 }
-constexpr TAG_PARSER_EXPORT const char *albumArtist()
+constexpr TAG_PARSER_EXPORT std::string_view albumArtist()
 {
     return "ALBUMARTIST";
 }
-constexpr TAG_PARSER_EXPORT const char *grouping()
+constexpr TAG_PARSER_EXPORT std::string_view grouping()
 {
     return "GROUPING";
 }
-constexpr TAG_PARSER_EXPORT const char *album()
+constexpr TAG_PARSER_EXPORT std::string_view album()
 {
     return "ALBUM";
 }
-constexpr TAG_PARSER_EXPORT const char *label()
+constexpr TAG_PARSER_EXPORT std::string_view label()
 {
     return "LABEL";
 }
-constexpr TAG_PARSER_EXPORT const char *labelNo()
+constexpr TAG_PARSER_EXPORT std::string_view labelNo()
 {
     return "LABELNO";
 }
-constexpr TAG_PARSER_EXPORT const char *language()
+constexpr TAG_PARSER_EXPORT std::string_view language()
 {
     return "LANGUAGE";
 }
-constexpr TAG_PARSER_EXPORT const char *performer()
+constexpr TAG_PARSER_EXPORT std::string_view performer()
 {
     return "PERFORMER";
 }
-constexpr TAG_PARSER_EXPORT const char *composer()
+constexpr TAG_PARSER_EXPORT std::string_view composer()
 {
     return "COMPOSER";
 }
-constexpr TAG_PARSER_EXPORT const char *ensemble()
+constexpr TAG_PARSER_EXPORT std::string_view ensemble()
 {
     return "ENSEMBLE";
 }
-constexpr TAG_PARSER_EXPORT const char *arranger()
+constexpr TAG_PARSER_EXPORT std::string_view arranger()
 {
     return "ARRANGER";
 }
-constexpr TAG_PARSER_EXPORT const char *lyricist()
+constexpr TAG_PARSER_EXPORT std::string_view lyricist()
 {
     return "LYRICIST";
 }
-constexpr TAG_PARSER_EXPORT const char *lyrics()
+constexpr TAG_PARSER_EXPORT std::string_view lyrics()
 {
     return "LYRICS";
 }
-constexpr TAG_PARSER_EXPORT const char *author()
+constexpr TAG_PARSER_EXPORT std::string_view author()
 {
     return "AUTHOR";
 }
-constexpr TAG_PARSER_EXPORT const char *conductor()
+constexpr TAG_PARSER_EXPORT std::string_view conductor()
 {
     return "CONDUCTOR";
 }
-constexpr TAG_PARSER_EXPORT const char *encoder()
+constexpr TAG_PARSER_EXPORT std::string_view encoder()
 {
     return "ENCODER";
 }
-constexpr TAG_PARSER_EXPORT const char *encoderSettings()
+constexpr TAG_PARSER_EXPORT std::string_view encoderSettings()
 {
     return "ENCODER_OPTIONS";
 }
-constexpr TAG_PARSER_EXPORT const char *publisher()
+constexpr TAG_PARSER_EXPORT std::string_view publisher()
 {
     return "PUBLISHER";
 }
-constexpr TAG_PARSER_EXPORT const char *genre()
+constexpr TAG_PARSER_EXPORT std::string_view genre()
 {
     return "GENRE";
 }
-constexpr TAG_PARSER_EXPORT const char *originalMediaType()
+constexpr TAG_PARSER_EXPORT std::string_view originalMediaType()
 {
     return "ORIGINAL_TAG_PARSER_TYPE";
 }
-constexpr TAG_PARSER_EXPORT const char *contentType()
+constexpr TAG_PARSER_EXPORT std::string_view contentType()
 {
     return "CONTENT_TYPE";
 }
-constexpr TAG_PARSER_EXPORT const char *subject()
+constexpr TAG_PARSER_EXPORT std::string_view subject()
 {
     return "SUBJECT";
 }
-constexpr TAG_PARSER_EXPORT const char *description()
+constexpr TAG_PARSER_EXPORT std::string_view description()
 {
     return "DESCRIPTION";
 }
-constexpr TAG_PARSER_EXPORT const char *isrc()
+constexpr TAG_PARSER_EXPORT std::string_view isrc()
 {
     return "ISRC";
 }
-constexpr TAG_PARSER_EXPORT const char *eanupn()
+constexpr TAG_PARSER_EXPORT std::string_view eanupn()
 {
     return "EAN/UPN";
 }
-constexpr TAG_PARSER_EXPORT const char *comment()
+constexpr TAG_PARSER_EXPORT std::string_view comment()
 {
     return "COMMENT";
 }
-constexpr TAG_PARSER_EXPORT const char *date()
+constexpr TAG_PARSER_EXPORT std::string_view date()
 {
     return "DATE";
 }
-constexpr TAG_PARSER_EXPORT const char *year()
+constexpr TAG_PARSER_EXPORT std::string_view year()
 {
     return "YEAR"; // not mentioned in https://xiph.org/vorbis/doc/v-comment.html but seen in the wild
 }
-constexpr TAG_PARSER_EXPORT const char *location()
+constexpr TAG_PARSER_EXPORT std::string_view location()
 {
     return "LOCATION";
 }
-constexpr TAG_PARSER_EXPORT const char *license()
+constexpr TAG_PARSER_EXPORT std::string_view license()
 {
     return "LICENSE";
 }
-constexpr TAG_PARSER_EXPORT const char *copyright()
+constexpr TAG_PARSER_EXPORT std::string_view copyright()
 {
     return "COPYRIGHT";
 }
-constexpr TAG_PARSER_EXPORT const char *opus()
+constexpr TAG_PARSER_EXPORT std::string_view opus()
 {
     return "OPUS";
 }
-constexpr TAG_PARSER_EXPORT const char *sourceMedia()
+constexpr TAG_PARSER_EXPORT std::string_view sourceMedia()
 {
     return "SOURCEMEDIA";
 }
-constexpr TAG_PARSER_EXPORT const char *cover()
+constexpr TAG_PARSER_EXPORT std::string_view cover()
 {
     return "METADATA_BLOCK_PICTURE";
 }

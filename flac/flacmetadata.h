@@ -29,7 +29,7 @@ class TAG_PARSER_EXPORT FlacMetaDataBlockHeader {
 public:
     constexpr FlacMetaDataBlockHeader();
 
-    void parseHeader(const char *buffer);
+    void parseHeader(std::string_view buffer);
     void makeHeader(std::ostream &outputStream);
 
     constexpr std::uint8_t isLast() const;
@@ -110,7 +110,7 @@ class TAG_PARSER_EXPORT FlacMetaDataBlockStreamInfo {
 public:
     constexpr FlacMetaDataBlockStreamInfo();
 
-    void parse(const char *buffer);
+    void parse(std::string_view buffer);
 
     constexpr std::uint16_t minBlockSize() const;
     constexpr std::uint16_t maxBlockSize() const;

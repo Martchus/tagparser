@@ -11,24 +11,24 @@ class Mp4Atom;
 class Mp4Tag;
 
 struct TAG_PARSER_EXPORT Mp4ExtendedFieldId {
-    Mp4ExtendedFieldId(const char *mean = nullptr, const char *name = nullptr, bool updateOnly = false);
+    Mp4ExtendedFieldId(std::string_view mean, std::string_view name, bool updateOnly = false);
     Mp4ExtendedFieldId(KnownField field);
 
     operator bool() const;
     bool matches(const Mp4TagField &field) const;
 
     /// \brief mean parameter, usually Mp4TagExtendedMeanIds::iTunes
-    const char *mean;
+    std::string_view mean;
     /// \brief name parameter
-    const char *name;
+    std::string_view name;
     /// \brief Whether only existing fields should be updated but *no* new extended field should be created
-    bool updateOnly;
+    bool updateOnly = false;
 };
 
 /*!
  * \brief Constructs a new instance with the specified parameter.
  */
-inline Mp4ExtendedFieldId::Mp4ExtendedFieldId(const char *mean, const char *name, bool updateOnly)
+inline Mp4ExtendedFieldId::Mp4ExtendedFieldId(std::string_view mean, std::string_view name, bool updateOnly)
     : mean(mean)
     , name(name)
     , updateOnly(updateOnly)
@@ -40,7 +40,7 @@ inline Mp4ExtendedFieldId::Mp4ExtendedFieldId(const char *mean, const char *name
  */
 inline Mp4ExtendedFieldId::operator bool() const
 {
-    return mean && name;
+    return !mean.empty() && !name.empty();
 }
 
 /*!
@@ -101,7 +101,7 @@ public:
     Mp4Tag();
 
     static constexpr TagType tagType = TagType::Mp4Tag;
-    static constexpr const char *tagName = "MP4/iTunes tag";
+    static constexpr std::string_view tagName = "MP4/iTunes tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;
 
@@ -110,14 +110,12 @@ public:
     const TagValue &value(KnownField value) const override;
     using FieldMapBasedTag<Mp4Tag>::values;
     std::vector<const TagValue *> values(KnownField field) const override;
-    const TagValue &value(const std::string &mean, const std::string &name) const;
-    const TagValue &value(const char *mean, const char *name) const;
+    const TagValue &value(std::string_view mean, std::string_view name) const;
     using FieldMapBasedTag<Mp4Tag>::setValue;
     bool setValue(KnownField field, const TagValue &value) override;
     using FieldMapBasedTag<Mp4Tag>::setValues;
     bool setValues(KnownField field, const std::vector<TagValue> &values) override;
-    bool setValue(const std::string &mean, const std::string &name, const TagValue &value);
-    bool setValue(const char *mean, const char *name, const TagValue &value);
+    bool setValue(std::string_view mean, std::string_view name, const TagValue &value);
     using FieldMapBasedTag<Mp4Tag>::hasField;
     bool hasField(KnownField value) const override;
     bool supportsMultipleValues(KnownField) const override;
@@ -147,22 +145,6 @@ inline bool Mp4Tag::supportsField(KnownField field) const
     default:
         return FieldMapBasedTag<Mp4Tag>::supportsField(field);
     }
-}
-
-/*!
- * \brief Returns the value of the field with the specified \a mean and \a name attributes.
- */
-inline const TagValue &Mp4Tag::value(const std::string &mean, const std::string &name) const
-{
-    return value(mean.data(), name.data());
-}
-
-/*!
- * \brief Assigns the given \a value to the field with the specified \a mean and \a name attributes.
- */
-inline bool Mp4Tag::setValue(const std::string &mean, const std::string &name, const TagValue &value)
-{
-    return setValue(mean.data(), name.data(), value);
 }
 
 /*!

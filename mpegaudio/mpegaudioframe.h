@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <string_view>
 
 namespace CppUtilities {
 class BinaryReader;
@@ -23,7 +24,7 @@ enum class MpegChannelMode {
     Unspecifed /**< used to indicate that the channel mode is unknown */
 };
 
-TAG_PARSER_EXPORT const char *mpegChannelModeString(MpegChannelMode channelMode);
+TAG_PARSER_EXPORT std::string_view mpegChannelModeString(MpegChannelMode channelMode);
 
 enum class XingHeaderFlags {
     None = 0x0u, /**< No Xing frames are present  */
