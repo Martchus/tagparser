@@ -87,7 +87,9 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
             dataAtom->parse(diag);
             if (dataAtom->id() == Mp4AtomIds::Data) {
                 if (dataAtom->dataSize() < 8) {
-                    diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"data\" in tag atom (ilst child) found. (will be ignored)", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "Truncated child atom \"data\" in tag atom (ilst child) found. It will be ignored and discarded when applying changes.",
+                        context);
                     continue;
                 }
                 auto *val = &value();
@@ -96,8 +98,9 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 auto *languageIndicator = &m_langIndicator;
                 if (++dataAtomFound > 1) {
                     if (dataAtomFound == 2) {
-                        diag.emplace_back(
-                            DiagLevel::Warning, "Multiple \"data\" child atom in tag atom (ilst child) found. (will be ignored)", context);
+                        diag.emplace_back(DiagLevel::Warning,
+                            "Multiple \"data\" child atom in tag atom (ilst child) found. It will be ignored but preserved when applying changes.",
+                            context);
                     }
                     auto &additionalData = m_additionalData.emplace_back();
                     val = &additionalData.value;
@@ -234,13 +237,17 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 }
             } else if (dataAtom->id() == Mp4AtomIds::Mean) {
                 if (dataAtom->dataSize() < 8) {
-                    diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"mean\" in tag atom (ilst child) found. (will be ignored)", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "Truncated child atom \"mean\" in tag atom (ilst child) found. It will be ignored and discarded when applying changes.",
+                        context);
                     continue;
                 }
                 if (++meanAtomFound > 1) {
                     if (meanAtomFound == 2) {
-                        diag.emplace_back(
-                            DiagLevel::Warning, "Tag atom contains more than one mean atom. The addiational mean atoms will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning,
+                            "Tag atom contains more than one mean atom. The additional mean atoms will be ignored and discarded when applying "
+                            "changes.",
+                            context);
                     }
                     continue;
                 }
@@ -248,13 +255,17 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 m_mean = reader.readString(dataAtom->dataSize() - 4);
             } else if (dataAtom->id() == Mp4AtomIds::Name) {
                 if (dataAtom->dataSize() < 4) {
-                    diag.emplace_back(DiagLevel::Warning, "Truncated child atom \"name\" in tag atom (ilst child) found. (will be ignored)", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        "Truncated child atom \"name\" in tag atom (ilst child) found. It will be ignored and discarded when applying changes.",
+                        context);
                     continue;
                 }
                 if (++nameAtomFound > 1) {
                     if (nameAtomFound == 2) {
-                        diag.emplace_back(
-                            DiagLevel::Warning, "Tag atom contains more than one name atom. The addiational name atoms will be ignored.", context);
+                        diag.emplace_back(DiagLevel::Warning,
+                            "Tag atom contains more than one name atom. The addiational name atoms will be ignored and discarded when applying "
+                            "changes.",
+                            context);
                     }
                     continue;
                 }
@@ -262,10 +273,15 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 m_name = reader.readString(dataAtom->dataSize() - 4);
             } else {
                 diag.emplace_back(DiagLevel::Warning,
-                    "Unkown child atom \"" % dataAtom->idToString() + "\" in tag atom (ilst child) found. (will be ignored)", context);
+                    "Unkown child atom \"" % dataAtom->idToString()
+                        + "\" in tag atom (ilst child) found. It will be ignored and discarded when applying changes.",
+                    context);
             }
         } catch (const Failure &) {
-            diag.emplace_back(DiagLevel::Warning, "Unable to parse all children atom in tag atom (ilst child) found. (will be ignored)", context);
+            diag.emplace_back(DiagLevel::Warning,
+                "Unable to parse all children atom in tag atom (ilst child) found. Invalid children will be ignored and discarded when applying "
+                "changes.",
+                context);
         }
     }
     if (value().isEmpty()) {
