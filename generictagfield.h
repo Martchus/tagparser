@@ -64,6 +64,10 @@ public:
     std::vector<ImplementationType> &nestedFields();
     bool supportsNestedFields() const;
 
+protected:
+    void internallyClearValue();
+    void internallyClearFurtherData();
+
 private:
     IdentifierType m_id;
     TagValue m_value;
@@ -164,7 +168,7 @@ template <class ImplementationType> inline void TagField<ImplementationType>::se
  */
 template <class ImplementationType> inline void TagField<ImplementationType>::clearValue()
 {
-    m_value.clearDataAndMetadata();
+    static_cast<ImplementationType *>(this)->internallyClearValue();
 }
 
 /*!
@@ -224,10 +228,10 @@ template <class ImplementationType> void TagField<ImplementationType>::clear()
 {
     clearId();
     clearValue();
+    static_cast<ImplementationType *>(this)->internallyClearFurtherData();
     m_typeInfo = TypeInfoType();
     m_typeInfoAssigned = false;
     m_default = true;
-    static_cast<ImplementationType *>(this)->reset();
 }
 
 /*!
@@ -265,6 +269,23 @@ template <class ImplementationType> inline std::vector<ImplementationType> &TagF
 template <class ImplementationType> inline bool TagField<ImplementationType>::supportsNestedFields() const
 {
     return static_cast<ImplementationType *>(this)->supportsNestedFields();
+}
+
+/*!
+ * \brief Clears the assigned value; called via clearValue() and clear().
+ * \remarks Shadow when subclassing to customize clearning a value.
+ */
+template <class ImplementationType> void TagField<ImplementationType>::internallyClearValue()
+{
+    m_value.clearDataAndMetadata();
+}
+
+/*!
+ * \brief Clears further data; called via clear().
+ * \remarks Shadow when subclassing to clear further data the subclass has.
+ */
+template <class ImplementationType> void TagField<ImplementationType>::internallyClearFurtherData()
+{
 }
 
 } // namespace TagParser

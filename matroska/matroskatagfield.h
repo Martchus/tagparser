@@ -79,9 +79,6 @@ public:
 
     static typename std::string fieldIdFromString(const char *idString, std::size_t idStringSize = std::string::npos);
     static std::string fieldIdToString(const std::string &id);
-
-private:
-    void reset();
 };
 
 /*!
@@ -116,13 +113,6 @@ inline std::string MatroskaTagField::fieldIdFromString(const char *idString, std
 inline std::string MatroskaTagField::fieldIdToString(const std::string &id)
 {
     return id;
-}
-
-/*!
- * \brief Resets Matroska-specific values. Called via clear().
- */
-inline void MatroskaTagField::reset()
-{
 }
 
 } // namespace TagParser

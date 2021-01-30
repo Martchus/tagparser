@@ -147,7 +147,8 @@ public:
     static std::string fieldIdToString(IdentifierType id);
 
 private:
-    void reset();
+    void internallyClearValue();
+    void internallyClearFurtherData();
     std::string m_name;
     std::string m_mean;
     std::vector<AdditionalData> m_additionalData;

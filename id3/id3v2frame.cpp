@@ -398,9 +398,18 @@ void Id3v2Frame::make(BinaryWriter &writer, std::uint8_t version, Diagnostics &d
 }
 
 /*!
- * \brief Resets ID3v2-specific values. Called via clear().
+ * \brief Clears ID3v2-specific values. Called via clear() and clearValue().
  */
-void Id3v2Frame::reset()
+void Id3v2Frame::internallyClearValue()
+{
+    value().clearDataAndMetadata();
+    m_additionalValues.clear();
+}
+
+/*!
+ * \brief Clears ID3v2-specific values. Called via clear().
+ */
+void Id3v2Frame::internallyClearFurtherData()
 {
     m_flag = 0;
     m_group = 0;
@@ -408,7 +417,6 @@ void Id3v2Frame::reset()
     m_dataSize = 0;
     m_totalSize = 0;
     m_padding = false;
-    m_additionalValues.clear();
 }
 
 /*!

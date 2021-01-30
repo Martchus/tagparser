@@ -144,7 +144,8 @@ public:
     static std::string fieldIdToString(IdentifierType id);
 
 private:
-    void reset();
+    void internallyClearValue();
+    void internallyClearFurtherData();
     std::string ignoreAdditionalValuesDiagMsg() const;
 
     std::vector<TagValue> m_additionalValues;

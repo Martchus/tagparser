@@ -62,7 +62,6 @@ public:
     static std::string fieldIdToString(const std::string &id);
 
 private:
-    void reset();
     template <class StreamType> void internalParse(StreamType &stream, std::uint64_t &maxSize, Diagnostics &diag);
 };
 
@@ -98,13 +97,6 @@ inline std::string VorbisCommentField::fieldIdFromString(const char *idString, s
 inline std::string VorbisCommentField::fieldIdToString(const std::string &id)
 {
     return id;
-}
-
-/*!
- * \brief Resets Vorbis Comment-specific values. Called via clear().
- */
-inline void VorbisCommentField::reset()
-{
 }
 
 } // namespace TagParser

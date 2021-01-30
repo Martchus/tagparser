@@ -464,15 +464,24 @@ std::uint32_t Mp4TagField::appropriateRawDataTypeForValue(const TagValue &value)
 }
 
 /*!
- * \brief Resets MP4-specific values. Called via clear().
+ * \brief Clears MP4-specific values. Called via clear() and clearValue().
  */
-void Mp4TagField::reset()
+void Mp4TagField::internallyClearValue()
+{
+    value().clearDataAndMetadata();
+    m_additionalData.clear();
+    m_countryIndicator = 0;
+    m_langIndicator = 0;
+}
+
+/*!
+ * \brief Clears MP4-specific values. Called via clear() and clearValue().
+ */
+void Mp4TagField::internallyClearFurtherData()
 {
     m_name.clear();
     m_mean.clear();
     m_parsedRawDataType = RawDataType::Reserved;
-    m_countryIndicator = 0;
-    m_langIndicator = 0;
 }
 
 /// \cond
