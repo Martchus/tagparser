@@ -544,8 +544,14 @@ std::uint64_t Mp4TagFieldMaker::prepareDataAtom(
             data.convertedData.exceptions(std::stringstream::failbit | std::stringstream::badbit);
             switch (data.rawType) {
             case RawDataType::Utf8:
+                if (value.type() != TagDataType::Text || value.dataEncoding() != TagTextEncoding::Utf8) {
+                    m_writer.writeString(value.toString(TagTextEncoding::Utf8));
+                }
+                break;
             case RawDataType::Utf16:
-                m_writer.writeString(value.toString());
+                if (value.type() != TagDataType::Text || value.dataEncoding() != TagTextEncoding::Utf16LittleEndian) {
+                    m_writer.writeString(value.toString(TagTextEncoding::Utf16LittleEndian));
+                }
                 break;
             case RawDataType::BeSignedInt: {
                 int number = value.toInteger();
