@@ -65,9 +65,6 @@ public:
     bool supportsNestedFields() const;
 
 private:
-    void cleared();
-
-private:
     IdentifierType m_id;
     TagValue m_value;
     TypeInfoType m_typeInfo;
@@ -268,13 +265,6 @@ template <class ImplementationType> inline std::vector<ImplementationType> &TagF
 template <class ImplementationType> inline bool TagField<ImplementationType>::supportsNestedFields() const
 {
     return static_cast<ImplementationType *>(this)->supportsNestedFields();
-}
-
-/*!
- * \brief Called when the field is cleared.
- */
-template <class ImplementationType> inline void TagField<ImplementationType>::cleared()
-{
 }
 
 } // namespace TagParser
