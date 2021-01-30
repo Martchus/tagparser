@@ -218,7 +218,9 @@ bool FieldMapBasedTag<ImplementationType>::internallySetValues(const FieldMapBas
     for (; valuesIterator != values.cend() && range.first != range.second; ++valuesIterator) {
         // replace existing value with non-empty specified value
         if (!valuesIterator->isEmpty()) {
-            range.first->second.setValue(*valuesIterator);
+            auto &field = range.first->second;
+            field.clearValue();
+            field.setValue(*valuesIterator);
             ++range.first;
         }
     }
@@ -228,7 +230,7 @@ bool FieldMapBasedTag<ImplementationType>::internallySetValues(const FieldMapBas
     }
     // remove remaining existing values (there are more existing values than specified ones)
     for (; range.first != range.second; ++range.first) {
-        range.first->second.setValue(TagValue());
+        range.first->second.clearValue();
     }
     return true;
 }
