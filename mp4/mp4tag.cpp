@@ -263,7 +263,7 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
 
 bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
 {
-    const Mp4ExtendedFieldId extendedId(field);
+    const auto extendedId = Mp4ExtendedFieldId(field);
     if (extendedId) {
         auto valuesIterator = values.cbegin();
         auto range = fields().equal_range(Mp4TagAtomIds::Extended);
@@ -284,13 +284,11 @@ bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
             }
         }
         for (; valuesIterator != values.cend(); ++valuesIterator) {
-            Mp4TagField tagField(Mp4TagAtomIds::Extended, *valuesIterator);
-            tagField.setMean(extendedId.mean);
-            tagField.setName(extendedId.name);
-            fields().insert(std::make_pair(Mp4TagAtomIds::Extended, move(tagField)));
+            fields().emplace(std::piecewise_construct, std::forward_as_tuple(Mp4TagAtomIds::Extended),
+                std::forward_as_tuple(extendedId.mean, extendedId.name, *valuesIterator));
         }
         for (; range.first != range.second; ++range.first) {
-            range.first->second.setValue(TagValue());
+            range.first->second.clearValue();
         }
     }
     return FieldMapBasedTag<Mp4Tag>::setValues(field, values);
