@@ -92,8 +92,12 @@ std::vector<const TagValue *> Mp4Tag::values(KnownField field) const
     if (extendedId) {
         auto range = fields().equal_range(Mp4TagAtomIds::Extended);
         for (auto i = range.first; i != range.second; ++i) {
-            if (extendedId.matches(i->second)) {
-                values.emplace_back(&i->second.value());
+            const auto &field = i->second;
+            if (extendedId.matches(field)) {
+                values.emplace_back(&field.value());
+                for (const auto &additionalData : field.additionalData()) {
+                    values.emplace_back(&additionalData.value);
+                }
             }
         }
     }
@@ -218,6 +222,21 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
     // do not forget to extend Mp4Tag::internallyGetFieldId() and Mp4TagField::appropriateRawDataType() as well
 }
 
+/*!
+ * \brief Adds values from additional data atoms as well.
+ */
+void Mp4Tag::internallyGetValuesFromField(const Mp4Tag::FieldType &field, std::vector<const TagValue *> &values) const
+{
+    if (!field.value().isEmpty()) {
+        values.emplace_back(&field.value());
+    }
+    for (const auto &value : field.additionalData()) {
+        if (!value.value.isEmpty()) {
+            values.emplace_back(&value.value);
+        }
+    }
+}
+
 bool Mp4Tag::setValue(KnownField field, const TagValue &value)
 {
     switch (field) {
@@ -250,8 +269,13 @@ bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
         auto range = fields().equal_range(Mp4TagAtomIds::Extended);
         for (; valuesIterator != values.cend() && range.first != range.second;) {
             if (!valuesIterator->isEmpty()) {
-                if (extendedId.matches(range.first->second) && (!extendedId.updateOnly || !range.first->second.value().isEmpty())) {
-                    range.first->second.setValue(*valuesIterator);
+                auto &field = range.first->second;
+                if (extendedId.matches(field) && (!extendedId.updateOnly || !field.value().isEmpty())) {
+                    field.clearValue();
+                    field.setValue(*valuesIterator);
+                    // note: Not sure which extended tag fields support multiple data atoms and which don't. Let's simply use
+                    //       only one data atom per extended field here and get rid of any possibly assigned additional data
+                    //       atoms.
                     ++valuesIterator;
                 }
                 ++range.first;

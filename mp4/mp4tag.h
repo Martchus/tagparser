@@ -129,6 +129,7 @@ public:
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
     KnownField internallyGetKnownField(const IdentifierType &id) const;
+    void internallyGetValuesFromField(const FieldType &field, std::vector<const TagValue *> &values) const;
 };
 
 /*!
