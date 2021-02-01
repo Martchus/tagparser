@@ -206,7 +206,7 @@ void OverallTests::checkMp4Testfile4()
         CPPUNIT_ASSERT_EQUAL("Don't Go Away (Apple Lossless)"s, tags.front()->value(KnownField::Album).toString());
         CPPUNIT_ASSERT_EQUAL("Alternative & Punk"s, tags.front()->value(KnownField::Genre).toString());
         CPPUNIT_ASSERT_EQUAL("iTunes v7.5.0.20"s, tags.front()->value(KnownField::Encoder).toString());
-        CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::Year).toString());
+        CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::RecordDate).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
         CPPUNIT_ASSERT_EQUAL(0x58f3_st, tags.front()->value(KnownField::Cover).dataSize());
         CPPUNIT_ASSERT_EQUAL(0xFFD8FFE000104A46ul, BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()));

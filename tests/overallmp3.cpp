@@ -44,7 +44,7 @@ void OverallTests::checkMp3Testfile1()
         CPPUNIT_ASSERT_EQUAL(2_st, tags.size());
         for (const auto &tag : tags) {
             CPPUNIT_ASSERT_EQUAL(4, tag->value(KnownField::TrackPosition).toPositionInSet().position());
-            CPPUNIT_ASSERT_EQUAL("1984"s, tag->value(KnownField::Year).toString());
+            CPPUNIT_ASSERT_EQUAL("1984"s, tag->value(KnownField::RecordDate).toString());
             switch (tag->type()) {
             case TagType::Id3v1Tag:
                 CPPUNIT_ASSERT_EQUAL("Cohesion"s, tag->value(KnownField::Title).toString());

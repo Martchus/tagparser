@@ -32,7 +32,7 @@ void OverallTests::checkFlacTestfile1()
         CPPUNIT_ASSERT_EQUAL("Don't Go Away (Apple Lossless)"s, tags.front()->value(KnownField::Album).toString());
         CPPUNIT_ASSERT_EQUAL("Alternative & Punk"s, tags.front()->value(KnownField::Genre).toString());
         TESTUTILS_ASSERT_LIKE("encoder", "Lavf.*", tags.front()->value(KnownField::Encoder).toString());
-        CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::Year).toString());
+        CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::RecordDate).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
         //CPPUNIT_ASSERT(tags.front()->value(KnownField::Cover).dataSize() == 0x58f3);
         //CPPUNIT_ASSERT(BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()) == 0xFFD8FFE000104A46);
