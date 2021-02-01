@@ -22,7 +22,6 @@ enum KnownValue : std::uint32_t {
     DataInformation = 0x64696e66, /**< dinf */
     DataReference = 0x64726566, /**< dref */
     Drms = 0x64726D73, /**< drms */
-    Edts = 0x65647473, /**< FIXME v10: remove in next major release */
     Edit = 0x65647473, /**< edts */
     EditList = 0x656C7374, /**< elst */
     Free = 0x66726565, /**< free */

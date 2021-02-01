@@ -19,7 +19,6 @@ enum KnownValue : std::uint32_t {
     lRecordingDates = 0x54524441, /**< TRDA */
     lDate = 0x54444154, /**< TDAT */
     lTime = 0x54494D45, /**< TIME */
-    lRecordDate = 0x54445243, /**< FIXME v10: remove in favor of lRecordingTime */
     lRecordingTime = 0x54445243, /**< TDRC */
     lReleaseTime = 0x5444524C, /**< TDRL */
     lOriginalReleaseTime = 0x54444F52, /**< TDOR */

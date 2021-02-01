@@ -128,7 +128,6 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
     case KnownField::Comment:
         return Comment;
     case KnownField::RecordDate:
-    case KnownField::Year:
         return Year;
     case KnownField::Title:
         return Title;

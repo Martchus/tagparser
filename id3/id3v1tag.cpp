@@ -152,7 +152,6 @@ const TagValue &Id3v1Tag::value(KnownField field) const
     case KnownField::Album:
         return m_album;
     case KnownField::RecordDate:
-    case KnownField::Year:
         return m_year;
     case KnownField::Comment:
         return m_comment;
@@ -178,7 +177,6 @@ bool Id3v1Tag::setValue(KnownField field, const TagValue &value)
         m_album = value;
         break;
     case KnownField::RecordDate:
-    case KnownField::Year:
         m_year = value;
         break;
     case KnownField::Comment:
@@ -210,7 +208,6 @@ bool Id3v1Tag::hasField(KnownField field) const
         return !m_artist.isEmpty();
     case KnownField::Album:
         return !m_album.isEmpty();
-    case KnownField::Year:
         return !m_year.isEmpty();
     case KnownField::Comment:
         return !m_comment.isEmpty();
@@ -252,7 +249,6 @@ bool Id3v1Tag::supportsField(KnownField field) const
     case KnownField::Artist:
     case KnownField::Album:
     case KnownField::RecordDate:
-    case KnownField::Year:
     case KnownField::Comment:
     case KnownField::TrackPosition:
     case KnownField::Genre:

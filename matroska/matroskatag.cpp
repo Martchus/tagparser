@@ -28,7 +28,6 @@ MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) 
     case KnownField::Comment:
         return std::string(comment());
     case KnownField::RecordDate:
-    case KnownField::Year:
         return std::string(dateRecorded());
     case KnownField::ReleaseDate:
         return std::string(dateRelease());

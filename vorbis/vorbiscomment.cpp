@@ -57,7 +57,6 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
     case KnownField::Cover:
         return std::string(cover());
     case KnownField::RecordDate:
-    case KnownField::Year:
         return std::string(date());
     case KnownField::Title:
         return std::string(title());

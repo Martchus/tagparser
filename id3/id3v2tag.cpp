@@ -28,7 +28,6 @@ bool Id3v2Tag::supportsMultipleValues(KnownField field) const
     switch (field) {
     case KnownField::Album:
     case KnownField::Artist:
-    case KnownField::Year:
     case KnownField::RecordDate:
     case KnownField::ReleaseDate:
     case KnownField::Title:
@@ -142,7 +141,6 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Comment:
             return lComment;
         case KnownField::RecordDate:
-        case KnownField::Year:
             return lRecordingTime; // (de)serializer takes to convert to/from lYear/lRecordingDates/lDate/lTime
         case KnownField::ReleaseDate:
             return lReleaseTime;
@@ -193,7 +191,6 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Comment:
             return sComment;
         case KnownField::RecordDate:
-        case KnownField::Year:
             return lRecordingTime; // (de)serializer takes to convert to/from sYear/sRecordingDates/sDate/sTime
         case KnownField::Title:
             return sTitle;

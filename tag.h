@@ -45,7 +45,6 @@ enum class KnownField : unsigned int {
     Album, /**< album/collection */
     Artist, /**< artist/band */
     Genre, /**< genre */
-    Year, /**< record date, deprecated - FIXME v10: remove in favor of RecordDate and ReleaseDate */
     Comment, /**< comment */
     Bpm, /**< beats per minute */
     Bps, /**< beats per second */
@@ -93,7 +92,8 @@ constexpr unsigned int knownFieldArraySize = static_cast<unsigned int>(lastKnown
  */
 constexpr bool isKnownFieldDeprecated(KnownField field)
 {
-    return field == KnownField::Year;
+    CPP_UTILITIES_UNUSED(field)
+    return false;
 }
 
 /*!
