@@ -851,6 +851,14 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         diag.emplace_back(DiagLevel::Critical, "The header has not been parsed yet.", context);
         throw InvalidDataException();
     }
+    switch (fileInfo().attachmentsParsingStatus()) {
+    case ParsingStatus::Ok:
+    case ParsingStatus::NotSupported:
+        break;
+    default:
+        diag.emplace_back(DiagLevel::Critical, "Attachments have to be parsed without critical errors before changes can be applied.", context);
+        throw InvalidDataException();
+    }
 
     // define variables for parsing the elements of the original file
     EbmlElement *level0Element = firstElement();
