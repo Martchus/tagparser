@@ -26,7 +26,7 @@ std::string_view mpegChannelModeString(MpegChannelMode channelMode)
     case MpegChannelMode::SingleChannel:
         return "1 channel: single channel";
     default:
-        return nullptr;
+        return std::string_view();
     }
 }
 

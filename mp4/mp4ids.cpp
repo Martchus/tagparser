@@ -450,7 +450,7 @@ std::string_view channelConfigString(std::uint8_t config)
     case FrontCenterFrontLeftFrontRightSideLeftSideRightBackLeftBackRightLFEChannel:
         return "8 channels: front-center, front-left, front-right, side-left, side-right, back-left, back-right, LFE-channel";
     default:
-        return nullptr;
+        return std::string_view();
     }
 }
 
