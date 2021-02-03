@@ -184,10 +184,11 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             // turn "YEAR" into "DATE" (unless "DATE" exists)
             // note: "DATE" is an official field and "YEAR" only an inofficial one but present in some files. In consistency with
             //       MediaInfo and VLC player it is treated like "DATE" here.
-            if (fields().find(std::string(VorbisCommentIds::date())) == fields().end()) {
-                const auto [first, end] = fields().equal_range(std::string(VorbisCommentIds::year()));
+            static const auto dateFieldId = std::string(VorbisCommentIds::date()), yearFieldId = std::string(VorbisCommentIds::year());
+            if (fields().find(dateFieldId) == fields().end()) {
+                const auto [first, end] = fields().equal_range(yearFieldId);
                 for (auto i = first; i != end; ++i) {
-                    fields().insert(std::pair(VorbisCommentIds::date(), std::move(i->second)));
+                    fields().emplace(dateFieldId, std::move(i->second));
                 }
                 fields().erase(first, end);
             }
