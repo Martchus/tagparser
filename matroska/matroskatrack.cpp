@@ -283,8 +283,10 @@ void MatroskaTrack::readStatisticsFromTags(const std::vector<std::unique_ptr<Mat
     }
 }
 
-void MatroskaTrack::internalParseHeader(Diagnostics &diag)
+void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing header of Matroska track");
     try {
         m_trackElement->parse(diag);

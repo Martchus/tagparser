@@ -21,7 +21,7 @@ public:
     const std::vector<std::unique_ptr<MatroskaChapter>> &chapters() const;
 
     void parse(Diagnostics &diag);
-    void parseNested(Diagnostics &diag);
+    void parseNested(Diagnostics &diag, AbortableProgressFeedback &progress);
     void clear();
 
 private:

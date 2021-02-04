@@ -58,7 +58,7 @@ public:
     static void addInfo(const WaveFormatHeader &waveHeader, AbstractTrack &track);
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     std::uint64_t m_dataOffset;

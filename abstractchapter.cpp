@@ -1,4 +1,5 @@
 #include "./abstractchapter.h"
+#include "./progressfeedback.h"
 
 #include <sstream>
 
@@ -67,10 +68,10 @@ void AbstractChapter::clear()
  *
  * Clears all previous parsing results.
  */
-void AbstractChapter::parse(Diagnostics &diag)
+void AbstractChapter::parse(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     clear();
-    internalParse(diag);
+    internalParse(diag, progress);
 }
 
 /*!
@@ -78,12 +79,13 @@ void AbstractChapter::parse(Diagnostics &diag)
  *
  * Clears all previous parsing results.
  */
-void AbstractChapter::parseNested(Diagnostics &diag)
+void AbstractChapter::parseNested(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    progress.stopIfAborted();
     clear();
-    internalParse(diag);
+    internalParse(diag, progress);
     for (size_t i = 0, count = nestedChapterCount(); i < count; ++i) {
-        nestedChapter(i)->parseNested(diag);
+        nestedChapter(i)->parseNested(diag, progress);
     }
 }
 

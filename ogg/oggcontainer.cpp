@@ -183,8 +183,10 @@ void OggContainer::removeAllTags()
     }
 }
 
-void OggContainer::internalParseHeader(Diagnostics &diag)
+void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing OGG bitstream header");
     bool pagesSkipped = false;
 
@@ -258,10 +260,10 @@ void OggContainer::internalParseHeader(Diagnostics &diag)
     }
 }
 
-void OggContainer::internalParseTags(Diagnostics &diag)
+void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     // tracks needs to be parsed before because tags are stored at stream level
-    parseTracks(diag);
+    parseTracks(diag, progress);
     for (auto &comment : m_tags) {
         OggParameter &params = comment->oggParams();
         m_iterator.setPageIndex(params.firstPageIndex);
@@ -304,12 +306,15 @@ void OggContainer::announceComment(std::size_t pageIndex, std::size_t segmentInd
     m_tags.back()->oggParams().set(pageIndex, segmentIndex, lastMetaDataBlock, mediaFormat);
 }
 
-void OggContainer::internalParseTracks(Diagnostics &diag)
+void OggContainer::internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("parsing OGG stream");
     for (auto &stream : m_tracks) {
+        if (progress.isAborted()) {
+            throw OperationAbortedException();
+        }
         try { // try to parse header
-            stream->parseHeader(diag);
+            stream->parseHeader(diag, progress);
             if (stream->duration() > m_duration) {
                 m_duration = stream->duration();
             }
@@ -367,7 +372,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 {
     const string context("making OGG file");
     progress.updateStep("Prepare for rewriting OGG file ...");
-    parseTags(diag); // tags need to be parsed before the file can be rewritten
+    parseTags(diag, progress); // tags need to be parsed before the file can be rewritten
     string backupPath;
     NativeFileStream backupStream;
 

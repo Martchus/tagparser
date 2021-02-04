@@ -61,7 +61,7 @@ public:
     void makeHeader(std::ostream &stream, Diagnostics &diag) const;
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     template <typename PropertyType, typename ConversionFunction>

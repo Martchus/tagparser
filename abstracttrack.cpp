@@ -232,12 +232,12 @@ string AbstractTrack::shortDescription() const
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void AbstractTrack::parseHeader(Diagnostics &diag)
+void AbstractTrack::parseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     m_flags -= TrackFlags::HeaderValid;
     m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     try {
-        internalParseHeader(diag);
+        internalParseHeader(diag, progress);
         m_flags += TrackFlags::HeaderValid;
     } catch (const Failure &) {
         throw;

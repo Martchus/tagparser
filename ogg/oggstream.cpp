@@ -46,8 +46,10 @@ OggStream::~OggStream()
 {
 }
 
-void OggStream::internalParseHeader(Diagnostics &diag)
+void OggStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing OGG page header");
 
     // read basic information from first page

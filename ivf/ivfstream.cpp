@@ -20,8 +20,10 @@ namespace TagParser {
  * \sa https://wiki.multimedia.cx/index.php/IVF
  */
 
-void IvfStream::internalParseHeader(Diagnostics &diag)
+void IvfStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing IVF header");
     if (!m_istream) {
         throw NoDataFoundException();

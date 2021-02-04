@@ -10,6 +10,7 @@
 
 namespace TagParser {
 
+class AbortableProgressFeedback;
 class Diagnostics;
 
 class TAG_PARSER_EXPORT AbstractChapter {
@@ -28,12 +29,12 @@ public:
     virtual const AbstractChapter *nestedChapter(std::size_t index) const;
     virtual std::size_t nestedChapterCount() const;
     virtual void clear();
-    void parse(Diagnostics &diag);
-    void parseNested(Diagnostics &diag);
+    void parse(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseNested(Diagnostics &diag, AbortableProgressFeedback &progress);
 
 protected:
     AbstractChapter();
-    virtual void internalParse(Diagnostics &diag) = 0;
+    virtual void internalParse(Diagnostics &diag, AbortableProgressFeedback &progress) = 0;
 
     std::uint64_t m_id;
     std::vector<LocaleAwareString> m_names;

@@ -37,7 +37,7 @@ void OverallTests::parseFile(const string &path, void (OverallTests::*checkRouti
     m_diag.clear();
     m_fileInfo.setPath(path);
     m_fileInfo.reopen(true);
-    m_fileInfo.parseEverything(m_diag);
+    m_fileInfo.parseEverything(m_diag, m_progress);
     // invoke testroutine to check whether parsing results are correct
     (this->*checkRoutine)();
     m_fileInfo.close();
@@ -55,7 +55,7 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     m_diag.clear();
     m_fileInfo.setPath(path);
     m_fileInfo.reopen(true);
-    m_fileInfo.parseEverything(m_diag);
+    m_fileInfo.parseEverything(m_diag, m_progress);
 
     // determine expected tag and index position
     switch (m_fileInfo.containerFormat()) {
@@ -96,7 +96,7 @@ void OverallTests::makeFile(const string &path, void (OverallTests::*modifyRouti
     m_fileInfo.applyChanges(m_diag, m_progress);
     m_fileInfo.clearParsingResults();
     // reparse the file and invoke testroutine to check whether changings have been applied correctly
-    m_fileInfo.parseEverything(m_diag);
+    m_fileInfo.parseEverything(m_diag, m_progress);
     (this->*checkRoutine)();
     // invoke suitable testroutine to check padding constraints
     switch (m_fileInfo.containerFormat()) {

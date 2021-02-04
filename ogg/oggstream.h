@@ -21,7 +21,7 @@ public:
     std::size_t startPage() const;
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     void calculateDurationViaSampleCount(std::uint16_t preSkip = 0);

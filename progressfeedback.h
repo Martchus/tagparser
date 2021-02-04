@@ -15,7 +15,7 @@ public:
     using Callback = std::function<void(ActualProgressFeedback &feedback)>;
 
     explicit BasicProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
-    explicit BasicProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
+    explicit BasicProgressFeedback(Callback &&callback = Callback(), Callback &&percentageOnlyCallback = Callback());
 
     const std::string &step() const;
     std::uint8_t stepPercentage() const;
@@ -159,8 +159,8 @@ inline void BasicProgressFeedback<ActualProgressFeedback>::updateOverallPercenta
 
 class ProgressFeedback : public BasicProgressFeedback<ProgressFeedback> {
 public:
-    ProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
-    ProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
+    explicit ProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
+    explicit ProgressFeedback(Callback &&callback = Callback(), Callback &&percentageOnlyCallback = Callback());
 };
 
 /*!
@@ -185,8 +185,8 @@ inline ProgressFeedback::ProgressFeedback(Callback &&callback, Callback &&percen
 
 class AbortableProgressFeedback : public BasicProgressFeedback<AbortableProgressFeedback> {
 public:
-    AbortableProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
-    AbortableProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback = Callback());
+    explicit AbortableProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
+    explicit AbortableProgressFeedback(Callback &&callback = Callback(), Callback &&percentageOnlyCallback = Callback());
 
     bool isAborted() const;
     void tryToAbort();

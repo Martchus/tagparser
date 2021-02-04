@@ -52,12 +52,12 @@ public:
     ~MediaFileInfo() override;
 
     // methods to parse file
-    void parseContainerFormat(Diagnostics &diag);
-    void parseTracks(Diagnostics &diag);
-    void parseTags(Diagnostics &diag);
-    void parseChapters(Diagnostics &diag);
-    void parseAttachments(Diagnostics &diag);
-    void parseEverything(Diagnostics &diag);
+    void parseContainerFormat(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseTracks(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseTags(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseChapters(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseEverything(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     // methods to apply changes
     void applyChanges(Diagnostics &diag, AbortableProgressFeedback &progress);

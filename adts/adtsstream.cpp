@@ -15,9 +15,10 @@ namespace TagParser {
  * \brief Implementation of TagParser::AbstractTrack for ADTS streams.
  */
 
-void AdtsStream::internalParseHeader(Diagnostics &diag)
+void AdtsStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     CPP_UTILITIES_UNUSED(diag)
+    CPP_UTILITIES_UNUSED(progress)
 
     //static const string context("parsing ADTS frame header");
     if (!m_istream) {

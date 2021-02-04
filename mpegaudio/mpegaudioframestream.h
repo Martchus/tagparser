@@ -19,7 +19,7 @@ public:
     static void addInfo(const MpegAudioFrame &frame, AbstractTrack &track);
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     std::list<MpegAudioFrame> m_frames;

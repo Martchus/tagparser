@@ -26,7 +26,7 @@ public:
     MatroskaContainer(MediaFileInfo &stream, std::uint64_t startOffset);
     ~MatroskaContainer() override;
 
-    void validateIndex(Diagnostics &diag);
+    void validateIndex(Diagnostics &diag, AbortableProgressFeedback &progress);
     std::uint64_t maxIdLength() const;
     std::uint64_t maxSizeLength() const;
     const std::vector<std::unique_ptr<MatroskaSeekInfo>> &seekInfos() const;
@@ -49,11 +49,11 @@ public:
     void reset() override;
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
-    void internalParseTags(Diagnostics &diag) override;
-    void internalParseTracks(Diagnostics &diag) override;
-    void internalParseChapters(Diagnostics &diag) override;
-    void internalParseAttachments(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseChapters(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress) override;
     void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:

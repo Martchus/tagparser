@@ -10,6 +10,7 @@
 
 namespace TagParser {
 
+class AbortableProgressFeedback;
 class MediaFileInfo;
 
 class TAG_PARSER_EXPORT StreamDataBlock {
@@ -89,7 +90,7 @@ inline void StreamDataBlock::discardBuffer()
 
 class TAG_PARSER_EXPORT FileDataBlock : public StreamDataBlock {
 public:
-    FileDataBlock(std::string_view path, Diagnostics &diag);
+    FileDataBlock(std::string_view path, Diagnostics &diag, AbortableProgressFeedback &progress);
     ~FileDataBlock();
     const MediaFileInfo *fileInfo() const;
 
@@ -114,7 +115,7 @@ public:
     void setId(std::uint64_t id);
     const StreamDataBlock *data() const;
     void setData(std::unique_ptr<StreamDataBlock> &&data);
-    void setFile(std::string_view path, Diagnostics &diag);
+    void setFile(std::string_view path, Diagnostics &diag, AbortableProgressFeedback &progress);
     bool isDataFromFile() const;
     std::string label() const;
     void clear();

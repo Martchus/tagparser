@@ -17,7 +17,7 @@ public:
     void readFrame(Diagnostics &diag);
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     std::vector<IvfFrame> m_frames;

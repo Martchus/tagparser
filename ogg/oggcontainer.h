@@ -144,9 +144,9 @@ public:
     void removeAllTags() override;
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
-    void internalParseTags(Diagnostics &diag) override;
-    void internalParseTracks(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress) override;
     void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:

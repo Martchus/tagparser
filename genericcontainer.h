@@ -26,7 +26,7 @@ public:
     GenericContainer(FileInfoType &fileInfo, std::uint64_t startOffset);
     ~GenericContainer() override;
 
-    void validateElementStructure(Diagnostics &diag, std::uint64_t *paddingSize = nullptr);
+    void validateElementStructure(Diagnostics &diag, AbortableProgressFeedback &progress, std::uint64_t *paddingSize = nullptr);
     FileInfoType &fileInfo() const;
     ElementType *firstElement() const;
     const std::vector<std::unique_ptr<ElementType>> &additionalElements() const;
@@ -96,11 +96,12 @@ GenericContainer<FileInfoType, TagType, TrackType, ElementType>::~GenericContain
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
-inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(Diagnostics &diag, std::uint64_t *paddingSize)
+inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::validateElementStructure(
+    Diagnostics &diag, AbortableProgressFeedback &progress, std::uint64_t *paddingSize)
 {
-    parseHeader(diag);
+    parseHeader(diag, progress);
     if (m_firstElement) {
-        m_firstElement->validateSubsequentElementStructure(diag, paddingSize);
+        m_firstElement->validateSubsequentElementStructure(diag, paddingSize, &progress);
     }
 }
 

@@ -15,7 +15,7 @@ public:
     TrackType type() const override;
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     AdtsFrame m_firstFrame;

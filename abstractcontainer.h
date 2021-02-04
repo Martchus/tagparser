@@ -36,11 +36,11 @@ public:
     CppUtilities::BinaryReader &reader();
     CppUtilities::BinaryWriter &writer();
 
-    void parseHeader(Diagnostics &diag);
-    void parseTags(Diagnostics &diag);
-    void parseTracks(Diagnostics &diag);
-    void parseChapters(Diagnostics &diag);
-    void parseAttachments(Diagnostics &diag);
+    void parseHeader(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseTags(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseTracks(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseChapters(Diagnostics &diag, AbortableProgressFeedback &progress);
+    void parseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress);
     void makeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     bool isHeaderParsed() const;
@@ -89,11 +89,11 @@ public:
 protected:
     AbstractContainer(std::iostream &stream, std::uint64_t startOffset);
 
-    virtual void internalParseHeader(Diagnostics &diag);
-    virtual void internalParseTags(Diagnostics &diag);
-    virtual void internalParseTracks(Diagnostics &diag);
-    virtual void internalParseChapters(Diagnostics &diag);
-    virtual void internalParseAttachments(Diagnostics &diag);
+    virtual void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress);
+    virtual void internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress);
+    virtual void internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress);
+    virtual void internalParseChapters(Diagnostics &diag, AbortableProgressFeedback &progress);
+    virtual void internalParseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress);
     virtual void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
 
     std::uint64_t m_version;

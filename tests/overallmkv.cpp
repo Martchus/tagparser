@@ -622,7 +622,7 @@ void OverallTests::setMkvTestMetaData()
     // assign an attachment
     AbstractAttachment *const attachment = container->createAttachment();
     CPPUNIT_ASSERT_MESSAGE("create attachment", attachment);
-    attachment->setFile(testFilePath("matroska_wave1/logo3_256x256.png"), m_diag);
+    attachment->setFile(testFilePath("matroska_wave1/logo3_256x256.png"), m_diag, m_progress);
     attachment->setMimeType("image/png");
     attachment->setName("cover.jpg");
 }

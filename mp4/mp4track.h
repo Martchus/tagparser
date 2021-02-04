@@ -162,7 +162,7 @@ public:
     static void addInfo(const Av1Configuration &av1Config, AbstractTrack &track);
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     // private helper methods

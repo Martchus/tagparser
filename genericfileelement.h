@@ -113,7 +113,7 @@ public:
     void clear();
     void parse(Diagnostics &diag);
     void reparse(Diagnostics &diag);
-    void validateSubsequentElementStructure(Diagnostics &diag, std::uint64_t *paddingSize = nullptr);
+    void validateSubsequentElementStructure(Diagnostics &diag, std::uint64_t *paddingSize = nullptr, AbortableProgressFeedback *progress = nullptr);
     static constexpr std::uint32_t maximumIdLengthSupported();
     static constexpr std::uint32_t maximumSizeLengthSupported();
     static constexpr std::uint8_t minimumElementSize();
@@ -812,14 +812,18 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  * \sa parse()
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(Diagnostics &diag, std::uint64_t *paddingSize)
+void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
+    Diagnostics &diag, std::uint64_t *paddingSize, AbortableProgressFeedback *progress)
 {
+    if (progress) {
+        progress->stopIfAborted();
+    }
     // validate element itself by just parsing it
     parse(diag);
     // validate children
     if (firstChild()) {
         try {
-            firstChild()->validateSubsequentElementStructure(diag, paddingSize);
+            firstChild()->validateSubsequentElementStructure(diag, paddingSize, progress);
         } catch (const Failure &) {
             // ignore critical errors in child structure to continue validating siblings
             // (critical notifications about the errors should have already been added to diag, so nothing to do)
@@ -829,7 +833,7 @@ void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
     }
     // validate siblings
     if (nextSibling()) {
-        nextSibling()->validateSubsequentElementStructure(diag, paddingSize);
+        nextSibling()->validateSubsequentElementStructure(diag, paddingSize, progress);
     }
 }
 

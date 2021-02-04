@@ -69,9 +69,9 @@ ElementPosition Mp4Container::determineIndexPosition(Diagnostics &diag) const
     return ElementPosition::Keep;
 }
 
-void Mp4Container::internalParseHeader(Diagnostics &diag)
+void Mp4Container::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    //const string context("parsing header of MP4 container"); will be used when generating notifications
+    CPP_UTILITIES_UNUSED(progress) //const string context("parsing header of MP4 container"); will be used when generating notifications
     m_firstElement = make_unique<Mp4Atom>(*this, startOffset());
     m_firstElement->parse(diag);
     auto *const ftypAtom = m_firstElement->siblingByIdIncludingThis(Mp4AtomIds::FileType, diag);
@@ -85,8 +85,9 @@ void Mp4Container::internalParseHeader(Diagnostics &diag)
     m_version = reader().readUInt32BE();
 }
 
-void Mp4Container::internalParseTags(Diagnostics &diag)
+void Mp4Container::internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
     const string context("parsing tags of MP4 container");
     auto *const udtaAtom = firstElement()->subelementByPath(diag, Mp4AtomIds::Movie, Mp4AtomIds::UserData);
     if (!udtaAtom) {
@@ -114,7 +115,7 @@ void Mp4Container::internalParseTags(Diagnostics &diag)
     }
 }
 
-void Mp4Container::internalParseTracks(Diagnostics &diag)
+void Mp4Container::internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("parsing tracks of MP4 container");
     try {
@@ -185,7 +186,7 @@ void Mp4Container::internalParseTracks(Diagnostics &diag)
                 // parse the trak atom using the Mp4Track class
                 m_tracks.emplace_back(make_unique<Mp4Track>(*trakAtom));
                 try { // try to parse header
-                    m_tracks.back()->parseHeader(diag);
+                    m_tracks.back()->parseHeader(diag, progress);
                 } catch (const Failure &) {
                     diag.emplace_back(DiagLevel::Critical, argsToString("Unable to parse track ", trackNum, '.'), context);
                 }
@@ -843,7 +844,9 @@ calculatePadding:
 
         reset();
         try {
-            parseTracks(diag);
+            parseTracks(diag, progress);
+        } catch (const OperationAbortedException &) {
+            throw;
         } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Unable to reparse the new file.", context);
             throw;
@@ -877,7 +880,7 @@ calculatePadding:
                 }
             } else {
                 progress.updateStep("Updating chunk offset table for each track ...");
-                updateOffsets(origMediaDataOffsets, newMediaDataOffsets, diag);
+                updateOffsets(origMediaDataOffsets, newMediaDataOffsets, diag, progress);
             }
         }
 
@@ -902,7 +905,8 @@ calculatePadding:
  * \throws Throws TagParser::Failure or a derived exception when a making
  *                error occurs.
  */
-void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets, const std::vector<std::int64_t> &newMdatOffsets, Diagnostics &diag)
+void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets, const std::vector<std::int64_t> &newMdatOffsets, Diagnostics &diag,
+    AbortableProgressFeedback &progress)
 {
     // do NOT invalidate the status here since this method is internally called by internalMakeFile(), just update the status
     const string context("updating MP4 container chunk offset table");
@@ -972,7 +976,7 @@ void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets
     for (auto &track : tracks()) {
         if (!track->isHeaderValid()) {
             try {
-                track->parseHeader(diag);
+                track->parseHeader(diag, progress);
             } catch (const Failure &) {
                 diag.emplace_back(DiagLevel::Warning,
                     "The chunk offsets of track " % track->name() + " couldn't be updated because the track seems to be invalid..", context);

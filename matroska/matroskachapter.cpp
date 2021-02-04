@@ -39,8 +39,10 @@ MatroskaChapter::~MatroskaChapter()
  * - Fetches nested chapters but does not parse them.
  * - Clears all previous parsing results.
  */
-void MatroskaChapter::internalParse(Diagnostics &diag)
+void MatroskaChapter::internalParse(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     // clear previous values and status
     static const string context("parsing \"ChapterAtom\"-element");
     clear();

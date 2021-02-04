@@ -27,13 +27,14 @@ public:
     ElementPosition determineIndexPosition(Diagnostics &diag) const override;
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
-    void internalParseTags(Diagnostics &diag) override;
-    void internalParseTracks(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress) override;
+    void internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress) override;
     void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
-    void updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets, const std::vector<std::int64_t> &newMdatOffsets, Diagnostics &diag);
+    void updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets, const std::vector<std::int64_t> &newMdatOffsets, Diagnostics &diag,
+        AbortableProgressFeedback &progress);
 
     bool m_fragmented;
 };

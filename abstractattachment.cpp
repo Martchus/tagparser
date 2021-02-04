@@ -2,6 +2,7 @@
 
 #include "./exceptions.h"
 #include "./mediafileinfo.h"
+#include "./progressfeedback.h"
 
 #include <c++utilities/io/copy.h>
 
@@ -100,12 +101,12 @@ void StreamDataBlock::copyTo(ostream &stream) const
  *
  * \throws Throws ios_base::failure when an IO error occurs.
  */
-FileDataBlock::FileDataBlock(std::string_view path, Diagnostics &diag)
+FileDataBlock::FileDataBlock(std::string_view path, Diagnostics &diag, AbortableProgressFeedback &progress)
     : m_fileInfo(make_unique<MediaFileInfo>())
 {
     m_fileInfo->setPath(path);
     m_fileInfo->open(true);
-    m_fileInfo->parseContainerFormat(diag);
+    m_fileInfo->parseContainerFormat(diag, progress);
     m_startOffset = 0;
     m_endOffset = m_fileInfo->size();
     m_stream = [this]() -> std::istream & { return this->m_fileInfo->stream(); };
@@ -167,10 +168,10 @@ void AbstractAttachment::clear()
  *
  * When such an exception is thrown, the attachment remains unchanged.
  */
-void AbstractAttachment::setFile(string_view path, Diagnostics &diag)
+void AbstractAttachment::setFile(string_view path, Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     m_data.reset();
-    auto file = make_unique<FileDataBlock>(path, diag);
+    auto file = make_unique<FileDataBlock>(path, diag, progress);
     const auto fileName = file->fileInfo()->fileName();
     if (!fileName.empty()) {
         m_name = fileName;

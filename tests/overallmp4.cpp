@@ -497,8 +497,8 @@ void OverallTests::alterMp4Tracks()
 {
     m_additionalFileInfo.setPath(testFilePath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
     m_additionalFileInfo.reopen(true);
-    m_additionalFileInfo.parseContainerFormat(m_diag);
-    m_additionalFileInfo.parseTracks(m_diag);
+    m_additionalFileInfo.parseContainerFormat(m_diag, m_progress);
+    m_additionalFileInfo.parseTracks(m_diag, m_progress);
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_additionalFileInfo.containerFormat());
     CPPUNIT_ASSERT_EQUAL(ContainerFormat::Mp4, m_fileInfo.containerFormat());
     const auto &tracks = m_additionalFileInfo.tracks();

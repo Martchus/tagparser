@@ -20,7 +20,7 @@ public:
     void clear() override;
 
 protected:
-    void internalParse(Diagnostics &diag) override;
+    void internalParse(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     EbmlElement *m_chapterAtomElement;

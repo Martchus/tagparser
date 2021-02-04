@@ -93,11 +93,12 @@ void MatroskaEditionEntry::parse(Diagnostics &diag)
  * - Parses also fetched chapters and nested chapters.
  * - Clears all previous parsing results.
  */
-void MatroskaEditionEntry::parseNested(Diagnostics &diag)
+void MatroskaEditionEntry::parseNested(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    progress.stopIfAborted();
     parse(diag);
     for (auto &chapter : chapters()) {
-        chapter->parseNested(diag);
+        chapter->parseNested(diag, progress);
     }
 }
 

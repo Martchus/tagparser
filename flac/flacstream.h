@@ -27,7 +27,7 @@ public:
     static void makePadding(std::ostream &stream, std::uint32_t size, bool isLast, Diagnostics &diag);
 
 protected:
-    void internalParseHeader(Diagnostics &diag) override;
+    void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
 
 private:
     MediaFileInfo &m_mediaFileInfo;

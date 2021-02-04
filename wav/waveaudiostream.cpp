@@ -144,8 +144,10 @@ void WaveAudioStream::addInfo(const WaveFormatHeader &waveHeader, AbstractTrack 
     track.m_bitrate = waveHeader.bitrate();
 }
 
-void WaveAudioStream::internalParseHeader(Diagnostics &diag)
+void WaveAudioStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     const string context("parsing RIFF/WAVE header");
     if (!m_istream) {
         throw NoDataFoundException();

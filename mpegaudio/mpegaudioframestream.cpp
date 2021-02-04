@@ -27,8 +27,10 @@ void MpegAudioFrameStream::addInfo(const MpegAudioFrame &frame, AbstractTrack &t
     track.m_samplingFrequency = frame.samplingFrequency();
 }
 
-void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag)
+void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing MPEG audio frame header");
     if (!m_istream) {
         throw NoDataFoundException();

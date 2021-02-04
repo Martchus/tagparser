@@ -62,8 +62,10 @@ bool FlacStream::removeVorbisComment()
     return true;
 }
 
-void FlacStream::internalParseHeader(Diagnostics &diag)
+void FlacStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing raw FLAC header");
     if (!m_istream) {
         throw NoDataFoundException();

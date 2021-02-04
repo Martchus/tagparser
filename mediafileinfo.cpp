@@ -144,12 +144,12 @@ MediaFileInfo::~MediaFileInfo()
  * container(), mp4Container() and matroskaContainer() will return the parsed
  * information.
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws TagParser::Failure or a derived exception when a parsing
- *         error occurs.
  * \sa isContainerParsed(), parseTracks(), parseTag(), parseChapters(), parseEverything()
  */
-void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
+void MediaFileInfo::parseContainerFormat(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     // skip if container format already parsed
     if (containerParsingStatus() != ParsingStatus::NotParsedYet) {
         return;
@@ -168,6 +168,10 @@ void MediaFileInfo::parseContainerFormat(Diagnostics &diag)
     char buff[16];
     const char *const buffEnd = buff + sizeof(buff), *buffOffset;
 startParsingSignature:
+    if (progress.isAborted()) {
+        diag.emplace_back(DiagLevel::Information, "Parsing the container format has been aborted.", context);
+        return;
+    }
     if (size() - containerOffset() >= 16) {
         stream().seekg(m_containerOffset, ios_base::beg);
         stream().read(buff, sizeof(buff));
@@ -224,7 +228,9 @@ startParsingSignature:
             // MP4/QuickTime is handled using Mp4Container instance
             m_container = make_unique<Mp4Container>(*this, m_containerOffset);
             try {
-                static_cast<Mp4Container *>(m_container.get())->validateElementStructure(diag, &m_paddingSize);
+                static_cast<Mp4Container *>(m_container.get())->validateElementStructure(diag, progress, &m_paddingSize);
+            } catch (const OperationAbortedException &) {
+                diag.emplace_back(DiagLevel::Information, "Validating the MP4 element structure has been aborted.", context);
             } catch (const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
@@ -234,7 +240,7 @@ startParsingSignature:
             // EBML/Matroska is handled using MatroskaContainer instance
             auto container = make_unique<MatroskaContainer>(*this, m_containerOffset);
             try {
-                container->parseHeader(diag);
+                container->parseHeader(diag, progress);
                 if (container->documentType() == "matroska") {
                     m_containerFormat = ContainerFormat::Matroska;
                 } else if (container->documentType() == "webm") {
@@ -243,9 +249,11 @@ startParsingSignature:
                 if (m_forceFullParse) {
                     // validating the element structure of Matroska files takes too long when
                     // parsing big files so do this only when explicitely desired
-                    container->validateElementStructure(diag, &m_paddingSize);
-                    container->validateIndex(diag);
+                    container->validateElementStructure(diag, progress, &m_paddingSize);
+                    container->validateIndex(diag, progress);
                 }
+            } catch (const OperationAbortedException &) {
+                diag.emplace_back(DiagLevel::Information, "Validating the Matroska element structure has been aborted.", context);
             } catch (const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
@@ -299,12 +307,10 @@ startParsingSignature:
  * hasTracksOfType() will return the parsed information.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws TagParser::Failure or a derived exception when a parsing
- *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa areTracksParsed(), parseContainerFormat(), parseTags(), parseChapters(), parseEverything()
  */
-void MediaFileInfo::parseTracks(Diagnostics &diag)
+void MediaFileInfo::parseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     // skip if tracks already parsed
     if (tracksParsingStatus() != ParsingStatus::NotParsedYet) {
@@ -315,7 +321,7 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
     try {
         // parse tracks via container object
         if (m_container) {
-            m_container->parseTracks(diag);
+            m_container->parseTracks(diag, progress);
             m_tracksParsingStatus = ParsingStatus::Ok;
             return;
         }
@@ -340,7 +346,7 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
         default:
             throw NotImplementedException();
         }
-        m_singleTrack->parseHeader(diag);
+        m_singleTrack->parseHeader(diag, progress);
 
         // take padding for some "single-track" formats into account
         switch (m_containerFormat) {
@@ -355,6 +361,8 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
     } catch (const NotImplementedException &) {
         diag.emplace_back(DiagLevel::Information, "Parsing tracks is not implemented for the container format of the file.", context);
         m_tracksParsingStatus = ParsingStatus::NotSupported;
+    } catch (const OperationAbortedException &) {
+        diag.emplace_back(DiagLevel::Information, "Parsing tracks has been aborted.", context);
     } catch (const Failure &) {
         diag.emplace_back(DiagLevel::Critical, "Unable to parse tracks.", context);
         m_tracksParsingStatus = ParsingStatus::CriticalFailure;
@@ -370,12 +378,10 @@ void MediaFileInfo::parseTracks(Diagnostics &diag)
  *
  * Previously assigned but not applied tag information will be discarted.
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws TagParser::Failure or a derived exception when a parsing
- *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa isTagParsed(), parseContainerFormat(), parseTracks(), parseChapters(), parseEverything()
  */
-void MediaFileInfo::parseTags(Diagnostics &diag)
+void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     // skip if tags already parsed
     if (tagsParsingStatus() != ParsingStatus::NotParsedYet) {
@@ -392,6 +398,9 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
             m_actualExistingId3v1Tag = true;
         } catch (const NoDataFoundException &) {
             m_id3v1Tag.reset();
+        } catch (const OperationAbortedException &) {
+            diag.emplace_back(DiagLevel::Information, "Parsing ID3v1 tag has been aborted.", context);
+            return;
         } catch (const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v1 tag.", context);
@@ -408,6 +417,9 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
             m_paddingSize += id3v2Tag->paddingSize();
         } catch (const NoDataFoundException &) {
             continue;
+        } catch (const OperationAbortedException &) {
+            diag.emplace_back(DiagLevel::Information, "Parsing ID3v2 tags has been aborted.", context);
+            return;
         } catch (const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v2 tag.", context);
@@ -418,13 +430,13 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
     // check for tags in tracks (FLAC only) or via container object
     try {
         if (m_containerFormat == ContainerFormat::Flac) {
-            parseTracks(diag);
+            parseTracks(diag, progress);
             if (m_tagsParsingStatus == ParsingStatus::NotParsedYet) {
                 m_tagsParsingStatus = m_tracksParsingStatus;
             }
             return;
         } else if (m_container) {
-            m_container->parseTags(diag);
+            m_container->parseTags(diag, progress);
         } else {
             throw NotImplementedException();
         }
@@ -440,6 +452,9 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
             m_tagsParsingStatus = ParsingStatus::NotSupported;
         }
         diag.emplace_back(DiagLevel::Information, "Parsing tags is not implemented for the container format of the file.", context);
+    } catch (const OperationAbortedException &) {
+        diag.emplace_back(DiagLevel::Information, "Parsing tags from container/streams has been aborted.", context);
+        return;
     } catch (const Failure &) {
         m_tagsParsingStatus = ParsingStatus::CriticalFailure;
         diag.emplace_back(DiagLevel::Critical, "Unable to parse tag.", context);
@@ -452,12 +467,10 @@ void MediaFileInfo::parseTags(Diagnostics &diag)
  * This method parses the chapters of the current file if not been parsed yet.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws TagParser::Failure or a derived exception when a parsing
- *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
  */
-void MediaFileInfo::parseChapters(Diagnostics &diag)
+void MediaFileInfo::parseChapters(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     // skip if chapters already parsed
     if (chaptersParsingStatus() != ParsingStatus::NotParsedYet) {
@@ -470,7 +483,7 @@ void MediaFileInfo::parseChapters(Diagnostics &diag)
         if (!m_container) {
             throw NotImplementedException();
         }
-        m_container->parseChapters(diag);
+        m_container->parseChapters(diag, progress);
         m_chaptersParsingStatus = ParsingStatus::Ok;
     } catch (const NotImplementedException &) {
         m_chaptersParsingStatus = ParsingStatus::NotSupported;
@@ -487,12 +500,10 @@ void MediaFileInfo::parseChapters(Diagnostics &diag)
  * This method parses the attachments of the current file if not been parsed yet.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
- * \throws Throws TagParser::Failure or a derived exception when a parsing
- *         error occurs.
  * \remarks parseContainerFormat() must be called before.
  * \sa areChaptersParsed(), parseContainerFormat(), parseTracks(), parseTags(), parseEverything()
  */
-void MediaFileInfo::parseAttachments(Diagnostics &diag)
+void MediaFileInfo::parseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     // skip if attachments already parsed
     if (attachmentsParsingStatus() != ParsingStatus::NotParsedYet) {
@@ -505,7 +516,7 @@ void MediaFileInfo::parseAttachments(Diagnostics &diag)
         if (!m_container) {
             throw NotImplementedException();
         }
-        m_container->parseAttachments(diag);
+        m_container->parseAttachments(diag, progress);
         m_attachmentsParsingStatus = ParsingStatus::Ok;
     } catch (const NotImplementedException &) {
         m_attachmentsParsingStatus = ParsingStatus::NotSupported;
@@ -522,13 +533,25 @@ void MediaFileInfo::parseAttachments(Diagnostics &diag)
  * See the individual methods to for more details and exceptions which might be thrown.
  * \sa parseContainerFormat(), parseTracks(), parseTags()
  */
-void MediaFileInfo::parseEverything(Diagnostics &diag)
+void MediaFileInfo::parseEverything(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    parseContainerFormat(diag);
-    parseTracks(diag);
-    parseTags(diag);
-    parseChapters(diag);
-    parseAttachments(diag);
+    parseContainerFormat(diag, progress);
+    if (progress.isAborted()) {
+        return;
+    }
+    parseTracks(diag, progress);
+    if (progress.isAborted()) {
+        return;
+    }
+    parseTags(diag, progress);
+    if (progress.isAborted()) {
+        return;
+    }
+    parseChapters(diag, progress);
+    if (progress.isAborted()) {
+        return;
+    }
+    parseAttachments(diag, progress);
 }
 
 /*!

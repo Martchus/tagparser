@@ -51,33 +51,74 @@ This example shows how to read and write tag fields in a format-independent way:
 ```
 #include <tagparser/mediafileinfo.h>
 #include <tagparser/diagnostics.h>
+#include <tagparser/progressfeedback.h>
 
 // create a MediaFileInfo for high-level access to overall functionality of the library
-TagParser::MediaFileInfo fileInfo;
+auto fileInfo = MediaFileInfo();
+
 // create container for errors, warnings, etc.
-Diagnostics diag;
+auto diag = Diagnostics();
+
+// create handle to abort gracefully and get feedback during during long operations
+auto progress = AbortableProgressFeedback([callback for status update], [callback for percentage-only updates]);
 
 // open file (might throw ios_base::failure)
 fileInfo.setPath("/path/to/some/file");
 fileInfo.open();
-// parse tags
-// (might throw exception derived from TagParser::Failure for fatal parsing error or ios_base::failure for IO errors)
-fileInfo.parseTags(diag);
 
-// get first tag as an object derived from the Tag class
+// parse container format, tags, attachments and/or chapters as needed
+// notes:
+// - These functions might throw exceptions derived from ios_base::failure for IO errors and
+//   populate diag with possibly critical parsing messages you definitely want to check in production
+//   code.
+// - Parsing a file can be expensive if the file is big or the disk IO is slow. You might want to
+//   run it in a separate thread.
+// - At this point the parser does not make much use of the progress object.
+fileInfo.parseContainerFormat(diag, progress);
+fileInfo.parseTags(diag, progress);
+fileInfo.parseAttachments(diag, progress);
+fileInfo.parseChapters(diag, progress);
+fileInfo.parseEverything(diag, progress); // just use that one if you want all over the above
+
+// get tag as an object derived from the Tag class
+// notes:
+// - In real code you might want to check how many tags are assigned or use
+//   fileInfo.createAppropriateTags(…) to create tags as needed.
 auto tag = fileInfo.tags().at(0);
-// extract title and convert it to UTF-8 std::string
-// (toString() might throw ConversionException)
+
+// extract a field value and convert it to UTF-8 std::string (toString() might throw ConversionException)
+#include <tagparser/tag.h>
+#include <tagparser/tagvalue.h>
 auto title = tag->value(TagParser::KnownField::Title).toString(TagParser::TagTextEncoding::Utf8);
 
-// change album using an encoding suitable for the tag format
-tag->setValue(TagParser::KnownField::Album, TagParser::TagValue("some UTF-8 string", TagParser::TagTextEncoding::Utf8, tag->proposedTextEncoding()));
+// change a field value using an encoding suitable for the tag format
+tag->setValue(KnownField::Album, TagValue("some UTF-8 string", TagTextEncoding::Utf8, tag->proposedTextEncoding()));
 
-// create progress
-TagParser::AbortableProgressFeedback progress([callback for status update], [callback for percentage-only updates]);
+// get/remove/create attachments
+#include <tagparser/abstractattachment.h>
+if (auto *const container = fileInfo.container()) {
+    for (auto i = 0, count = container->attachmentCount(); i != count; ++i) {
+        auto attachment = container->attachment(i);
+        if (attachment->mimeType() == "image/jpeg") {
+            attachment->setIgnored(true); // remove existing attachment
+        }
+    }
+    // create new attachment
+    auto attachment = container->createAttachment();
+    attachment->setName("cover.jpg");
+    attachment->setFile(cover, diag);
+}
 
 // apply changes to the file on disk
-// (might throw exception derived from TagParser::Failure for fatal processing error or ios_base::failure for IO errors)
+// notes:
+// - Might throw exception derived from TagParser::Failure for fatal processing error or ios_base::failure
+//   for IO errors.
+// - Applying changes can be expensive if the file is big or the disk IO is slow. You might want to
+//   run it in a separate thread.
+// - Use progress.tryToAbort() from another thread or an interrupt handler to abort gracefully without leaving
+//   the file in an inconsistent state.
+// - Be sure everyting has been parsed before as the library needs to be aware of the whole file structure.
+fileInfo.parseEverything(diag, progress);
 fileInfo.applyChanges(diag, progress);
 ```
 
@@ -87,8 +128,8 @@ fileInfo.applyChanges(diag, progress);
 * Fatal processing errors are propagated by throwing a class derived from `TagParser::Failure`.
 * All operations which might generate warnings, non-fatal errors, ... take a `TagParser::Diagnostics` object to store
   those messages.
-* All operations which can be aborted or provide progress feedback take a `TagParser::AbortableProgressFeedback` object
-  for callbacks and aborting.
+* All operations which might be aborted or might provide progress feedback take a `TagParser::AbortableProgressFeedback`
+  object for callbacks and aborting.
 * Field values are stored using `TagParser::TagValue` objects. Those objects erase the actual type similar to `QVariant`
   from the Qt framework. The documentation of `TagParser::TagValue` covers how different types and encodings are
   handled.

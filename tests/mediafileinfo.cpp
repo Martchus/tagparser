@@ -2,6 +2,7 @@
 
 #include "../abstracttrack.h"
 #include "../mediafileinfo.h"
+#include "../progressfeedback.h"
 #include "../tag.h"
 
 #include <c++utilities/tests/testutils.h>
@@ -86,9 +87,10 @@ void MediaFileInfoTests::testFileSystemMethods()
 void MediaFileInfoTests::testParsingUnsupportedFile()
 {
     Diagnostics diag;
+    AbortableProgressFeedback progress;
     MediaFileInfo file(testFilePath("unsupported.bin"));
-    file.parseContainerFormat(diag);
-    file.parseTags(diag);
+    file.parseContainerFormat(diag, progress);
+    file.parseTags(diag, progress);
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.containerParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotSupported, file.tagsParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::NotParsedYet, file.tracksParsingStatus());
@@ -101,13 +103,14 @@ void MediaFileInfoTests::testParsingUnsupportedFile()
 void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
 {
     Diagnostics diag;
+    AbortableProgressFeedback progress;
     MediaFileInfo file(testFilePath("mtx-test-data/aac/he-aacv2-ps.m4a"));
     file.open(true);
-    file.parseContainerFormat(diag);
-    file.parseTags(diag);
-    file.parseAttachments(diag);
+    file.parseContainerFormat(diag, progress);
+    file.parseTags(diag, progress);
+    file.parseAttachments(diag, progress);
     file.close();
-    CPPUNIT_ASSERT_THROW_MESSAGE("std::ios_base::failure thrown if file closed", file.parseTracks(diag), std::ios_base::failure);
+    CPPUNIT_ASSERT_THROW_MESSAGE("std::ios_base::failure thrown if file closed", file.parseTracks(diag, progress), std::ios_base::failure);
     CPPUNIT_ASSERT(file.areTagsSupported());
     CPPUNIT_ASSERT(file.areTracksSupported());
     CPPUNIT_ASSERT(!file.areChaptersSupported());
@@ -145,12 +148,13 @@ void MediaFileInfoTests::testPartialParsingAndTagCreationOfMp4File()
 void MediaFileInfoTests::testFullParseAndFurtherProperties()
 {
     Diagnostics diag;
+    AbortableProgressFeedback progress;
     MediaFileInfo file(testFilePath("matroska_wave1/test1.mkv"));
     file.open(true);
-    file.parseEverything(diag);
+    file.parseEverything(diag, progress);
     // calling parse methods twice should not do anything (and hence can not fail anymore because the file has already been closed)
     file.close();
-    file.parseEverything(diag);
+    file.parseEverything(diag, progress);
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.containerParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.tagsParsingStatus());
     CPPUNIT_ASSERT_EQUAL(ParsingStatus::Ok, file.tracksParsingStatus());

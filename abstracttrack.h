@@ -20,6 +20,7 @@
 
 namespace TagParser {
 
+class AbortableProgressFeedback;
 class MpegAudioFrameStream;
 class WaveAudioStream;
 class Mp4Track;
@@ -134,13 +135,13 @@ public:
     std::string description() const;
     std::string shortDescription() const;
 
-    void parseHeader(Diagnostics &diag);
+    void parseHeader(Diagnostics &diag, AbortableProgressFeedback &progress);
     bool isHeaderValid() const;
 
 protected:
     AbstractTrack(std::istream &inputStream, std::ostream &outputStream, std::uint64_t startOffset);
     AbstractTrack(std::iostream &stream, std::uint64_t startOffset);
-    virtual void internalParseHeader(Diagnostics &diag) = 0;
+    virtual void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) = 0;
 
     std::istream *m_istream;
     std::ostream *m_ostream;

@@ -1472,8 +1472,10 @@ void Mp4Track::makeSampleTable(Diagnostics &diag)
     // Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset, diag);
 }
 
-void Mp4Track::internalParseHeader(Diagnostics &diag)
+void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing MP4 track");
     using namespace Mp4AtomIds;
     if (!m_trakAtom) {

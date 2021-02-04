@@ -82,7 +82,7 @@ void MatroskaContainer::reset()
  * \brief Validates the file index (cue entries).
  * \remarks Checks only for cluster positions and missing, unknown or surplus elements.
  */
-void MatroskaContainer::validateIndex(Diagnostics &diag)
+void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("validating Matroska file index (cues)");
     bool cuesElementsFound = false;
@@ -98,6 +98,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
             // iterate throught all child elements of the segment (only "Cues"- and "Cluster"-elements are relevant for this method)
             for (EbmlElement *segmentChildElement = segmentElement->firstChild(); segmentChildElement;
                  segmentChildElement = segmentChildElement->nextSibling()) {
+                progress.stopIfAborted();
                 segmentChildElement->parse(diag);
                 switch (segmentChildElement->id()) {
                 case EbmlIds::Void:
@@ -108,6 +109,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag)
                     // parse children of "Cues"-element ("CuePoint"-elements)
                     for (EbmlElement *cuePointElement = segmentChildElement->firstChild(); cuePointElement;
                          cuePointElement = cuePointElement->nextSibling()) {
+                        progress.stopIfAborted();
                         cuePointElement->parse(diag);
                         cueTimeFound = cueTrackPositionsFound = false; // to validate quantity of these elements
                         switch (cuePointElement->id()) {
@@ -398,8 +400,10 @@ ElementPosition MatroskaContainer::determineIndexPosition(Diagnostics &diag) con
     return determineElementPosition(MatroskaIds::Cues, diag);
 }
 
-void MatroskaContainer::internalParseHeader(Diagnostics &diag)
+void MatroskaContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing header of Matroska container");
     // reset old results
     m_firstElement = make_unique<EbmlElement>(*this, startOffset());
@@ -654,8 +658,10 @@ void MatroskaContainer::readTrackStatisticsFromTags(Diagnostics &diag)
     }
 }
 
-void MatroskaContainer::internalParseTags(Diagnostics &diag)
+void MatroskaContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing tags of Matroska container");
     for (EbmlElement *element : m_tagsElements) {
         try {
@@ -689,7 +695,7 @@ void MatroskaContainer::internalParseTags(Diagnostics &diag)
     readTrackStatisticsFromTags(diag);
 }
 
-void MatroskaContainer::internalParseTracks(Diagnostics &diag)
+void MatroskaContainer::internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("parsing tracks of Matroska container");
     for (EbmlElement *element : m_tracksElements) {
@@ -701,7 +707,7 @@ void MatroskaContainer::internalParseTracks(Diagnostics &diag)
                 case MatroskaIds::TrackEntry:
                     m_tracks.emplace_back(make_unique<MatroskaTrack>(*subElement));
                     try {
-                        m_tracks.back()->parseHeader(diag);
+                        m_tracks.back()->parseHeader(diag, progress);
                     } catch (const NoDataFoundException &) {
                         m_tracks.pop_back();
                     } catch (const Failure &) {
@@ -725,7 +731,7 @@ void MatroskaContainer::internalParseTracks(Diagnostics &diag)
     readTrackStatisticsFromTags(diag);
 }
 
-void MatroskaContainer::internalParseChapters(Diagnostics &diag)
+void MatroskaContainer::internalParseChapters(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     static const string context("parsing editions/chapters of Matroska container");
     for (EbmlElement *element : m_chaptersElements) {
@@ -737,7 +743,7 @@ void MatroskaContainer::internalParseChapters(Diagnostics &diag)
                 case MatroskaIds::EditionEntry:
                     m_editionEntries.emplace_back(make_unique<MatroskaEditionEntry>(subElement));
                     try {
-                        m_editionEntries.back()->parseNested(diag);
+                        m_editionEntries.back()->parseNested(diag, progress);
                     } catch (const NoDataFoundException &) {
                         m_editionEntries.pop_back();
                     } catch (const Failure &) {
@@ -759,8 +765,10 @@ void MatroskaContainer::internalParseChapters(Diagnostics &diag)
     }
 }
 
-void MatroskaContainer::internalParseAttachments(Diagnostics &diag)
+void MatroskaContainer::internalParseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
+    CPP_UTILITIES_UNUSED(progress)
+
     static const string context("parsing attachments of Matroska container");
     for (EbmlElement *element : m_attachmentsElements) {
         try {
@@ -1839,7 +1847,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         }
         reset();
         try {
-            parseHeader(diag);
+            parseHeader(diag, progress);
+        } catch (const OperationAbortedException &) {
+            throw;
         } catch (const Failure &) {
             diag.emplace_back(DiagLevel::Critical, "Unable to reparse the header of the new file.", context);
             throw;

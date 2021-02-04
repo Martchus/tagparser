@@ -52,12 +52,12 @@ AbstractContainer::~AbstractContainer()
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws Failure or a derived class when an parsing error occurs.
  */
-void AbstractContainer::parseHeader(Diagnostics &diag)
+void AbstractContainer::parseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     if (!isHeaderParsed()) {
         removeAllTags();
         removeAllTracks();
-        internalParseHeader(diag);
+        internalParseHeader(diag, progress);
         m_headerParsed = true;
     }
 }
@@ -79,11 +79,11 @@ void AbstractContainer::parseHeader(Diagnostics &diag)
  * \sa parseChapters()
  * \sa tags()
  */
-void AbstractContainer::parseTags(Diagnostics &diag)
+void AbstractContainer::parseTags(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     if (!areTagsParsed()) {
-        parseHeader(diag);
-        internalParseTags(diag);
+        parseHeader(diag, progress);
+        internalParseTags(diag, progress);
         m_tagsParsed = true;
     }
 }
@@ -103,11 +103,11 @@ void AbstractContainer::parseTags(Diagnostics &diag)
  * \sa parseTags()
  * \sa tracks()
  */
-void AbstractContainer::parseTracks(Diagnostics &diag)
+void AbstractContainer::parseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     if (!areTracksParsed()) {
-        parseHeader(diag);
-        internalParseTracks(diag);
+        parseHeader(diag, progress);
+        internalParseTracks(diag, progress);
         m_tracksParsed = true;
         m_tracksAltered = false;
     }
@@ -123,11 +123,11 @@ void AbstractContainer::parseTracks(Diagnostics &diag)
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void AbstractContainer::parseChapters(Diagnostics &diag)
+void AbstractContainer::parseChapters(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     if (!areChaptersParsed()) {
-        parseHeader(diag);
-        internalParseChapters(diag);
+        parseHeader(diag, progress);
+        internalParseChapters(diag, progress);
         m_chaptersParsed = true;
     }
 }
@@ -142,11 +142,11 @@ void AbstractContainer::parseChapters(Diagnostics &diag)
  * \throws Throws TagParser::Failure or a derived exception when a parsing
  *         error occurs.
  */
-void AbstractContainer::parseAttachments(Diagnostics &diag)
+void AbstractContainer::parseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     if (!areAttachmentsParsed()) {
-        parseHeader(diag);
-        internalParseAttachments(diag);
+        parseHeader(diag, progress);
+        internalParseAttachments(diag, progress);
         m_attachmentsParsed = true;
     }
 }
@@ -194,9 +194,10 @@ ElementPosition AbstractContainer::determineIndexPosition(Diagnostics &diag) con
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseHeader(Diagnostics &diag)
+void AbstractContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     CPP_UTILITIES_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(progress);
     throw NotImplementedException();
 }
 
@@ -208,9 +209,10 @@ void AbstractContainer::internalParseHeader(Diagnostics &diag)
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseTags(Diagnostics &diag)
+void AbstractContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     CPP_UTILITIES_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(progress);
     throw NotImplementedException();
 }
 
@@ -222,9 +224,10 @@ void AbstractContainer::internalParseTags(Diagnostics &diag)
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseTracks(Diagnostics &diag)
+void AbstractContainer::internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     CPP_UTILITIES_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(progress);
     throw NotImplementedException();
 }
 
@@ -236,9 +239,10 @@ void AbstractContainer::internalParseTracks(Diagnostics &diag)
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseChapters(Diagnostics &diag)
+void AbstractContainer::internalParseChapters(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     CPP_UTILITIES_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(progress);
     throw NotImplementedException();
 }
 
@@ -250,9 +254,10 @@ void AbstractContainer::internalParseChapters(Diagnostics &diag)
  * \throws Throws Failure or a derived class when a parsing error occurs.
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
-void AbstractContainer::internalParseAttachments(Diagnostics &diag)
+void AbstractContainer::internalParseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     CPP_UTILITIES_UNUSED(diag);
+    CPP_UTILITIES_UNUSED(progress);
     throw NotImplementedException();
 }
 
