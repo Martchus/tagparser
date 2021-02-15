@@ -2,27 +2,35 @@
 
 namespace TagParser {
 
+/// \cond
+constexpr Size fromHeightAndAspectRatio(std::uint32_t height, std::uint32_t numerator = 4, std::uint32_t denominator = 3)
+{
+    return Size(height * numerator / denominator, height);
+}
+/// \endcond
+
 /*!
- * \brief Returns an abbreviation for the current instance, eg. 720p for sizes greather than 1280×720
- *        and 1080p for sizes greather than 1920×1080.
+ * \brief Returns an abbreviation for the current instance, eg. 720p for sizes greather than 960×720
+ *        and 1080p for sizes greather than 1440×1080.
+ * \remarks The width thresolds are for 4:3 resolutions so both, 4:3 and 16:9 "720p" is considered as such.
  */
 std::string_view Size::abbreviation() const
 {
-    if (*this >= Size(7680, 4320)) {
+    if (*this >= fromHeightAndAspectRatio(4320)) {
         return "8k";
-    } else if (*this >= Size(3840, 2160)) {
+    } else if (*this >= fromHeightAndAspectRatio(2160)) {
         return "4k";
-    } else if (*this >= Size(1920, 1080)) {
+    } else if (*this >= fromHeightAndAspectRatio(1080)) {
         return "1080p";
-    } else if (*this >= Size(1280, 720)) {
+    } else if (*this >= fromHeightAndAspectRatio(720)) {
         return "720p";
-    } else if (*this >= Size(704, 576)) {
+    } else if (*this >= fromHeightAndAspectRatio(576)) {
         return "576p";
-    } else if (*this >= Size(640, 480)) {
+    } else if (*this >= fromHeightAndAspectRatio(480)) {
         return "480p";
-    } else if (*this >= Size(480, 320)) {
+    } else if (*this >= fromHeightAndAspectRatio(320)) {
         return "320p";
-    } else if (*this >= Size(320, 240)) {
+    } else if (*this >= fromHeightAndAspectRatio(240)) {
         return "240p";
     }
     return "<240p";
