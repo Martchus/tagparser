@@ -251,7 +251,7 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
     writer.writeUInt16BE(MatroskaIds::TagName);
     sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.id().size(), buff);
     stream.write(buff, sizeDenotationLen);
-    stream.write(m_field.id().c_str(), m_field.id().size());
+    stream.write(m_field.id().c_str(), static_cast<std::streamsize>(m_field.id().size()));
     // write "TagLanguage" element
     writer.writeUInt16BE(MatroskaIds::TagLanguage);
     if (m_language.empty()) {
@@ -260,14 +260,14 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
     } else {
         sizeDenotationLen = EbmlElement::makeSizeDenotation(m_language.size(), buff);
         stream.write(buff, sizeDenotationLen);
-        stream.write(m_language.data(), m_language.size());
+        stream.write(m_language.data(), static_cast<std::streamsize>(m_language.size()));
     }
     // write "TagLanguageIETF" element
     if (!m_languageIETF.empty()) {
         writer.writeUInt16BE(MatroskaIds::TagLanguageIETF);
         sizeDenotationLen = EbmlElement::makeSizeDenotation(m_languageIETF.size(), buff);
         stream.write(buff, sizeDenotationLen);
-        stream.write(m_languageIETF.data(), m_languageIETF.size());
+        stream.write(m_languageIETF.data(), static_cast<std::streamsize>(m_languageIETF.size()));
     }
     // write "TagDefault" element
     writer.writeUInt16BE(MatroskaIds::TagDefault);
@@ -278,12 +278,12 @@ void MatroskaTagFieldMaker::make(ostream &stream) const
         writer.writeUInt16BE(MatroskaIds::TagBinary);
         sizeDenotationLen = EbmlElement::makeSizeDenotation(m_field.value().dataSize(), buff);
         stream.write(buff, sizeDenotationLen);
-        stream.write(m_field.value().dataPointer(), m_field.value().dataSize());
+        stream.write(m_field.value().dataPointer(), static_cast<std::streamsize>(m_field.value().dataSize()));
     } else {
         writer.writeUInt16BE(MatroskaIds::TagString);
         sizeDenotationLen = EbmlElement::makeSizeDenotation(m_stringValue.size(), buff);
         stream.write(buff, sizeDenotationLen);
-        stream.write(m_stringValue.data(), m_stringValue.size());
+        stream.write(m_stringValue.data(), static_cast<std::streamsize>(m_stringValue.size()));
     }
     // make nested tags
     for (const auto &maker : m_nestedMaker) {

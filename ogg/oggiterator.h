@@ -59,7 +59,7 @@ private:
     std::vector<OggPage>::size_type m_page;
     std::vector<std::uint32_t>::size_type m_segment;
     std::uint64_t m_offset;
-    std::uint32_t m_bytesRead;
+    std::uint64_t m_bytesRead;
     bool m_hasIdFilter;
     std::uint32_t m_idFilter;
 };

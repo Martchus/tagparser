@@ -15,15 +15,14 @@ class MediaFileInfo;
 
 class TAG_PARSER_EXPORT StreamDataBlock {
 public:
-    StreamDataBlock(const std::function<std::istream &()> &stream, std::istream::off_type startOffset = 0,
-        std::ios_base::seekdir startDir = std::ios_base::beg, std::istream::off_type endOffset = 0,
-        std::ios_base::seekdir endDir = std::ios_base::end);
+    StreamDataBlock(const std::function<std::istream &()> &stream, uint64_t startOffset = 0, std::ios_base::seekdir startDir = std::ios_base::beg,
+        uint64_t endOffset = 0, std::ios_base::seekdir endDir = std::ios_base::end);
     virtual ~StreamDataBlock();
 
     std::istream &stream() const;
-    std::istream::pos_type startOffset() const;
-    std::istream::pos_type endOffset() const;
-    std::istream::pos_type size() const;
+    std::uint64_t startOffset() const;
+    std::uint64_t endOffset() const;
+    std::uint64_t size() const;
     const std::unique_ptr<char[]> &buffer() const;
     void makeBuffer() const;
     void discardBuffer();
@@ -33,8 +32,8 @@ protected:
     StreamDataBlock();
 
     std::function<std::istream &()> m_stream;
-    std::istream::pos_type m_startOffset;
-    std::istream::pos_type m_endOffset;
+    std::uint64_t m_startOffset;
+    std::uint64_t m_endOffset;
     mutable std::unique_ptr<char[]> m_buffer;
 };
 
@@ -51,7 +50,7 @@ inline std::istream &StreamDataBlock::stream() const
 /*!
  * \brief Returns the absolute start offset of the data block in the stream.
  */
-inline std::istream::pos_type StreamDataBlock::startOffset() const
+inline std::uint64_t StreamDataBlock::startOffset() const
 {
     return m_startOffset;
 }
@@ -59,7 +58,7 @@ inline std::istream::pos_type StreamDataBlock::startOffset() const
 /*!
  * \brief Returns the absolute end offset of the data block in the stream.
  */
-inline std::istream::pos_type StreamDataBlock::endOffset() const
+inline std::uint64_t StreamDataBlock::endOffset() const
 {
     return m_endOffset;
 }
@@ -67,7 +66,7 @@ inline std::istream::pos_type StreamDataBlock::endOffset() const
 /*!
  * \brief Returns the size of the data block.
  */
-inline std::istream::pos_type StreamDataBlock::size() const
+inline std::uint64_t StreamDataBlock::size() const
 {
     return m_endOffset - m_startOffset;
 }

@@ -677,7 +677,7 @@ void AacFrameElementParser::decodeScaleFactorData(AacIcsInfo &ics)
                 break;
             case IntensityHcb: // intensity books
             case IntensityHcb2:
-                ics.scaleFactors[group][sfb] = static_cast<std::uint16_t>(isPosition += (parseHuffmanScaleFactor() - 60));
+                ics.scaleFactors[group][sfb] = static_cast<std::uint16_t>(isPosition += static_cast<std::int16_t>(parseHuffmanScaleFactor() - 60));
                 break;
             case NoiseHcb: // noise books
                 if (noisePcmFlag) {
@@ -689,7 +689,7 @@ void AacFrameElementParser::decodeScaleFactorData(AacIcsInfo &ics)
                 ics.scaleFactors[group][sfb] = static_cast<std::uint16_t>(noiseEnergy += tmp);
                 break;
             default: // spectral books
-                scaleFactor += parseHuffmanScaleFactor() - 60;
+                scaleFactor += static_cast<std::int16_t>(parseHuffmanScaleFactor() - 60);
                 if (scaleFactor < 0 || scaleFactor > 255) {
                     throw InvalidDataException();
                 } else {
@@ -976,7 +976,7 @@ void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, std::
         sbr->relLeadCount[channel] = 0;
         sbr->relTrailCount[channel] = bsEnvCount = m_reader.readBits<std::uint8_t>(2);
         for (std::uint8_t rel = 0; rel < bsEnvCount; ++rel) {
-            sbr->bsRelBord[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
+            sbr->bsRelBord[channel][rel] = static_cast<std::uint8_t>(2 * m_reader.readBits<std::uint8_t>(2) + 2);
         }
         sbr->bsPointer[channel] = m_reader.readBits<std::uint8_t>(static_cast<std::uint8_t>(sbrLog2(static_cast<std::int8_t>(bsEnvCount + 2))));
         for (std::uint8_t env = 0; env <= bsEnvCount; ++env) {
@@ -989,7 +989,7 @@ void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, std::
         sbr->relLeadCount[channel] = bsEnvCount = m_reader.readBits<std::uint8_t>(2);
         sbr->relTrailCount[channel] = 0;
         for (std::uint8_t rel = 0; rel < bsEnvCount; ++rel) {
-            sbr->bsRelBord[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
+            sbr->bsRelBord[channel][rel] = static_cast<std::uint8_t>(2 * m_reader.readBits<std::uint8_t>(2) + 2);
         }
         sbr->bsPointer[channel] = m_reader.readBits<std::uint8_t>(static_cast<std::uint8_t>(sbrLog2(static_cast<std::int8_t>(bsEnvCount + 2))));
         for (std::uint8_t env = 0; env < bsEnvCount; ++env) {
@@ -1002,12 +1002,12 @@ void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, std::
         //bsRelCount0 = m_reader.readBits<std::uint8_t>(2);
         //bsRelCount1 = m_reader.readBits<std::uint8_t>(2);
         m_reader.skipBits(4);
-        bsEnvCount = min<std::uint8_t>(5, sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 1);
+        bsEnvCount = min<std::uint8_t>(5, static_cast<std::uint8_t>(sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 1));
         for (std::uint8_t rel = 0; rel < sbr->bsRelCount0[channel]; ++rel) {
-            sbr->bsRelBord0[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
+            sbr->bsRelBord0[channel][rel] = static_cast<std::uint8_t>(2 * m_reader.readBits<std::uint8_t>(2) + 2);
         }
         for (std::uint8_t rel = 0; rel < sbr->bsRelCount1[channel]; ++rel) {
-            sbr->bsRelBord1[channel][rel] = 2 * m_reader.readBits<std::uint8_t>(2) + 2;
+            sbr->bsRelBord1[channel][rel] = static_cast<std::uint8_t>(2 * m_reader.readBits<std::uint8_t>(2) + 2);
         }
         sbr->bsPointer[channel] = m_reader.readBits<std::uint8_t>(
             static_cast<std::uint8_t>(sbrLog2(static_cast<std::int8_t>(sbr->bsRelCount0[channel] + sbr->bsRelCount1[channel] + 2))));
@@ -1513,7 +1513,7 @@ void AacFrameElementParser::huffmanBinaryPair(std::uint8_t cb, std::int16_t *sp)
 {
     std::uint16_t offset = 0;
     while (!aacHcbBinTable[cb][offset].isLeaf) {
-        offset += aacHcbBinTable[cb][offset].data[m_reader.readBit()];
+        offset += static_cast<std::uint16_t>(aacHcbBinTable[cb][offset].data[m_reader.readBit()]);
     }
     if (offset > aacHcbBinTableSize[cb]) {
         throw InvalidDataException();
@@ -1967,6 +1967,7 @@ void AacFrameElementParser::parseFillElement(std::uint8_t sbrElement)
             break;
         case SbrDataCrc:
             crcFlag = true;
+            [[fallthrough]];
         case SbrData:
             if (sbrElement == aacInvalidSbrElement) {
                 throw InvalidDataException();
@@ -1986,7 +1987,7 @@ void AacFrameElementParser::parseFillElement(std::uint8_t sbrElement)
             count = 0;
             break;
         case FillData:
-            m_reader.skipBits(4 + 8 * (count - 1));
+            m_reader.skipBits(static_cast<std::size_t>(4 + 8 * (count - 1)));
             count = 0;
             break;
         case DataElement:
@@ -1997,23 +1998,23 @@ void AacFrameElementParser::parseFillElement(std::uint8_t sbrElement)
                 std::uint16_t dataElementLengthPart;
                 do {
                     dataElementLengthPart = m_reader.readBits<std::uint8_t>(8);
-                    dataElementLength += dataElementLengthPart;
+                    dataElementLength += static_cast<std::uint8_t>(dataElementLengthPart);
                     ++loopCounter;
                 } while (dataElementLengthPart == 0xFF);
                 for (std::uint16_t i = 0; i < dataElementLength; ++i) {
                     m_reader.skipBits(8); // data element byte
-                    count -= dataElementLength + loopCounter + 1;
+                    count -= static_cast<std::uint16_t>(dataElementLength + loopCounter + 1);
                     goto continueWhile;
                     // FIXME: loop will run at most once
                 }
             }
-            m_reader.skipBits(8 * (count - 1));
+            m_reader.skipBits(static_cast<std::size_t>(8 * (count - 1)));
             count = 0;
             break;
         case Fill:
         case SacData:
         default:
-            m_reader.skipBits(4 + 8 * (count - 1));
+            m_reader.skipBits(static_cast<std::size_t>(4 + 8 * (count - 1)));
             count = 0;
         }
     }
@@ -2104,7 +2105,7 @@ endOfBlock:;
 void AacFrameElementParser::parse(const AdtsFrame &adtsFrame, std::istream &stream, std::size_t dataSize)
 {
     auto data = make_unique<char[]>(dataSize);
-    stream.read(data.get(), dataSize);
+    stream.read(data.get(), static_cast<std::streamsize>(dataSize));
     parse(adtsFrame, data, dataSize);
 }
 

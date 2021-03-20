@@ -171,7 +171,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
             memset(buf, 0, sizeof(DataSizeType)); // reset buffer
             reader().read(buf + (maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
             // xor the first byte in buffer which has been read from the file with mask
-            *(buf + (maximumSizeLengthSupported() - m_sizeLength)) ^= mask;
+            *(buf + (maximumSizeLengthSupported() - m_sizeLength)) ^= static_cast<char>(mask);
             m_dataSize = BE::toUInt64(buf);
             // check if element is truncated
             if (totalSize() > maxTotalSize()) {
@@ -535,7 +535,7 @@ void EbmlElement::makeSimpleElement(std::ostream &stream, GenericFileElement::Id
     stream.write(buff1, sizeLength);
     sizeLength = EbmlElement::makeSizeDenotation(content.size(), buff1);
     stream.write(buff1, sizeLength);
-    stream.write(content.data(), content.size());
+    stream.write(content.data(), static_cast<std::streamsize>(content.size()));
 }
 
 } // namespace TagParser

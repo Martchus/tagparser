@@ -520,7 +520,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag, AbortableProgress
                                                 diag.emplace_back(DiagLevel::Critical,
                                                     argsToString("ID of element ", element->idToString(), " at ", offset,
                                                         " does not match the ID denoted in the \"SeekHead\" element (0x",
-                                                        numberToString(infoPair.first, 16), ")."),
+                                                        numberToString(infoPair.first, 16u), ")."),
                                                     context);
                                             }
                                             switch (element->id()) {
@@ -638,7 +638,7 @@ void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)
             m_titles.emplace_back();
         }
         if (rawDuration > 0.0) {
-            m_duration += TimeSpan::fromSeconds(rawDuration * timeScale / 1000000000);
+            m_duration += TimeSpan::fromSeconds(rawDuration * static_cast<double>(timeScale) / 1000000000.0);
         }
     }
 }
@@ -1387,7 +1387,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                                     case EbmlIds::Crc32:
                                         break;
                                     case MatroskaIds::Position:
-                                        clusterSize += 1 + 1 + EbmlElement::calculateUIntegerLength(currentPosition + segment.totalDataSize);
+                                        clusterSize += 1u + 1u + EbmlElement::calculateUIntegerLength(currentPosition + segment.totalDataSize);
                                         break;
                                     default:
                                         clusterSize += level2Element->totalSize();
@@ -1395,7 +1395,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                                     clusterReadSize += level2Element->totalSize();
                                 }
                                 segment.clusterSizes.push_back(clusterSize);
-                                segment.totalDataSize += 4 + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
+                                segment.totalDataSize += 4u + EbmlElement::calculateSizeDenotationLength(clusterSize) + clusterSize;
                             }
                         }
                         // check whether aborted (because this loop might take some seconds to process)
@@ -1687,7 +1687,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     std::uint64_t voidLength;
                     if (segment.newPadding < 64) {
                         sizeLength = 1;
-                        *buff = static_cast<char>(voidLength = segment.newPadding - 2) | 0x80;
+                        *buff = static_cast<char>(voidLength = segment.newPadding - 2) | static_cast<char>(0x80);
                     } else {
                         sizeLength = 8;
                         BE::getBytes(static_cast<std::uint64_t>((voidLength = segment.newPadding - 9) | 0x100000000000000), buff);

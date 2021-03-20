@@ -46,7 +46,7 @@ string Mpeg4Descriptor::parsingContext() const
  */
 std::string Mpeg4Descriptor::idToString() const
 {
-    return "0x" + numberToString(id(), 16);
+    return "0x" + numberToString(id(), static_cast<std::uint8_t>(16));
 }
 
 /*!

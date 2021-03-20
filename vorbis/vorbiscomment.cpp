@@ -251,7 +251,7 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
         stream.write(sig, sizeof(sig));
     }
     // write vendor
-    writer.writeUInt32LE(vendor.size());
+    writer.writeUInt32LE(static_cast<std::uint32_t>(vendor.size()));
     writer.writeString(vendor);
     // write field count later
     const auto fieldCountOffset = stream.tellp();

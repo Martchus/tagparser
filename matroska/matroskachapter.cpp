@@ -56,10 +56,10 @@ void MatroskaChapter::internalParse(Diagnostics &diag, AbortableProgressFeedback
         case MatroskaIds::ChapterStringUID:
             break;
         case MatroskaIds::ChapterTimeStart:
-            m_startTime = TimeSpan(chapterAtomChild->readUInteger() / 100);
+            m_startTime = TimeSpan(static_cast<std::int64_t>(chapterAtomChild->readUInteger() / 100u));
             break;
         case MatroskaIds::ChapterTimeEnd:
-            m_endTime = TimeSpan(chapterAtomChild->readUInteger() / 100);
+            m_endTime = TimeSpan(static_cast<std::int64_t>(chapterAtomChild->readUInteger() / 100u));
             break;
         case MatroskaIds::ChapterFlagHidden:
             m_hidden = chapterAtomChild->readUInteger() == 1;

@@ -162,7 +162,7 @@ void MediaFileInfo::parseContainerFormat(Diagnostics &diag, AbortableProgressFee
     // file size
     m_paddingSize = 0;
     m_containerOffset = 0;
-    size_t bytesSkippedBeforeContainer = 0;
+    std::size_t bytesSkippedBeforeContainer = 0;
 
     // read signatrue
     char buff[16];
@@ -181,12 +181,12 @@ startParsingSignature:
         // - Only skipping 4 or more consecutive zero bytes at this point because some signatures start with up to 4 zero bytes.
         // - It seems that most players/tools¹ skip junk bytes, at least when reading MP3 files. Hence the tagparser library is following
         //   the same approach. (¹e.g. ffmpeg: "[mp3 @ 0x559e1f4cbd80] Skipping 1670 bytes of junk at 1165.")
-        size_t bytesSkipped = 0;
+        std::size_t bytesSkipped = 0;
         for (buffOffset = buff; buffOffset != buffEnd && !(*buffOffset); ++buffOffset, ++bytesSkipped)
             ;
         if (bytesSkipped >= 4) {
         skipJunkBytes:
-            m_containerOffset += bytesSkipped;
+            m_containerOffset += static_cast<std::streamoff>(bytesSkipped);
             m_paddingSize += bytesSkipped;
 
             // give up after 0x800 bytes
@@ -919,7 +919,7 @@ double MediaFileInfo::overallAverageBitrate() const
     if (duration.isNull()) {
         return 0.0;
     }
-    return 0.0078125 * size() / duration.totalSeconds();
+    return 0.0078125 * static_cast<double>(size()) / duration.totalSeconds();
 }
 
 /*!
@@ -1597,7 +1597,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     // prepare ID3v2 tags
     vector<Id3v2TagMaker> makers;
     makers.reserve(m_id3v2Tags.size());
-    std::uint32_t tagsSize = 0;
+    std::uint64_t tagsSize = 0;
     for (auto &tag : m_id3v2Tags) {
         try {
             makers.emplace_back(tag->prepareMaking(diag));
@@ -1614,7 +1614,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     if (flacStream) {
         // if it is a raw FLAC stream, make FLAC metadata
         startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);
-        tagsSize += flacMetaData.tellp();
+        tagsSize += static_cast<std::uint64_t>(flacMetaData.tellp());
         streamOffset = flacStream->streamOffset();
     } else {
         // make no further metadata, just use the container offset as stream offset

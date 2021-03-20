@@ -170,7 +170,7 @@ GenericFileElement<ImplementationType>::GenericFileElement(
     m_maxSize = container.fileInfo().size();
     if (m_maxSize > startOffset) {
         m_maxSize -= startOffset;
-        stream().seekg(startOffset, std::ios_base::beg);
+        stream().seekg(static_cast<std::streamoff>(startOffset), std::ios_base::beg);
     } else {
         m_maxSize = 0;
     }
@@ -875,8 +875,8 @@ void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetSt
 template <class ImplementationType> void GenericFileElement<ImplementationType>::makeBuffer()
 {
     m_buffer = std::make_unique<char[]>(totalSize());
-    container().stream().seekg(startOffset());
-    container().stream().read(m_buffer.get(), totalSize());
+    container().stream().seekg(static_cast<std::streamoff>(startOffset()));
+    container().stream().read(m_buffer.get(), static_cast<std::streamsize>(totalSize()));
 }
 
 /*!
@@ -893,7 +893,7 @@ template <class ImplementationType> inline void GenericFileElement<Implementatio
  */
 template <class ImplementationType> inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
 {
-    targetStream.write(m_buffer.get(), totalSize());
+    targetStream.write(m_buffer.get(), static_cast<std::streamsize>(totalSize()));
 }
 
 /*!
@@ -934,7 +934,7 @@ void GenericFileElement<ImplementationType>::copyInternal(
         throw InvalidDataException();
     }
     auto &stream = container().stream();
-    stream.seekg(startOffset);
+    stream.seekg(static_cast<std::streamoff>(startOffset), std::ios_base::beg);
     CppUtilities::CopyHelper<0x10000> copyHelper;
     if (progress) {
         copyHelper.callbackCopy(stream, targetStream, bytesToCopy, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)),

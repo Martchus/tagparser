@@ -231,9 +231,9 @@ void Id3v1Tag::removeAllFields()
     m_genre.clearDataAndMetadata();
 }
 
-unsigned int Id3v1Tag::fieldCount() const
+std::size_t Id3v1Tag::fieldCount() const
 {
-    unsigned int count = 0;
+    auto count = std::size_t(0);
     for (const auto &value : std::initializer_list<const TagValue *>{ &m_title, &m_artist, &m_album, &m_year, &m_comment, &m_trackPos, &m_genre }) {
         if (!value->isEmpty()) {
             ++count;

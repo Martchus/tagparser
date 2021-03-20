@@ -131,18 +131,18 @@ void OggIterator::previousSegment()
  * \sa currentCharacterOffset()
  * \sa seekForward()
  */
-void OggIterator::read(char *buffer, size_t count)
+void OggIterator::read(char *buffer, std::size_t count)
 {
-    size_t bytesRead = 0;
+    std::size_t bytesRead = 0;
     while (*this && count) {
         const auto available = currentSegmentSize() - m_bytesRead;
-        stream().seekg(static_cast<streamoff>(currentCharacterOffset()));
+        stream().seekg(static_cast<std::streamoff>(currentCharacterOffset()));
         if (count <= available) {
-            stream().read(buffer + bytesRead, static_cast<streamoff>(count));
+            stream().read(buffer + bytesRead, static_cast<std::streamsize>(count));
             m_bytesRead += count;
             return;
         }
-        stream().read(buffer + bytesRead, available);
+        stream().read(buffer + bytesRead, static_cast<std::streamsize>(available));
         nextSegment();
         bytesRead += available;
         count -= available;
@@ -165,18 +165,18 @@ void OggIterator::read(char *buffer, size_t count)
  * \sa currentCharacterOffset()
  * \sa seekForward()
  */
-size_t OggIterator::readAll(char *buffer, size_t max)
+std::size_t OggIterator::readAll(char *buffer, std::size_t max)
 {
-    size_t bytesRead = 0;
+    auto bytesRead = std::size_t(0);
     while (*this && max) {
-        const std::uint32_t available = currentSegmentSize() - m_bytesRead;
-        stream().seekg(static_cast<streamoff>(currentCharacterOffset()));
+        const auto available = currentSegmentSize() - m_bytesRead;
+        stream().seekg(static_cast<std::streamoff>(currentCharacterOffset()), std::ios_base::beg);
         if (max <= available) {
-            stream().read(buffer + bytesRead, static_cast<streamoff>(max));
+            stream().read(buffer + bytesRead, static_cast<std::streamsize>(max));
             m_bytesRead += max;
             return bytesRead + max;
         } else {
-            stream().read(buffer + bytesRead, available);
+            stream().read(buffer + bytesRead, static_cast<std::streamsize>(available));
             nextSegment();
             bytesRead += available;
             max -= available;
@@ -195,9 +195,9 @@ size_t OggIterator::readAll(char *buffer, size_t max)
  * \sa currentCharacterOffset()
  * \sa read()
  */
-void OggIterator::ignore(size_t count)
+void OggIterator::ignore(std::size_t count)
 {
-    std::uint32_t available = currentSegmentSize() - m_bytesRead;
+    auto available = currentSegmentSize() - m_bytesRead;
     while (*this) {
         available = currentSegmentSize() - m_bytesRead;
         if (count <= available) {

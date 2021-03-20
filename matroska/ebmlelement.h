@@ -72,9 +72,9 @@ inline std::string EbmlElement::idToString() const
 {
     using namespace CppUtilities;
     if (const auto name = matroskaIdName(id()); !name.empty()) {
-        return argsToString('0', 'x', numberToString(id(), 16), ' ', '\"', name, '\"');
+        return argsToString('0', 'x', numberToString(id(), 16u), ' ', '\"', name, '\"');
     } else {
-        return "0x" + numberToString(id(), 16);
+        return "0x" + numberToString(id(), 16u);
     }
 }
 

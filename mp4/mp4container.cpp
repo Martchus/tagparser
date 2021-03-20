@@ -136,8 +136,8 @@ void Mp4Container::internalParseTracks(Diagnostics &diag, AbortableProgressFeedb
                             m_duration = TimeSpan::fromSeconds(static_cast<double>(reader().readUInt32BE()) / static_cast<double>(m_timeScale));
                             break;
                         case 1:
-                            m_creationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(reader().readUInt64BE());
-                            m_modificationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(reader().readUInt64BE());
+                            m_creationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<double>(reader().readUInt64BE()));
+                            m_modificationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<double>(reader().readUInt64BE()));
                             m_timeScale = reader().readUInt32BE();
                             m_duration = TimeSpan::fromSeconds(static_cast<double>(reader().readUInt64BE()) / static_cast<double>(m_timeScale));
                             break;
@@ -425,7 +425,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     if (!rewriteRequired) {
         newPaddingEnd = 0;
         std::uint64_t currentSum = 0;
-        for (Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
+        for (level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
             level0Atom->parse(diag);
             switch (level0Atom->id()) {
             case Mp4AtomIds::FileType:
@@ -584,12 +584,11 @@ calculatePadding:
         for (std::uint8_t pass = 0; pass != 2; ++pass) {
             if (newTagPos == (pass ? ElementPosition::AfterData : ElementPosition::BeforeData)) {
                 // define function to write tracks
-                bool tracksWritten = false;
-                const auto writeTracks = [&] {
+                auto tracksWritten = false;
+                const auto writeTracks = [this, &diag, &tracksWritten] {
                     if (tracksWritten) {
                         return;
                     }
-
                     for (auto &track : tracks()) {
                         track->makeTrack(diag);
                     }
@@ -597,8 +596,9 @@ calculatePadding:
                 };
 
                 // define function to write user data
-                bool userDataWritten = false;
-                const auto writeUserData = [&] {
+                auto userDataWritten = false;
+                auto writeUserData = [level0Atom, level1Atom, level2Atom, movieAtom, &userDataWritten, userDataAtomSize, &outputStream, &outputWriter,
+                                         &tagMaker, &diag]() mutable {
                     if (userDataWritten || !userDataAtomSize) {
                         return;
                     }
@@ -608,10 +608,10 @@ calculatePadding:
 
                     // write children of user data atom
                     bool metaAtomWritten = false;
-                    for (Mp4Atom *level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
-                        for (Mp4Atom *level1Atom = level0Atom->childById(Mp4AtomIds::UserData, diag); level1Atom;
+                    for (level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
+                        for (level1Atom = level0Atom->childById(Mp4AtomIds::UserData, diag); level1Atom;
                              level1Atom = level1Atom->siblingById(Mp4AtomIds::UserData, diag)) {
-                            for (Mp4Atom *level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
+                            for (level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
                                 switch (level2Atom->id()) {
                                 case Mp4AtomIds::Meta:
                                     // write meta atom
@@ -787,7 +787,7 @@ calculatePadding:
 
                 } else {
                     // can't just skip next movie sibling
-                    for (Mp4Atom *level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
+                    for (level0Atom = firstMediaDataAtom; level0Atom; level0Atom = level0Atom->nextSibling()) {
                         level0Atom->parse(diag);
                         switch (level0Atom->id()) {
                         case Mp4AtomIds::FileType:

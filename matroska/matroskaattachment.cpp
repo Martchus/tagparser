@@ -116,7 +116,7 @@ MatroskaAttachmentMaker::MatroskaAttachmentMaker(MatroskaAttachment &attachment,
     m_attachedFileElementSize = 2 + EbmlElement::calculateSizeDenotationLength(attachment.name().size()) + attachment.name().size() + 2
         + EbmlElement::calculateSizeDenotationLength(attachment.mimeType().size()) + attachment.mimeType().size() + 2 + 1
         + EbmlElement::calculateUIntegerLength(attachment.id());
-    if (auto dataSize = attachment.data() ? attachment.data()->size() : static_cast<istream::pos_type>(0)) {
+    if (auto dataSize = attachment.data() ? attachment.data()->size() : static_cast<std::uint64_t>(0)) {
         m_attachedFileElementSize += 2 + EbmlElement::calculateSizeDenotationLength(dataSize) + dataSize;
     }
     if (!attachment.description().empty()) {

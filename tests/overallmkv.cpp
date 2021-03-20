@@ -553,7 +553,7 @@ void OverallTests::checkMkvTestMetaData()
     }
     CPPUNIT_ASSERT_EQUAL(m_testCover.size(), static_cast<size_t>(attachmentData->size()));
     istream &attachmentSteam = attachmentData->stream();
-    attachmentSteam.seekg(attachmentData->startOffset());
+    attachmentSteam.seekg(static_cast<std::streamoff>(attachmentData->startOffset()), std::ios_base::beg);
     for (char expectedChar : m_testCover) {
         CPPUNIT_ASSERT_EQUAL(expectedChar, static_cast<char>(attachmentSteam.get()));
     }

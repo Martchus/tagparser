@@ -83,11 +83,11 @@ bool Tag::setValues(KnownField field, const std::vector<TagValue> &values)
  * \remarks The encoding of the inserted text values might not be supported by the tag.
  *          To fix this, call ensureTextValuesAreProperlyEncoded() after insertion.
  */
-unsigned int Tag::insertValues(const Tag &from, bool overwrite)
+std::size_t Tag::insertValues(const Tag &from, bool overwrite)
 {
-    unsigned int count = 0;
+    auto count = std::size_t(0);
     for (int i = static_cast<int>(KnownField::Invalid) + 1, last = static_cast<int>(KnownField::Description); i <= last; ++i) {
-        KnownField field = static_cast<KnownField>(i);
+        auto field = static_cast<KnownField>(i);
         const TagValue &ownValue = value(field);
         if (overwrite || ownValue.isEmpty()) {
             const TagValue &otherValue = from.value(field);

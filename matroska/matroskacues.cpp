@@ -94,13 +94,13 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                             break;
                         case MatroskaIds::CueClusterPosition:
                             pos = (cueClusterPositionElement = cueTrackPositionsChild)->readUInteger();
-                            cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(pos);
+                            cueTrackPositionsElementSize += 2u + EbmlElement::calculateUIntegerLength(pos);
                             m_offsets.emplace(cueTrackPositionsChild, pos);
                             m_cueElementByOriginalOffset.emplace(pos, cueTrackPositionsChild);
                             break;
                         case MatroskaIds::CueCodecState:
                             statePos = cueTrackPositionsChild->readUInteger();
-                            cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(statePos);
+                            cueTrackPositionsElementSize += 2u + EbmlElement::calculateUIntegerLength(statePos);
                             m_offsets.emplace(cueTrackPositionsChild, statePos);
                             m_cueElementByOriginalOffset.emplace(statePos, cueTrackPositionsChild);
                             break;
@@ -122,7 +122,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                                 case MatroskaIds::CueRefCluster:
                                 case MatroskaIds::CueRefCodecState:
                                     statePos = cueReferenceChild->readUInteger();
-                                    cueReferenceElementSize += 2 + EbmlElement::calculateUIntegerLength(statePos);
+                                    cueReferenceElementSize += 2u + EbmlElement::calculateUIntegerLength(statePos);
                                     m_offsets.emplace(cueReferenceChild, statePos);
                                     m_cueElementByOriginalOffset.emplace(statePos, cueReferenceChild);
                                     break;
@@ -144,7 +144,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                         diag.emplace_back(
                             DiagLevel::Critical, "\"CueTrackPositions\"-element does not contain mandatory \"CueClusterPosition\"-element.", context);
                     } else if (cueRelativePositionElement) {
-                        cueTrackPositionsElementSize += 2 + EbmlElement::calculateUIntegerLength(relPos);
+                        cueTrackPositionsElementSize += 2u + EbmlElement::calculateUIntegerLength(relPos);
                         m_relativeOffsets.emplace(piecewise_construct, forward_as_tuple(cueRelativePositionElement), forward_as_tuple(pos, relPos));
                         m_cueRelativePositionElementByOriginalOffsets.emplace(
                             piecewise_construct, forward_as_tuple(pos, relPos), forward_as_tuple(cueRelativePositionElement));

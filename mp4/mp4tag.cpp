@@ -85,14 +85,13 @@ const TagValue &Mp4Tag::value(KnownField field) const
 std::vector<const TagValue *> Mp4Tag::values(KnownField field) const
 {
     auto values = FieldMapBasedTag<Mp4Tag>::values(field);
-    const Mp4ExtendedFieldId extendedId(field);
-    if (extendedId) {
+    if (const auto extendedId = Mp4ExtendedFieldId(field)) {
         auto range = fields().equal_range(Mp4TagAtomIds::Extended);
         for (auto i = range.first; i != range.second; ++i) {
-            const auto &field = i->second;
-            if (extendedId.matches(field)) {
-                values.emplace_back(&field.value());
-                for (const auto &additionalData : field.additionalData()) {
+            const auto &extendedField = i->second;
+            if (extendedId.matches(extendedField)) {
+                values.emplace_back(&extendedField.value());
+                for (const auto &additionalData : extendedField.additionalData()) {
                     values.emplace_back(&additionalData.value);
                 }
             }
@@ -259,16 +258,15 @@ bool Mp4Tag::setValue(KnownField field, const TagValue &value)
 
 bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
 {
-    const auto extendedId = Mp4ExtendedFieldId(field);
-    if (extendedId) {
+    if (const auto extendedId = Mp4ExtendedFieldId(field)) {
         auto valuesIterator = values.cbegin();
         auto range = fields().equal_range(Mp4TagAtomIds::Extended);
         for (; valuesIterator != values.cend() && range.first != range.second;) {
             if (!valuesIterator->isEmpty()) {
-                auto &field = range.first->second;
-                if (extendedId.matches(field) && (!extendedId.updateOnly || !field.value().isEmpty())) {
-                    field.clearValue();
-                    field.setValue(*valuesIterator);
+                auto &extendedField = range.first->second;
+                if (extendedId.matches(extendedField) && (!extendedId.updateOnly || !extendedField.value().isEmpty())) {
+                    extendedField.clearValue();
+                    extendedField.setValue(*valuesIterator);
                     // note: Not sure which extended tag fields support multiple data atoms and which don't. Let's simply use
                     //       only one data atom per extended field here and get rid of any possibly assigned additional data
                     //       atoms.

@@ -319,8 +319,8 @@ bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::addTrack(T
         // ensure ID is unique
         auto id = track->id();
     ensureIdIsUnique:
-        for (const auto &track : m_tracks) {
-            if (track->id() == id) {
+        for (const auto &existingTrack : m_tracks) {
+            if (existingTrack->id() == id) {
                 ++id;
                 goto ensureIdIsUnique;
             }

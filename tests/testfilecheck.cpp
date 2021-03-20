@@ -116,7 +116,7 @@ Sha256Checksum TestFile::computeSha256Sum() const
     Sha256Checksum hexString;
     char *hexStringIterator = hexString.checksum;
     for (unsigned char hashNumber : hash) {
-        const string digits = numberToString(hashNumber, 16);
+        const string digits = numberToString(hashNumber, static_cast<unsigned char>(16));
         *(hexStringIterator++) = digits.size() < 2 ? '0' : digits.front();
         *(hexStringIterator++) = digits.back();
     }

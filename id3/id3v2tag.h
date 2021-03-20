@@ -89,7 +89,7 @@ public:
     bool isExperimental() const;
     bool hasFooter() const;
     std::uint32_t extendedHeaderSize() const;
-    std::uint32_t paddingSize() const;
+    std::uint64_t paddingSize() const;
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;
@@ -109,7 +109,7 @@ private:
     std::uint8_t m_flags;
     std::uint32_t m_sizeExcludingHeader;
     std::uint32_t m_extendedHeaderSize;
-    std::uint32_t m_paddingSize;
+    std::uint64_t m_paddingSize;
 };
 
 /*!
@@ -232,7 +232,7 @@ inline std::uint32_t Id3v2Tag::extendedHeaderSize() const
  * \brief Returns the size of the padding between the tag and the first MPEG frame
  *        if one is present; otherwise returns 0.
  */
-inline std::uint32_t Id3v2Tag::paddingSize() const
+inline std::uint64_t Id3v2Tag::paddingSize() const
 {
     return m_paddingSize;
 }

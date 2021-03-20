@@ -203,7 +203,7 @@ void UtilitiesTests::testProgressFeedback()
     unsigned int stepPercentage;
     unsigned int overallPercentage = 0;
 
-    ProgressFeedback progress(
+    ProgressFeedback progressFeedback(
         [&](const ProgressFeedback &progress) {
             ++steps;
             step = progress.step();
@@ -215,20 +215,20 @@ void UtilitiesTests::testProgressFeedback()
             overallPercentage = progress.overallPercentage();
         });
     CPPUNIT_ASSERT_EQUAL(0u, steps);
-    progress.updateOverallPercentage(25);
+    progressFeedback.updateOverallPercentage(25);
     CPPUNIT_ASSERT_EQUAL(0u, steps);
     CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
-    progress.updateStep("foo", 45);
+    progressFeedback.updateStep("foo", 45);
     CPPUNIT_ASSERT_EQUAL(1u, steps);
     CPPUNIT_ASSERT_EQUAL("foo"s, step);
     CPPUNIT_ASSERT_EQUAL(45u, stepPercentage);
     CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
-    progress.updateStepPercentage(60);
+    progressFeedback.updateStepPercentage(60);
     CPPUNIT_ASSERT_EQUAL(1u, steps);
     CPPUNIT_ASSERT_EQUAL("foo"s, step);
     CPPUNIT_ASSERT_EQUAL(60u, stepPercentage);
     CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
-    progress.updateStepPercentageFromFraction(0.75);
+    progressFeedback.updateStepPercentageFromFraction(0.75);
     CPPUNIT_ASSERT_EQUAL(1u, steps);
     CPPUNIT_ASSERT_EQUAL("foo"s, step);
     CPPUNIT_ASSERT_EQUAL(75u, stepPercentage);
@@ -242,7 +242,7 @@ void UtilitiesTests::testAbortableProgressFeedback()
     unsigned int stepPercentage;
     unsigned int overallPercentage = 0;
 
-    AbortableProgressFeedback progress(
+    AbortableProgressFeedback progressFeedback(
         [&](const AbortableProgressFeedback &progress) {
             ++steps;
             step = progress.step();
@@ -253,25 +253,25 @@ void UtilitiesTests::testAbortableProgressFeedback()
             stepPercentage = progress.stepPercentage();
             overallPercentage = progress.overallPercentage();
         });
-    CPPUNIT_ASSERT(!progress.isAborted());
-    CPPUNIT_ASSERT_NO_THROW_MESSAGE("stop does nothing if not aborted", progress.stopIfAborted());
+    CPPUNIT_ASSERT(!progressFeedback.isAborted());
+    CPPUNIT_ASSERT_NO_THROW_MESSAGE("stop does nothing if not aborted", progressFeedback.stopIfAborted());
     CPPUNIT_ASSERT_EQUAL(0u, steps);
-    progress.updateOverallPercentage(25);
+    progressFeedback.updateOverallPercentage(25);
     CPPUNIT_ASSERT_EQUAL(0u, steps);
     CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
-    progress.updateStep("foo", 45);
+    progressFeedback.updateStep("foo", 45);
     CPPUNIT_ASSERT_EQUAL(1u, steps);
     CPPUNIT_ASSERT_EQUAL("foo"s, step);
     CPPUNIT_ASSERT_EQUAL(45u, stepPercentage);
     CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
-    CPPUNIT_ASSERT_NO_THROW_MESSAGE("next step continues if not aborted", progress.nextStepOrStop("bar", 33));
+    CPPUNIT_ASSERT_NO_THROW_MESSAGE("next step continues if not aborted", progressFeedback.nextStepOrStop("bar", 33));
     CPPUNIT_ASSERT_EQUAL(2u, steps);
     CPPUNIT_ASSERT_EQUAL("bar"s, step);
     CPPUNIT_ASSERT_EQUAL(33u, stepPercentage);
     CPPUNIT_ASSERT_EQUAL(25u, overallPercentage);
-    progress.tryToAbort();
-    CPPUNIT_ASSERT(progress.isAborted());
-    CPPUNIT_ASSERT_THROW(progress.nextStepOrStop("not going to happen", 33), OperationAbortedException);
+    progressFeedback.tryToAbort();
+    CPPUNIT_ASSERT(progressFeedback.isAborted());
+    CPPUNIT_ASSERT_THROW(progressFeedback.nextStepOrStop("not going to happen", 33), OperationAbortedException);
     CPPUNIT_ASSERT_EQUAL(2u, steps);
     CPPUNIT_ASSERT_EQUAL("bar"s, step);
     CPPUNIT_ASSERT_EQUAL(33u, stepPercentage);

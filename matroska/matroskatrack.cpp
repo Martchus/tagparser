@@ -303,7 +303,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
             diag.emplace_back(DiagLevel::Critical, "Unable to parse track information element.", context);
             break;
         }
-        std::uint32_t defaultDuration = 0;
+        std::uint64_t defaultDuration = 0;
         switch (trackInfoElement->id()) {
         case MatroskaIds::TrackType:
             switch (trackInfoElement->readUInteger()) {
@@ -336,37 +336,37 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
                 }
                 switch (subElement->id()) {
                 case MatroskaIds::DisplayWidth:
-                    m_displaySize.setWidth(subElement->readUInteger());
+                    m_displaySize.setWidth(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::DisplayHeight:
-                    m_displaySize.setHeight(subElement->readUInteger());
+                    m_displaySize.setHeight(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::PixelWidth:
-                    m_pixelSize.setWidth(subElement->readUInteger());
+                    m_pixelSize.setWidth(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::PixelHeight:
-                    m_pixelSize.setHeight(subElement->readUInteger());
+                    m_pixelSize.setHeight(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::PixelCropTop:
-                    m_cropping.setTop(subElement->readUInteger());
+                    m_cropping.setTop(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::PixelCropLeft:
-                    m_cropping.setLeft(subElement->readUInteger());
+                    m_cropping.setLeft(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::PixelCropBottom:
-                    m_cropping.setBottom(subElement->readUInteger());
+                    m_cropping.setBottom(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::PixelCropRight:
-                    m_cropping.setRight(subElement->readUInteger());
+                    m_cropping.setRight(static_cast<std::uint32_t>(subElement->readUInteger()));
                     break;
                 case MatroskaIds::FrameRate:
-                    m_fps = subElement->readFloat();
+                    m_fps = static_cast<std::uint32_t>(subElement->readFloat());
                     break;
                 case MatroskaIds::FlagInterlaced:
                     modFlagEnum(m_flags, TrackFlags::Interlaced, subElement->readUInteger());
                     break;
                 case MatroskaIds::ColorSpace:
-                    m_colorSpace = subElement->readUInteger();
+                    m_colorSpace = static_cast<std::uint32_t>(subElement->readUInteger());
                     break;
                 default:;
                 }
@@ -382,19 +382,19 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
                 }
                 switch (subElement->id()) {
                 case MatroskaIds::BitDepth:
-                    m_bitsPerSample = subElement->readUInteger();
+                    m_bitsPerSample = static_cast<std::uint16_t>(subElement->readUInteger());
                     break;
                 case MatroskaIds::Channels:
-                    m_channelCount = subElement->readUInteger();
+                    m_channelCount = static_cast<std::uint16_t>(subElement->readUInteger());
                     break;
                 case MatroskaIds::SamplingFrequency:
                     if (!m_samplingFrequency) {
-                        m_samplingFrequency = subElement->readFloat();
+                        m_samplingFrequency = static_cast<std::uint32_t>(subElement->readFloat());
                     }
                     break;
                 case MatroskaIds::OutputSamplingFrequency:
                     if (!m_extensionSamplingFrequency) {
-                        m_extensionSamplingFrequency = subElement->readFloat();
+                        m_extensionSamplingFrequency = static_cast<std::uint32_t>(subElement->readFloat());
                     }
                     break;
                 default:;
@@ -402,7 +402,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
             }
             break;
         case MatroskaIds::TrackNumber:
-            m_trackNumber = trackInfoElement->readUInteger();
+            m_trackNumber = static_cast<std::uint32_t>(trackInfoElement->readUInteger());
             break;
         case MatroskaIds::TrackUID:
             m_id = trackInfoElement->readUInteger();
@@ -444,7 +444,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
         switch (m_mediaType) {
         case MediaType::Video:
             if (!m_fps && defaultDuration) {
-                m_fps = 1000000000.0 / defaultDuration;
+                m_fps = static_cast<std::uint32_t>(1000000000.0 / static_cast<double>(defaultDuration));
             }
             break;
         default:;
@@ -565,13 +565,13 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
     CPP_UTILITIES_UNUSED(diag);
 
     // calculate size for recognized elements
-    m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.id());
-    m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.trackNumber());
-    m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isEnabled());
-    m_dataSize += 1 + 1 + EbmlElement::calculateUIntegerLength(m_track.isDefault());
-    m_dataSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_track.isForced());
+    m_dataSize += 2u + 1u + EbmlElement::calculateUIntegerLength(m_track.id());
+    m_dataSize += 1u + 1u + EbmlElement::calculateUIntegerLength(m_track.trackNumber());
+    m_dataSize += 1u + 1u + EbmlElement::calculateUIntegerLength(m_track.isEnabled());
+    m_dataSize += 1u + 1u + EbmlElement::calculateUIntegerLength(m_track.isDefault());
+    m_dataSize += 2u + 1u + EbmlElement::calculateUIntegerLength(m_track.isForced());
     if (!m_track.name().empty()) {
-        m_dataSize += 2 + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
+        m_dataSize += 2u + EbmlElement::calculateSizeDenotationLength(m_track.name().size()) + m_track.name().size();
     }
 
     // compute size of the mandatory "Language" element (if there's no language set, the 3 byte long value "und" is used)
@@ -601,7 +601,7 @@ MatroskaTrackHeaderMaker::MatroskaTrackHeaderMaker(const MatroskaTrack &track, D
         }
     }
     m_sizeDenotationLength = EbmlElement::calculateSizeDenotationLength(m_dataSize);
-    m_requiredSize = 1 + m_sizeDenotationLength + m_dataSize;
+    m_requiredSize = 1u + m_sizeDenotationLength + m_dataSize;
 }
 
 /*!

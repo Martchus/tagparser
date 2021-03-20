@@ -529,7 +529,7 @@ inline AacFrameElementParser::AacFrameElementParser(std::uint8_t audioObjectId, 
 
 inline std::int8_t AacFrameElementParser::sbrLog2(const std::int8_t val)
 {
-    static const int log2tab[] = { 0, 0, 1, 2, 2, 3, 3, 3, 3, 4 };
+    static const std::int8_t log2tab[] = { 0, 0, 1, 2, 2, 3, 3, 3, 3, 4 };
     return (val < 10 && val >= 0) ? log2tab[val] : 0;
 }
 

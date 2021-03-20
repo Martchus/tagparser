@@ -54,14 +54,14 @@ public:
     void removeAllFields();
     const std::multimap<IdentifierType, FieldType, Compare> &fields() const;
     std::multimap<IdentifierType, FieldType, Compare> &fields();
-    unsigned int fieldCount() const;
+    std::size_t fieldCount() const;
     IdentifierType fieldId(KnownField value) const;
     KnownField knownField(const IdentifierType &id) const;
     bool supportsField(KnownField field) const;
     using Tag::proposedDataType;
     TagDataType proposedDataType(const IdentifierType &id) const;
-    int insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite);
-    unsigned int insertValues(const Tag &from, bool overwrite);
+    std::size_t insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite);
+    std::size_t insertValues(const Tag &from, bool overwrite);
     void ensureTextValuesAreProperlyEncoded();
 
 protected:
@@ -316,9 +316,9 @@ template <class ImplementationType> inline auto FieldMapBasedTag<ImplementationT
     return m_fields;
 }
 
-template <class ImplementationType> unsigned int FieldMapBasedTag<ImplementationType>::fieldCount() const
+template <class ImplementationType> std::size_t FieldMapBasedTag<ImplementationType>::fieldCount() const
 {
-    unsigned int count = 0;
+    auto count = std::size_t(0);
     for (const auto &field : m_fields) {
         if (!field.second.value().isEmpty()) {
             ++count;
@@ -377,9 +377,9 @@ template <class ImplementationType> inline TagDataType FieldMapBasedTag<Implemen
  * \return Returns the number of fields that have been inserted.
  */
 template <class ImplementationType>
-int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite)
+std::size_t FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<ImplementationType> &from, bool overwrite)
 {
-    int fieldsInserted = 0;
+    auto fieldsInserted = std::size_t(0);
     for (const auto &pair : from.fields()) {
         const FieldType &fromField = pair.second;
         if (fromField.value().isEmpty()) {
@@ -407,7 +407,7 @@ int FieldMapBasedTag<ImplementationType>::insertFields(const FieldMapBasedTag<Im
     return fieldsInserted;
 }
 
-template <class ImplementationType> unsigned int FieldMapBasedTag<ImplementationType>::insertValues(const Tag &from, bool overwrite)
+template <class ImplementationType> std::size_t FieldMapBasedTag<ImplementationType>::insertValues(const Tag &from, bool overwrite)
 {
     if (type() == from.type()) {
         // the tags are of the same type, we can insert the fields directly

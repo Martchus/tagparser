@@ -21,7 +21,7 @@ public:
     bool setValueConsideringTypeInfo(KnownField field, const TagValue &value, const std::string &typeInfo);
     bool hasField(KnownField field) const override;
     void removeAllFields() override;
-    unsigned int fieldCount() const override;
+    std::size_t fieldCount() const override;
     bool supportsField(KnownField field) const override;
     void ensureTextValuesAreProperlyEncoded() override;
 

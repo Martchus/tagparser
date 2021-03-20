@@ -121,7 +121,7 @@ public:
     virtual bool hasField(KnownField field) const = 0;
     virtual void removeAllFields() = 0;
     const std::string &version() const;
-    std::uint32_t size() const;
+    std::uint64_t size() const;
     virtual bool supportsTarget() const;
     const TagTarget &target() const;
     void setTarget(const TagTarget &target);
@@ -129,20 +129,20 @@ public:
     std::string_view targetLevelName() const;
     bool isTargetingLevel(TagTargetLevel tagTargetLevel) const;
     std::string targetString() const;
-    virtual unsigned int fieldCount() const = 0;
+    virtual std::size_t fieldCount() const = 0;
     virtual bool supportsField(KnownField field) const = 0;
     virtual TagDataType proposedDataType(KnownField field) const;
     virtual bool supportsDescription(KnownField field) const;
     virtual bool supportsMimeType(KnownField field) const;
     virtual bool supportsMultipleValues(KnownField field) const;
-    virtual unsigned int insertValues(const Tag &from, bool overwrite);
+    virtual std::size_t insertValues(const Tag &from, bool overwrite);
     virtual void ensureTextValuesAreProperlyEncoded() = 0;
 
 protected:
     Tag();
 
     std::string m_version;
-    std::uint32_t m_size;
+    std::uint64_t m_size;
     TagTarget m_target;
 };
 
@@ -171,7 +171,7 @@ inline const std::string &Tag::version() const
     return m_version;
 }
 
-inline std::uint32_t Tag::size() const
+inline std::uint64_t Tag::size() const
 {
     return m_size;
 }

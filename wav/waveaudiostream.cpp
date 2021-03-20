@@ -161,7 +161,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag, AbortableProgressFe
     }
     while (!m_dataOffset) {
         const auto segmentId = m_reader.readUInt32BE();
-        auto restHeaderLen = m_reader.readUInt32LE();
+        auto restHeaderLen = static_cast<std::uint64_t>(m_reader.readUInt32LE());
         switch (segmentId) {
         case 0x666D7420u: { // format segment
             WaveFormatHeader waveHeader;
@@ -177,7 +177,7 @@ void WaveAudioStream::internalParseHeader(Diagnostics &diag, AbortableProgressFe
             break;
         default:;
         }
-        m_istream->seekg(restHeaderLen, ios_base::cur);
+        m_istream->seekg(static_cast<std::streamoff>(restHeaderLen), ios_base::cur);
     }
     if (m_format.general != GeneralMediaFormat::Mpeg1Audio || !m_dataOffset) {
         return;

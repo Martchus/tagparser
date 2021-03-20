@@ -35,7 +35,7 @@ public:
     std::uint32_t headerSize() const;
     std::uint32_t dataSize() const;
     std::uint32_t totalSize() const;
-    std::uint64_t dataOffset(std::uint8_t segmentIndex = 0) const;
+    std::uint64_t dataOffset(std::vector<std::uint32_t>::size_type segmentIndex = 0) const;
     static std::uint32_t makeSegmentSizeDenotation(std::ostream &stream, std::uint32_t size);
 
 private:
@@ -245,9 +245,11 @@ inline std::uint32_t OggPage::totalSize() const
  * \sa startOffset()
  * \sa headerSize()
  */
-inline std::uint64_t OggPage::dataOffset(std::uint8_t segmentIndex) const
+inline std::uint64_t OggPage::dataOffset(std::vector<std::uint32_t>::size_type segmentIndex) const
 {
-    return startOffset() + headerSize() + std::accumulate(m_segmentSizes.cbegin(), m_segmentSizes.cbegin() + segmentIndex, 0);
+    return startOffset() + headerSize()
+        + std::accumulate<decltype(m_segmentSizes)::const_iterator, std::uint64_t>(
+            m_segmentSizes.cbegin(), m_segmentSizes.cbegin() + static_cast<decltype(m_segmentSizes)::difference_type>(segmentIndex), 0u);
 }
 
 } // namespace TagParser

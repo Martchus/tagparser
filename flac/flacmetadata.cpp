@@ -28,8 +28,8 @@ namespace TagParser {
  */
 void FlacMetaDataBlockHeader::parseHeader(std::string_view buffer)
 {
-    m_last = buffer[0] & 0x80;
-    m_type = buffer[0] & (0x80 - 1);
+    m_last = static_cast<std::uint8_t>(buffer[0] & 0x80);
+    m_type = static_cast<std::uint8_t>(buffer[0] & (0x80 - 1));
     m_dataSize = BE::toUInt24(buffer.data() + 1);
 }
 
@@ -66,7 +66,7 @@ void FlacMetaDataBlockStreamInfo::parse(std::string_view buffer)
     m_channelCount = reader.readBits<std::uint8_t>(3) + 1;
     m_bitsPerSample = reader.readBits<std::uint8_t>(5) + 1;
     m_totalSampleCount = reader.readBits<std::uint64_t>(36);
-    std::memcpy(m_md5Sum, buffer.data() + 0x22 - sizeof(m_md5Sum), sizeof(m_md5Sum));
+    std::memcpy(m_md5Sum, buffer.data() + 0x22u - sizeof(m_md5Sum), sizeof(m_md5Sum));
 }
 
 /*!

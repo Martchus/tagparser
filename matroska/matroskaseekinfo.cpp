@@ -156,7 +156,7 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
     // calculate size
     for (const auto &info : m_info) {
         // "Seek" element + "SeekID" element + "SeekPosition" element
-        totalSize += 2 + 1 + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2 + 1 + EbmlElement::calculateUIntegerLength(get<1>(info)));
+        totalSize += 2u + 1u + (2u + 1u + EbmlElement::calculateIdLength(info.first)) + (2u + 1u + EbmlElement::calculateUIntegerLength(info.second));
     }
     // write ID and size
     BE::getBytes(static_cast<std::uint32_t>(MatroskaIds::SeekHead), buff0);
@@ -166,8 +166,8 @@ void MatroskaSeekInfo::make(ostream &stream, Diagnostics &diag)
     // write entries
     for (const auto &info : m_info) {
         // make values
-        sizeLength0 = EbmlElement::makeId(get<0>(info), buff0);
-        sizeLength1 = EbmlElement::makeUInteger(get<1>(info), buff1);
+        sizeLength0 = EbmlElement::makeId(info.first, buff0);
+        sizeLength1 = EbmlElement::makeUInteger(info.second, buff1);
         // "Seek" header
         BE::getBytes(static_cast<std::uint16_t>(MatroskaIds::Seek), buff2);
         stream.write(buff2, 2);
@@ -214,9 +214,10 @@ std::uint64_t MatroskaSeekInfo::actualSize() const
     std::uint64_t totalSize = 0;
     for (const auto &info : m_info) {
         // "Seek" element + "SeekID" element + "SeekPosition" element
-        totalSize += 2 + 1 + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2 + 1 + EbmlElement::calculateUIntegerLength(get<1>(info)));
+        totalSize
+            += 2u + 1u + (2 + 1 + EbmlElement::calculateIdLength(get<0>(info))) + (2u + 1u + EbmlElement::calculateUIntegerLength(get<1>(info)));
     }
-    return totalSize += 4 + EbmlElement::calculateSizeDenotationLength(totalSize);
+    return totalSize += 4u + EbmlElement::calculateSizeDenotationLength(totalSize);
 }
 
 /*!

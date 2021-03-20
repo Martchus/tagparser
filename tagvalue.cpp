@@ -327,15 +327,14 @@ std::int32_t TagValue::toInteger() const
     switch (m_type) {
     case TagDataType::Text:
         switch (m_encoding) {
-        case TagTextEncoding::Unspecified:
-        case TagTextEncoding::Latin1:
-        case TagTextEncoding::Utf8:
-            return bufferToNumber<std::int32_t>(m_ptr.get(), m_size);
         case TagTextEncoding::Utf16LittleEndian:
-        case TagTextEncoding::Utf16BigEndian:
-            u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+        case TagTextEncoding::Utf16BigEndian: {
+            auto u16str = u16string(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
             ensureHostByteOrder(u16str, m_encoding);
             return stringToNumber<std::int32_t>(u16str);
+        }
+        default:
+            return bufferToNumber<std::int32_t>(m_ptr.get(), m_size);
         }
     case TagDataType::PositionInSet:
         if (m_size == sizeof(PositionInSet)) {
@@ -407,15 +406,14 @@ PositionInSet TagValue::toPositionInSet() const
     switch (m_type) {
     case TagDataType::Text:
         switch (m_encoding) {
-        case TagTextEncoding::Unspecified:
-        case TagTextEncoding::Latin1:
-        case TagTextEncoding::Utf8:
-            return PositionInSet(string(m_ptr.get(), m_size));
         case TagTextEncoding::Utf16LittleEndian:
-        case TagTextEncoding::Utf16BigEndian:
-            u16string u16str(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+        case TagTextEncoding::Utf16BigEndian: {
+            auto u16str = u16string(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
             ensureHostByteOrder(u16str, m_encoding);
             return PositionInSet(u16str);
+        }
+        default:
+            return PositionInSet(string(m_ptr.get(), m_size));
         }
     case TagDataType::Integer:
     case TagDataType::PositionInSet:

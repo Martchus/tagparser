@@ -75,7 +75,7 @@ constexpr bool AdtsFrame::hasCrc() const
  */
 constexpr std::uint8_t AdtsFrame::mpeg4AudioObjectId() const
 {
-    return (m_header2 >> 0x36) + 0x1u;
+    return static_cast<std::uint8_t>((m_header2 >> 0x36) + 0x1u);
 }
 
 /*!
@@ -84,7 +84,7 @@ constexpr std::uint8_t AdtsFrame::mpeg4AudioObjectId() const
  */
 constexpr std::uint8_t AdtsFrame::mpeg4SamplingFrequencyIndex() const
 {
-    return (m_header2 >> 0x32) & 0xFu;
+    return static_cast<std::uint8_t>((m_header2 >> 0x32) & 0xFu);
 }
 
 /*!
@@ -94,7 +94,7 @@ constexpr std::uint8_t AdtsFrame::mpeg4SamplingFrequencyIndex() const
  */
 constexpr std::uint8_t AdtsFrame::mpeg4ChannelConfig() const
 {
-    return (m_header2 >> 0x2E) & 0x7u;
+    return static_cast<std::uint8_t>((m_header2 >> 0x2E) & 0x7u);
 }
 
 /*!
@@ -102,7 +102,7 @@ constexpr std::uint8_t AdtsFrame::mpeg4ChannelConfig() const
  */
 constexpr std::uint16_t AdtsFrame::totalSize() const
 {
-    return (m_header2 >> 0x1D) & 0x1FFFu;
+    return static_cast<std::uint8_t>((m_header2 >> 0x1D) & 0x1FFFu);
 }
 
 /*!
@@ -110,7 +110,7 @@ constexpr std::uint16_t AdtsFrame::totalSize() const
  */
 constexpr std::uint8_t AdtsFrame::headerSize() const
 {
-    return hasCrc() ? 9 : 7;
+    return static_cast<std::uint8_t>(hasCrc() ? 9 : 7);
 }
 
 /*!

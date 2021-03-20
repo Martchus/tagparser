@@ -214,20 +214,20 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag)
     m_targetsSize = 0; // NOT including ID and size
     if (m_tag.target().level() != 50) {
         // size of "TargetTypeValue"
-        m_targetsSize += 2 + 1 + EbmlElement::calculateUIntegerLength(m_tag.target().level());
+        m_targetsSize += 2u + 1u + EbmlElement::calculateUIntegerLength(m_tag.target().level());
     }
     if (!m_tag.target().levelName().empty()) {
         // size of "TargetType"
-        m_targetsSize += 2 + EbmlElement::calculateSizeDenotationLength(m_tag.target().levelName().size()) + m_tag.target().levelName().size();
+        m_targetsSize += 2u + EbmlElement::calculateSizeDenotationLength(m_tag.target().levelName().size()) + m_tag.target().levelName().size();
     }
     for (const auto &v : initializer_list<vector<std::uint64_t>>{
              m_tag.target().tracks(), m_tag.target().editions(), m_tag.target().chapters(), m_tag.target().attachments() }) {
         for (auto uid : v) {
             // size of UID denotation
-            m_targetsSize += 2 + 1 + EbmlElement::calculateUIntegerLength(uid);
+            m_targetsSize += 2u + 1u + EbmlElement::calculateUIntegerLength(uid);
         }
     }
-    m_tagSize = 2 + EbmlElement::calculateSizeDenotationLength(m_targetsSize) + m_targetsSize;
+    m_tagSize = 2u + EbmlElement::calculateSizeDenotationLength(m_targetsSize) + m_targetsSize;
     // calculate size of "SimpleTag" elements
     m_maker.reserve(m_tag.fields().size());
     m_simpleTagsSize = 0; // including ID and size
@@ -239,7 +239,7 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag)
         }
     }
     m_tagSize += m_simpleTagsSize;
-    m_totalSize = 2 + EbmlElement::calculateSizeDenotationLength(m_tagSize) + m_tagSize;
+    m_totalSize = 2u + EbmlElement::calculateSizeDenotationLength(m_tagSize) + m_tagSize;
 }
 
 /*!
@@ -277,7 +277,7 @@ void MatroskaTagMaker::make(ostream &stream) const
         stream.write(buff, 2);
         len = EbmlElement::makeSizeDenotation(t.levelName().size(), buff);
         stream.write(buff, len);
-        stream.write(t.levelName().c_str(), t.levelName().size());
+        stream.write(t.levelName().c_str(), static_cast<std::streamsize>(t.levelName().size()));
     }
     // write UIDs
     using p = pair<std::uint16_t, vector<std::uint64_t>>;

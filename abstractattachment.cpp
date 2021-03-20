@@ -41,16 +41,16 @@ StreamDataBlock::StreamDataBlock()
  *
  * The object does NOT take ownership over the stream returned by the specified function.
  */
-StreamDataBlock::StreamDataBlock(const std::function<std::istream &()> &stream, std::istream::off_type startOffset, std::ios_base::seekdir startDir,
-    std::istream::off_type endOffset, std::ios_base::seekdir endDir)
+StreamDataBlock::StreamDataBlock(const std::function<std::istream &()> &stream, std::uint64_t startOffset, std::ios_base::seekdir startDir,
+    std::uint64_t endOffset, std::ios_base::seekdir endDir)
     : m_stream(stream)
 {
     auto &s = stream();
     auto currentPos = s.tellg();
-    s.seekg(startOffset, startDir);
-    m_startOffset = s.tellg();
-    s.seekg(endOffset, endDir);
-    m_endOffset = s.tellg();
+    s.seekg(static_cast<std::istream::off_type>(startOffset), startDir);
+    m_startOffset = static_cast<std::uint64_t>(s.tellg());
+    s.seekg(static_cast<std::istream::off_type>(endOffset), endDir);
+    m_endOffset = static_cast<std::uint64_t>(s.tellg());
     s.seekg(currentPos);
     if (m_endOffset < m_startOffset) {
         throw std::ios_base::failure("End offset is less than start offset.");
@@ -70,8 +70,8 @@ StreamDataBlock::~StreamDataBlock()
 void StreamDataBlock::makeBuffer() const
 {
     m_buffer = make_unique<char[]>(size());
-    stream().seekg(startOffset());
-    stream().read(m_buffer.get(), size());
+    stream().seekg(static_cast<std::istream::off_type>(startOffset()));
+    stream().read(m_buffer.get(), static_cast<std::streamsize>(size()));
 }
 
 /*!
@@ -81,10 +81,10 @@ void StreamDataBlock::makeBuffer() const
 void StreamDataBlock::copyTo(ostream &stream) const
 {
     if (buffer()) {
-        stream.write(buffer().get(), size());
+        stream.write(buffer().get(), static_cast<std::streamsize>(size()));
     } else {
         CopyHelper<0x2000> copyHelper;
-        m_stream().seekg(startOffset());
+        m_stream().seekg(static_cast<std::streamsize>(startOffset()));
         copyHelper.copy(m_stream(), stream, size());
     }
 }
