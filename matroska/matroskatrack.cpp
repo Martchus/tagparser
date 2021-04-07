@@ -295,6 +295,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
         throw;
     }
     // read information about the track from the children of the track entry element
+    auto hasIsoLanguage = false;
     for (EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement;
          trackInfoElement = trackInfoElement->nextSibling()) {
         try {
@@ -412,6 +413,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
             break;
         case MatroskaIds::TrackLanguage:
             m_locale.emplace_back(trackInfoElement->readString(), LocaleFormat::ISO_639_2_B);
+            hasIsoLanguage = true;
             break;
         case MatroskaIds::TrackLanguageIETF:
             m_locale.emplace_back(trackInfoElement->readString(), LocaleFormat::BCP_47);
@@ -539,8 +541,8 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
         m_displaySize.setHeight(m_pixelSize.height());
     }
 
-    // set English if no language has been specified (it is default value of MatroskaIds::TrackLanguage)
-    if (m_locale.empty()) {
+    // set English if no ISO language has been specified (it is the default value of MatroskaIds::TrackLanguage)
+    if (!hasIsoLanguage) {
         m_locale.emplace_back("eng"sv, LocaleFormat::ISO_639_2_B);
     }
 }
