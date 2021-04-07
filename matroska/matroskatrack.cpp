@@ -640,6 +640,7 @@ void MatroskaTrackHeaderMaker::make(ostream &stream) const
         case MatroskaIds::TrackUID:
         case MatroskaIds::TrackName:
         case MatroskaIds::TrackLanguage:
+        case MatroskaIds::TrackLanguageIETF:
         case MatroskaIds::TrackFlagEnabled:
         case MatroskaIds::TrackFlagDefault:
         case MatroskaIds::TrackFlagForced:
