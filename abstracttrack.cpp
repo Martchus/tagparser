@@ -160,7 +160,7 @@ string AbstractTrack::makeDescription(bool verbose) const
             case GeneralMediaFormat::Mpeg4Video:
             case GeneralMediaFormat::Avc:
             case GeneralMediaFormat::Hevc:
-                if (version()) {
+                if (version() != 0.0) {
                     level = "@L" + numberToString(version());
                 }
                 break;
