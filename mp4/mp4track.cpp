@@ -140,6 +140,7 @@ Mp4Track::Mp4Track(Mp4Atom &trakAtom)
     , m_stscAtom(nullptr)
     , m_stcoAtom(nullptr)
     , m_stszAtom(nullptr)
+    , m_rawMediaType(0)
     , m_framesPerSample(1)
     , m_chunkOffsetSize(4)
     , m_chunkCount(0)
@@ -1340,8 +1341,10 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         outputStream().write("meta", 4);
         break;
     default:
-        diag.emplace_back(DiagLevel::Critical, "Media type is invalid; The media type video is assumed.", "making hdlr atom");
-        outputStream().write("vide", 4);
+        if (m_mediaType != MediaType::Unknown) {
+            diag.emplace_back(DiagLevel::Critical, "Media type is invalid; keeping media type as-is.", "making hdlr atom");
+        }
+        writer().writeUInt32BE(m_rawMediaType);
         break;
     }
     for (int i = 0; i < 3; ++i)
@@ -1600,7 +1603,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
     // -> seek to begin skipping size, name, version, flags and reserved bytes
     m_istream->seekg(static_cast<streamoff>(m_hdlrAtom->dataOffset() + 8));
     // -> track type
-    switch (reader.readUInt32BE()) {
+    switch (m_rawMediaType = reader.readUInt32BE()) {
     case 0x76696465:
         m_mediaType = MediaType::Video;
         break;
@@ -1619,7 +1622,6 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
     default:
         m_mediaType = MediaType::Unknown;
     }
-    // FIXME: save raw media type in next major release so unknown ones can still be written correctly in Mp4Track::makeMedia()
     // -> name
     m_istream->seekg(12, ios_base::cur); // skip reserved bytes
     if (static_cast<std::uint64_t>(tmp = static_cast<std::uint8_t>(m_istream->peek())) == m_hdlrAtom->dataSize() - 12 - 4 - 8 - 1) {

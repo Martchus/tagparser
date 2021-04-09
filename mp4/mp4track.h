@@ -182,6 +182,7 @@ private:
     Mp4Atom *m_stscAtom;
     Mp4Atom *m_stcoAtom;
     Mp4Atom *m_stszAtom;
+    std::uint32_t m_rawMediaType;
     std::uint16_t m_framesPerSample;
     std::vector<std::uint32_t> m_sampleSizes;
     unsigned int m_chunkOffsetSize;
