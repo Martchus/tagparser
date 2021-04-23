@@ -20,6 +20,31 @@ namespace TagParser {
  *
  * \param path Specifies the absolute or relative path of the file.
  */
+BasicFileInfo::BasicFileInfo()
+    : m_size(0)
+    , m_readOnly(false)
+{
+    m_file.exceptions(ios_base::failbit | ios_base::badbit);
+}
+
+/*!
+ * \brief Constructs a new BasicFileInfo for the specified file.
+ *
+ * \param path Specifies the absolute or relative path of the file.
+ */
+BasicFileInfo::BasicFileInfo(std::string &&path)
+    : m_path(std::move(path))
+    , m_size(0)
+    , m_readOnly(false)
+{
+    m_file.exceptions(ios_base::failbit | ios_base::badbit);
+}
+
+/*!
+ * \brief Constructs a new BasicFileInfo for the specified file.
+ *
+ * \param path Specifies the absolute or relative path of the file.
+ */
 BasicFileInfo::BasicFileInfo(std::string_view path)
     : m_path(path)
     , m_size(0)
@@ -101,19 +126,34 @@ void BasicFileInfo::setPath(std::string_view path)
 }
 
 /*!
+ * \brief Sets the current file.
+ *
+ * A possibly opened std::fstream will be closed and invalidated() will be called.
+ *
+ * \param path Specifies the absolute or relative path of the file to be set.
+ */
+void BasicFileInfo::setPath(std::string &&path)
+{
+    if (path != m_path) {
+        invalidated();
+        m_path = path;
+    }
+}
+
+/*!
  * \brief Returns the file name of the given file.
  *
  * \param path Specifies the path of the file.
  * \param cutExtension Indicates whether the extension/suffix should be cutted.
  */
-string BasicFileInfo::fileName(const string &path, bool cutExtension)
+std::string BasicFileInfo::fileName(std::string_view path, bool cutExtension)
 {
-    size_t lastSlash = path.rfind('/');
-    size_t lastBackSlash = path.rfind('\\');
-    size_t lastPoint = cutExtension ? path.rfind('.') : string::npos;
-    size_t lastSeparator;
+    const auto lastSlash = path.rfind('/');
+    const auto lastBackSlash = path.rfind('\\');
+    const auto lastPoint = cutExtension ? path.rfind('.') : string::npos;
+    auto lastSeparator = decltype(lastSlash)();
     if (lastSlash == string::npos && lastBackSlash == string::npos) {
-        return (lastPoint == string::npos) ? path : path.substr(0, lastPoint);
+        return std::string(lastPoint == string::npos ? path : path.substr(0, lastPoint));
     } else if (lastSlash == string::npos) {
         lastSeparator = lastBackSlash;
     } else if (lastBackSlash == string::npos) {
@@ -121,7 +161,7 @@ string BasicFileInfo::fileName(const string &path, bool cutExtension)
     } else {
         lastSeparator = lastSlash > lastBackSlash ? lastSlash : lastBackSlash;
     }
-    return (lastPoint != string::npos) ? path.substr(lastSeparator + 1, lastPoint - lastSeparator - 1) : path.substr(lastSeparator + 1);
+    return std::string(lastPoint != string::npos ? path.substr(lastSeparator + 1, lastPoint - lastSeparator - 1) : path.substr(lastSeparator + 1));
 }
 
 /*!
@@ -129,7 +169,7 @@ string BasicFileInfo::fileName(const string &path, bool cutExtension)
  *
  * \param cutExtension Indicates whether the extension should be cutted.
  */
-string BasicFileInfo::fileName(bool cutExtension) const
+std::string BasicFileInfo::fileName(bool cutExtension) const
 {
     return fileName(m_path, cutExtension);
 }
@@ -141,7 +181,7 @@ string BasicFileInfo::fileName(bool cutExtension) const
  */
 std::string BasicFileInfo::extension(std::string_view path)
 {
-    std::size_t lastPoint = path.rfind('.');
+    const auto lastPoint = path.rfind('.');
     if (lastPoint == std::string::npos) {
         return std::string();
     } else {
@@ -152,7 +192,7 @@ std::string BasicFileInfo::extension(std::string_view path)
 /*!
  * \brief Returns the extension of the current file.
  */
-string BasicFileInfo::extension() const
+std::string BasicFileInfo::extension() const
 {
     return extension(m_path);
 }
@@ -160,16 +200,16 @@ string BasicFileInfo::extension() const
 /*!
  * \brief Returns a copy of the given path without the extension/suffix.
  */
-string BasicFileInfo::pathWithoutExtension(const string &fullPath)
+std::string BasicFileInfo::pathWithoutExtension(std::string_view fullPath)
 {
-    size_t lastPoint = fullPath.rfind('.');
-    return lastPoint != string::npos ? fullPath.substr(0, lastPoint) : fullPath;
+    const auto lastPoint = fullPath.rfind('.');
+    return std::string(lastPoint != std::string::npos ? fullPath.substr(0, lastPoint) : fullPath);
 }
 
 /*!
  * \brief Returns the path of the current file without the extension/suffix.
  */
-string BasicFileInfo::pathWithoutExtension() const
+std::string BasicFileInfo::pathWithoutExtension() const
 {
     return pathWithoutExtension(m_path);
 }
@@ -177,13 +217,13 @@ string BasicFileInfo::pathWithoutExtension() const
 /*!
  * \brief Returns the path of the directory containing the given file.
  */
-string BasicFileInfo::containingDirectory(const string &path)
+std::string BasicFileInfo::containingDirectory(std::string_view path)
 {
-    size_t lastSlash = path.rfind('/');
-    size_t lastBackSlash = path.rfind('\\');
-    size_t lastSeparator;
-    if (lastSlash == string::npos && lastBackSlash == string::npos) {
-        return string();
+    const auto lastSlash = path.rfind('/');
+    const auto lastBackSlash = path.rfind('\\');
+    auto lastSeparator = decltype(lastSlash)();
+    if (lastSlash == string::npos && lastBackSlash == std::string::npos) {
+        return std::string();
     } else if (lastSlash == string::npos) {
         lastSeparator = lastBackSlash;
     } else if (lastBackSlash == string::npos) {
@@ -192,9 +232,9 @@ string BasicFileInfo::containingDirectory(const string &path)
         lastSeparator = lastSlash > lastBackSlash ? lastSlash : lastBackSlash;
     }
     if (lastSeparator > 0) {
-        return path.substr(0, lastSeparator);
+        return std::string(path.substr(0, lastSeparator));
     } else {
-        return string();
+        return std::string();
     }
 }
 

@@ -76,10 +76,13 @@ namespace TagParser {
  */
 
 /*!
- * \brief Constructs a new MediaFileInfo.
+ * \brief Constructs a new MediaFileInfo for the specified file.
+ *
+ * \param path Specifies the absolute or relative path of the file.
  */
-MediaFileInfo::MediaFileInfo()
-    : m_containerParsingStatus(ParsingStatus::NotParsedYet)
+MediaFileInfo::MediaFileInfo(std::string &&path)
+    : BasicFileInfo(std::move(path))
+    , m_containerParsingStatus(ParsingStatus::NotParsedYet)
     , m_containerFormat(ContainerFormat::Unknown)
     , m_containerOffset(0)
     , m_actualExistingId3v1Tag(false)
@@ -100,29 +103,18 @@ MediaFileInfo::MediaFileInfo()
 }
 
 /*!
- * \brief Constructs a new MediaFileInfo for the specified file.
- *
- * \param path Specifies the absolute or relative path of the file.
+ * \brief Constructs a new MediaFileInfo.
  */
-MediaFileInfo::MediaFileInfo(const string &path)
-    : BasicFileInfo(path)
-    , m_containerParsingStatus(ParsingStatus::NotParsedYet)
-    , m_containerFormat(ContainerFormat::Unknown)
-    , m_containerOffset(0)
-    , m_actualExistingId3v1Tag(false)
-    , m_tracksParsingStatus(ParsingStatus::NotParsedYet)
-    , m_tagsParsingStatus(ParsingStatus::NotParsedYet)
-    , m_chaptersParsingStatus(ParsingStatus::NotParsedYet)
-    , m_attachmentsParsingStatus(ParsingStatus::NotParsedYet)
-    , m_minPadding(0)
-    , m_maxPadding(0)
-    , m_preferredPadding(0)
-    , m_tagPosition(ElementPosition::BeforeData)
-    , m_indexPosition(ElementPosition::BeforeData)
-    , m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
-    , m_forceRewrite(true)
-    , m_forceTagPosition(true)
-    , m_forceIndexPosition(true)
+MediaFileInfo::MediaFileInfo()
+    : MediaFileInfo(std::string())
+{
+}
+
+/*!
+ * \brief Constructs a new MediaFileInfo.
+ */
+MediaFileInfo::MediaFileInfo(std::string_view path)
+    : MediaFileInfo(std::string(path))
 {
 }
 

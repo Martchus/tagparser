@@ -46,7 +46,8 @@ class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo {
 public:
     // constructor, destructor
     explicit MediaFileInfo();
-    explicit MediaFileInfo(const std::string &path);
+    explicit MediaFileInfo(std::string_view path);
+    explicit MediaFileInfo(std::string &&path);
     MediaFileInfo(const MediaFileInfo &) = delete;
     MediaFileInfo &operator=(const MediaFileInfo &) = delete;
     ~MediaFileInfo() override;
@@ -123,9 +124,11 @@ public:
 
     // methods to get, set object behaviour
     const std::string &backupDirectory() const;
-    void setBackupDirectory(const std::string &backupDirectory);
+    void setBackupDirectory(std::string_view backupDirectory);
+    void setBackupDirectory(std::string &&backupDirectory);
     const std::string &saveFilePath() const;
-    void setSaveFilePath(const std::string &saveFilePath);
+    void setSaveFilePath(std::string_view saveFilePath);
+    void setSaveFilePath(std::string &&saveFilePath);
     const std::string &writingApplication() const;
     void setWritingApplication(std::string_view writingApplication);
     bool isForcingFullParse() const;
@@ -357,9 +360,18 @@ inline const std::string &MediaFileInfo::backupDirectory() const
  * \brief Sets the directory used to store backup files.
  * \remarks If empty, backup files will be stored in the same directory of the file being modified.
  */
-inline void MediaFileInfo::setBackupDirectory(const std::string &backupDirectory)
+inline void MediaFileInfo::setBackupDirectory(std::string_view backupDirectory)
 {
     m_backupDirectory = backupDirectory;
+}
+
+/*!
+ * \brief Sets the directory used to store backup files.
+ * \remarks If empty, backup files will be stored in the same directory of the file being modified.
+ */
+inline void MediaFileInfo::setBackupDirectory(std::string &&backupDirectory)
+{
+    m_backupDirectory = std::move(backupDirectory);
 }
 
 /*!
@@ -385,9 +397,17 @@ inline const std::string &MediaFileInfo::saveFilePath() const
  *
  * \remarks \a saveFilePath mustn't be the current path().
  */
-inline void MediaFileInfo::setSaveFilePath(const std::string &saveFilePath)
+inline void MediaFileInfo::setSaveFilePath(std::string_view saveFilePath)
 {
     m_saveFilePath = saveFilePath;
+}
+
+/*!
+ * \brief Sets the "save file path".
+ */
+inline void MediaFileInfo::setSaveFilePath(std::string &&saveFilePath)
+{
+    m_saveFilePath = std::move(saveFilePath);
 }
 
 /*!

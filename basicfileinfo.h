@@ -14,7 +14,9 @@ namespace TagParser {
 class TAG_PARSER_EXPORT BasicFileInfo {
 public:
     // constructor, destructor
-    explicit BasicFileInfo(std::string_view path = std::string_view());
+    explicit BasicFileInfo();
+    explicit BasicFileInfo(std::string &&path);
+    explicit BasicFileInfo(std::string_view path);
     BasicFileInfo(const BasicFileInfo &) = delete;
     BasicFileInfo &operator=(const BasicFileInfo &) = delete;
     virtual ~BasicFileInfo();
@@ -32,20 +34,22 @@ public:
     // methods to get, set path (components)
     const std::string &path() const;
     void setPath(std::string_view path);
-    static std::string fileName(const std::string &path, bool cutExtension = false);
+    void setPath(std::string &&path);
+    static std::string fileName(std::string_view path, bool cutExtension = false);
     std::string fileName(bool cutExtension = false) const;
     static std::string extension(std::string_view path);
     std::string extension() const;
-    static std::string pathWithoutExtension(const std::string &fullPath);
+    static std::string pathWithoutExtension(std::string_view fullPath);
     std::string pathWithoutExtension() const;
-    static std::string containingDirectory(const std::string &path);
+    static std::string containingDirectory(std::string_view path);
     std::string containingDirectory() const;
-    static std::string_view pathForOpen(const std::string &url);
+    static std::string_view pathForOpen(std::string_view url);
 
     // methods to get, set the file size
     std::uint64_t size() const;
     void reportSizeChanged(std::uint64_t newSize);
-    void reportPathChanged(const std::string &newPath);
+    void reportPathChanged(std::string_view newPath);
+    void reportPathChanged(std::string &&newPath);
 
 protected:
     virtual void invalidated();
@@ -126,9 +130,18 @@ inline void BasicFileInfo::reportSizeChanged(std::uint64_t newSize)
  * \brief Call this function to report that the path changed.
  * \remarks Should be called after associating another file to the stream() manually.
  */
-inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
+inline void BasicFileInfo::reportPathChanged(std::string_view newPath)
 {
     m_path = newPath;
+}
+
+/*!
+ * \brief Call this function to report that the path changed.
+ * \remarks Should be called after associating another file to the stream() manually.
+ */
+inline void BasicFileInfo::reportPathChanged(std::string &&newPath)
+{
+    m_path = std::move(newPath);
 }
 
 /*!
@@ -137,7 +150,7 @@ inline void BasicFileInfo::reportPathChanged(const std::string &newPath)
  * \remarks If \a url is already a plain path it won't changed.
  * \returns Returns a pointer the URL data itself. No copy is made.
  */
-inline std::string_view BasicFileInfo::pathForOpen(const std::string &url)
+inline std::string_view BasicFileInfo::pathForOpen(std::string_view url)
 {
     return CppUtilities::startsWith(url, "file:/") ? url.data() + 6 : url.data();
 }

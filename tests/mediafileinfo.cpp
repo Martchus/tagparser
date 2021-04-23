@@ -70,7 +70,7 @@ void MediaFileInfoTests::testInitialStatus()
 
 void MediaFileInfoTests::testFileSystemMethods()
 {
-    MediaFileInfo file("/usr/bin/unsupported.bin");
+    MediaFileInfo file("/usr/bin/unsupported.bin"sv);
     CPPUNIT_ASSERT_EQUAL("/usr/bin"s, file.containingDirectory());
     CPPUNIT_ASSERT_EQUAL("unsupported.bin"s, file.fileName());
     CPPUNIT_ASSERT_EQUAL("unsupported"s, file.fileName(true));
