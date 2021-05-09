@@ -369,8 +369,10 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
     }
 
     // parse values of lYear/lRecordingDates/lDate/lTime/sYear/sRecordingDates/sDate/sTime fields
+    bool hasAnyValue = false;
     int year = 1, month = 1, day = 1, hour = 0, minute = 0;
     if (const auto &v = value(Id3v2FrameIds::lYear)) {
+        hasAnyValue = true;
         try {
             year = v.toInteger();
         } catch (const ConversionException &e) {
@@ -378,6 +380,7 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
         }
     }
     if (const auto &v = value(Id3v2FrameIds::lDate)) {
+        hasAnyValue = true;
         try {
             auto str = v.toString();
             if (str.size() != 4) {
@@ -390,6 +393,7 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
         }
     }
     if (const auto &v = value(Id3v2FrameIds::lTime)) {
+        hasAnyValue = true;
         try {
             auto str = v.toString();
             if (str.size() != 4) {
@@ -403,6 +407,9 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
     }
 
     // set the field values as DateTime
+    if (!hasAnyValue) {
+        return;
+    }
     try {
         setValue(Id3v2FrameIds::lRecordingTime, DateTime::fromDateAndTime(year, month, day, hour, minute));
     } catch (const ConversionException &e) {
