@@ -566,15 +566,15 @@ void TagValue::convertDescriptionEncoding(TagTextEncoding encoding)
     switch (encoding) {
     case TagTextEncoding::Utf8:
         // use pre-defined methods when encoding to UTF-8
-        switch (dataEncoding()) {
+        switch (descriptionEncoding()) {
         case TagTextEncoding::Latin1:
-            encodedData = convertLatin1ToUtf8(m_ptr.get(), m_size);
+            encodedData = convertLatin1ToUtf8(m_desc.data(), m_desc.size());
             break;
         case TagTextEncoding::Utf16LittleEndian:
-            encodedData = convertUtf16LEToUtf8(m_ptr.get(), m_size);
+            encodedData = convertUtf16LEToUtf8(m_desc.data(), m_desc.size());
             break;
         case TagTextEncoding::Utf16BigEndian:
-            encodedData = convertUtf16BEToUtf8(m_ptr.get(), m_size);
+            encodedData = convertUtf16BEToUtf8(m_desc.data(), m_desc.size());
             break;
         default:;
         }
