@@ -283,9 +283,12 @@ void Id3v1Tag::ensureTextValuesAreProperlyEncoded()
 void Id3v1Tag::readValue(TagValue &value, size_t maxLength, const char *buffer)
 {
     const char *end = buffer + maxLength - 1;
-    while ((*end == 0x0 || *end == ' ') && end > buffer) {
+    while ((*end == 0x0 || *end == ' ') && end >= buffer) {
         --end;
         --maxLength;
+    }
+    if (buffer == end) {
+        return;
     }
     if (maxLength >= 3 && BE::toUInt24(buffer) == 0x00EFBBBF) {
         value.assignData(buffer + 3, maxLength - 3, TagDataType::Text, TagTextEncoding::Utf8);
