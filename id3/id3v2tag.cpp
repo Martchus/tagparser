@@ -515,7 +515,9 @@ void Id3v2Tag::parse(istream &stream, const std::uint64_t maximalSize, Diagnosti
         }
     }
 
-    convertOldRecordDateFields(context, diag);
+    if (m_handlingFlags & Id3v2HandlingFlags::ConvertRecordDateFields) {
+        convertOldRecordDateFields(context, diag);
+    }
 
     // check for extended header
     if (!hasFooter()) {
@@ -733,7 +735,9 @@ Id3v2TagMaker::Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag)
         throw VersionNotSupportedException();
     }
 
-    tag.prepareRecordDataForMaking(context, diag);
+    if (m_tag.m_handlingFlags & Id3v2HandlingFlags::ConvertRecordDateFields) {
+        tag.prepareRecordDataForMaking(context, diag);
+    }
 
     // prepare frames
     m_maker.reserve(tag.fields().size());

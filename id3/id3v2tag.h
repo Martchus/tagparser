@@ -5,7 +5,24 @@
 
 #include "../fieldbasedtag.h"
 
+#include <c++utilities/misc/flagenumclass.h>
+
 #include <map>
+
+namespace TagParser {
+
+/*!
+ * \brief The Id3v2Flags enum specifies flags which controls parsing and making of ID3v2 tags.
+ */
+enum class Id3v2HandlingFlags : std::uint64_t {
+    None = 0, /**< Regular parsing/making. */
+    ConvertRecordDateFields = (1 << 1), /**< whether record date fields should be converted when parsing/making */
+    Defaults = ConvertRecordDateFields, /**< set of flags considered good defaults */
+};
+
+} // namespace TagParser
+
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::Id3v2HandlingFlags)
 
 namespace TagParser {
 
@@ -78,6 +95,8 @@ public:
     void parse(std::istream &sourceStream, const std::uint64_t maximalSize, Diagnostics &diag);
     Id3v2TagMaker prepareMaking(Diagnostics &diag);
     void make(std::ostream &targetStream, std::uint32_t padding, Diagnostics &diag);
+    Id3v2HandlingFlags handlingFlags() const;
+    void setHandlingFlags(Id3v2HandlingFlags flags);
 
     std::uint8_t majorVersion() const;
     std::uint8_t revisionVersion() const;
@@ -110,6 +129,7 @@ private:
     std::uint32_t m_sizeExcludingHeader;
     std::uint32_t m_extendedHeaderSize;
     std::uint64_t m_paddingSize;
+    Id3v2HandlingFlags m_handlingFlags;
 };
 
 /*!
@@ -122,6 +142,7 @@ inline Id3v2Tag::Id3v2Tag()
     , m_sizeExcludingHeader(0)
     , m_extendedHeaderSize(0)
     , m_paddingSize(0)
+    , m_handlingFlags(Id3v2HandlingFlags::Defaults)
 {
 }
 
@@ -151,6 +172,22 @@ inline bool Id3v2Tag::supportsDescription(KnownField field) const
 inline bool Id3v2Tag::supportsMimeType(KnownField field) const
 {
     return field == KnownField::Cover;
+}
+
+/*!
+ * \brief Returns flags influencing the behavior when parsing/making the ID3v2 tag.
+ */
+inline Id3v2HandlingFlags Id3v2Tag::handlingFlags() const
+{
+    return m_handlingFlags;
+}
+
+/*!
+ * \brief Sets flags influencing the behavior when parsing/making the ID3v2 tag.
+ */
+inline void Id3v2Tag::setHandlingFlags(Id3v2HandlingFlags flags)
+{
+    m_handlingFlags = flags;
 }
 
 /*!
