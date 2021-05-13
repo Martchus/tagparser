@@ -85,7 +85,8 @@ MediaFileInfo::MediaFileInfo(std::string &&path)
     , m_containerParsingStatus(ParsingStatus::NotParsedYet)
     , m_containerFormat(ContainerFormat::Unknown)
     , m_containerOffset(0)
-    , m_actualExistingId3v1Tag(false)
+    , m_paddingSize(0)
+    , m_fileStructureFlags(MediaFileStructureFlags::None)
     , m_tracksParsingStatus(ParsingStatus::NotParsedYet)
     , m_tagsParsingStatus(ParsingStatus::NotParsedYet)
     , m_chaptersParsingStatus(ParsingStatus::NotParsedYet)
@@ -95,10 +96,8 @@ MediaFileInfo::MediaFileInfo(std::string &&path)
     , m_preferredPadding(0)
     , m_tagPosition(ElementPosition::BeforeData)
     , m_indexPosition(ElementPosition::BeforeData)
-    , m_forceFullParse(MEDIAINFO_CPP_FORCE_FULL_PARSE)
-    , m_forceRewrite(true)
-    , m_forceTagPosition(true)
-    , m_forceIndexPosition(true)
+    , m_fileHandlingFlags((MEDIAINFO_CPP_FORCE_FULL_PARSE ? MediaFileHandlingFlags::ForceFullParse : MediaFileHandlingFlags::None)
+          | MediaFileHandlingFlags::ForceRewrite | MediaFileHandlingFlags::ForceTagPosition | MediaFileHandlingFlags::ForceIndexPosition)
 {
 }
 
@@ -238,7 +237,7 @@ startParsingSignature:
                 } else if (container->documentType() == "webm") {
                     m_containerFormat = ContainerFormat::Webm;
                 }
-                if (m_forceFullParse) {
+                if (isForcingFullParse()) {
                     // validating the element structure of Matroska files takes too long when
                     // parsing big files so do this only when explicitely desired
                     container->validateElementStructure(diag, progress, &m_paddingSize);
@@ -255,7 +254,7 @@ startParsingSignature:
         case ContainerFormat::Ogg:
             // Ogg is handled by OggContainer instance
             m_container = make_unique<OggContainer>(*this, m_containerOffset);
-            static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(m_forceFullParse);
+            static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(isForcingFullParse());
             break;
         case ContainerFormat::Unknown:
             // check for magic numbers at odd offsets
@@ -387,7 +386,7 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
         try {
             stream().seekg(-128, ios_base::end);
             m_id3v1Tag->parse(stream(), diag);
-            m_actualExistingId3v1Tag = true;
+            m_fileStructureFlags += MediaFileStructureFlags::ActualExistingId3v1Tag;
         } catch (const NoDataFoundException &) {
             m_id3v1Tag.reset();
         } catch (const OperationAbortedException &) {
@@ -1331,7 +1330,7 @@ void MediaFileInfo::clearParsingResults()
     m_id3v1Tag.reset();
     m_id3v2Tags.clear();
     m_actualId3v2TagOffsets.clear();
-    m_actualExistingId3v1Tag = false;
+    m_fileStructureFlags = MediaFileStructureFlags::None;
     m_container.reset();
     m_singleTrack.reset();
 }
@@ -1540,7 +1539,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         // alter ID3v1 tag
         if (!m_id3v1Tag) {
             // remove ID3v1 tag
-            if (!m_actualExistingId3v1Tag) {
+            if (!(m_fileStructureFlags & MediaFileStructureFlags::ActualExistingId3v1Tag)) {
                 diag.emplace_back(DiagLevel::Information, "Nothing to be changed.", context);
                 return;
             }
@@ -1555,7 +1554,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             return;
         } else {
             // add or update ID3v1 tag
-            if (m_actualExistingId3v1Tag) {
+            if (m_fileStructureFlags & MediaFileStructureFlags::ActualExistingId3v1Tag) {
                 progress.updateStep("Updating existing ID3v1 tag ...");
                 // ensure the file is still open / not readonly
                 open();
@@ -1740,7 +1739,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         // copy / skip actual stream data
         // -> determine media data size
         std::uint64_t mediaDataSize = size() - streamOffset;
-        if (m_actualExistingId3v1Tag) {
+        if (m_fileStructureFlags & MediaFileStructureFlags::ActualExistingId3v1Tag) {
             mediaDataSize -= 128;
         }
 

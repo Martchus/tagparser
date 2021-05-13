@@ -11,6 +11,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <c++utilities/misc/flagenumclass.h>
+
 namespace TagParser {
 
 class Tag;
@@ -41,6 +43,33 @@ enum class ParsingStatus : std::uint8_t {
     NotSupported, /**< tried to parse the part, but the format is not supported */
     CriticalFailure /**< tried to parse the part, but critical errors occurred */
 };
+
+/*!
+ * \brief The MediaFileStructureFlags enum specifies flags which describing the structure of a media file.
+ */
+enum class MediaFileStructureFlags : std::uint64_t {
+    None, /**< all flags disabled */
+    ActualExistingId3v1Tag = (1 << 0), /**< whether an ID3v1 tag was found when parsing the file */
+};
+
+/*!
+ * \brief The MediaFileHandlingFlags enum specifies flags which controls the behavior of MediaFileInfo objects.
+ */
+enum class MediaFileHandlingFlags : std::uint64_t {
+    None, /**< all flags disabled */
+    ForceFullParse
+    = (1 << 0), /**< causes the parser to analyse the file strucutre as deep as possible; might cause long loading times for big files */
+    ForceRewrite = (1 << 1), /**< enforces a re-write of the file when applying changes */
+    ForceTagPosition = (1 << 2), /**< enforces the tag position when applying changes, see remarks of MediaFileInfo::setTagPosition() */
+    ForceIndexPosition = (1 << 3), /**< enforces the index position when applying changes, see remarks of MediaFileInfo::setIndexPosition() */
+};
+
+} // namespace TagParser
+
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::MediaFileStructureFlags)
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::MediaFileHandlingFlags)
+
+namespace TagParser {
 
 class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo {
 public:
@@ -164,9 +193,9 @@ private:
     ContainerFormat m_containerFormat;
     std::streamoff m_containerOffset;
     std::uint64_t m_paddingSize;
-    bool m_actualExistingId3v1Tag;
     std::vector<std::streamoff> m_actualId3v2TagOffsets;
     std::unique_ptr<AbstractContainer> m_container;
+    MediaFileStructureFlags m_fileStructureFlags;
 
     // fields related to the tracks
     ParsingStatus m_tracksParsingStatus;
@@ -190,10 +219,7 @@ private:
     std::size_t m_preferredPadding;
     ElementPosition m_tagPosition;
     ElementPosition m_indexPosition;
-    bool m_forceFullParse;
-    bool m_forceRewrite;
-    bool m_forceTagPosition;
-    bool m_forceIndexPosition;
+    MediaFileHandlingFlags m_fileHandlingFlags;
 };
 
 /*!
@@ -454,7 +480,7 @@ inline AbstractContainer *MediaFileInfo::container() const
  */
 inline bool MediaFileInfo::isForcingFullParse() const
 {
-    return m_forceFullParse;
+    return m_fileHandlingFlags & MediaFileHandlingFlags::ForceFullParse;
 }
 
 /*!
@@ -464,7 +490,7 @@ inline bool MediaFileInfo::isForcingFullParse() const
  */
 inline void MediaFileInfo::setForceFullParse(bool forceFullParse)
 {
-    m_forceFullParse = forceFullParse;
+    CppUtilities::modFlagEnum(m_fileHandlingFlags, MediaFileHandlingFlags::ForceFullParse, forceFullParse);
 }
 
 /*!
@@ -472,7 +498,7 @@ inline void MediaFileInfo::setForceFullParse(bool forceFullParse)
  */
 inline bool MediaFileInfo::isForcingRewrite() const
 {
-    return m_forceRewrite;
+    return m_fileHandlingFlags & MediaFileHandlingFlags::ForceRewrite;
 }
 
 /*!
@@ -480,7 +506,7 @@ inline bool MediaFileInfo::isForcingRewrite() const
  */
 inline void MediaFileInfo::setForceRewrite(bool forceRewrite)
 {
-    m_forceRewrite = forceRewrite;
+    CppUtilities::modFlagEnum(m_fileHandlingFlags, MediaFileHandlingFlags::ForceRewrite, forceRewrite);
 }
 
 /*!
@@ -591,7 +617,7 @@ inline void MediaFileInfo::setTagPosition(ElementPosition tagPosition)
  */
 inline bool MediaFileInfo::forceTagPosition() const
 {
-    return m_forceTagPosition;
+    return m_fileHandlingFlags & MediaFileHandlingFlags::ForceTagPosition;
 }
 
 /*!
@@ -601,7 +627,7 @@ inline bool MediaFileInfo::forceTagPosition() const
  */
 inline void MediaFileInfo::setForceTagPosition(bool forceTagPosition)
 {
-    m_forceTagPosition = forceTagPosition;
+    CppUtilities::modFlagEnum(m_fileHandlingFlags, MediaFileHandlingFlags::ForceTagPosition, forceTagPosition);
 }
 
 /*!
@@ -631,7 +657,7 @@ inline void MediaFileInfo::setIndexPosition(ElementPosition indexPosition)
  */
 inline bool MediaFileInfo::forceIndexPosition() const
 {
-    return m_forceIndexPosition;
+    return m_fileHandlingFlags & MediaFileHandlingFlags::ForceIndexPosition;
 }
 
 /*!
@@ -641,7 +667,7 @@ inline bool MediaFileInfo::forceIndexPosition() const
  */
 inline void MediaFileInfo::setForceIndexPosition(bool forceIndexPosition)
 {
-    m_forceIndexPosition = forceIndexPosition;
+    CppUtilities::modFlagEnum(m_fileHandlingFlags, MediaFileHandlingFlags::ForceIndexPosition, forceIndexPosition);
 }
 
 } // namespace TagParser
