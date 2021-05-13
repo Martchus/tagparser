@@ -3,6 +3,8 @@
 
 #include "../generictagfield.h"
 
+#include <c++utilities/misc/flagenumclass.h>
+
 namespace CppUtilities {
 class BinaryReader;
 class BinaryWriter;
@@ -20,15 +22,11 @@ enum class VorbisCommentFlags : std::uint8_t {
     NoCovers = 0x4 /**< Skips all covers when making. */
 };
 
-constexpr bool operator&(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
-{
-    return static_cast<std::uint8_t>(lhs) & static_cast<std::uint8_t>(rhs);
-}
+} // namespace TagParser
 
-constexpr VorbisCommentFlags operator|(VorbisCommentFlags lhs, VorbisCommentFlags rhs)
-{
-    return static_cast<VorbisCommentFlags>(static_cast<std::uint8_t>(lhs) | static_cast<std::uint8_t>(rhs));
-}
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::VorbisCommentFlags)
+
+namespace TagParser {
 
 class VorbisCommentField;
 class Diagnostics;
