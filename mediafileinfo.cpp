@@ -59,12 +59,6 @@ using namespace CppUtilities;
 
 namespace TagParser {
 
-#ifdef FORCE_FULL_PARSE_DEFAULT
-#define MEDIAINFO_CPP_FORCE_FULL_PARSE true
-#else
-#define MEDIAINFO_CPP_FORCE_FULL_PARSE false
-#endif
-
 /*!
  * \class TagParser::MediaFileInfo
  * \brief The MediaFileInfo class allows to read and write tag information providing
@@ -96,8 +90,8 @@ MediaFileInfo::MediaFileInfo(std::string &&path)
     , m_preferredPadding(0)
     , m_tagPosition(ElementPosition::BeforeData)
     , m_indexPosition(ElementPosition::BeforeData)
-    , m_fileHandlingFlags((MEDIAINFO_CPP_FORCE_FULL_PARSE ? MediaFileHandlingFlags::ForceFullParse : MediaFileHandlingFlags::None)
-          | MediaFileHandlingFlags::ForceRewrite | MediaFileHandlingFlags::ForceTagPosition | MediaFileHandlingFlags::ForceIndexPosition)
+    , m_fileHandlingFlags(
+          MediaFileHandlingFlags::ForceRewrite | MediaFileHandlingFlags::ForceTagPosition | MediaFileHandlingFlags::ForceIndexPosition)
 {
 }
 
