@@ -39,12 +39,6 @@ It also allows to inspect and validate the element structure of MP4 and Matroska
 ## Text encoding, Unicode support
 The library is aware of different text encodings and can convert between different encodings using iconv.
 
-### Windows specific
-A workaround to support filenames containing non-ASCII characters (despite the lack of an UTF-8
-supporting `std::fstream` under Windows) can be enabled by adding `-DUSE_NATIVE_FILE_BUFFER=ON`
-to the CMake arguments **when building `c++utilities`**. It is *not* sufficient to specify this
-option only when building `tagparser`.
-
 ## Usage
 This example shows how to read and write tag fields in a format-independent way:
 
