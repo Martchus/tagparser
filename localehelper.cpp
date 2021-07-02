@@ -70,7 +70,7 @@ const LocaleDetail &Locale::abbreviatedName(LocaleFormat format) const
 }
 
 /*!
- * \brief Returns *some* abbreviated name, *preferrably* of the specified \a preferredFormat.
+ * \brief Returns *some* abbreviated name, *preferably* of the specified \a preferredFormat.
  *
  * This function returns the \a preferredFormat if present. Otherwise it returns the most relevant
  * detail. This might be improved in the future, e.g. to convert to the \a preferredFormat. It would

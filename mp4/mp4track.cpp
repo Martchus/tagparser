@@ -452,7 +452,7 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
  * \brief Reads the sample to chunk table.
  * \returns Returns a vector with the table entries wrapped using the tuple container. The first value
  *          is an integer that gives the first chunk that share the same samples count and sample description index.
- *          The second value is sample cound and the third value the sample description index.
+ *          The second value is sample count and the third value is the sample description index.
  * \remarks The table is not validated.
  */
 vector<tuple<std::uint32_t, std::uint32_t, std::uint32_t>> Mp4Track::readSampleToChunkTable(Diagnostics &diag)
@@ -535,8 +535,8 @@ vector<std::uint64_t> Mp4Track::readChunkSizes(Diagnostics &diag)
                 addChunkSizeEntries(chunkSizes, firstChunkIndex - previousChunkIndex, sampleIndex, samplesPerChunk, diag);
             } else {
                 diag.emplace_back(DiagLevel::Critical,
-                    "The first chunk index of a \"sample to chunk\" entry must be greather than the first chunk of the previous entry and not "
-                    "greather than the chunk count.",
+                    "The first chunk index of a \"sample to chunk\" entry must be greater than the first chunk of the previous entry and not "
+                    "greater than the chunk count.",
                     context);
                 throw InvalidDataException();
             }
@@ -853,7 +853,7 @@ std::unique_ptr<Mpeg4VideoSpecificConfig> Mp4Track::parseVideoSpecificConfig(
                 break;
             default:;
             }
-            // skip remainging values to get the start of the next video object
+            // skip remaining values to get the start of the next video object
             while (size >= 3) {
                 if (reader.readUInt24BE() != 1) {
                     reader.stream()->seekg(-2, ios_base::cur);
@@ -2064,7 +2064,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
         }
     }
 
-    // caluculate average bitrate
+    // calculate average bitrate
     if (m_bitrate < 0.01 && m_bitrate > -0.01) {
         m_bitrate = (static_cast<double>(m_size) * 0.0078125) / m_duration.totalSeconds();
     }

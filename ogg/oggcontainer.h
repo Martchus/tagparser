@@ -96,7 +96,7 @@ inline TagType OggVorbisComment::type() const
 }
 
 /*!
- * \brief Returns true; the target is used to specifiy the stream.
+ * \brief Returns true; the target is used to specify the stream.
  * \sa OggContainer::createTag(), TagTarget
  */
 inline bool OggVorbisComment::supportsTarget() const

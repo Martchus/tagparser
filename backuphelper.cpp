@@ -52,11 +52,11 @@ namespace BackupHelper {
 void restoreOriginalFileFromBackupFile(
     const std::string &originalPath, const std::string &backupPath, NativeFileStream &originalStream, NativeFileStream &backupStream)
 {
-    // ensure the orignal stream is closed
+    // ensure the original stream is closed
     if (originalStream.is_open()) {
         originalStream.close();
     }
-    // check wether backup file actually exists and close the backup stream afterwards
+    // check whether backup file actually exists and close the backup stream afterwards
     backupStream.exceptions(ios_base::goodbit);
     backupStream.close();
     backupStream.clear();
@@ -223,9 +223,9 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
  * - Re-throws the exception.
  *
  * \remarks Must only be called when an exception derived from Failure or ios_base::failure
- *          has been catched; this method uses the "exception dispatcher" idiom.
+ *          has been caught; this method uses the "exception dispatcher" idiom.
  *
- * \param fileInfo Specifies the MediaFileInfo instace which has been modified.
+ * \param fileInfo Specifies the MediaFileInfo instance which has been modified.
  * \param backupPath Specifies the path of the backup file; might be empty if none has been created.
  * \param outputStream Specifies the stream used to write the output file. This is usually just the stream
  *                     of \a fileInfo, but is specified here explicitly for higher flexibility.

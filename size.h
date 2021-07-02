@@ -111,8 +111,8 @@ constexpr bool Size::operator==(const Size &other) const
 }
 
 /*!
- * \brief Returns whether this instance is greather than \a other.
- * \remarks Both dimensions must be greather. This operator does *not* take the resolution() into account.
+ * \brief Returns whether this instance is greater than \a other.
+ * \remarks Both dimensions must be greater. This operator does *not* take the resolution() into account.
  */
 constexpr bool Size::operator>=(const Size &other) const
 {

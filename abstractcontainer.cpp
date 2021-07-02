@@ -321,7 +321,7 @@ size_t AbstractContainer::tagCount() const
  * \sa areTagsParsed()
  * \sa parseTags()
  *
- * \remarks The \a tag is not destroyed. The ownership is transfered to the caller.
+ * \remarks The \a tag is not destroyed. The ownership is transferred to the caller.
  *
  * \returns Returns whether the \a tag could be removed.
  */
@@ -389,7 +389,7 @@ size_t AbstractContainer::trackCount() const
  * \sa areTracksParsed()
  * \sa parseTracks()
  *
- * \remarks The \a track is not destroyed. The ownership is transfered to the caller.
+ * \remarks The \a track is not destroyed. The ownership is transferred to the caller.
  *
  * \returns Returns whether the \a track could be removed.
  */

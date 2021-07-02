@@ -91,11 +91,11 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
         bool cueTimeFound = false, cueTrackPositionsFound = false;
         unique_ptr<EbmlElement> clusterElement;
         std::uint64_t pos, prevClusterSize = 0, currentOffset = 0;
-        // iterate throught all segments
+        // iterate through all segments
         for (EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement;
              segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {
             segmentElement->parse(diag);
-            // iterate throught all child elements of the segment (only "Cues"- and "Cluster"-elements are relevant for this method)
+            // iterate through all child elements of the segment (only "Cues"- and "Cluster"-elements are relevant for this method)
             for (EbmlElement *segmentChildElement = segmentElement->firstChild(); segmentChildElement;
                  segmentChildElement = segmentChildElement->nextSibling()) {
                 progress.stopIfAborted();
@@ -445,7 +445,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag, AbortableProgress
                             m_maxIdLength = subElement->readUInteger();
                             if (m_maxIdLength > EbmlElement::maximumIdLengthSupported()) {
                                 diag.emplace_back(DiagLevel::Critical,
-                                    argsToString("Maximum EBML element ID length greather than ", EbmlElement::maximumIdLengthSupported(),
+                                    argsToString("Maximum EBML element ID length greater than ", EbmlElement::maximumIdLengthSupported(),
                                         " bytes is not supported."),
                                     context);
                                 throw InvalidDataException();
@@ -455,7 +455,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag, AbortableProgress
                             m_maxSizeLength = subElement->readUInteger();
                             if (m_maxSizeLength > EbmlElement::maximumSizeLengthSupported()) {
                                 diag.emplace_back(DiagLevel::Critical,
-                                    argsToString("Maximum EBML element size length greather than ", EbmlElement::maximumSizeLengthSupported(),
+                                    argsToString("Maximum EBML element size length greater than ", EbmlElement::maximumSizeLengthSupported(),
                                         " bytes is not supported."),
                                     context);
                                 throw InvalidDataException();
@@ -1460,7 +1460,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 currentPosition += segment.totalSize;
                 currentOffset += segment.totalSize;
 
-                // increase the read offset by the size of the segment read from the orignial file
+                // increase the read offset by the size of the segment read from the original file
                 readOffset += level0Element->totalSize();
 
                 break;
@@ -1739,7 +1739,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     }
                 } else {
                     // can't just skip existing "Cluster"-elements: "Position"-elements must be updated
-                    progress.nextStepOrStop("Updateing cluster ...",
+                    progress.nextStepOrStop("Updating cluster ...",
                         static_cast<std::uint8_t>((static_cast<std::uint64_t>(outputStream.tellp()) - offset) * 100 / segment.totalDataSize));
                     for (; level1Element; level1Element = level1Element->nextSibling()) {
                         for (level2Element = level1Element->firstChild(); level2Element; level2Element = level2Element->nextSibling()) {

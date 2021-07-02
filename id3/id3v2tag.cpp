@@ -673,7 +673,7 @@ void Id3v2Tag::prepareRecordDataForMaking(const std::string &diagContext, Diagno
     // convert lRecordingTime to old fields for v2.3.0 and older
     const auto recordingTimeFieldIterator = fields().find(Id3v2FrameIds::lRecordingTime);
     // -> If the auto-created lRecordingTime field (see note above) has been completely removed write the old fields as-is.
-    //    This allows one to bypass this handling and set the old fields explicitely.
+    //    This allows one to bypass this handling and set the old fields explicitly.
     if (recordingTimeFieldIterator == fields().cend()) {
         return;
     }

@@ -201,7 +201,7 @@ std::uint32_t MpegAudioFrame::sampleCount() const
 }
 
 /*!
- * \brief Returns the size if known; otherwise retruns 0.
+ * \brief Returns the size if known; otherwise returns 0.
  */
 std::uint32_t MpegAudioFrame::size() const
 {

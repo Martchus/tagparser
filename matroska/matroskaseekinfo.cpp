@@ -20,7 +20,7 @@ namespace TagParser {
  */
 
 /*!
- * \brief Shifts all offsets greather or equal than \a start by \a amount bytes.
+ * \brief Shifts all offsets greater or equal than \a start by \a amount bytes.
  */
 void MatroskaSeekInfo::shift(std::uint64_t start, std::int64_t amount)
 {

@@ -50,7 +50,7 @@ void OggPage::parseHeader(istream &stream, std::uint64_t startOffset, std::int32
         } else {
             maxSize -= m_segmentCount;
         }
-        // read segment size tabe
+        // read segment size table
         m_segmentSizes.push_back(0);
         for (std::uint8_t i = 0; i < m_segmentCount;) {
             std::uint8_t entry = reader.readByte();

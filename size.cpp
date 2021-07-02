@@ -10,8 +10,8 @@ constexpr Size fromHeightAndAspectRatio(std::uint32_t height, std::uint32_t nume
 /// \endcond
 
 /*!
- * \brief Returns an abbreviation for the current instance, eg. 720p for sizes greather than 960×720
- *        and 1080p for sizes greather than 1440×1080.
+ * \brief Returns an abbreviation for the current instance, eg. 720p for sizes greater than 960×720
+ *        and 1080p for sizes greater than 1440×1080.
  * \remarks The width thresolds are for 4:3 resolutions so both, 4:3 and 16:9 "720p" is considered as such.
  */
 std::string_view Size::abbreviation() const

@@ -37,7 +37,7 @@ template <typename ImplementationType> class FileElementTraits {
 /*!
  * \class TagParser::GenericFileElement
  * \brief The GenericFileElement class helps to parse binary files which consist
- *        of an arboreal element strucutre.
+ *        of an arboreal element structure.
  * \tparam ImplementationType Specifies the type of the actual implementation.
  * \remarks This template class is intended to be subclassed using
  *          with the "Curiously recurring template pattern".
@@ -759,7 +759,7 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  *        stream at the start offset.
  *
  * The parsed information can accessed using the corresponding methods such as
- * id() for the elemement id and totalSize() for the element size.
+ * id() for the element id and totalSize() for the element size.
  *
  * If the element has already been parsed (isParsed() returns true) this method
  * does nothing. To force reparsing call reparse().
@@ -781,7 +781,7 @@ template <class ImplementationType> void GenericFileElement<ImplementationType>:
  *        stream at the start offset.
  *
  * The parsed information can accessed using the corresponding methods such as
- * id() for the elemement id and totalSize() for the element size.
+ * id() for the element id and totalSize() for the element size.
  *
  * If the element has already been parsed (isParsed() returns true) this method
  * clears the parsed information and reparses the header.
@@ -838,7 +838,7 @@ void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
 }
 
 /*!
- * \brief Writes the header informaton of the element to the specified \a targetStream.
+ * \brief Writes the header information of the element to the specified \a targetStream.
  */
 template <class ImplementationType>
 void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
@@ -976,7 +976,7 @@ template <class ImplementationType> constexpr std::uint32_t GenericFileElement<I
 }
 
 /*!
- * \brief Returns the mimimum element size.
+ * \brief Returns the minimum element size.
  */
 template <class ImplementationType> constexpr std::uint8_t GenericFileElement<ImplementationType>::minimumElementSize()
 {

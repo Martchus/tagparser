@@ -233,7 +233,7 @@ startParsingSignature:
                 }
                 if (isForcingFullParse()) {
                     // validating the element structure of Matroska files takes too long when
-                    // parsing big files so do this only when explicitely desired
+                    // parsing big files so do this only when explicitly desired
                     container->validateElementStructure(diag, progress, &m_paddingSize);
                     container->validateIndex(diag, progress);
                 }
@@ -548,7 +548,7 @@ void MediaFileInfo::parseEverything(Diagnostics &diag, AbortableProgressFeedback
  *  - Tags might be removed as well. For example the existing ID3v1 tag of an MP3 file will be removed if \a id3v1Usage is set to TagUsage::Never.
  *  - The method might do nothing if present tag(s) already match the given specifications.
  *  - This is only a convenience method. The task could be done by manually using the methods createId3v1Tag(), createId3v2Tag(), removeId3v1Tag() ... as well.
- *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (TagSettings::id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transfered.
+ *  - Some tag information might be discarded. For example when an ID3v2 tag needs to be removed (TagSettings::id3v2usage is set to TagUsage::Never) and an ID3v1 tag will be created instead not all fields can be transferred.
  */
 bool MediaFileInfo::createAppropriateTags(const TagCreationSettings &settings)
 {
@@ -1333,7 +1333,7 @@ void MediaFileInfo::clearParsingResults()
  * \brief Merges the assigned ID3v2 tags into a single ID3v2 tag.
  *
  * Some files I've got contain multiple successive ID3v2 tags. If the tags of
- * such an file is parsed by this class, these tags will be kept seperate.
+ * such an file is parsed by this class, these tags will be kept separate.
  * This method merges all assigned ID3v2 tags. All fields from the additional
  * ID3v2 tags will be inserted to the first tag. All assigned ID3v2 tag instances
  * except thefirst will be destroyed.

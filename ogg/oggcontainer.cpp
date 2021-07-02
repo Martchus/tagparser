@@ -147,8 +147,8 @@ size_t OggContainer::tagCount() const
 /*!
  * \brief Actually just flags the specified \a tag as removed and clears all assigned fields.
  *
- * This specialization is neccessary because removing the tag completely whould also
- * remove the OGG parameter which are needed when appying changes.
+ * This specialization is necessary because removing the tag completely would also
+ * remove the OGG parameter which are needed when applying changes.
  *
  * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
  *          So do NOT use this method to remove tags from Vorbis, just call Tag::removeAllFields() on \a tag.
@@ -168,8 +168,8 @@ bool OggContainer::removeTag(Tag *tag)
 /*!
  * \brief Actually just flags all tags as removed and clears all assigned fields.
  *
- * This specialization is neccessary because completeley removing the tag whould also
- * remove the OGG parameter which are needed when appying the changes.
+ * This specialization is necessary because completeley removing the tag would also
+ * remove the OGG parameter which are needed when applying the changes.
  *
  * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
  *          So do NOT use this method to remove tags from Vorbis, just call removeAllFields() on all tags.

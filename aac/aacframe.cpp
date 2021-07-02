@@ -1462,7 +1462,7 @@ void AacFrameElementParser::parseHuffmanSpectralData(std::uint8_t cb, std::int16
         vcb11CheckLav(cb, sp);
         break;
     default:
-        throw InvalidDataException(); // non existend codebook number
+        throw InvalidDataException(); // non-existent codebook number
     }
 }
 
@@ -1732,7 +1732,7 @@ void AacFrameElementParser::parseSingleChannelElement()
     if (m_ics1.isUsed) {
         throw InvalidDataException(); // IS not allowed in single channel
     }
-    // check wheter next bitstream element is a fill element (for SBR decoding)
+    // check whether next bitstream element is a fill element (for SBR decoding)
     if (m_reader.showBits<std::uint8_t>(3) == AacSyntaxElementTypes::FillElement) {
         parseFillElement(m_elementCount);
     }

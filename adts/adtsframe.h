@@ -106,7 +106,7 @@ constexpr std::uint16_t AdtsFrame::totalSize() const
 }
 
 /*!
- * \brief Retruns the header size in bytes (9 if CRC is present; otherwise 7).
+ * \brief Returns the header size in bytes (9 if CRC is present; otherwise 7).
  */
 constexpr std::uint8_t AdtsFrame::headerSize() const
 {

@@ -873,7 +873,7 @@ calculatePadding:
                     } else {
                         diag.emplace_back(DiagLevel::Critical,
                             argsToString("Unable to update chunk offsets of track ", (trackIndex + 1),
-                                ": Number of chunks in the output file differs from the number of chunks in the orignal file."),
+                                ": Number of chunks in the output file differs from the number of chunks in the original file."),
                             context);
                         throw Failure();
                     }
