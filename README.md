@@ -20,7 +20,7 @@ the end of an MP4/Matroska file.
 ### Padding
 Padding allows adding additional tag information without rewriting the entire file
 or appending the tag. Usage of padding can be configured:
-* minimum/maximum padding: The file is rewritten if the padding would fall below/exceed the specifed limits.
+* minimum/maximum padding: The file is rewritten if the padding would fall below/exceed the specified limits.
 * preferred padding: If the file needs to be rewritten the preferred padding is used.
 
 Default value for minimum and maximum padding is zero. Hence the library will almost always have to rewrite
@@ -111,7 +111,7 @@ if (auto *const container = fileInfo.container()) {
 //   run it in a separate thread.
 // - Use progress.tryToAbort() from another thread or an interrupt handler to abort gracefully without leaving
 //   the file in an inconsistent state.
-// - Be sure everyting has been parsed before as the library needs to be aware of the whole file structure.
+// - Be sure everything has been parsed before as the library needs to be aware of the whole file structure.
 fileInfo.parseEverything(diag, progress);
 fileInfo.applyChanges(diag, progress);
 ```

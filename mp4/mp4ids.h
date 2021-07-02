@@ -424,7 +424,7 @@ namespace Mp4FormatExtensionIds {
 enum KnownValue : std::uint32_t {
     GammaLevel
     = 0x67616D61, /**< gama: A 32-bit fixed-point number indicating the gamma level at which the image was captured. The decompressor can use this value to gamma-correct at display time. */
-    FieldHandling = 0x6669656C, /**< fiel: Two 8-bit integers that define field handling. */
+    FieldHandling = 0x6669656C, /**< field: Two 8-bit integers that define field handling. */
     DefaultQuantizationTable = 0x6D6A7174, /**< mjqt: The default quantization table for a Motion-JPEG data stream. */
     DefaultHuffmanTable = 0x6D6A6874, /**< mjht: The default Huffman table for a Motion-JPEG data stream. */
     Mpeg4ElementaryStreamDescriptor
@@ -461,7 +461,7 @@ enum KnownValue : std::uint8_t {
     Mpeg2Video422Profile, /**< MPEG-2 Video 422 Profile */
     Mpeg2AacMainProfile, /**< Advanced Audio Coding Main Profile */
     Mpeg2AacLowComplexityProfile, /**< Advanced Audio Coding Low Complexity Profile */
-    Mpeg2AacScaleableSamplingRateProfile, /**< Advanced Audio Coding Scaleable Sampling Rate Profile */
+    Mpeg2AacScaleableSamplingRateProfile, /**< Advanced Audio Coding Scalable Sampling Rate Profile */
     Mpeg2Audio, /**< MPEG-2 Audio */
     Mpeg1Video, /**< MPEG-1 Video */
     Mpeg1Audio, /**< MPEG-1 Audio */

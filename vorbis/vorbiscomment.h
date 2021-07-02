@@ -71,7 +71,7 @@ inline bool VorbisComment::canEncodingBeUsed(TagTextEncoding encoding) const
 
 /*!
  * \brief Returns the vendor.
- * \remarks Also accessable via value(KnownField::Vendor).
+ * \remarks Also accessible via value(KnownField::Vendor).
  */
 inline const TagValue &VorbisComment::vendor() const
 {
@@ -80,7 +80,7 @@ inline const TagValue &VorbisComment::vendor() const
 
 /*!
  * \brief Sets the vendor.
- * \remarks Also accessable via setValue(KnownField::Vendor, vendor).
+ * \remarks Also accessible via setValue(KnownField::Vendor, vendor).
  */
 inline void VorbisComment::setVendor(const TagValue &vendor)
 {

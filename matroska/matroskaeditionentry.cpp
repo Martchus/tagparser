@@ -81,7 +81,7 @@ void MatroskaEditionEntry::parse(Diagnostics &diag)
             break;
         default:
             diag.emplace_back(DiagLevel::Warning,
-                "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ingored.", context);
+                "\"EditionEntry\"-element contains unknown child element \"" % entryChild->idToString() + "\" which will be ignored.", context);
         }
         entryChild = entryChild->nextSibling();
     }

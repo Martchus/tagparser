@@ -115,7 +115,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
                     // recompute the parent size (assumption - which was rest of the available space - was wrong)
                     m_parent->m_dataSize = m_startOffset - m_parent->m_startOffset - m_parent->headerSize();
                     m_parent->m_sizeUnknown = false;
-                    // detatch from ...
+                    // detach from ...
                     if (m_parent->firstChild() == this) {
                         // ... parent
                         m_parent->m_firstChild.release();

@@ -40,7 +40,7 @@ constexpr int Id3Genres::genreCount()
 /*!
  * \brief Returns the preferred genre index to indicate that no genre is set at all.
  * \remarks Apparently some files use 255 to indicate the genre information is missing although this
- *          is not explicitely specified on [ID3.org](http://id3.org/ID3v1).
+ *          is not explicitly specified on [ID3.org](http://id3.org/ID3v1).
  */
 constexpr int Id3Genres::emptyGenreIndex()
 {

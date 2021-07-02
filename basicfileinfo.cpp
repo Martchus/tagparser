@@ -144,7 +144,7 @@ void BasicFileInfo::setPath(std::string &&path)
  * \brief Returns the file name of the given file.
  *
  * \param path Specifies the path of the file.
- * \param cutExtension Indicates whether the extension/suffix should be cutted.
+ * \param cutExtension Indicates whether the extension/suffix should be cut.
  */
 std::string BasicFileInfo::fileName(std::string_view path, bool cutExtension)
 {
@@ -167,7 +167,7 @@ std::string BasicFileInfo::fileName(std::string_view path, bool cutExtension)
 /*!
  * \brief Returns the file name of the current file.
  *
- * \param cutExtension Indicates whether the extension should be cutted.
+ * \param cutExtension Indicates whether the extension should be cut.
  */
 std::string BasicFileInfo::fileName(bool cutExtension) const
 {

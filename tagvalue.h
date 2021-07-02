@@ -88,7 +88,7 @@ enum class TagDataType : unsigned int {
  */
 enum class TagValueComparisionFlags : unsigned int {
     None, /**< no special behavior */
-    CaseInsensitive = 0x1, /**< string-comparisions are case-insensitive (does *not* affect non-string comparisions) */
+    CaseInsensitive = 0x1, /**< string-comparisons are case-insensitive (does *not* affect non-string comparisons) */
     IgnoreMetaData = 0x2, /**< do *not* take meta-data like description and MIME-types into account */
 };
 

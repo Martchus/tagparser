@@ -31,7 +31,7 @@ enum class TagType : unsigned int {
  * \brief Specifies the field.
  *
  * These "known" fields are used to specify a field without using
- * the field identifier used by the underlaying tag type.
+ * the field identifier used by the underlying tag type.
  *
  * Not all fields are supported by all tag types (see Tag::supportsField()).
  *

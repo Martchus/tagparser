@@ -317,7 +317,7 @@ std::size_t Tag::insertValues(const Tag &from, bool overwrite)
 /*!
  * \fn Tag::ensureTextValuesAreProperlyEncoded()
  * \brief Ensures the encoding of all assigned text values is supported by the tag by
- *        converting the character set if neccessary.
+ *        converting the character set if necessary.
  */
 
 } // namespace TagParser

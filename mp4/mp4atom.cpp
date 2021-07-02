@@ -121,7 +121,7 @@ void Mp4Atom::internalParse(Diagnostics &diag)
  * \brief This function helps to write the atom size after writing an atom to a stream.
  * \param stream Specifies the stream.
  * \param startOffset Specifies the start offset of the atom.
- * \remarks The caller must ensure that no seek before \a startOffset happended.
+ * \remarks The caller must ensure that no seek before \a startOffset happened.
  * \throw The caller has to be sure, that the number of written bytes does not exceed
  *        maximum of an 32-bit unsigned integer. Otherwise the function will throw
  *        Failure and Mp4Atom::seekBackAndWriteAtomSize64 should be used instead.
@@ -148,7 +148,7 @@ void Mp4Atom::seekBackAndWriteAtomSize(std::ostream &stream, const std::ostream:
  * \brief This function helps to write the atom size after writing an atom to a stream.
  * \param stream Specifies the stream.
  * \param startOffset Specifies the start offset of the atom.
- * \remarks The caller must ensure that no seek before \a startOffset happended.
+ * \remarks The caller must ensure that no seek before \a startOffset happened.
  *
  * This function seeks back to the start offset and writes the difference between the
  * previous offset and the start offset as 64-bit unsigned integer to the \a stream.

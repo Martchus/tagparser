@@ -786,7 +786,7 @@ std::uint8_t Id3v2Frame::makeTextEncodingByte(TagTextEncoding textEncoding)
  * \brief Parses a substring from the specified \a buffer.
  *
  * This method ensures that byte order marks and termination characters for the specified \a encoding are omitted.
- * It might add a waring if the substring is not terminated.
+ * It might add a warning if the substring is not terminated.
  *
  * \param buffer Specifies a pointer to the possibly terminated string.
  * \param bufferSize Specifies the size of the string in byte.
@@ -907,7 +907,7 @@ void Id3v2Frame::parseBom(const char *buffer, std::size_t maxSize, TagTextEncodi
     default:
         if ((maxSize >= 3) && (BE::toUInt24(buffer) == 0x00EFBBBF)) {
             encoding = TagTextEncoding::Utf8;
-            diag.emplace_back(DiagLevel::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte oder mark of frame " + idToString());
+            diag.emplace_back(DiagLevel::Warning, "UTF-8 byte order mark found in text frame.", "parsing byte order mark of frame " + idToString());
         }
     }
 }

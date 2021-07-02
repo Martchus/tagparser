@@ -148,7 +148,7 @@ inline std::uint64_t OggIterator::currentPageOffset() const
  * The iterator is invalid when it has just been constructed. Incrementing and decrementing
  * might cause invalidation.
  *
- * If the iterator is invalid, it can be reseted using the reset() method.
+ * If the iterator is invalid, it can be reset using the reset() method.
  *
  * Some methods cause undefined behaviour if called on an invalid iterator.
  */

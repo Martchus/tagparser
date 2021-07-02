@@ -58,7 +58,7 @@ enum class MediaFileStructureFlags : std::uint64_t {
 enum class MediaFileHandlingFlags : std::uint64_t {
     None, /**< all flags disabled */
     ForceFullParse
-    = (1 << 0), /**< causes the parser to analyse the file strucutre as deep as possible; might cause long loading times for big files */
+    = (1 << 0), /**< causes the parser to analyse the file structure as deep as possible; might cause long loading times for big files */
     ForceRewrite = (1 << 1), /**< enforces a re-write of the file when applying changes */
     ForceTagPosition = (1 << 2), /**< enforces the tag position when applying changes, see remarks of MediaFileInfo::setTagPosition() */
     ForceIndexPosition = (1 << 3), /**< enforces the index position when applying changes, see remarks of MediaFileInfo::setIndexPosition() */
@@ -512,7 +512,7 @@ inline void MediaFileInfo::setForceRewrite(bool forceRewrite)
 /*!
  * \brief Returns the minimum padding to be written before the data blocks when applying changes.
  *
- * Minimum padding in front of the file allows adding additional fields afterwards whithout needing
+ * Minimum padding in front of the file allows adding additional fields afterwards without needing
  * to rewrite the entire file or to put tag information at the end of the file.
  *
  * The default value is 0.
@@ -539,7 +539,7 @@ inline void MediaFileInfo::setMinPadding(std::size_t minPadding)
 /*!
  * \brief Returns the maximum padding to be written before the data blocks when applying changes.
  *
- * Maximum padding in front of the file allows adding additional fields afterwards whithout needing
+ * Maximum padding in front of the file allows adding additional fields afterwards without needing
  * to rewrite the entire file or to put tag information at the end of the file.
  *
  * The default value is 0 which will force the library to rewrite the entire file almost always when
@@ -567,7 +567,7 @@ inline void MediaFileInfo::setMaxPadding(std::size_t maxPadding)
 /*!
  * \brief Returns the padding to be written before the data block when applying changes and the file needs to be rewritten anyways.
  *
- * Padding in front of the file allows adding additional fields afterwards whithout needing
+ * Padding in front of the file allows adding additional fields afterwards without needing
  * to rewrite the entire file or to put tag information at the end of the file.
  */
 inline std::size_t MediaFileInfo::preferredPadding() const

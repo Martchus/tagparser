@@ -273,7 +273,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                 m_name = reader.readString(dataAtom->dataSize() - 4);
             } else {
                 diag.emplace_back(DiagLevel::Warning,
-                    "Unkown child atom \"" % dataAtom->idToString()
+                    "Unknown child atom \"" % dataAtom->idToString()
                         + "\" in tag atom (ilst child) found. It will be ignored and discarded when applying changes.",
                     context);
             }

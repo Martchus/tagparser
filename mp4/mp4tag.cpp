@@ -351,7 +351,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
             diag.emplace_back(DiagLevel::Warning, "Flags (hdlr atom) aren't set to 0.", context);
         }
         if (reader.readInt32BE()) {
-            diag.emplace_back(DiagLevel::Warning, "Predefined 32-bit integer (hdlr atom) ins't set to 0.", context);
+            diag.emplace_back(DiagLevel::Warning, "Predefined 32-bit integer (hdlr atom) isn't set to 0.", context);
         }
         std::uint64_t handlerType = reader.readUInt64BE();
         if (/*(((handlerType & 0xFFFFFFFF00000000) >> 32) != 0x6D647461) && */ (handlerType != 0x6d6469726170706c)) {

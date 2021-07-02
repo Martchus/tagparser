@@ -195,7 +195,7 @@ void SpsInfo::parse(BinaryReader &reader, std::uint32_t maxSize)
 
             // TODO: investigate error (truncated data) when parsing mtx-test-data/mkv/attachment-without-fileuid.mkv
             if (bitReader.readBit()) { // bitstream restriction flag
-                bitReader.skipBits(1); // motion vectors over pic boundries flag
+                bitReader.skipBits(1); // motion vectors over pic boundaries flag
                 bitReader.readUnsignedExpGolombCodedBits<std::uint8_t>(); // max bytes per pic denom
                 bitReader.readUnsignedExpGolombCodedBits<std::uint8_t>(); // max bytes per mb denom
                 bitReader.readUnsignedExpGolombCodedBits<std::uint8_t>(); // log2 max mv length horizontal

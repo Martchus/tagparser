@@ -108,7 +108,7 @@ inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::val
 /*!
  * \brief Returns the related file info.
  *
- * The related file info has been specefied when constructing the container.
+ * The related file info has been specified when constructing the container.
  */
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 inline FileInfoType &GenericContainer<FileInfoType, TagType, TrackType, ElementType>::fileInfo() const
@@ -137,7 +137,7 @@ inline ElementType *GenericContainer<FileInfoType, TagType, TrackType, ElementTy
 /*!
  * \brief Returns all available additional elements.
  *
- * The parser might decide to split up a file's element tree to skip irrelevant elements to achive better performance.
+ * The parser might decide to split up a file's element tree to skip irrelevant elements to achieve better performance.
  * This method gives access to those sub element trees. Each of the returned elements represents an independent element
  * tree within the file.
  */
@@ -150,7 +150,7 @@ inline const std::vector<std::unique_ptr<ElementType>> &GenericContainer<FileInf
 /*!
  * \brief Returns all available additional elements.
  *
- * The parser might decide to split up a file's element tree to skip irrelevant elements to achive better performance.
+ * The parser might decide to split up a file's element tree to skip irrelevant elements to achieve better performance.
  * This method gives access to those sub element trees. Each of the returned elements represents an independent element
  * tree within the file.
  */

@@ -40,7 +40,7 @@ void OggIterator::clear(istream &stream, std::uint64_t startOffset, std::uint64_
 /*!
  * \brief Resets the iterator to point at the first segment of the first page (matching the filter if set).
  *
- * Fetched pages (directly accessable through the page() method) remain after resetting the iterator. Use
+ * Fetched pages (directly accessible through the page() method) remain after resetting the iterator. Use
  * clear() to clear all pages.
  */
 void OggIterator::reset()
@@ -220,7 +220,7 @@ void OggIterator::ignore(std::size_t count)
  * - recover parsing after after an error occurred.
  *
  * Regardless of the current iterator position, this method will assume the page at \a offset comes after
- * the last known page. Hence \a offset must be greather than OggPage::startOffset() + OggPage::totalSize() of the
+ * the last known page. Hence \a offset must be greater than OggPage::startOffset() + OggPage::totalSize() of the
  * last known page. This is checked by the method.
  *
  * If the OGG capture pattern is not present at \a offset, up to 65307 bytes (max. size of an OGG page) are

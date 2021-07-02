@@ -232,7 +232,7 @@ inline std::uint32_t Id3v2Frame::dataSize() const
 }
 
 /*!
- * \brief Returns whether the frame is flaged to be discarded when it is unknown and the tag is altered.
+ * \brief Returns whether the frame is flagged to be discarded when it is unknown and the tag is altered.
  */
 inline bool Id3v2Frame::toDiscardWhenUnknownAndTagIsAltered() const
 {
@@ -240,7 +240,7 @@ inline bool Id3v2Frame::toDiscardWhenUnknownAndTagIsAltered() const
 }
 
 /*!
- * \brief Returns whether the frame is flaged to be discarded when it is unknown and the file (but NOT the tag) is altered.
+ * \brief Returns whether the frame is flagged to be discarded when it is unknown and the file (but NOT the tag) is altered.
  */
 inline bool Id3v2Frame::toDiscardWhenUnknownAndFileIsAltered() const
 {

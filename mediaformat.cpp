@@ -30,7 +30,7 @@ std::string_view MediaFormat::name() const
         case AacMpeg4LowComplexityProfile:
             return "Advanced Audio Coding Low Complexity Profile";
         case AacMpeg4ScalableSamplingRateProfile:
-            return "Advanced Audio Coding Scaleable Sampling Rate Profile";
+            return "Advanced Audio Coding Scalable Sampling Rate Profile";
         case AacMpeg4LongTermPrediction:
             return "Advanced Audio Coding Long Term Predicition";
         case AacMpeg4ERLowComplecityProfile:
