@@ -345,8 +345,8 @@ void OverallTests::checkMkvTestfile7()
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("Big Buck Bunny - test 7"s, tags.front()->value(KnownField::Title).toString());
         CPPUNIT_ASSERT_EQUAL(TagValue(), tags.front()->value(KnownField::Artist));
-        CPPUNIT_ASSERT_EQUAL(
-            "Matroska Validation File 7, junk elements are present at the beginning or end of clusters, the parser should skip it. There is also a damaged element at 451418"s,
+        CPPUNIT_ASSERT_EQUAL( // note: Typo "beggining" is present in `test7.mkv` from https://matroska.org/downloads/test_suite.html, do not fix it.
+            "Matroska Validation File 7, junk elements are present at the beggining or end of clusters, the parser should skip it. There is also a damaged element at 451418"s,
             tags.front()->value(KnownField::Comment).toString());
         break;
     case TagStatus::TestMetaDataPresent:
