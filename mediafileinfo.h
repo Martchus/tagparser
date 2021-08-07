@@ -130,6 +130,8 @@ public:
     const std::vector<std::unique_ptr<Id3v2Tag>> &id3v2Tags() const;
     void tags(std::vector<Tag *> &tags) const;
     std::vector<Tag *> tags() const;
+    void parsedTags(std::vector<Tag *> &tags) const;
+    std::vector<Tag *> parsedTags() const;
     Mp4Tag *mp4Tag() const;
     const std::vector<std::unique_ptr<MatroskaTag>> &matroskaTags() const;
     VorbisComment *vorbisComment() const;

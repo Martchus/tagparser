@@ -1463,13 +1463,14 @@ bool MediaFileInfo::removeVorbisComment()
 
 /*!
  * \brief Stores all tags assigned to the current file in the specified vector.
- *
- * Previous elements of the vector will not be cleared.
- *
- * \remarks The MediaFileInfo keeps the ownership over the tags which will be
- *          destroyed when the MediaFileInfo is invalidated.
+ * \remarks
+ * - Previous elements of the vector will not be cleared.
+ * - Includes tags which have only been assigned, e.g. via createAppropriateTags(), even if
+ *   those tags have not been stored to disk yet via applyChanges().
+ * - The MediaFileInfo keeps the ownership over the tags which will be
+ *   destroyed when the MediaFileInfo is invalidated.
  */
-void MediaFileInfo::tags(vector<Tag *> &tags) const
+void MediaFileInfo::tags(std::vector<Tag *> &tags) const
 {
     if (hasId3v1Tag()) {
         tags.push_back(m_id3v1Tag.get());
@@ -1490,7 +1491,25 @@ void MediaFileInfo::tags(vector<Tag *> &tags) const
 }
 
 /*!
+ * \brief Returns all tags assigned to the current file.
+ * \remarks
+ * - Includes tags which have only been assigned, e.g. via createAppropriateTags(), even if
+ *   those tags have not been stored to disk yet via applyChanges().
+ * - The MediaFileInfo keeps the ownership over the tags which will be
+ *   destroyed when the MediaFileInfo is invalidated.
+ */
+vector<Tag *> MediaFileInfo::tags() const
+{
+    auto res = vector<Tag *>();
+    tags(res);
+    return res;
+}
+
+/*!
  * \brief Returns an indication whether a tag of any format is assigned.
+ * \remarks
+ * - Includes tags which have only been assigned, e.g. via createAppropriateTags(), even if
+ *   those tags have not been stored to disk yet via applyChanges().
  */
 bool MediaFileInfo::hasAnyTag() const
 {
@@ -1499,15 +1518,52 @@ bool MediaFileInfo::hasAnyTag() const
 }
 
 /*!
- * \brief Returns all tags assigned to the current file.
- *
- * \remarks The MediaFileInfo keeps the ownership over the tags which will be
- *          destroyed when the MediaFileInfo is invalidated.
+ * \brief Returns all tags parsed from the current file.
+ * \remarks
+ * - Previous elements of the vector will not be cleared.
+ * - Does **not** include tags which have been assigned, e.g. via createAppropriateTags() but
+ *   have not been stored to disk yet via applyChanges().
+ * - The MediaFileInfo keeps the ownership over the tags which will be
+ *   destroyed when the MediaFileInfo is invalidated.
  */
-vector<Tag *> MediaFileInfo::tags() const
+void MediaFileInfo::parsedTags(std::vector<Tag *> &tags) const
 {
-    vector<Tag *> res;
-    tags(res);
+    if (hasId3v1Tag() && m_id3v1Tag->size()) {
+        tags.push_back(m_id3v1Tag.get());
+    }
+    for (const unique_ptr<Id3v2Tag> &tag : m_id3v2Tags) {
+        if (tag->size()) {
+            tags.push_back(tag.get());
+        }
+    }
+    if (m_containerFormat == ContainerFormat::Flac && m_singleTrack) {
+        if (auto *const vorbisComment = static_cast<const FlacStream *>(m_singleTrack.get())->vorbisComment()) {
+            if (vorbisComment->size()) {
+                tags.push_back(vorbisComment);
+            }
+        }
+    }
+    if (m_container) {
+        for (size_t i = 0, count = m_container->tagCount(); i < count; ++i) {
+            if (auto *const tag = m_container->tag(i); tag->size()) {
+                tags.push_back(tag);
+            }
+        }
+    }
+}
+
+/*!
+ * \brief Returns all tags parsed from the current file.
+ * \remarks
+ * - Does **not** include tags which have been assigned, e.g. via createAppropriateTags() but
+ *   have not been stored to disk yet via applyChanges().
+ * - The MediaFileInfo keeps the ownership over the tags which will be
+ *   destroyed when the MediaFileInfo is invalidated.
+ */
+std::vector<Tag *> MediaFileInfo::parsedTags() const
+{
+    auto res = vector<Tag *>();
+    parsedTags(res);
     return res;
 }
 
