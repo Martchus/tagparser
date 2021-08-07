@@ -123,8 +123,14 @@ std::size_t Tag::insertValues(const Tag &from, bool overwrite)
 
 /*!
  * \fn Tag::size()
- * \brief Returns the size of the tag in bytes.
- * The tag needs to be parsed before.
+ * \brief Returns the size the tag within the file it is parsed from in bytes.
+ * \remarks
+ * - Zero is returned if the tag has not been parsed yet. If the corresponding MediaFileInfo
+ *   objects tags have already been parsed this shouldn't be the case unless the tag is not
+ *   actually present in the file yet, e.g. it has been added via MediaFileInfo::createAppropriateTags()
+ *   but has not been applied yet via MediaFileInfo::applyChanges().
+ * - Can **not** be used to determine the number of bytes it would require to write the tag
+ *   in its current state. For this, use functions like Mp4Tag::prepareMaking() instead.
  */
 
 /*!
