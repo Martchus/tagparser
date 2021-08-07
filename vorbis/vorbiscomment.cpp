@@ -134,7 +134,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
 {
     // prepare parsing
     static const string context("parsing Vorbis comment");
-    std::uint64_t startOffset = static_cast<std::uint64_t>(stream.tellg());
+    const auto startOffset = static_cast<std::uint64_t>(stream.tellg());
     try {
         // read signature: 0x3 + "vorbis"
         char sig[8];
@@ -180,7 +180,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             if (!(flags & VorbisCommentFlags::NoFramingByte)) {
                 stream.ignore(); // skip framing byte
             }
-            m_size = static_cast<std::uint32_t>(static_cast<std::uint64_t>(stream.tellg()) - startOffset);
+            m_size = static_cast<std::uint64_t>(stream.tellg()) - startOffset;
             // turn "YEAR" into "DATE" (unless "DATE" exists)
             // note: "DATE" is an official field and "YEAR" only an unofficial one but present in some files. In consistency with
             //       MediaInfo and VLC player it is treated like "DATE" here.
@@ -197,7 +197,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             throw InvalidDataException();
         }
     } catch (const TruncatedDataException &) {
-        m_size = static_cast<std::uint32_t>(static_cast<std::uint64_t>(stream.tellg()) - startOffset);
+        m_size = static_cast<std::uint64_t>(stream.tellg()) - startOffset;
         diag.emplace_back(DiagLevel::Critical, "Vorbis comment is truncated.", context);
         throw;
     }

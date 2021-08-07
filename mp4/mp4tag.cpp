@@ -328,13 +328,13 @@ bool Mp4Tag::hasField(KnownField field) const
 void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
 {
     static const string context("parsing MP4 tag");
+    m_size = metaAtom.totalSize();
     istream &stream = metaAtom.container().stream();
     BinaryReader &reader = metaAtom.container().reader();
     if (metaAtom.totalSize() > numeric_limits<std::uint32_t>::max()) {
         diag.emplace_back(DiagLevel::Critical, "Can't handle such big \"meta\" atoms.", context);
         throw NotImplementedException();
     }
-    m_size = static_cast<std::uint32_t>(metaAtom.totalSize());
     Mp4Atom *subAtom = nullptr;
     try {
         metaAtom.childById(Mp4AtomIds::HandlerReference, diag);

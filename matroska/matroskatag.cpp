@@ -110,13 +110,13 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
 void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
 {
     static const string context("parsing Matroska tag");
+    m_size = tagElement.totalSize();
     tagElement.parse(diag);
     if (tagElement.totalSize() > numeric_limits<std::uint32_t>::max()) {
         // FIXME: Support this? Likely not very useful in practise.
         diag.emplace_back(DiagLevel::Critical, "Matroska tag is too big.", context);
         throw NotImplementedException();
     }
-    m_size = static_cast<std::uint32_t>(tagElement.totalSize());
     for (EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
         child->parse(diag);
         switch (child->id()) {
