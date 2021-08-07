@@ -313,12 +313,12 @@ void Id3v1Tag::writeValue(const TagValue &value, size_t length, char *buffer, os
     // handle encoding
     auto *valueStart = buffer;
     auto valueLength = length;
+    auto hasProblematicEncoding = false;
     switch (value.dataEncoding()) {
     case TagTextEncoding::Latin1:
-    case TagTextEncoding::Unspecified:
         break;
     case TagTextEncoding::Utf8:
-        // write
+        // write UTF-8 BOM if the value contains non-ASCII characters
         for (const auto c : valueAsString) {
             if ((c & 0x80) == 0) {
                 continue;
@@ -328,10 +328,14 @@ void Id3v1Tag::writeValue(const TagValue &value, size_t length, char *buffer, os
             buffer[2] = static_cast<char>(0xBF);
             valueStart += 3;
             valueLength -= 3;
+            hasProblematicEncoding = true;
             break;
         }
-        [[fallthrough]];
+        break;
     default:
+        hasProblematicEncoding = true;
+    }
+    if (hasProblematicEncoding) {
         diag.emplace_back(DiagLevel::Warning, "The used encoding is unlikely to be supported by other software.", "making ID3v1 tag field");
     }
 
