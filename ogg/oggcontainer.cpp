@@ -416,13 +416,44 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         // define misc variables
         CopyHelper<65307> copyHelper;
         vector<std::uint64_t> updatedPageOffsets;
+        const OggPage *lastPage = nullptr;
+        std::uint64_t nextPageOffset;
         unordered_map<std::uint32_t, std::uint32_t> pageSequenceNumberBySerialNo;
 
         // iterate through all pages of the original file
         for (m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
             const OggPage &currentPage = m_iterator.currentPage();
+
+            // check for gaps
+            // note: This is not just to print diag messages but also for taking into account that the parser might skip pages
+            //       unless a full parse has been enforced.
+            if (lastPage && currentPage.startOffset() != nextPageOffset) {
+                m_iterator.pages().resize(m_iterator.currentPageIndex() - 1); // drop all further pages after the last consecutively parsed one
+                if (m_iterator.resyncAt(nextPageOffset)) {
+                    // try again at the page we've just found
+                    const auto actuallyNextPageOffset = m_iterator.currentPageOffset();
+                    if (actuallyNextPageOffset != nextPageOffset) {
+                        diag.emplace_back(DiagLevel::Critical,
+                            argsToString("Expected OGG page at offset ", nextPageOffset, " but found the next OGG page only at offset ",
+                                actuallyNextPageOffset, ". Skipped ", (actuallyNextPageOffset - nextPageOffset), " invalid bytes."),
+                            context);
+                        nextPageOffset = actuallyNextPageOffset;
+                    }
+                    m_iterator.previousPage();
+                    continue;
+                } else {
+                    diag.emplace_back(DiagLevel::Critical,
+                        argsToString(
+                            "Expected OGG page at offset ", nextPageOffset, " but could not find any further pages. Skipped the rest of the file."),
+                        context);
+                    break;
+                }
+            }
             const auto pageSize = currentPage.totalSize();
             std::uint32_t &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
+            lastPage = &currentPage;
+            nextPageOffset = currentPage.startOffset() + pageSize;
+
             // check whether the Vorbis Comment is present in this Ogg page
             if (currentComment && m_iterator.currentPageIndex() >= currentParams->firstPageIndex
                 && m_iterator.currentPageIndex() <= currentParams->lastPageIndex && !currentPage.segmentSizes().empty()) {

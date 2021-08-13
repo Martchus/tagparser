@@ -23,6 +23,7 @@ public:
     void previousPage();
     void previousSegment();
     const std::vector<OggPage> &pages() const;
+    std::vector<OggPage> &pages();
     const OggPage &currentPage() const;
     std::uint64_t currentPageOffset() const;
     std::vector<OggPage>::size_type currentPageIndex() const;
@@ -120,6 +121,14 @@ inline std::uint64_t OggIterator::streamSize() const
  * \brief Returns a vector of containing the OGG pages that have been fetched yet.
  */
 inline const std::vector<OggPage> &OggIterator::pages() const
+{
+    return m_pages;
+}
+
+/*!
+ * \brief Returns a vector of containing the OGG pages that have been fetched yet.
+ */
+inline std::vector<OggPage> &OggIterator::pages()
 {
     return m_pages;
 }
