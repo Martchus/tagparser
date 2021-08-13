@@ -470,7 +470,8 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         continue;
                     }
                     // check whether this segment contains the Vorbis Comment
-                    if ((m_iterator.currentPageIndex() >= currentParams->firstPageIndex && segmentIndex >= currentParams->firstSegmentIndex)
+                    if (currentParams
+                        && (m_iterator.currentPageIndex() >= currentParams->firstPageIndex && segmentIndex >= currentParams->firstSegmentIndex)
                         && (m_iterator.currentPageIndex() <= currentParams->lastPageIndex && segmentIndex <= currentParams->lastSegmentIndex)) {
                         // prevent making the comment twice if it spreads over multiple pages/segments
                         if (!currentParams->removed
@@ -496,7 +497,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         newSegmentSizes.push_back(segmentSize);
 
                         // check whether there is a new comment to be inserted into the current page
-                        if (m_iterator.currentPageIndex() == currentParams->lastPageIndex
+                        if (currentParams && m_iterator.currentPageIndex() == currentParams->lastPageIndex
                             && currentParams->firstSegmentIndex == numeric_limits<size_t>::max()) {
                             if (!currentParams->removed) {
                                 makeVorbisCommentSegment(buffer, copyHelper, newSegmentSizes, currentComment, currentParams, diag);
