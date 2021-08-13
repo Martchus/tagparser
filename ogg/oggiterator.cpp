@@ -197,9 +197,8 @@ std::size_t OggIterator::readAll(char *buffer, std::size_t max)
  */
 void OggIterator::ignore(std::size_t count)
 {
-    auto available = currentSegmentSize() - m_bytesRead;
     while (*this) {
-        available = currentSegmentSize() - m_bytesRead;
+        const auto available = currentSegmentSize() - m_bytesRead;
         if (count <= available) {
             m_bytesRead += count;
             return;
