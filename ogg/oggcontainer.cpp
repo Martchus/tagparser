@@ -579,7 +579,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         // close backups stream; reopen new file as readable stream
         backupStream.close();
         fileInfo().close();
-        fileInfo().stream().open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);
+        fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
 
         // update checksums of modified pages
         for (auto offset : updatedPageOffsets) {
