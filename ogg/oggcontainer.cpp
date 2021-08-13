@@ -401,6 +401,8 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
     }
 
+    progress.updateStep("Writing OGG pages ...");
+    const auto totalFileSize = fileInfo().size();
     try {
         // prepare iterating comments
         OggVorbisComment *currentComment;
@@ -421,8 +423,12 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         unordered_map<std::uint32_t, std::uint32_t> pageSequenceNumberBySerialNo;
 
         // iterate through all pages of the original file
-        for (m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
+        auto updateTick = 0u;
+        for (m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage(), ++updateTick) {
             const OggPage &currentPage = m_iterator.currentPage();
+            if (updateTick % 10) {
+                progress.updateStepPercentage(currentPage.startOffset() * 100ul / totalFileSize);
+            }
 
             // check for gaps
             // note: This is not just to print diag messages but also for taking into account that the parser might skip pages
@@ -601,6 +607,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
         // report new size
         fileInfo().reportSizeChanged(static_cast<std::uint64_t>(stream().tellp()));
+        progress.updateStepPercentage(100);
 
         // "save as path" is now the regular path
         if (!fileInfo().saveFilePath().empty()) {
@@ -614,12 +621,18 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
 
         // update checksums of modified pages
+        progress.updateStep("Updating checksums ...");
+        updateTick = 0u;
         for (auto offset : updatedPageOffsets) {
+            if (updateTick++ % 10) {
+                progress.updateStepPercentage(offset * 100ul / fileInfo().size());
+            }
             OggPage::updateChecksum(fileInfo().stream(), offset);
         }
 
         // prevent deferring final write operations (to catch and handle possible errors here)
         fileInfo().stream().flush();
+        progress.updateStepPercentage(100);
 
         // clear iterator
         m_iterator.clear(fileInfo().stream(), startOffset(), fileInfo().size());
