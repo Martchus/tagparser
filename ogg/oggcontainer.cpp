@@ -204,10 +204,9 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
             }
             OggStream *stream;
             std::uint64_t lastNewStreamOffset = 0;
-            try {
-                stream = m_tracks[m_streamsBySerialNo.at(page.streamSerialNumber())].get();
-                stream->m_size += page.dataSize();
-            } catch (const out_of_range &) {
+            if (const auto streamIndex = m_streamsBySerialNo.find(page.streamSerialNumber()); streamIndex != m_streamsBySerialNo.end()) {
+                stream = m_tracks[streamIndex->second].get();
+            } else {
                 // new stream serial number recognized -> add new stream
                 m_streamsBySerialNo[page.streamSerialNumber()] = m_tracks.size();
                 m_tracks.emplace_back(make_unique<OggStream>(*this, m_iterator.currentPageIndex()));
