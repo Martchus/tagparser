@@ -214,6 +214,9 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
                 stream = m_tracks.back().get();
                 lastNewStreamOffset = page.startOffset();
             }
+            if (!pagesSkipped) {
+                stream->m_size += page.dataSize();
+            }
             if (stream->m_currentSequenceNumber != page.sequenceNumber()) {
                 if (stream->m_currentSequenceNumber) {
                     diag.emplace_back(DiagLevel::Warning, "Page is missing (page sequence number omitted).", context);
@@ -228,9 +231,12 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
                 && (page.startOffset() - lastNewStreamOffset) > (20 * 0x100000)) {
                 if (m_iterator.resyncAt(fileInfo().size() - (20 * 0x100000))) {
                     const OggPage &resyncedPage = m_iterator.currentPage();
-                    // prevent warning about missing pages
-                    stream->m_currentSequenceNumber = resyncedPage.sequenceNumber() + 1;
-                    pagesSkipped = true;
+                    // prevent warning about missing pages by resetting the sequence number of all streams and invalidate the stream size
+                    for (auto &stream : m_tracks) {
+                        stream->m_currentSequenceNumber = 0;
+                        stream->m_size = 0;
+                    }
+                    pagesSkipped = continueFromHere = true;
                     diag.emplace_back(DiagLevel::Information,
                         argsToString("Pages in the middle of the file (", dataSizeToString(resyncedPage.startOffset() - page.startOffset()),
                             ") have been skipped to improve parsing speed. Hence track sizes can not be computed. Maybe not even all tracks could be "
@@ -262,13 +268,6 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
                 argsToString(
                     "Aborting after not being able to find any \"OggS\" capture patterns within 65307 bytes (from offset ", expectedOffset, ")."),
                 context);
-        }
-    }
-
-    // invalidate stream sizes in case pages have been skipped
-    if (pagesSkipped) {
-        for (auto &stream : m_tracks) {
-            stream->m_size = 0;
         }
     }
 }
