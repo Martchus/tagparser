@@ -219,7 +219,10 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
             }
             if (stream->m_currentSequenceNumber != page.sequenceNumber()) {
                 if (stream->m_currentSequenceNumber) {
-                    diag.emplace_back(DiagLevel::Warning, "Page is missing (page sequence number omitted).", context);
+                    diag.emplace_back(DiagLevel::Warning,
+                        argsToString("Page of stream ", page.streamSerialNumber(), " missing; page sequence number ", stream->m_currentSequenceNumber,
+                            " omitted at ", page.startOffset(), ", found ", page.sequenceNumber(), " instead."),
+                        context);
                 }
                 stream->m_currentSequenceNumber = page.sequenceNumber() + 1;
             } else {
