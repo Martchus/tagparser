@@ -57,18 +57,20 @@ void restoreOriginalFileFromBackupFile(
         originalStream.close();
     }
     // check whether backup file actually exists and close the backup stream afterwards
+    const auto backupPathForOpen = BasicFileInfo::pathForOpen(backupPath);
     backupStream.exceptions(ios_base::goodbit);
     backupStream.close();
     backupStream.clear();
-    backupStream.open(backupPath, ios_base::in | ios_base::binary);
+    backupStream.open(backupPathForOpen.data(), ios_base::in | ios_base::binary);
     if (backupStream.is_open()) {
         backupStream.close();
     } else {
         throw std::ios_base::failure("Backup/temporary file has not been created.");
     }
     // remove original file and restore backup
-    std::remove(originalPath.c_str());
-    if (std::rename(BasicFileInfo::pathForOpen(backupPath).data(), BasicFileInfo::pathForOpen(originalPath).data()) == 0) {
+    const auto originalPathForOpen = BasicFileInfo::pathForOpen(originalPath);
+    std::remove(originalPathForOpen.data());
+    if (std::rename(backupPathForOpen.data(), originalPathForOpen.data()) == 0) {
         return;
     }
     // can't rename/move the file (maybe backup dir on another partition) -> make a copy instead
@@ -76,8 +78,8 @@ void restoreOriginalFileFromBackupFile(
         // need to open all streams again
         backupStream.exceptions(ios_base::failbit | ios_base::badbit);
         originalStream.exceptions(ios_base::failbit | ios_base::badbit);
-        backupStream.open(backupPath, ios_base::in | ios_base::binary);
-        originalStream.open(originalPath, ios_base::out | ios_base::binary);
+        backupStream.open(backupPathForOpen.data(), ios_base::in | ios_base::binary);
+        originalStream.open(originalPathForOpen.data(), ios_base::out | ios_base::binary);
         originalStream << backupStream.rdbuf();
         originalStream.flush();
         // TODO: callback for progress updates
