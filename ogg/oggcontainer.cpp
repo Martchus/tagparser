@@ -188,12 +188,13 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
     CPP_UTILITIES_UNUSED(progress)
 
     static const string context("parsing OGG bitstream header");
-    bool pagesSkipped = false;
+    bool pagesSkipped = false, continueFromHere = false;
 
     // iterate through pages using OggIterator helper class
     try {
         // ensure iterator is setup properly
-        for (m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage()) {
+        for (m_iterator.removeFilter(), m_iterator.reset(); m_iterator;
+             continueFromHere ? [&] { continueFromHere = false; }() : m_iterator.nextPage()) {
             const OggPage &page = m_iterator.currentPage();
             if (m_validateChecksums && page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {
                 diag.emplace_back(DiagLevel::Warning,
@@ -248,8 +249,20 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
         diag.emplace_back(DiagLevel::Critical, "The OGG file is truncated.", context);
     } catch (const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
-        diag.emplace_back(
-            DiagLevel::Critical, argsToString("Capture pattern \"OggS\" at ", m_iterator.currentSegmentOffset(), " expected."), context);
+        const auto expectedOffset = m_iterator.currentSegmentOffset();
+        diag.emplace_back(DiagLevel::Critical, argsToString("Capture pattern \"OggS\" at ", expectedOffset, " expected."), context);
+        if (m_iterator.resyncAt(expectedOffset)) {
+            diag.emplace_back(DiagLevel::Warning,
+                argsToString("Found next capture pattern \"OggS\" at ", m_iterator.currentPageOffset(), ". Skipped ",
+                    m_iterator.currentPageOffset() - expectedOffset, " invalid bytes."),
+                context);
+            continueFromHere = true;
+        } else {
+            diag.emplace_back(DiagLevel::Critical,
+                argsToString(
+                    "Aborting after not being able to find any \"OggS\" capture patterns within 65307 bytes (from offset ", expectedOffset, ")."),
+                context);
+        }
     }
 
     // invalidate stream sizes in case pages have been skipped
