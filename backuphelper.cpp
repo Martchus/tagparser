@@ -253,9 +253,9 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
             diag.emplace_back(DiagLevel::Information, "Rewriting the file to apply changed tag information has been aborted.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
-                diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
+                diag.emplace_back(DiagLevel::Warning, "The original file has been restored.", context);
             } catch (const std::ios_base::failure &failure) {
-                diag.emplace_back(DiagLevel::Critical, failure.what(), context);
+                diag.emplace_back(DiagLevel::Critical, argsToString("The original file could not be restored: ", failure.what()), context);
             }
         } else {
             diag.emplace_back(DiagLevel::Information, "Applying new tag information has been aborted.", context);
@@ -268,9 +268,9 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
             diag.emplace_back(DiagLevel::Critical, "Rewriting the file to apply changed tag information failed.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
-                diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
+                diag.emplace_back(DiagLevel::Warning, "The original file has been restored.", context);
             } catch (const std::ios_base::failure &failure) {
-                diag.emplace_back(DiagLevel::Critical, failure.what(), context);
+                diag.emplace_back(DiagLevel::Critical, argsToString("The original file could not be restored: ", failure.what()), context);
             }
         } else {
             diag.emplace_back(DiagLevel::Critical, "Applying new tag information failed.", context);
@@ -283,9 +283,9 @@ void handleFailureAfterFileModified(MediaFileInfo &fileInfo, const std::string &
             diag.emplace_back(DiagLevel::Critical, "An IO error occurred when rewriting the file to apply changed tag information.", context);
             try {
                 restoreOriginalFileFromBackupFile(fileInfo.path(), backupPath, outputStream, backupStream);
-                diag.emplace_back(DiagLevel::Information, "The original file has been restored.", context);
+                diag.emplace_back(DiagLevel::Warning, "The original file has been restored.", context);
             } catch (const std::ios_base::failure &failure) {
-                diag.emplace_back(DiagLevel::Critical, failure.what(), context);
+                diag.emplace_back(DiagLevel::Critical, argsToString("The original file could not be restored: ", failure.what()), context);
             }
         } else {
             diag.emplace_back(DiagLevel::Critical, "An IO error occurred when applying tag information.", context);
