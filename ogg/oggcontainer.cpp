@@ -385,7 +385,7 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
 void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
     const string context("making OGG file");
-    progress.updateStep("Prepare for rewriting OGG file ...");
+    progress.nextStepOrStop("Prepare for rewriting OGG file ...");
     parseTags(diag, progress); // tags need to be parsed before the file can be rewritten
     string backupPath;
     NativeFileStream backupStream;
@@ -415,9 +415,10 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
     }
 
-    progress.updateStep("Writing OGG pages ...");
     const auto totalFileSize = fileInfo().size();
     try {
+        progress.nextStepOrStop("Writing OGG pages ...");
+
         // prepare iterating comments
         OggVorbisComment *currentComment;
         OggParameter *currentParams;
@@ -442,6 +443,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             const OggPage &currentPage = m_iterator.currentPage();
             if (updateTick % 10) {
                 progress.updateStepPercentage(static_cast<std::uint8_t>(currentPage.startOffset() * 100ul / totalFileSize));
+                progress.stopIfAborted();
             }
 
             // check for gaps
@@ -635,11 +637,12 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
 
         // update checksums of modified pages
-        progress.updateStep("Updating checksums ...");
+        progress.nextStepOrStop("Updating checksums ...");
         updateTick = 0u;
         for (auto offset : updatedPageOffsets) {
             if (updateTick++ % 10) {
                 progress.updateStepPercentage(static_cast<std::uint8_t>(offset * 100ul / fileInfo().size()));
+                progress.stopIfAborted();
             }
             OggPage::updateChecksum(fileInfo().stream(), offset);
         }
