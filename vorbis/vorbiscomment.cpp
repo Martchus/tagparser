@@ -6,6 +6,7 @@
 #include "../diagnostics.h"
 #include "../exceptions.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/copy.h>
@@ -200,6 +201,23 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
         m_size = static_cast<std::uint64_t>(stream.tellg()) - startOffset;
         diag.emplace_back(DiagLevel::Critical, "Vorbis comment is truncated.", context);
         throw;
+    }
+
+    // warn if there are bytes left in the last segment of the Ogg packet containing the comment
+    if constexpr (std::is_same_v<std::decay_t<StreamType>, OggIterator>) {
+        auto bytesRemaining = std::uint64_t();
+        if (stream) {
+            bytesRemaining = stream.remainingBytesInCurrentSegment();
+            if (stream.currentPage().isLastSegmentUnconcluded()) {
+                stream.nextSegment();
+                if (stream) {
+                    bytesRemaining += stream.remainingBytesInCurrentSegment();
+                }
+            }
+        }
+        if (bytesRemaining) {
+            diag.emplace_back(DiagLevel::Warning, argsToString(bytesRemaining, " bytes left in last segment."), context);
+        }
     }
 }
 

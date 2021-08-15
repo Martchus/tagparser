@@ -34,6 +34,8 @@ public:
     std::uint64_t currentCharacterOffset() const;
     std::uint64_t tellg() const;
     std::uint32_t currentSegmentSize() const;
+    std::uint64_t remainingBytesInCurrentSegment() const;
+    std::uint64_t bytesReadFromCurrentSegment() const;
     void setFilter(std::uint32_t streamSerialId);
     void removeFilter();
     bool isLastPageFetched() const;
@@ -238,6 +240,22 @@ inline std::uint64_t OggIterator::tellg() const
 inline std::uint32_t OggIterator::currentSegmentSize() const
 {
     return m_pages[m_page].segmentSizes()[m_segment];
+}
+
+/*!
+ * \brief Returns the number of bytes left to read in the current segment.
+ */
+inline std::uint64_t OggIterator::remainingBytesInCurrentSegment() const
+{
+    return currentSegmentSize() - m_bytesRead;
+}
+
+/*!
+ * \brief Returns the number of bytes read from the current segment.
+ */
+inline uint64_t OggIterator::bytesReadFromCurrentSegment() const
+{
+    return m_bytesRead;
 }
 
 /*!

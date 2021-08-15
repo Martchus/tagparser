@@ -135,7 +135,7 @@ void OggIterator::read(char *buffer, std::size_t count)
 {
     std::size_t bytesRead = 0;
     while (*this && count) {
-        const auto available = currentSegmentSize() - m_bytesRead;
+        const auto available = remainingBytesInCurrentSegment();
         stream().seekg(static_cast<std::streamoff>(currentCharacterOffset()));
         if (count <= available) {
             stream().read(buffer + bytesRead, static_cast<std::streamsize>(count));
@@ -169,7 +169,7 @@ std::size_t OggIterator::readAll(char *buffer, std::size_t max)
 {
     auto bytesRead = std::size_t(0);
     while (*this && max) {
-        const auto available = currentSegmentSize() - m_bytesRead;
+        const auto available = remainingBytesInCurrentSegment();
         stream().seekg(static_cast<std::streamoff>(currentCharacterOffset()), std::ios_base::beg);
         if (max <= available) {
             stream().read(buffer + bytesRead, static_cast<std::streamsize>(max));

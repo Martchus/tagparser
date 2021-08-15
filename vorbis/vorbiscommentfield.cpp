@@ -52,7 +52,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
     static const string context("parsing Vorbis comment  field");
     char buff[4];
     if (maxSize < 4) {
-        diag.emplace_back(DiagLevel::Critical, "Field expected.", context);
+        diag.emplace_back(DiagLevel::Critical, argsToString("Field expected at ", static_cast<std::streamoff>(stream.tellg()), '.'), context);
         throw TruncatedDataException();
     } else {
         maxSize -= 4;
@@ -71,7 +71,8 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
             setId(string(data.get(), idSize));
             if (!idSize) {
                 // empty field ID
-                diag.emplace_back(DiagLevel::Critical, "The field ID is empty.", context);
+                diag.emplace_back(
+                    DiagLevel::Critical, argsToString("The field ID at ", static_cast<std::streamoff>(stream.tellg()), " is empty."), context);
                 throw InvalidDataException();
             } else if (id() == VorbisCommentIds::cover()) {
                 // extract cover value
@@ -99,7 +100,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
                 setValue(TagValue(string(data.get() + idSize + 1, size - idSize - 1), TagTextEncoding::Utf8));
             }
         } else {
-            diag.emplace_back(DiagLevel::Critical, "Field is truncated.", context);
+            diag.emplace_back(DiagLevel::Critical, argsToString("Field at ", static_cast<std::streamoff>(stream.tellg()), " is truncated."), context);
             throw TruncatedDataException();
         }
     }

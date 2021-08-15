@@ -25,6 +25,7 @@ public:
     bool isContinued() const;
     bool isFirstpage() const;
     bool isLastPage() const;
+    bool isLastSegmentUnconcluded() const;
     std::uint64_t absoluteGranulePosition() const;
     std::uint32_t streamSerialNumber() const;
     bool matchesStreamSerialNumber(std::uint32_t streamSerialNumber) const;
@@ -101,7 +102,7 @@ inline std::uint8_t OggPage::streamStructureVersion() const
  */
 inline std::uint8_t OggPage::headerTypeFlag() const
 {
-    return m_headerTypeFlag;
+    return m_headerTypeFlag & 0xF; // last 4 bits are used internally
 }
 
 /*!
@@ -126,6 +127,14 @@ inline bool OggPage::isFirstpage() const
 inline bool OggPage::isLastPage() const
 {
     return m_headerTypeFlag & 0x04;
+}
+
+/*!
+ * \brief Returns whether the last segment is unconcluded (the last lacing value of the last segment is 0xFF).
+ */
+inline bool OggPage::isLastSegmentUnconcluded() const
+{
+    return m_headerTypeFlag & 0x80;
 }
 
 /*!

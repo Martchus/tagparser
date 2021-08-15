@@ -5,6 +5,8 @@
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/io/binaryreader.h>
 
+#include <limits>
+
 using namespace std;
 using namespace CppUtilities;
 
@@ -51,13 +53,15 @@ void OggPage::parseHeader(istream &stream, std::uint64_t startOffset, std::int32
             maxSize -= m_segmentCount;
         }
         // read segment size table
-        m_segmentSizes.push_back(0);
+        m_segmentSizes.emplace_back(0);
         for (std::uint8_t i = 0; i < m_segmentCount;) {
             std::uint8_t entry = reader.readByte();
             maxSize -= entry;
             m_segmentSizes.back() += entry;
-            if (++i < m_segmentCount && entry < 0xff) {
-                m_segmentSizes.push_back(0);
+            if (++i < m_segmentCount && entry < 0xFF) {
+                m_segmentSizes.emplace_back(0);
+            } else if (i == m_segmentCount && entry == 0xFF) {
+                m_headerTypeFlag |= 0x80; // FIXME v11: don't abuse header type flags
             }
         }
         // check whether the maximum size is exceeded
