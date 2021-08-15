@@ -441,7 +441,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         for (m_iterator.setStream(backupStream), m_iterator.removeFilter(), m_iterator.reset(); m_iterator; m_iterator.nextPage(), ++updateTick) {
             const OggPage &currentPage = m_iterator.currentPage();
             if (updateTick % 10) {
-                progress.updateStepPercentage(currentPage.startOffset() * 100ul / totalFileSize);
+                progress.updateStepPercentage(static_cast<std::uint8_t>(currentPage.startOffset() * 100ul / totalFileSize));
             }
 
             // check for gaps
@@ -639,7 +639,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         updateTick = 0u;
         for (auto offset : updatedPageOffsets) {
             if (updateTick++ % 10) {
-                progress.updateStepPercentage(offset * 100ul / fileInfo().size());
+                progress.updateStepPercentage(static_cast<std::uint8_t>(offset * 100ul / fileInfo().size()));
             }
             OggPage::updateChecksum(fileInfo().stream(), offset);
         }
