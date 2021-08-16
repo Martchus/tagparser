@@ -291,6 +291,7 @@ inline bool OggIterator::isLastPageFetched() const
 
 /*!
  * \brief Returns whether there are \a atLeast bytes remaining.
+ * \deprecated Remove this unused function in v11.
  */
 inline bool OggIterator::bytesRemaining(size_t atLeast) const
 {

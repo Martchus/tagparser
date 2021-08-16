@@ -16,6 +16,7 @@ namespace TagParser {
  * \class TagParser::OggPage
  * \brief The OggPage class is used to parse OGG pages.
  * \sa http://www.xiph.org/ogg/doc/framing.html
+ * \todo Add field for additional flags in v11.
  */
 
 /*!
@@ -123,6 +124,7 @@ void OggPage::updateChecksum(iostream &stream, std::uint64_t startOffset)
 /*!
  * \brief Writes the segment size denotation for the specified segment \a size to the specified stream.
  * \return Returns the number of bytes written.
+ * \deprecated This function is unused and should be removed in v11.
  */
 std::uint32_t OggPage::makeSegmentSizeDenotation(ostream &stream, std::uint32_t size)
 {

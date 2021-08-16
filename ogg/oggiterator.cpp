@@ -164,6 +164,7 @@ void OggIterator::read(char *buffer, std::size_t count)
  * \sa read()
  * \sa currentCharacterOffset()
  * \sa seekForward()
+ * \deprecated Remove this unused function in v11.
  */
 std::size_t OggIterator::readAll(char *buffer, std::size_t max)
 {
