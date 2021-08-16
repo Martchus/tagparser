@@ -539,13 +539,13 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 }
 
                 // write buffered data to actual stream
-                auto newSegmentSizesIterator = newSegmentSizes.cbegin(), newSegmentSizesEnd = newSegmentSizes.cend();
-                bool continuePreviousSegment = false;
-                if (newSegmentSizesIterator != newSegmentSizesEnd) {
-                    std::uint32_t bytesLeft = *newSegmentSizesIterator;
+                if (auto newSegmentSizesIterator = newSegmentSizes.cbegin(), newSegmentSizesEnd = newSegmentSizes.cend();
+                    newSegmentSizesIterator != newSegmentSizesEnd) {
+                    auto bytesLeft = *newSegmentSizesIterator;
+                    auto continuePreviousSegment = false, needsZeroLacingValue = false;
                     // write pages until all data in the buffer is written
                     while (newSegmentSizesIterator != newSegmentSizesEnd) {
-                        // write header
+                        // write page header
                         backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
                         updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp())); // memorize offset to update checksum later
                         copyHelper.copy(backupStream, stream(), 27); // just copy header from original file
@@ -561,21 +561,22 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         // write segment sizes as long as there are segment sizes to be written and
                         // the max number of segment sizes (255) is not exceeded
                         std::uint32_t currentSize = 0;
-                        while (bytesLeft && segmentSizesWritten < 0xFF) {
-                            while (bytesLeft >= 0xFF && segmentSizesWritten < 0xFF) {
+                        while ((bytesLeft || needsZeroLacingValue) && segmentSizesWritten < 0xFF) {
+                            while (bytesLeft > 0xFF && segmentSizesWritten < 0xFF) {
                                 stream().put(static_cast<char>(0xFF));
                                 currentSize += 0xFF;
                                 bytesLeft -= 0xFF;
                                 ++segmentSizesWritten;
                             }
-                            if (bytesLeft && segmentSizesWritten < 0xFF) {
-                                // bytes left is here < 0xFF
+                            if ((bytesLeft || needsZeroLacingValue) && segmentSizesWritten < 0xFF) {
+                                // bytes left is here <= 0xFF
                                 stream().put(static_cast<char>(bytesLeft));
                                 currentSize += bytesLeft;
+                                needsZeroLacingValue = bytesLeft == 0xFF;
                                 bytesLeft = 0;
                                 ++segmentSizesWritten;
                             }
-                            if (!bytesLeft) {
+                            if (!bytesLeft && !needsZeroLacingValue) {
                                 // sizes for the segment have been written
                                 // -> continue with next segment
                                 if (++newSegmentSizesIterator != newSegmentSizesEnd) {
@@ -586,7 +587,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         }
 
                         // there are no bytes left in the current segment; remove continue flag
-                        if (!bytesLeft) {
+                        if (!bytesLeft && !needsZeroLacingValue) {
                             continuePreviousSegment = false;
                         }
 
