@@ -5,6 +5,12 @@
 #include "../tag.h"
 #include "../vorbis/vorbiscomment.h"
 
+#include <c++utilities/io/misc.h>
+
+#include <functional>
+
+using namespace CppUtilities;
+
 /*!
  * \brief Checks "mtx-test-data/ogg/qt4dance_medium.ogg"
  */
@@ -88,6 +94,56 @@ void OverallTests::checkOggTestfile2()
 }
 
 /*!
+ * \brief Checks "ogg/noise-*.opus".
+ */
+void OverallTests::checkOggTestfile3()
+{
+    CPPUNIT_ASSERT_EQUAL(ContainerFormat::Ogg, m_fileInfo.containerFormat());
+    const auto tracks = m_fileInfo.tracks();
+    CPPUNIT_ASSERT_EQUAL(1_st, tracks.size());
+    for (const auto &track : tracks) {
+        switch (track->id()) {
+        case 1843569915:
+            CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
+            CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Opus, track->format().general);
+            CPPUNIT_ASSERT_EQUAL(static_cast<std::uint16_t>(2), track->channelCount());
+            CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT_EQUAL(TimeSpan::fromSeconds(19.461), track->duration());
+            break;
+        default:
+            CPPUNIT_FAIL("unknown track ID");
+        }
+    }
+    const auto tags = m_fileInfo.tags();
+    switch (m_tagStatus) {
+    case TagStatus::Original:
+        CPPUNIT_ASSERT(m_fileInfo.hasAnyTag());
+        CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+        CPPUNIT_ASSERT_EQUAL("Lavf58.76.100"s, tags.front()->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL("eng"s, tags.front()->value(KnownField::Language).toString());
+        [[fallthrough]];
+    case TagStatus::TestMetaDataPresent:
+        checkOggTestMetaDataCover();
+        break;
+    case TagStatus::Removed:
+        CPPUNIT_ASSERT_EQUAL(0_st, tags.size());
+    }
+
+    if (m_tagStatus != TagStatus::Original) {
+        CPPUNIT_ASSERT_MESSAGE("no warnings for non-broken file", m_diag.level() <= DiagLevel::Information);
+        return;
+    }
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("warning present", DiagLevel::Warning, m_diag.level());
+    for (const auto &msg : m_diag) {
+        if (msg.level() == DiagLevel::Warning) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("warning due to broken segment termination", "3 bytes left in last segment."s, msg.message());
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("warning relates to Vorbis comment", "parsing Vorbis comment"s, msg.context());
+            break;
+        }
+    }
+}
+
+/*!
  * \brief Checks whether test meta data for OGG files has been applied correctly.
  */
 void OverallTests::checkOggTestMetaData()
@@ -109,6 +165,18 @@ void OverallTests::checkOggTestMetaData()
     m_preservedMetaData.pop();
 }
 
+void OverallTests::checkOggTestMetaDataCover()
+{
+    // check whether a tag is assigned
+    const auto tags = m_fileInfo.tags();
+    const auto *const tag = m_fileInfo.vorbisComment();
+    CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
+    CPPUNIT_ASSERT(tag != nullptr);
+
+    const auto expectedCoverData = readFile(testFilePath("ogg/example-cover.png"));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("expected cover assigned", std::string_view(expectedCoverData), tag->value(KnownField::Cover).data());
+}
+
 void OverallTests::setOggTestMetaData()
 {
     // ensure a tag exists
@@ -124,6 +192,13 @@ void OverallTests::setOggTestMetaData()
     // TODO: set more fields
 }
 
+void OverallTests::setOggTestMetaDataCover()
+{
+    auto *const tag = m_fileInfo.createVorbisComment();
+    const auto cover = readFile(testFilePath("ogg/example-cover.png"));
+    tag->setValue(KnownField::Cover, TagValue(cover.data(), cover.size(), TagDataType::Picture));
+}
+
 /*!
  * \brief Tests the Ogg parser via MediaFileInfo.
  * \remarks FLAC in Ogg is tested in testFlacParsing().
@@ -135,6 +210,7 @@ void OverallTests::testOggParsing()
     m_tagStatus = TagStatus::Original;
     parseFile(testFilePath("mtx-test-data/ogg/qt4dance_medium.ogg"), &OverallTests::checkOggTestfile1);
     parseFile(testFilePath("mtx-test-data/opus/v-opus.ogg"), &OverallTests::checkOggTestfile2);
+    parseFile(testFilePath("ogg/noise-broken-segment-termination.opus"), &OverallTests::checkOggTestfile3);
 }
 
 /*!
@@ -166,8 +242,10 @@ void OverallTests::testOggMaking()
 
         // do actual tests
         m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;
-        void (OverallTests::*modifyRoutine)(void) = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaData;
+        const auto modifyRoutine = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaData;
+        const auto modifyRoutineCover = (m_mode & RemoveTag) ? &OverallTests::removeAllTags : &OverallTests::setOggTestMetaDataCover;
         makeFile(workingCopyPath("mtx-test-data/ogg/qt4dance_medium.ogg"), modifyRoutine, &OverallTests::checkOggTestfile1);
         makeFile(workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
+        makeFile(workingCopyPath("ogg/noise-without-cover.opus"), modifyRoutineCover, &OverallTests::checkOggTestfile3);
     }
 }

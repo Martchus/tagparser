@@ -76,6 +76,9 @@ struct TestFile {
     { "mtx-test-data/ogg/qt4dance_medium.ogg", { "0b5429da9713be171c6ae0da69621261e8d5ddc9db3da872e5ade1a1c883decd" } },
     { "mtx-test-data/opus/v-opus.ogg", { "e12adece4dbcccf2471b61c3ebd7c6576dee351d85809ab6f01d6f324d65b417" } },
     { "misc/multiple_id3v2_4_values.mp3", { "da012a41213cdc49b2afe1457625d8baced1a64e2351f17b520bf82c6bfe4e03" } },
+    { "ogg/noise-without-cover.opus", { "ff578894c0c47aed4cc41ae94dee2886fe2c556593e44f731135f47bca870464" } },
+    { "ogg/noise-broken-segment-termination.opus", { "12835cf12b5b9fa70c239ae05e9d5bb768e715a2d61ef6301ed4af673088de45" } },
+    { "ogg/example-cover.png", { "897e1a2d0cfb79c1fe5068108bb34610c3758bd0b9a7e90c1702c4e6972e0801" } },
 };
 
 /*!

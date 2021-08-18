@@ -92,7 +92,9 @@ private:
 
     void checkOggTestfile1();
     void checkOggTestfile2();
+    void checkOggTestfile3();
     void checkOggTestMetaData();
+    void checkOggTestMetaDataCover();
 
     void checkFlacTestfile1();
     void checkFlacTestfile2();
@@ -102,6 +104,7 @@ private:
     void setMp3TestMetaData1();
     void setMp3TestMetaData2();
     void setOggTestMetaData();
+    void setOggTestMetaDataCover();
     void removeAllTags();
     void noop();
     void alterMp4Tracks();

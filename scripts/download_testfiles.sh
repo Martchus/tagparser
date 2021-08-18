@@ -66,6 +66,9 @@ testfiles=(
     'mtx-test-data/ogg/qt4dance_medium.ogg'
     'mtx-test-data/opus/v-opus.ogg'
     'misc/multiple_id3v2_4_values.mp3'
+    'ogg/noise-without-cover.opus'
+    'ogg/noise-broken-segment-termination.opus'
+    'ogg/example-cover.png'
 )
 
 # download the files
