@@ -127,6 +127,9 @@ template <class ImplementationType> inline const typename TagField<Implementatio
     return m_id;
 }
 
+/*!
+ * \brief Returns the id of the current TagField as string.
+ */
 template <class ImplementationType> inline std::string TagField<ImplementationType>::idToString() const
 {
     return ImplementationType::fieldIdToString(m_id);
