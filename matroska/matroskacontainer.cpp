@@ -35,7 +35,7 @@ namespace TagParser {
  * \brief Implementation of GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>.
  */
 
-std::uint64_t MatroskaContainer::m_maxFullParseSize = 0x3200000;
+std::uint64_t MatroskaContainer::m_maxFullParseSize = 0x3200000; // FIXME v11: move to MediaFileInfo
 
 /*!
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
