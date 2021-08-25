@@ -109,6 +109,18 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
  */
 void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
 {
+    parse2(tagElement, MatroskaTagFlags::None, diag);
+}
+
+/*!
+ * \brief Parses tag information from the specified \a tagElement.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void MatroskaTag::parse2(EbmlElement &tagElement, MatroskaTagFlags flags, Diagnostics &diag)
+{
     static const string context("parsing Matroska tag");
     m_size = tagElement.totalSize();
     tagElement.parse(diag);
@@ -117,15 +129,24 @@ void MatroskaTag::parse(EbmlElement &tagElement, Diagnostics &diag)
         diag.emplace_back(DiagLevel::Critical, "Matroska tag is too big.", context);
         throw NotImplementedException();
     }
+    const auto normalize = flags & MatroskaTagFlags::NormalizeKnownFieldIds;
     for (EbmlElement *child = tagElement.firstChild(); child; child = child->nextSibling()) {
         child->parse(diag);
         switch (child->id()) {
         case MatroskaIds::SimpleTag:
             try {
-                MatroskaTagField field;
+                auto field = MatroskaTagField();
                 field.reparse(*child, diag, true);
-                fields().emplace(field.id(), move(field));
+                if (normalize) {
+                    auto normalizedId = field.id();
+                    MatroskaTagField::normalizeId(normalizedId);
+                    if (internallyGetKnownField(normalizedId) != KnownField::Invalid) {
+                        field.id() = std::move(normalizedId);
+                    }
+                }
+                fields().emplace(field.id(), std::move(field));
             } catch (const Failure &) {
+                // message will be added to diag anyways
             }
             break;
         case MatroskaIds::Targets:

@@ -38,6 +38,7 @@ public:
     TagField(const IdentifierType &id, const TagValue &value);
     ~TagField();
 
+    IdentifierType &id();
     const IdentifierType &id() const;
     std::string idToString() const;
     void setId(const IdentifierType &id);
@@ -108,6 +109,14 @@ TagField<ImplementationType>::TagField(const IdentifierType &id, const TagValue 
  */
 template <class ImplementationType> TagField<ImplementationType>::~TagField()
 {
+}
+
+/*!
+ * \brief Returns the id of the current TagField.
+ */
+template <class ImplementationType> inline typename TagField<ImplementationType>::IdentifierType &TagField<ImplementationType>::id()
+{
+    return m_id;
 }
 
 /*!

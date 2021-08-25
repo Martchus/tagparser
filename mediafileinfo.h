@@ -62,6 +62,7 @@ enum class MediaFileHandlingFlags : std::uint64_t {
     ForceRewrite = (1 << 1), /**< enforces a re-write of the file when applying changes */
     ForceTagPosition = (1 << 2), /**< enforces the tag position when applying changes, see remarks of MediaFileInfo::setTagPosition() */
     ForceIndexPosition = (1 << 3), /**< enforces the index position when applying changes, see remarks of MediaFileInfo::setIndexPosition() */
+    NormalizeKnownTagFieldIds = (1 << 4), /**< normalizes known tag field IDs when parsing to match the tag specification's recommendations */
 };
 
 } // namespace TagParser
@@ -162,6 +163,8 @@ public:
     void setSaveFilePath(std::string &&saveFilePath);
     const std::string &writingApplication() const;
     void setWritingApplication(std::string_view writingApplication);
+    MediaFileHandlingFlags fileHandlingFlags();
+    void setFileHandlingFlags(MediaFileHandlingFlags flags);
     bool isForcingFullParse() const;
     void setForceFullParse(bool forceFullParse);
     bool isForcingRewrite() const;
@@ -470,6 +473,22 @@ inline void MediaFileInfo::setWritingApplication(std::string_view writingApplica
 inline AbstractContainer *MediaFileInfo::container() const
 {
     return m_container.get();
+}
+
+/*!
+ * \brief Returns the currently configured file handling flags.
+ */
+inline MediaFileHandlingFlags MediaFileInfo::fileHandlingFlags()
+{
+    return m_fileHandlingFlags;
+}
+
+/*!
+ * \brief Replaces all currently configured file handling flags with the specified \a flags.
+ */
+inline void MediaFileInfo::setFileHandlingFlags(MediaFileHandlingFlags flags)
+{
+    m_fileHandlingFlags = flags;
 }
 
 /*!

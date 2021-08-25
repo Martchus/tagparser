@@ -79,6 +79,7 @@ public:
 
     static typename std::string fieldIdFromString(std::string_view idString);
     static std::string fieldIdToString(const std::string &id);
+    static void normalizeId(std::string &id);
 };
 
 /*!

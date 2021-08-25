@@ -11,6 +11,20 @@ namespace TagParser {
 class EbmlElement;
 class MatroskaTag;
 
+/*!
+ * \brief The MatroskaTagFlags enum specifies flags which controls parsing and making of Matroska tags.
+ */
+enum class MatroskaTagFlags : std::uint64_t {
+    None = 0x0, /**< Regular parsing/making. */
+    NormalizeKnownFieldIds = 0x1, /**< Normalize known field IDs when parsing. */
+};
+
+} // namespace TagParser
+
+CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::MatroskaTagFlags)
+
+namespace TagParser {
+
 class TAG_PARSER_EXPORT MatroskaTagMaker {
     friend class MatroskaTag;
 
@@ -70,6 +84,7 @@ public:
     TagTargetLevel targetLevel() const override;
 
     void parse(EbmlElement &tagElement, Diagnostics &diag);
+    void parse2(EbmlElement &tagElement, MatroskaTagFlags flags, Diagnostics &diag);
     MatroskaTagMaker prepareMaking(Diagnostics &diag);
     void make(std::ostream &stream, Diagnostics &diag);
 

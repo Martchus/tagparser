@@ -177,6 +177,19 @@ void MatroskaTagField::make(ostream &stream, Diagnostics &diag)
 }
 
 /*!
+ * \brief Ensures the specified \a id is upper-case as recommended by the Matroska spec.
+ * \sa https://matroska.org/technical/tagging.html#tag-formatting
+ */
+void MatroskaTagField::normalizeId(std::string &id)
+{
+    for (auto &c : id) {
+        if (c >= 'a' && c <= 'z') {
+            c -= 'a' - 'A';
+        }
+    }
+}
+
+/*!
  * \class TagParser::MatroskaTagFieldMaker
  * \brief The MatroskaTagFieldMaker class helps making tag fields.
  *        It allows to calculate the required size.

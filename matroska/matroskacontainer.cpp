@@ -663,7 +663,11 @@ void MatroskaContainer::internalParseTags(Diagnostics &diag, AbortableProgressFe
     CPP_UTILITIES_UNUSED(progress)
 
     static const string context("parsing tags of Matroska container");
-    for (EbmlElement *element : m_tagsElements) {
+    auto flags = MatroskaTagFlags::None;
+    if (fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::NormalizeKnownTagFieldIds) {
+        flags += MatroskaTagFlags::NormalizeKnownFieldIds;
+    }
+    for (EbmlElement *const element : m_tagsElements) {
         try {
             element->parse(diag);
             for (EbmlElement *subElement = element->firstChild(); subElement; subElement = subElement->nextSibling()) {
@@ -672,7 +676,7 @@ void MatroskaContainer::internalParseTags(Diagnostics &diag, AbortableProgressFe
                 case MatroskaIds::Tag:
                     m_tags.emplace_back(make_unique<MatroskaTag>());
                     try {
-                        m_tags.back()->parse(*subElement, diag);
+                        m_tags.back()->parse2(*subElement, flags, diag);
                     } catch (const NoDataFoundException &) {
                         m_tags.pop_back();
                     } catch (const Failure &) {
