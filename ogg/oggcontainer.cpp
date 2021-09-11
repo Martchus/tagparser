@@ -388,15 +388,15 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     const string context("making OGG file");
     progress.nextStepOrStop("Prepare for rewriting OGG file ...");
     parseTags(diag, progress); // tags need to be parsed before the file can be rewritten
-    string backupPath;
+    string originalPath = fileInfo().path(), backupPath;
     NativeFileStream backupStream;
 
     if (fileInfo().saveFilePath().empty()) {
         // move current file to temp dir and reopen it as backupStream, recreate original file
         try {
-            BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, fileInfo().stream(), backupStream);
+            BackupHelper::createBackupFileCanonical(fileInfo().backupDirectory(), originalPath, backupPath, fileInfo().stream(), backupStream);
             // recreate original file, define buffer variables
-            fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
+            fileInfo().stream().open(originalPath, ios_base::out | ios_base::binary | ios_base::trunc);
         } catch (const std::ios_base::failure &failure) {
             diag.emplace_back(
                 DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -658,7 +658,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
     } catch (...) {
         m_iterator.setStream(fileInfo().stream());
-        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, fileInfo().stream(), backupStream, diag, context);
+        BackupHelper::handleFailureAfterFileModifiedCanonical(fileInfo(), originalPath, backupPath, fileInfo().stream(), backupStream, diag, context);
     }
 }
 

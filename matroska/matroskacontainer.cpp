@@ -1503,7 +1503,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     progress.nextStepOrStop("Preparing streams ...");
 
     // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
-    string backupPath;
+    string originalPath = fileInfo().path(), backupPath;
     NativeFileStream &outputStream = fileInfo().stream();
     NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
     BinaryWriter outputWriter(&outputStream);
@@ -1513,9 +1513,9 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         if (fileInfo().saveFilePath().empty()) {
             // move current file to temp dir and reopen it as backupStream, recreate original file
             try {
-                BackupHelper::createBackupFile(fileInfo().backupDirectory(), fileInfo().path(), backupPath, outputStream, backupStream);
+                BackupHelper::createBackupFileCanonical(fileInfo().backupDirectory(), originalPath, backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
-                outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(originalPath, ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(
                     DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -1874,7 +1874,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
         // handle errors (which might have been occurred after renaming/creating backup file)
     } catch (...) {
-        BackupHelper::handleFailureAfterFileModified(fileInfo(), backupPath, outputStream, backupStream, diag, context);
+        BackupHelper::handleFailureAfterFileModifiedCanonical(fileInfo(), originalPath, backupPath, outputStream, backupStream, diag, context);
     }
 }
 

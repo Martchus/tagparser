@@ -325,7 +325,7 @@ void UtilitiesTests::testBackupFile()
         createBackupFile("bak", file.path(), backupPath2, file.stream(), backupStream2);
         CPPUNIT_FAIL("renaming failed because backup dir does not exist");
     } catch (const std::ios_base::failure &failure) {
-        TESTUTILS_ASSERT_LIKE("renaming error", "Unable to rename original file before rewriting it: .*"s, string(failure.what()));
+        TESTUTILS_ASSERT_LIKE("renaming error", "Unable to create backup file .* of .* before rewriting it: .*"s, string(failure.what()));
     }
     backupStream2.clear();
     workingCopyPath("bak/unsupported.bin", WorkingCopyMode::NoCopy);

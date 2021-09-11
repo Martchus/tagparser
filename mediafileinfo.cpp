@@ -1701,7 +1701,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
 
     // setup stream(s) for writing
     // -> define variables needed to handle output stream and backup stream (required when rewriting the file)
-    string backupPath;
+    string originalPath = path(), backupPath;
     NativeFileStream &outputStream = stream();
     NativeFileStream backupStream; // create a stream to open the backup/original file for the case rewriting the file is required
 
@@ -1709,9 +1709,9 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         if (m_saveFilePath.empty()) {
             // move current file to temp dir and reopen it as backupStream, recreate original file
             try {
-                BackupHelper::createBackupFile(backupDirectory(), path(), backupPath, outputStream, backupStream);
+                BackupHelper::createBackupFileCanonical(backupDirectory(), originalPath, backupPath, outputStream, backupStream);
                 // recreate original file, define buffer variables
-                outputStream.open(BasicFileInfo::pathForOpen(path()).data(), ios_base::out | ios_base::binary | ios_base::trunc);
+                outputStream.open(originalPath, ios_base::out | ios_base::binary | ios_base::trunc);
             } catch (const std::ios_base::failure &failure) {
                 diag.emplace_back(
                     DiagLevel::Critical, argsToString("Creation of temporary file (to rewrite the original file) failed: ", failure.what()), context);
@@ -1855,7 +1855,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         }
 
     } catch (...) {
-        BackupHelper::handleFailureAfterFileModified(*this, backupPath, outputStream, backupStream, diag, context);
+        BackupHelper::handleFailureAfterFileModifiedCanonical(*this, originalPath, backupPath, outputStream, backupStream, diag, context);
     }
 }
 
