@@ -186,6 +186,9 @@ set(CONFIGURATION_PACKAGE_SUFFIX
 find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.10.0 REQUIRED)
 use_cpp_utilities(VISIBILITY PUBLIC)
 
+# link against a possibly required extra library for std::filesystem
+use_standard_filesystem()
+
 # find 3rd party libraries
 include(3rdParty)
 # zlib

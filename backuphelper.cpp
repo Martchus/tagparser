@@ -5,13 +5,8 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
 
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#else
-#include <sys/stat.h>
-#endif
-
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -155,12 +150,7 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
         }
 
         // test whether the backup path is still unused; otherwise continue loop
-#ifdef PLATFORM_WINDOWS
-        if (GetFileAttributes(BasicFileInfo::pathForOpen(backupPath).data()) == INVALID_FILE_ATTRIBUTES) {
-#else
-        struct stat backupStat;
-        if (stat(BasicFileInfo::pathForOpen(backupPath).data(), &backupStat)) {
-#endif
+        if (auto ec = std::error_code(); !std::filesystem::exists(BasicFileInfo::pathForOpen(backupPath), ec)) {
             break;
         }
     }
