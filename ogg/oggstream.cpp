@@ -207,10 +207,11 @@ void OggStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback
                 if (!hasCommentHeader) {
                     // a Vorbis comment should be following
                     if (++iterator) {
-                        char buff[4];
-                        iterator.read(buff, 4);
+                        constexpr auto headerSize = 4;
+                        char buff[headerSize];
+                        iterator.read(buff, headerSize);
                         FlacMetaDataBlockHeader header;
-                        header.parseHeader(buff);
+                        header.parseHeader(std::string_view(buff, headerSize));
                         if (header.type() == FlacMetaDataBlockType::VorbisComment) {
                             m_container.announceComment(
                                 iterator.currentPageIndex(), iterator.currentSegmentIndex(), header.isLast(), GeneralMediaFormat::Flac);

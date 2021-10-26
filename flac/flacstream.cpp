@@ -72,7 +72,8 @@ void FlacStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedbac
     }
 
     m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
-    char buffer[0x22];
+    constexpr auto bufferSize = 0x22;
+    char buffer[bufferSize];
 
     // check signature
     if (m_reader.readUInt32BE() != 0x664C6143) {
@@ -85,7 +86,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedbac
     for (FlacMetaDataBlockHeader header; !header.isLast();) {
         // parse block header
         m_istream->read(buffer, 4);
-        header.parseHeader(buffer);
+        header.parseHeader(std::string_view(buffer, 4));
 
         // remember start offset
         const auto startOffset = m_istream->tellg();
@@ -93,10 +94,10 @@ void FlacStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedbac
         // parse relevant meta data
         switch (static_cast<FlacMetaDataBlockType>(header.type())) {
         case FlacMetaDataBlockType::StreamInfo:
-            if (header.dataSize() >= 0x22) {
-                m_istream->read(buffer, 0x22);
+            if (header.dataSize() >= bufferSize) {
+                m_istream->read(buffer, bufferSize);
                 FlacMetaDataBlockStreamInfo streamInfo;
-                streamInfo.parse(buffer);
+                streamInfo.parse(std::string_view(buffer, bufferSize));
                 m_channelCount = streamInfo.channelCount();
                 m_samplingFrequency = streamInfo.samplingFrequency();
                 m_sampleCount = streamInfo.totalSampleCount();

@@ -24,8 +24,9 @@ namespace TagParser {
 void FlacToOggMappingHeader::parseHeader(OggIterator &iterator)
 {
     // prepare parsing
-    char buff[0x0D + 0x04 + 0x22 - 0x05];
-    iterator.read(buff, 5);
+    constexpr auto idSize = 0x05, mappingHeaderSize = 0x0D, blockHeaderSize = 0x04, streamInfoSize = 0x22;
+    char buff[mappingHeaderSize + blockHeaderSize + streamInfoSize - idSize];
+    iterator.read(buff, idSize);
     if (*buff != 0x7Fu || BE::toUInt32(buff + 1) != 0x464C4143u) {
         throw InvalidDataException(); // not FLAC-to-Ogg mapping header
     }
@@ -41,16 +42,16 @@ void FlacToOggMappingHeader::parseHeader(OggIterator &iterator)
 
     // parse "METADATA_BLOCK_HEADER"
     FlacMetaDataBlockHeader header;
-    header.parseHeader(buff + 0x0D - 0x05);
+    header.parseHeader(std::string_view(buff + mappingHeaderSize - idSize, blockHeaderSize));
     if (header.type() != FlacMetaDataBlockType::StreamInfo) {
         throw InvalidDataException(); // "METADATA_BLOCK_STREAMINFO" expected
     }
-    if (header.dataSize() < 0x22) {
+    if (header.dataSize() < streamInfoSize) {
         throw TruncatedDataException(); // "METADATA_BLOCK_STREAMINFO" is truncated
     }
 
     // parse "METADATA_BLOCK_STREAMINFO"
-    m_streamInfo.parse(buff + 0x0D + 0x04 - 0x05);
+    m_streamInfo.parse(std::string_view(buff + mappingHeaderSize + blockHeaderSize - idSize, streamInfoSize));
 }
 
 } // namespace TagParser
