@@ -235,9 +235,9 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
                 if (m_iterator.resyncAt(fileInfo().size() - (20 * 0x100000))) {
                     const OggPage &resyncedPage = m_iterator.currentPage();
                     // prevent warning about missing pages by resetting the sequence number of all streams and invalidate the stream size
-                    for (auto &stream : m_tracks) {
-                        stream->m_currentSequenceNumber = 0;
-                        stream->m_size = 0;
+                    for (auto &trackStream : m_tracks) {
+                        trackStream->m_currentSequenceNumber = 0;
+                        trackStream->m_size = 0;
                     }
                     pagesSkipped = continueFromHere = true;
                     diag.emplace_back(DiagLevel::Information,
