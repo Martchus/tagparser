@@ -52,7 +52,9 @@ void MpegAudioFrame::parseHeader(BinaryReader &reader, Diagnostics &diag)
     m_header = reader.readUInt32BE();
     if (!isValid()) {
         diag.emplace_back(DiagLevel::Critical,
-            "Frame 0x" % numberToString(m_header, 16u) % " at 0x" % numberToString<std::int64_t>(reader.stream()->tellg() - 4l, 16) + " is invalid.",
+            "Frame 0x" % numberToString(m_header, 16u) % " at 0x"
+                    % numberToString<std::int64_t>(reader.stream()->tellg() - static_cast<std::streamoff>(4), 16)
+                + " is invalid.",
             "parsing MPEG audio frame header");
         throw InvalidDataException();
     }
