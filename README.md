@@ -141,8 +141,11 @@ works with all kinds of files. (When forcing rewrite a backup is always created.
 ## Build instructions
 The tagparser library depends on [c++utilities](https://github.com/Martchus/cpp-utilities) and is built
 in the same way.
-It also depends on zlib, iso-codes and requires at least CMake 3.19. For checking integrity of testfiles, the OpenSSL
-crypto library is required.
+It also depends on zlib, [iso-codes](https://salsa.debian.org/iso-codes-team/iso-codes) and requires at
+least CMake 3.19. Tests depend on CppUnit. For checking integrity of testfiles, the OpenSSL crypto library is
+required.
+
+The location of the JSON file from iso-codes can be specified via the CMake variable `LANGUAGE_FILE_ISO_639_2`.
 
 ## TODOs
 * Support more formats (EXIF, PDF metadata, Theora, ...)
