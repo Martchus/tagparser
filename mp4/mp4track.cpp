@@ -217,7 +217,7 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
     }
     // read sample offsets of fragments
     if (parseFragments) {
-        std::uint64_t totalDuration = 0;
+        //std::uint64_t totalDuration = 0;
         for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(Mp4AtomIds::MovieFragment, diag); moofAtom;
              moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
@@ -250,11 +250,11 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
                                 calculatedDataSize += 4;
                             }
                             // some variables are currently skipped because they are currently not interesting
-                            //uint64 baseDataOffset = moofAtom->startOffset();
-                            //uint32 defaultSampleDescriptionIndex = 0;
-                            std::uint32_t defaultSampleDuration = 0;
+                            //std::uint64_t baseDataOffset = moofAtom->startOffset();
+                            //std::uint32_t defaultSampleDescriptionIndex = 0;
+                            //std::uint32_t defaultSampleDuration = 0;
                             std::uint32_t defaultSampleSize = 0;
-                            //uint32 defaultSampleFlags = 0;
+                            //std::uint32_t defaultSampleFlags = 0;
                             if (tfhdAtom->dataSize() < calculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "tfhd atom is truncated (presence of fields denoted).", context);
                             } else {
@@ -267,8 +267,8 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
                                     inputStream().seekg(4, ios_base::cur);
                                 }
                                 if (flags & 0x000008) { // default-sample-duration present
-                                    defaultSampleDuration = reader().readUInt32BE();
-                                    //inputStream().seekg(4, ios_base::cur);
+                                    //defaultSampleDuration = reader().readUInt32BE();
+                                    inputStream().seekg(4, ios_base::cur);
                                 }
                                 if (flags & 0x000010) { // default-sample-size present
                                     defaultSampleSize = reader().readUInt32BE();
@@ -320,9 +320,10 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
                                         }
                                         for (std::uint32_t i = 0; i < sampleCount; ++i) {
                                             if (trunFlags & 0x000100) { // sample-duration present
-                                                totalDuration += reader().readUInt32BE();
+                                                //totalDuration += reader().readUInt32BE();
+                                                inputStream().seekg(4, ios_base::cur);
                                             } else {
-                                                totalDuration += defaultSampleDuration;
+                                                //totalDuration += defaultSampleDuration;
                                             }
                                             if (trunFlags & 0x000200) { // sample-size present
                                                 m_sampleSizes.push_back(reader().readUInt32BE());
