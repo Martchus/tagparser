@@ -150,10 +150,10 @@ string AbstractTrack::makeDescription(bool verbose) const
     auto level = std::string();
     switch (m_mediaType) {
     case MediaType::Video:
-        if (!displaySize().isNull()) {
-            additionalInfoRef = displaySize().abbreviation();
-        } else if (!pixelSize().isNull()) {
+        if (!pixelSize().isNull()) {
             additionalInfoRef = pixelSize().abbreviation();
+        } else if (!displaySize().isNull()) {
+            additionalInfoRef = displaySize().abbreviation();
         }
         if (verbose) {
             switch (format.general) {
