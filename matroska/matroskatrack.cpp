@@ -296,6 +296,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
     }
     // read information about the track from the children of the track entry element
     auto hasIsoLanguage = false;
+    auto displayUnit = std::uint64_t(0);
     for (EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement;
          trackInfoElement = trackInfoElement->nextSibling()) {
         try {
@@ -341,6 +342,9 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
                     break;
                 case MatroskaIds::DisplayHeight:
                     m_displaySize.setHeight(static_cast<std::uint32_t>(subElement->readUInteger()));
+                    break;
+                case MatroskaIds::DisplayUnit:
+                    displayUnit = subElement->readUInteger();
                     break;
                 case MatroskaIds::PixelWidth:
                     m_pixelSize.setWidth(static_cast<std::uint32_t>(subElement->readUInteger()));
@@ -531,6 +535,16 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
             m_formatName = m_formatId;
         }
         m_formatName.append(" (unknown)");
+    }
+
+    // assign display unit
+    switch (displayUnit) {
+    case 0: // pixels
+    case 1: // centimeters
+    case 2: // inches
+    case 3: // display aspect ratio
+    default: // unknown
+        ;
     }
 
     // use pixel size as display size if display size not specified
