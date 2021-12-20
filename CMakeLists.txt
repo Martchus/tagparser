@@ -174,7 +174,8 @@ set(TEST_SRC_FILES
     tests/overallogg.cpp
     tests/tagvalue.cpp
     tests/testfilecheck.cpp
-    tests/utils.cpp)
+    tests/utils.cpp
+    doc/example.cpp)
 set(DOC_FILES README.md doc/adding-new-fields.md)
 set(LANGUAGE_HEADER_ISO_639_2 "${CMAKE_CURRENT_BINARY_DIR}/resources/iso_language_codes.h")
 set(RES_FILES "${LANGUAGE_HEADER_ISO_639_2}")

@@ -40,83 +40,12 @@ It also allows to inspect and validate the element structure of MP4 and Matroska
 The library is aware of different text encodings and can convert between different encodings using iconv.
 
 ## Usage
-This example shows how to read and write tag fields in a format-independent way:
-
-```
-#include <tagparser/mediafileinfo.h>
-#include <tagparser/diagnostics.h>
-#include <tagparser/progressfeedback.h>
-
-// create a MediaFileInfo for high-level access to overall functionality of the library
-auto fileInfo = MediaFileInfo();
-
-// create container for errors, warnings, etc.
-auto diag = Diagnostics();
-
-// create handle to abort gracefully and get feedback during during long operations
-auto progress = AbortableProgressFeedback([callback for status update], [callback for percentage-only updates]);
-
-// open file (might throw ios_base::failure)
-fileInfo.setPath("/path/to/some/file");
-fileInfo.open();
-
-// parse container format, tags, attachments and/or chapters as needed
-// notes:
-// - These functions might throw exceptions derived from ios_base::failure for IO errors and
-//   populate diag with possibly critical parsing messages you definitely want to check in production
-//   code.
-// - Parsing a file can be expensive if the file is big or the disk IO is slow. You might want to
-//   run it in a separate thread.
-// - At this point the parser does not make much use of the progress object.
-fileInfo.parseContainerFormat(diag, progress);
-fileInfo.parseTags(diag, progress);
-fileInfo.parseAttachments(diag, progress);
-fileInfo.parseChapters(diag, progress);
-fileInfo.parseEverything(diag, progress); // just use that one if you want all over the above
-
-// get tag as an object derived from the Tag class
-// notes:
-// - In real code you might want to check how many tags are assigned or use
-//   fileInfo.createAppropriateTags(…) to create tags as needed.
-auto tag = fileInfo.tags().at(0);
-
-// extract a field value and convert it to UTF-8 std::string (toString() might throw ConversionException)
-#include <tagparser/tag.h>
-#include <tagparser/tagvalue.h>
-auto title = tag->value(TagParser::KnownField::Title).toString(TagParser::TagTextEncoding::Utf8);
-
-// change a field value using an encoding suitable for the tag format
-tag->setValue(KnownField::Album, TagValue("some UTF-8 string", TagTextEncoding::Utf8, tag->proposedTextEncoding()));
-
-// get/remove/create attachments
-#include <tagparser/abstractattachment.h>
-if (auto *const container = fileInfo.container()) {
-    for (auto i = 0, count = container->attachmentCount(); i != count; ++i) {
-        auto attachment = container->attachment(i);
-        if (attachment->mimeType() == "image/jpeg") {
-            attachment->setIgnored(true); // remove existing attachment
-        }
-    }
-    // create new attachment
-    auto attachment = container->createAttachment();
-    attachment->setName("cover.jpg");
-    attachment->setFile(cover, diag);
-}
-
-// apply changes to the file on disk
-// notes:
-// - Might throw exception derived from TagParser::Failure for fatal processing error or ios_base::failure
-//   for IO errors.
-// - Applying changes can be expensive if the file is big or the disk IO is slow. You might want to
-//   run it in a separate thread.
-// - Use progress.tryToAbort() from another thread or an interrupt handler to abort gracefully without leaving
-//   the file in an inconsistent state.
-// - Be sure everything has been parsed before as the library needs to be aware of the whole file structure.
-fileInfo.parseEverything(diag, progress);
-fileInfo.applyChanges(diag, progress);
-```
-
-### Summary
+* For building/installing the library, checkout the build instructions below.
+* To use the library with CMake, use its find module (e.g. `find_package(tagparser 10.1.0 REQUIRED)`) which
+  provides the imported target `tagparser` you can link against. Otherwise, use the `pkg-config` module
+  `tagparser` to query the required compiler/linker flags.
+* For a code example that shows how to read and write tag fields in a format-independent way, have
+  a look at [`example.cpp`](doc/example.cpp).
 * The most important class is `TagParser::MediaFileInfo` providing access to everything else.
 * IO errors are propagated via standard `std::ios_base::failure`.
 * Fatal processing errors are propagated by throwing a class derived from `TagParser::Failure`.
