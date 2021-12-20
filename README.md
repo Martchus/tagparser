@@ -76,6 +76,9 @@ required.
 
 The location of the JSON file from iso-codes can be specified via the CMake variable `LANGUAGE_FILE_ISO_639_2`.
 
+For building multiple projects in one go (c++utilities, tagparser and the tag editor), checkout
+the ["Building this straight"](https://github.com/Martchus/tageditor#building-this-straight) instructions.
+
 ## TODOs
 * Support more formats (EXIF, PDF metadata, Theora, ...)
 * Support adding cue-sheet to FLAC files
