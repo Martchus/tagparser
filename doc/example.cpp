@@ -21,13 +21,15 @@ void example()
     auto diag = Diagnostics();
 
     // create handle to abort gracefully and get feedback during during long operations
-    auto progress = AbortableProgressFeedback([] (AbortableProgressFeedback &feedback) {
-        // callback for status update
-        std::clog << "At step: " << feedback.step() << '\n';
-    }, [] (AbortableProgressFeedback &feedback) {
-        // callback for percentage-only updates
-        std::clog << "Step percentage: " << feedback.stepPercentage() << '\n';
-    });
+    auto progress = AbortableProgressFeedback(
+        [](AbortableProgressFeedback &feedback) {
+            // callback for status update
+            std::clog << "At step: " << feedback.step() << '\n';
+        },
+        [](AbortableProgressFeedback &feedback) {
+            // callback for percentage-only updates
+            std::clog << "Step percentage: " << feedback.stepPercentage() << '\n';
+        });
 
     // open file (might throw ios_base::failure)
     fileInfo.setPath("/path/to/some/file"sv);
@@ -85,4 +87,3 @@ void example()
     fileInfo.parseEverything(diag, progress);
     fileInfo.applyChanges(diag, progress);
 }
-
