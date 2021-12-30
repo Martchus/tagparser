@@ -272,8 +272,7 @@ TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::create
     }
 
     // a new tag must be created
-    m_tags.emplace_back(std::make_unique<TagType>());
-    auto &tag = m_tags.back();
+    const auto &tag = m_tags.emplace_back(std::make_unique<TagType>());
     tag->setTarget(target);
     return tag.get();
 }
@@ -281,7 +280,7 @@ TagType *GenericContainer<FileInfoType, TagType, TrackType, ElementType>::create
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeTag(Tag *tag)
 {
-    if (auto size = m_tags.size()) {
+    if (const auto size = m_tags.size()) {
         m_tags.erase(std::remove_if(m_tags.begin(), m_tags.end(),
                          [tag](const std::unique_ptr<TagType> &existingTag) -> bool { return static_cast<Tag *>(existingTag.get()) == tag; }),
             m_tags.end());
@@ -315,42 +314,43 @@ inline void GenericContainer<FileInfoType, TagType, TrackType, ElementType>::rem
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::addTrack(TrackType *track)
 {
-    if (areTracksParsed() && supportsTrackModifications()) {
-        // ensure ID is unique
-        auto id = track->id();
-    ensureIdIsUnique:
-        for (const auto &existingTrack : m_tracks) {
-            if (existingTrack->id() == id) {
-                ++id;
-                goto ensureIdIsUnique;
-            }
-        }
-        track->setId(id);
-
-        m_tracks.emplace_back(track);
-        return m_tracksAltered = true;
+    if (!areTracksParsed() || !supportsTrackModifications()) {
+        return false;
     }
-    return false;
+    // ensure ID is unique
+    auto id = track->id();
+ensureIdIsUnique:
+    for (const auto &existingTrack : m_tracks) {
+        if (existingTrack->id() == id) {
+            ++id;
+            goto ensureIdIsUnique;
+        }
+    }
+    track->setId(id);
+
+    m_tracks.emplace_back(track);
+    return m_tracksAltered = true;
 }
 
 template <class FileInfoType, class TagType, class TrackType, class ElementType>
 bool GenericContainer<FileInfoType, TagType, TrackType, ElementType>::removeTrack(AbstractTrack *track)
 {
-    bool removed = false;
-    if (areTracksParsed() && supportsTrackModifications() && !m_tracks.empty()) {
-        for (auto i = m_tracks.end() - 1, begin = m_tracks.begin();; --i) {
-            if (static_cast<AbstractTrack *>(i->get()) == track) {
-                i->release();
-                m_tracks.erase(i);
-                removed = true;
-            }
-            if (i == begin) {
-                break;
-            }
+    if (!areTracksParsed() || !supportsTrackModifications() || m_tracks.empty()) {
+        return false;
+    }
+    auto removed = false;
+    for (auto i = m_tracks.end() - 1, begin = m_tracks.begin();; --i) {
+        if (static_cast<AbstractTrack *>(i->get()) == track) {
+            i->release();
+            m_tracks.erase(i);
+            removed = true;
         }
-        if (removed) {
-            m_tracksAltered = true;
+        if (i == begin) {
+            break;
         }
+    }
+    if (removed) {
+        m_tracksAltered = true;
     }
     return removed;
 }

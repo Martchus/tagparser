@@ -955,10 +955,10 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         // calculate size of "Tags"-element
         for (auto &tag : tags()) {
             try {
-                tagMaker.emplace_back(tag->prepareMaking(diag));
-                if (tagMaker.back().requiredSize() > 3) {
+                const auto &maker = tagMaker.emplace_back(tag->prepareMaking(diag));
+                if (maker.requiredSize() > 3) {
                     // a tag of 3 bytes size is empty and can be skipped
-                    tagElementsSize += tagMaker.back().requiredSize();
+                    tagElementsSize += maker.requiredSize();
                 }
             } catch (const Failure &) {
             }
@@ -969,10 +969,10 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         for (auto &attachment : m_attachments) {
             if (!attachment->isIgnored()) {
                 try {
-                    attachmentMaker.emplace_back(attachment->prepareMaking(diag));
-                    if (attachmentMaker.back().requiredSize() > 3) {
+                    const auto &maker = attachmentMaker.emplace_back(attachment->prepareMaking(diag));
+                    if (maker.requiredSize() > 3) {
                         // an attachment of 3 bytes size is empty and can be skipped
-                        attachedFileElementsSize += attachmentMaker.back().requiredSize();
+                        attachedFileElementsSize += maker.requiredSize();
                     }
                 } catch (const Failure &) {
                 }
@@ -984,10 +984,10 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
         // calculate size of "Tracks"-element
         for (auto &track : tracks()) {
             try {
-                trackHeaderMaker.emplace_back(track->prepareMakingHeader(diag));
-                if (trackHeaderMaker.back().requiredSize() > 3) {
+                const auto &maker = trackHeaderMaker.emplace_back(track->prepareMakingHeader(diag));
+                if (maker.requiredSize() > 3) {
                     // a track header of 3 bytes size is empty and can be skipped
-                    trackHeaderElementsSize += trackHeaderMaker.back().requiredSize();
+                    trackHeaderElementsSize += maker.requiredSize();
                 }
             } catch (const Failure &) {
             }
