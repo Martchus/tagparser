@@ -42,6 +42,7 @@ public:
     std::string toString(const std::function<TagTargetLevel(std::uint64_t)> &tagTargetMapping) const;
     std::string toString(TagTargetLevel tagTargetLevel) const;
     bool operator==(const TagTarget &other) const;
+    bool matches(const TagTarget &other) const;
 
 private:
     std::uint64_t m_level;
@@ -185,12 +186,27 @@ inline void TagTarget::clear()
 
 /*!
  * \brief Returns whether the tag targets are equal.
- * \remarks Targets where only the level name differs are considered equal though.
+ * \returns
+ * Returns whether all specifications of the current instance (besides the level name) are equal
+ * to the corresponding specification in \a other.
  */
 inline bool TagTarget::operator==(const TagTarget &other) const
 {
     return level() == other.level() && m_tracks == other.m_tracks && m_chapters == other.m_chapters && m_editions == other.m_editions
         && m_attachments == other.m_attachments;
+}
+
+/*!
+ * \brief Returns whether the current instance matches \a other.
+ * \returns
+ * Returns whether all non-empty/non-null specifications of the current instance (besides the level
+ * name) are equal to the corresponding specification in \a other.
+ */
+inline bool TagTarget::matches(const TagTarget &other) const
+{
+    return (!m_level || level() == other.level()) && (m_tracks.empty() || m_tracks == other.m_tracks)
+        && (m_chapters.empty() || m_chapters == other.m_chapters) && (m_editions.empty() || m_editions == other.m_editions)
+        && (m_attachments.empty() || m_attachments == other.m_attachments);
 }
 
 /*!
