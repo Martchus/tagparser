@@ -276,7 +276,7 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
     writer.writeUInt32LE(0);
     // write fields
     std::uint32_t fieldsWritten = 0;
-    for (auto i : fields()) {
+    for (auto &i : fields()) {
         VorbisCommentField &field = i.second;
         if (!field.value().isEmpty()) {
             try {
