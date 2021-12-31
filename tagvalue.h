@@ -504,11 +504,10 @@ inline std::u16string TagValue::toWString(TagTextEncoding encoding) const
 
 /*!
  * \brief Returns whether no value is assigned at all.
- *
- * Returns only true for default constructed instances or cleared instances (using TagValue::clearData()).
- * So for empty strings, the integer 0, a TimeSpan of zero length, ... this function returns true.
- *
- * \remarks Meta-data such as description and MIME-type is not considered as an assigned value.
+ * \remarks
+ * - Returns only true for default constructed instances or cleared instances (using TagValue::clearData()).
+ *   So for empty strings, the integer 0, a TimeSpan of zero length, ... this function returns false.
+ * - Meta-data such as description and MIME-type is not considered as an assigned value.
  */
 inline bool TagValue::isNull() const
 {
@@ -517,12 +516,11 @@ inline bool TagValue::isNull() const
 
 /*!
  * \brief Returns whether no or an empty value is assigned.
- *
- * An empty string and empty binary or picture data counts as empty so this function will return
- * true for those. However, the integer 0, a TimeSpan of zero length, ... are not considered empty
- * and this function will return false.
- *
- * \remarks Meta-data such as description and MIME-type is not considered as an assigned value.
+ * \remarks
+ * - An empty string and empty binary or picture data counts as empty so this function will return
+ *   true for those. However, the integer 0, a TimeSpan of zero length, ... are not considered empty
+ *   and this function will return false.
+ * - Meta-data such as description and MIME-type is not considered as an assigned value.
  */
 inline bool TagValue::isEmpty() const
 {
