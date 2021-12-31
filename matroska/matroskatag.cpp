@@ -253,6 +253,9 @@ MatroskaTagMaker::MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag)
     m_maker.reserve(m_tag.fields().size());
     m_simpleTagsSize = 0; // including ID and size
     for (auto &pair : m_tag.fields()) {
+        if (pair.second.value().isNull()) {
+            continue;
+        }
         try {
             m_maker.emplace_back(pair.second.prepareMaking(diag));
             m_simpleTagsSize += m_maker.back().requiredSize();
