@@ -226,7 +226,9 @@ bool FieldMapBasedTag<ImplementationType>::internallySetValues(const FieldMapBas
     }
     // add remaining specified values (there are more specified values than existing ones)
     for (; valuesIterator != values.cend(); ++valuesIterator) {
-        m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
+        if (!valuesIterator->isEmpty()) {
+            m_fields.insert(std::make_pair(id, FieldType(id, *valuesIterator)));
+        }
     }
     // remove remaining existing values (there are more existing values than specified ones)
     for (; range.first != range.second; ++range.first) {

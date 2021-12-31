@@ -278,8 +278,10 @@ bool Mp4Tag::setValues(KnownField field, const std::vector<TagValue> &values)
             }
         }
         for (; valuesIterator != values.cend(); ++valuesIterator) {
-            fields().emplace(std::piecewise_construct, std::forward_as_tuple(Mp4TagAtomIds::Extended),
-                std::forward_as_tuple(extendedId.mean, extendedId.name, *valuesIterator));
+            if (valuesIterator->isEmpty()) {
+                fields().emplace(std::piecewise_construct, std::forward_as_tuple(Mp4TagAtomIds::Extended),
+                    std::forward_as_tuple(extendedId.mean, extendedId.name, *valuesIterator));
+            }
         }
         for (; range.first != range.second; ++range.first) {
             range.first->second.clearValue();
