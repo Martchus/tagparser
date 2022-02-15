@@ -55,6 +55,11 @@ AbstractTrack::AbstractTrack(istream &inputStream, ostream &outputStream, std::u
     , m_fps(0)
     , m_timeScale(0)
     , m_colorSpace(0)
+    , m_fieldOrder(FieldOrder::Undetermined)
+    , m_stereoMode(StereoMode::Unknown)
+    , m_alphaMode(AlphaMode::Unknown)
+    , m_displayUnit(DisplayUnit::Unknown)
+    , m_aspectRatioType(AspectRatioType::Unknown)
 {
 }
 

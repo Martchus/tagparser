@@ -56,6 +56,48 @@ enum class TrackFlags : std::uint64_t {
     Interlaced = (1 << 9), /**< The video is interlaced. */
 };
 
+/*!
+ * \brief The FieldOrder enum declares the field ordering of the video.
+ */
+enum class FieldOrder : std::uint64_t {
+    Progressive = 0,
+    Tff = 1,
+    Undetermined = 2,
+    Bff = 6,
+    BffSwapped = 9,
+    TffSwapped = 14,
+};
+
+/*!
+ * \brief The StereoMode enum specifies the Stereo-3D video mode.
+ * \sa https://matroska.org/technical/notes.html#multi-planar-and-3d-videos
+ */
+enum class StereoMode : std::uint64_t {
+    Unknown = std::numeric_limits<std::uint64_t>::max(),
+};
+
+/*!
+ * \brief The AlphaMode enum specifies the alpha video mode.
+ */
+enum class AlphaMode : std::uint64_t {
+    Unknown = std::numeric_limits<std::uint64_t>::max(),
+};
+
+/*!
+ * \brief The DisplayUnit enum specifies how display width and heigh are interpreted.
+ */
+enum class DisplayUnit : std::uint64_t { Pixels, Centimeters, Inches, DisplayAspectRatio, Unknown };
+
+/*!
+ * \brief The AspectRatioType enum specifies the possible modifications to the aspect ratio.
+ */
+enum class AspectRatioType : std::uint64_t {
+    FreeResizing,
+    KeepAspectRatio,
+    Fixed,
+    Unknown = std::numeric_limits<std::uint64_t>::max(),
+};
+
 } // namespace TagParser
 
 CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::TrackFlags)
@@ -185,6 +227,11 @@ protected:
     std::uint32_t m_timeScale;
     std::uint32_t m_colorSpace;
     Margin m_cropping;
+    FieldOrder m_fieldOrder;
+    StereoMode m_stereoMode;
+    AlphaMode m_alphaMode;
+    DisplayUnit m_displayUnit;
+    AspectRatioType m_aspectRatioType;
 
 private:
     std::string makeDescription(bool verbose) const;
