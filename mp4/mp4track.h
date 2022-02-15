@@ -13,6 +13,7 @@ class Mpeg4Descriptor;
 struct AvcConfiguration;
 struct Av1Configuration;
 struct TrackHeaderInfo;
+struct Mp4Timings;
 
 class TAG_PARSER_EXPORT Mpeg4AudioSpecificConfig {
 public:
@@ -170,6 +171,7 @@ private:
     void addChunkSizeEntries(
         std::vector<std::uint64_t> &chunkSizeTable, std::size_t count, std::size_t &sampleIndex, std::uint32_t sampleCount, Diagnostics &diag);
     TrackHeaderInfo verifyPresentTrackHeader() const;
+    Mp4Timings computeTimings() const;
 
     Mp4Atom *m_trakAtom;
     Mp4Atom *m_tkhdAtom;

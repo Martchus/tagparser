@@ -28,6 +28,16 @@ using namespace CppUtilities;
 namespace TagParser {
 
 /*!
+ * \brief The Mp4Timings struct holds timing values found in multiple MP4 atoms.
+ */
+struct Mp4Timings {
+    std::uint64_t creationTime = 0;
+    std::uint64_t modificationTime = 0;
+    std::uint64_t duration = 0;
+    constexpr std::uint8_t requiredVersion() const;
+};
+
+/*!
  * \brief The TrackHeaderInfo struct holds information about the present track header (tkhd atom) and
  *        information for making a new track header based on it.
  * \sa TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() for obtaining an instance.
@@ -47,8 +57,14 @@ private:
     bool truncated;
     /// \brief Specifies the version of the existing track header.
     std::uint8_t version;
+    /// \brief Specifies the version the new track header is supposed to use.
+    std::uint8_t writeVersion;
     /// \brief Specifies whether the version of the existing track header is unknown (and assumed to be 1).
     bool versionUnknown;
+    /// \brief Specifies timing values for the track.
+    Mp4Timings timings;
+    /// \brief Specifies the minimum required version for timings.
+    std::uint8_t timingsVersion;
     /// \brief Specifies the additional data offset of the existing header. Unspecified if canUseExisting is false.
     std::uint8_t additionalDataOffset;
     /// \brief Specifies whether the buffered header data should be discarded when making a new track header.
@@ -60,10 +76,20 @@ constexpr TrackHeaderInfo::TrackHeaderInfo()
     , canUseExisting(false)
     , truncated(false)
     , version(0)
+    , writeVersion(0)
     , versionUnknown(false)
+    , timingsVersion(0)
     , additionalDataOffset(0)
     , discardBuffer(false)
 {
+}
+
+constexpr std::uint8_t Mp4Timings::requiredVersion() const
+{
+    return (creationTime > std::numeric_limits<std::uint32_t>::max() || modificationTime > std::numeric_limits<std::uint32_t>::max()
+                           || duration > std::numeric_limits<std::uint32_t>::max())
+            ? 1
+            : 0;
 }
 
 /// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
@@ -435,18 +461,34 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
 
     // determine required size
     info.requiredSize = m_tkhdAtom->dataSize() + 8;
-    // -> add 12 byte to size if update from version 0 to version 1 is required (which needs 12 byte more)
-    if ((info.version == 0)
-        && (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-            || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-            || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max())) {
-        info.requiredSize += 12;
+    info.timings = computeTimings();
+    info.timingsVersion = info.timings.requiredVersion();
+    if (info.version == 0) {
+        info.writeVersion = info.timingsVersion;
+        // add 12 byte to size if update from version 0 to version 1 is required (which needs 12 byte more)
+        if (info.writeVersion != 0) {
+            info.requiredSize += 12;
+        }
+    } else {
+        info.writeVersion = info.version;
     }
     // -> add 8 byte to the size because it must be denoted using a 64-bit integer
     if (info.requiredSize > numeric_limits<std::uint32_t>::max()) {
         info.requiredSize += 8;
     }
     return info;
+}
+
+/*!
+ * \brief Computes timing values for the track.
+ */
+Mp4Timings Mp4Track::computeTimings() const
+{
+    auto timings = Mp4Timings();
+    timings.creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
+    timings.modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
+    timings.duration = static_cast<std::uint64_t>(m_duration.totalTicks() * m_timeScale / TimeSpan::ticksPerSecond);
+    return timings;
 }
 
 /*!
@@ -1088,11 +1130,12 @@ std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
 {
     CPP_UTILITIES_UNUSED(diag)
 
+    const auto info = verifyPresentTrackHeader();
     // add size of
     // ... trak header
     std::uint64_t size = 8;
     // ... tkhd atom (TODO: buffer TrackHeaderInfo in next major release)
-    size += verifyPresentTrackHeader().requiredSize;
+    size += info.requiredSize;
     // ... children beside tkhd and mdia
     for (Mp4Atom *trakChild = m_trakAtom->firstChild(); trakChild; trakChild = trakChild->nextSibling()) {
         if (trakChild->id() == Mp4AtomIds::Media || trakChild->id() == Mp4AtomIds::TrackHeader) {
@@ -1101,14 +1144,12 @@ std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
         size += trakChild->totalSize();
     }
     // ... mdhd total size
-    if (static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-        || static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds()) > numeric_limits<std::uint32_t>::max()
-        || static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale) > numeric_limits<std::uint32_t>::max()) {
-        // write version 1 where those fields are 64-bit
-        size += 44;
-    } else {
-        // write version 0 where those fields are 32-bit
+    if (info.timingsVersion == 0) {
+        // write version 0 where timing fields are 32-bit
         size += 32;
+    } else {
+        // write version 1 where timing fields are 64-bit
+        size += 44;
     }
     // ... mdia header + hdlr total size + minf header
     size += 8 + (33 + m_name.size()) + 8;
@@ -1192,18 +1233,8 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
         writer().writeUInt32BE(Mp4AtomIds::TrackHeader);
     }
 
-    // determine time-related values and version
-    const auto creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
-    const auto modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
-    const auto duration = static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale);
-    const std::uint8_t version = (info.version == 0)
-            && (creationTime > numeric_limits<std::uint32_t>::max() || modificationTime > numeric_limits<std::uint32_t>::max()
-                || duration > numeric_limits<std::uint32_t>::max())
-        ? 1
-        : info.version;
-
     // make version and flags
-    writer().writeByte(version);
+    writer().writeByte(info.writeVersion);
     std::uint32_t flags = 0;
     if (isEnabled()) {
         flags |= 0x000001;
@@ -1217,21 +1248,21 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
     writer().writeUInt24BE(flags);
 
     // make creation and modification time
-    if (version != 0) {
-        writer().writeUInt64BE(creationTime);
-        writer().writeUInt64BE(modificationTime);
+    if (info.writeVersion != 0) {
+        writer().writeUInt64BE(info.timings.creationTime);
+        writer().writeUInt64BE(info.timings.modificationTime);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(creationTime));
-        writer().writeUInt32BE(static_cast<std::uint32_t>(modificationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.creationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.modificationTime));
     }
 
     // make track ID and duration
     writer().writeUInt32BE(static_cast<std::uint32_t>(m_id));
     writer().writeUInt32BE(0); // reserved
-    if (version != 0) {
-        writer().writeUInt64BE(duration);
+    if (info.writeVersion != 0) {
+        writer().writeUInt64BE(info.timings.duration);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(duration));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.duration));
     }
     writer().writeUInt32BE(0); // reserved
     writer().writeUInt32BE(0); // reserved
@@ -1270,29 +1301,24 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::Media);
     // write mdhd atom
-    const auto creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
-    const auto modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
-    const auto duration = static_cast<std::uint64_t>(m_duration.totalSeconds() * m_timeScale);
-    const std::uint8_t version = (creationTime > numeric_limits<std::uint32_t>::max() || modificationTime > numeric_limits<std::uint32_t>::max()
-                                     || duration > numeric_limits<std::uint32_t>::max())
-        ? 1
-        : 0;
-    writer().writeUInt32BE(version != 0 ? 44 : 32); // size
+    const auto timings = computeTimings();
+    const auto timingsVersion = timings.requiredVersion();
+    writer().writeUInt32BE(timingsVersion != 0 ? 44 : 32); // size
     writer().writeUInt32BE(Mp4AtomIds::MediaHeader);
-    writer().writeByte(version); // version
+    writer().writeByte(timingsVersion); // version
     writer().writeUInt24BE(0); // flags
-    if (version != 0) {
-        writer().writeUInt64BE(creationTime);
-        writer().writeUInt64BE(modificationTime);
+    if (timingsVersion != 0) {
+        writer().writeUInt64BE(timings.creationTime);
+        writer().writeUInt64BE(timings.modificationTime);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(creationTime));
-        writer().writeUInt32BE(static_cast<std::uint32_t>(modificationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.creationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.modificationTime));
     }
     writer().writeUInt32BE(m_timeScale);
-    if (version != 0) {
-        writer().writeUInt64BE(duration);
+    if (timingsVersion != 0) {
+        writer().writeUInt64BE(timings.duration);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(duration));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.duration));
     }
     // convert and write language
     const std::string &language = m_locale.abbreviatedName(LocaleFormat::ISO_639_2_T, LocaleFormat::Unknown);
