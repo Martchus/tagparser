@@ -1,3 +1,5 @@
+#define CHRONO_UTILITIES_TIMESPAN_INTEGER_SCALE_OVERLOADS
+
 #include "./mp4track.h"
 #include "./mp4atom.h"
 #include "./mp4container.h"
@@ -12,6 +14,7 @@
 #include "../mpegaudio/mpegaudioframestream.h"
 
 #include "../exceptions.h"
+#include "../mediafileinfo.h"
 #include "../mediaformat.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
@@ -31,10 +34,11 @@ namespace TagParser {
  * \brief The Mp4Timings struct holds timing values found in multiple MP4 atoms.
  */
 struct Mp4Timings {
-    std::uint64_t creationTime = 0;
-    std::uint64_t modificationTime = 0;
-    std::uint64_t duration = 0;
-    constexpr std::uint8_t requiredVersion() const;
+    std::uint64_t tkhdCreationTime, mdhdCreationTime = 0;
+    std::uint64_t tkhdModificationTime, mdhdModificationTime = 0;
+    std::uint64_t tkhdDuration, mdhdDuration = 0;
+    constexpr std::uint8_t requiredTkhdVersion() const;
+    constexpr std::uint8_t requiredMdhdVersion() const;
 };
 
 /*!
@@ -69,12 +73,20 @@ private:
     bool discardBuffer = false;
 };
 
-constexpr std::uint8_t Mp4Timings::requiredVersion() const
+constexpr std::uint8_t Mp4Timings::requiredTkhdVersion() const
 {
-    return (creationTime > std::numeric_limits<std::uint32_t>::max() || modificationTime > std::numeric_limits<std::uint32_t>::max()
-                           || duration > std::numeric_limits<std::uint32_t>::max())
-            ? 1
-            : 0;
+    return (tkhdCreationTime > std::numeric_limits<std::uint32_t>::max() || tkhdModificationTime > std::numeric_limits<std::uint32_t>::max()
+               || tkhdDuration > std::numeric_limits<std::uint32_t>::max())
+        ? 1
+        : 0;
+}
+
+constexpr std::uint8_t Mp4Timings::requiredMdhdVersion() const
+{
+    return (mdhdCreationTime > std::numeric_limits<std::uint32_t>::max() || mdhdModificationTime > std::numeric_limits<std::uint32_t>::max()
+               || mdhdDuration > std::numeric_limits<std::uint32_t>::max())
+        ? 1
+        : 0;
 }
 
 /// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
@@ -156,6 +168,12 @@ Mp4Track::Mp4Track(Mp4Atom &trakAtom)
     , m_chunkOffsetSize(4)
     , m_chunkCount(0)
     , m_sampleToChunkEntryCount(0)
+    , m_rawTkhdCreationTime(0)
+    , m_rawMdhdCreationTime(0)
+    , m_rawTkhdModificationTime(0)
+    , m_rawMdhdModificationTime(0)
+    , m_rawTkhdDuration(0)
+    , m_rawMdhdDuration(0)
 {
 }
 
@@ -405,11 +423,14 @@ void Mp4Track::addChunkSizeEntries(
  * \brief Verifies the present track header (tkhd atom) and returns relevant information for making a new track header
  *        based on it.
  */
-TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
+const TrackHeaderInfo &Mp4Track::verifyPresentTrackHeader() const
 {
-    TrackHeaderInfo info;
+    if (m_trackHeaderInfo) {
+        return *m_trackHeaderInfo;
+    }
 
     // return the default TrackHeaderInfo in case there is no track header prsent
+    auto &info = *(m_trackHeaderInfo = std::make_unique<TrackHeaderInfo>());
     if (!m_tkhdAtom) {
         return info;
     }
@@ -447,7 +468,7 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
     // determine required size
     info.requiredSize = m_tkhdAtom->dataSize() + 8;
     info.timings = computeTimings();
-    info.timingsVersion = info.timings.requiredVersion();
+    info.timingsVersion = info.timings.requiredTkhdVersion();
     if (info.version == 0) {
         info.writeVersion = info.timingsVersion;
         // add 12 byte to size if update from version 0 to version 1 is required (which needs 12 byte more)
@@ -470,9 +491,18 @@ TrackHeaderInfo Mp4Track::verifyPresentTrackHeader() const
 Mp4Timings Mp4Track::computeTimings() const
 {
     auto timings = Mp4Timings();
-    timings.creationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
-    timings.modificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
-    timings.duration = static_cast<std::uint64_t>(m_duration.totalTicks() * m_timeScale / TimeSpan::ticksPerSecond);
+    if (m_trakAtom && (m_trakAtom->container().fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::PreserveRawTimingValues)) {
+        timings.tkhdCreationTime = m_rawTkhdCreationTime;
+        timings.tkhdModificationTime = m_rawTkhdModificationTime;
+        timings.tkhdDuration = m_rawTkhdDuration;
+        timings.mdhdCreationTime = m_rawMdhdCreationTime;
+        timings.mdhdModificationTime = m_rawMdhdModificationTime;
+        timings.mdhdDuration = m_rawMdhdDuration;
+    } else {
+        timings.tkhdCreationTime = timings.mdhdCreationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
+        timings.tkhdModificationTime = timings.mdhdModificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
+        timings.tkhdDuration = timings.mdhdDuration = static_cast<std::uint64_t>(m_duration.totalTicks() * m_timeScale / TimeSpan::ticksPerSecond);
+    }
     return timings;
 }
 
@@ -1115,11 +1145,11 @@ std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
 {
     CPP_UTILITIES_UNUSED(diag)
 
-    const auto info = verifyPresentTrackHeader();
+    const auto &info = verifyPresentTrackHeader();
     // add size of
     // ... trak header
     std::uint64_t size = 8;
-    // ... tkhd atom (TODO: buffer TrackHeaderInfo in next major release)
+    // ... tkhd atom
     size += info.requiredSize;
     // ... children beside tkhd and mdia
     for (Mp4Atom *trakChild = m_trakAtom->firstChild(); trakChild; trakChild = trakChild->nextSibling()) {
@@ -1195,7 +1225,7 @@ void Mp4Track::makeTrack(Diagnostics &diag)
 void Mp4Track::makeTrackHeader(Diagnostics &diag)
 {
     // verify the existing track header to make the new one based on it (if possible)
-    const TrackHeaderInfo info(verifyPresentTrackHeader());
+    const auto &info = verifyPresentTrackHeader();
 
     // add notifications in case the present track header could not be parsed
     if (info.versionUnknown) {
@@ -1234,20 +1264,20 @@ void Mp4Track::makeTrackHeader(Diagnostics &diag)
 
     // make creation and modification time
     if (info.writeVersion != 0) {
-        writer().writeUInt64BE(info.timings.creationTime);
-        writer().writeUInt64BE(info.timings.modificationTime);
+        writer().writeUInt64BE(info.timings.tkhdCreationTime);
+        writer().writeUInt64BE(info.timings.tkhdModificationTime);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.creationTime));
-        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.modificationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.tkhdCreationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.tkhdModificationTime));
     }
 
     // make track ID and duration
     writer().writeUInt32BE(static_cast<std::uint32_t>(m_id));
     writer().writeUInt32BE(0); // reserved
     if (info.writeVersion != 0) {
-        writer().writeUInt64BE(info.timings.duration);
+        writer().writeUInt64BE(info.timings.tkhdDuration);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.duration));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(info.timings.tkhdDuration));
     }
     writer().writeUInt32BE(0); // reserved
     writer().writeUInt32BE(0); // reserved
@@ -1286,24 +1316,25 @@ void Mp4Track::makeMedia(Diagnostics &diag)
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::Media);
     // write mdhd atom
-    const auto timings = computeTimings();
-    const auto timingsVersion = timings.requiredVersion();
+    const auto &info = verifyPresentTrackHeader();
+    const auto &timings = info.timings;
+    const auto timingsVersion = timings.requiredMdhdVersion();
     writer().writeUInt32BE(timingsVersion != 0 ? 44 : 32); // size
     writer().writeUInt32BE(Mp4AtomIds::MediaHeader);
     writer().writeByte(timingsVersion); // version
     writer().writeUInt24BE(0); // flags
     if (timingsVersion != 0) {
-        writer().writeUInt64BE(timings.creationTime);
-        writer().writeUInt64BE(timings.modificationTime);
+        writer().writeUInt64BE(timings.mdhdCreationTime);
+        writer().writeUInt64BE(timings.mdhdModificationTime);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.creationTime));
-        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.modificationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.mdhdCreationTime));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.mdhdModificationTime));
     }
     writer().writeUInt32BE(m_timeScale);
     if (timingsVersion != 0) {
-        writer().writeUInt64BE(timings.duration);
+        writer().writeUInt64BE(timings.mdhdDuration);
     } else {
-        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.duration));
+        writer().writeUInt32BE(static_cast<std::uint32_t>(timings.mdhdDuration));
     }
     // convert and write language
     const std::string &language = m_locale.abbreviatedName(LocaleFormat::ISO_639_2_T, LocaleFormat::Unknown);
@@ -1556,19 +1587,22 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
     modFlagEnum(m_flags, TrackFlags::UsedWhenPreviewing, flags & 0x000004);
     switch (atomVersion) {
     case 0:
-        m_creationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
-        m_modificationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
+        m_rawTkhdCreationTime = reader.readUInt32BE();
+        m_rawTkhdModificationTime = reader.readUInt32BE();
         m_id = reader.readUInt32BE();
+        m_rawTkhdDuration = reader.readUInt32BE();
         break;
     case 1:
-        m_creationTime = startDate + TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()));
-        m_modificationTime = startDate + TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()));
+        m_rawTkhdCreationTime = reader.readUInt64BE();
+        m_rawTkhdModificationTime = reader.readUInt64BE();
         m_id = reader.readUInt32BE();
+        m_rawTkhdDuration = reader.readUInt64BE();
         break;
     default:
         diag.emplace_back(DiagLevel::Critical,
             "Version of \"tkhd\"-atom not supported. It will be ignored. Track ID, creation time and modification time might not be be determined.",
             context);
+        m_rawTkhdCreationTime = m_rawTkhdModificationTime = m_rawTkhdDuration = 0;
         m_creationTime = DateTime();
         m_modificationTime = DateTime();
         m_id = 0;
@@ -1580,25 +1614,30 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
     m_istream->seekg(3, ios_base::cur); // skip flags
     switch (atomVersion) {
     case 0:
-        m_creationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
-        m_modificationTime = startDate + TimeSpan::fromSeconds(reader.readUInt32BE());
+        m_rawMdhdCreationTime = reader.readUInt32BE();
+        m_rawMdhdModificationTime = reader.readUInt32BE();
         m_timeScale = reader.readUInt32BE();
-        m_duration = TimeSpan::fromSeconds(static_cast<double>(reader.readUInt32BE()) / static_cast<double>(m_timeScale));
+        m_rawMdhdDuration = reader.readUInt32BE();
         break;
     case 1:
-        m_creationTime = startDate + TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()));
-        m_modificationTime = startDate + TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()));
+        m_rawMdhdCreationTime = reader.readUInt64BE();
+        m_rawMdhdModificationTime = reader.readUInt64BE();
         m_timeScale = reader.readUInt32BE();
-        m_duration = TimeSpan::fromSeconds(static_cast<double>(reader.readUInt64BE()) / static_cast<double>(m_timeScale));
+        m_rawMdhdDuration = reader.readUInt64BE();
         break;
     default:
         diag.emplace_back(DiagLevel::Warning,
             "Version of \"mdhd\"-atom not supported. It will be ignored. Creation time, modification time, time scale and duration might not be "
             "determined.",
             context);
+        m_rawMdhdCreationTime = m_rawMdhdModificationTime = m_rawMdhdDuration = 0;
         m_timeScale = 0;
         m_duration = TimeSpan();
     }
+    m_creationTime = startDate + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdCreationTime));
+    m_modificationTime = startDate + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdModificationTime));
+    m_duration = TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdDuration)) / static_cast<TimeSpan::TickType>(m_timeScale);
+
     std::uint16_t tmp = reader.readUInt16BE();
     if (tmp) {
         const char buff[] = {

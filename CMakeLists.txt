@@ -8,9 +8,9 @@ set(META_APP_NAME "Tag Parser")
 set(META_APP_AUTHOR "Martchus")
 set(META_APP_URL "https://github.com/${META_APP_AUTHOR}/${META_PROJECT_NAME}")
 set(META_APP_DESCRIPTION "C++ library for reading and writing MP4 (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags")
-set(META_VERSION_MAJOR 10)
-set(META_VERSION_MINOR 4)
-set(META_VERSION_PATCH 1)
+set(META_VERSION_MAJOR 11)
+set(META_VERSION_MINOR 0)
+set(META_VERSION_PATCH 0)
 set(META_REQUIRED_CPP_UNIT_VERSION 1.14.0)
 set(META_ADD_DEFAULT_CPP_UNIT_TEST_APPLICATION ON)
 
@@ -184,7 +184,7 @@ set(RES_FILES "${LANGUAGE_HEADER_ISO_639_2}")
 set(CONFIGURATION_PACKAGE_SUFFIX
     ""
     CACHE STRING "sets the suffix for find_package() calls to packages configured via c++utilities")
-find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.10.0 REQUIRED)
+find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.13.0 REQUIRED)
 use_cpp_utilities(VISIBILITY PUBLIC)
 
 # link against a possibly required extra library for std::filesystem

@@ -1,3 +1,5 @@
+#define CHRONO_UTILITIES_TIMESPAN_INTEGER_SCALE_OVERLOADS
+
 #include "./mp4container.h"
 #include "./mp4ids.h"
 
@@ -130,16 +132,22 @@ void Mp4Container::internalParseTracks(Diagnostics &diag, AbortableProgressFeedb
                         stream().seekg(3, ios_base::cur); // skip flags
                         switch (version) {
                         case 0:
-                            m_creationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(reader().readUInt32BE());
-                            m_modificationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(reader().readUInt32BE());
+                            m_creationTime
+                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()));
+                            m_modificationTime
+                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()));
                             m_timeScale = reader().readUInt32BE();
-                            m_duration = TimeSpan::fromSeconds(static_cast<double>(reader().readUInt32BE()) / static_cast<double>(m_timeScale));
+                            m_duration = TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()))
+                                / static_cast<TimeSpan::TickType>(m_timeScale);
                             break;
                         case 1:
-                            m_creationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<double>(reader().readUInt64BE()));
-                            m_modificationTime = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<double>(reader().readUInt64BE()));
+                            m_creationTime
+                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()));
+                            m_modificationTime
+                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()));
                             m_timeScale = reader().readUInt32BE();
-                            m_duration = TimeSpan::fromSeconds(static_cast<double>(reader().readUInt64BE()) / static_cast<double>(m_timeScale));
+                            m_duration = TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()))
+                                / static_cast<TimeSpan::TickType>(m_timeScale);
                             break;
                         default:;
                         }

@@ -63,6 +63,7 @@ enum class MediaFileHandlingFlags : std::uint64_t {
     ForceTagPosition = (1 << 2), /**< enforces the tag position when applying changes, see remarks of MediaFileInfo::setTagPosition() */
     ForceIndexPosition = (1 << 3), /**< enforces the index position when applying changes, see remarks of MediaFileInfo::setIndexPosition() */
     NormalizeKnownTagFieldIds = (1 << 4), /**< normalizes known tag field IDs when parsing to match the tag specification's recommendations */
+    PreserveRawTimingValues = (1 << 8), /**< preverves raw timing values (so far only used when making MP4 tracks) */
 };
 
 } // namespace TagParser

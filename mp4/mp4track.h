@@ -170,7 +170,7 @@ private:
     std::uint64_t accumulateSampleSizes(std::size_t &sampleIndex, std::size_t count, Diagnostics &diag);
     void addChunkSizeEntries(
         std::vector<std::uint64_t> &chunkSizeTable, std::size_t count, std::size_t &sampleIndex, std::uint32_t sampleCount, Diagnostics &diag);
-    TrackHeaderInfo verifyPresentTrackHeader() const;
+    const TrackHeaderInfo &verifyPresentTrackHeader() const;
     Mp4Timings computeTimings() const;
 
     Mp4Atom *m_trakAtom;
@@ -190,9 +190,16 @@ private:
     unsigned int m_chunkOffsetSize;
     std::uint32_t m_chunkCount;
     std::uint32_t m_sampleToChunkEntryCount;
+    std::uint64_t m_rawTkhdCreationTime;
+    std::uint64_t m_rawMdhdCreationTime;
+    std::uint64_t m_rawTkhdModificationTime;
+    std::uint64_t m_rawMdhdModificationTime;
+    std::uint64_t m_rawTkhdDuration;
+    std::uint64_t m_rawMdhdDuration;
     std::unique_ptr<Mpeg4ElementaryStreamInfo> m_esInfo;
     std::unique_ptr<AvcConfiguration> m_avcConfig;
     std::unique_ptr<Av1Configuration> m_av1Config;
+    mutable std::unique_ptr<TrackHeaderInfo> m_trackHeaderInfo;
 };
 
 /*!

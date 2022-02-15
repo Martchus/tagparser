@@ -91,7 +91,7 @@ MediaFileInfo::MediaFileInfo(std::string &&path)
     , m_tagPosition(ElementPosition::BeforeData)
     , m_indexPosition(ElementPosition::BeforeData)
     , m_fileHandlingFlags(MediaFileHandlingFlags::ForceRewrite | MediaFileHandlingFlags::ForceTagPosition | MediaFileHandlingFlags::ForceIndexPosition
-          | MediaFileHandlingFlags::NormalizeKnownTagFieldIds)
+          | MediaFileHandlingFlags::NormalizeKnownTagFieldIds | MediaFileHandlingFlags::PreserveRawTimingValues)
 {
 }
 
