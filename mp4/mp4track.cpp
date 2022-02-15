@@ -78,7 +78,7 @@ constexpr std::uint8_t Mp4Timings::requiredVersion() const
 }
 
 /// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
-const DateTime startDate = DateTime::fromDate(1904, 1, 1);
+static const auto startDate = DateTime::fromDate(1904, 1, 1);
 
 /*!
  * \class Mpeg4AudioSpecificConfig
