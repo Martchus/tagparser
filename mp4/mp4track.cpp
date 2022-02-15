@@ -89,9 +89,6 @@ constexpr std::uint8_t Mp4Timings::requiredMdhdVersion() const
         : 0;
 }
 
-/// \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
-static const auto startDate = DateTime::fromDate(1904, 1, 1);
-
 /*!
  * \class Mpeg4AudioSpecificConfig
  * \brief The Mpeg4AudioSpecificConfig class holds MPEG-4 audio specific config parsed using Mp4Track::parseAudioSpecificConfig().
@@ -499,8 +496,9 @@ Mp4Timings Mp4Track::computeTimings() const
         timings.mdhdModificationTime = m_rawMdhdModificationTime;
         timings.mdhdDuration = m_rawMdhdDuration;
     } else {
-        timings.tkhdCreationTime = timings.mdhdCreationTime = static_cast<std::uint64_t>((m_creationTime - startDate).totalSeconds());
-        timings.tkhdModificationTime = timings.mdhdModificationTime = static_cast<std::uint64_t>((m_modificationTime - startDate).totalSeconds());
+        timings.tkhdCreationTime = timings.mdhdCreationTime = static_cast<std::uint64_t>((m_creationTime - Mp4Container::epoch).totalSeconds());
+        timings.tkhdModificationTime = timings.mdhdModificationTime
+            = static_cast<std::uint64_t>((m_modificationTime - Mp4Container::epoch).totalSeconds());
         timings.tkhdDuration = timings.mdhdDuration = static_cast<std::uint64_t>(m_duration.totalTicks() * m_timeScale / TimeSpan::ticksPerSecond);
     }
     return timings;
@@ -1634,8 +1632,8 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
         m_timeScale = 0;
         m_duration = TimeSpan();
     }
-    m_creationTime = startDate + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdCreationTime));
-    m_modificationTime = startDate + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdModificationTime));
+    m_creationTime = Mp4Container::epoch + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdCreationTime));
+    m_modificationTime = Mp4Container::epoch + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdModificationTime));
     m_duration = TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(m_rawMdhdDuration)) / static_cast<TimeSpan::TickType>(m_timeScale);
 
     std::uint16_t tmp = reader.readUInt16BE();

@@ -26,6 +26,8 @@ public:
     ElementPosition determineTagPosition(Diagnostics &diag) const override;
     ElementPosition determineIndexPosition(Diagnostics &diag) const override;
 
+    static const CppUtilities::DateTime epoch;
+
 protected:
     void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;
     void internalParseTags(Diagnostics &diag, AbortableProgressFeedback &progress) override;

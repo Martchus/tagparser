@@ -29,6 +29,11 @@ namespace TagParser {
  */
 
 /*!
+ * \brief Dates within MP4 tracks are expressed as the number of seconds since this date.
+ */
+const CppUtilities::DateTime Mp4Container::epoch = DateTime::fromDate(1904, 1, 1);
+
+/*!
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
 Mp4Container::Mp4Container(MediaFileInfo &fileInfo, std::uint64_t startOffset)
@@ -132,19 +137,15 @@ void Mp4Container::internalParseTracks(Diagnostics &diag, AbortableProgressFeedb
                         stream().seekg(3, ios_base::cur); // skip flags
                         switch (version) {
                         case 0:
-                            m_creationTime
-                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()));
-                            m_modificationTime
-                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()));
+                            m_creationTime = epoch + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()));
+                            m_modificationTime = epoch + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()));
                             m_timeScale = reader().readUInt32BE();
                             m_duration = TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt32BE()))
                                 / static_cast<TimeSpan::TickType>(m_timeScale);
                             break;
                         case 1:
-                            m_creationTime
-                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()));
-                            m_modificationTime
-                                = DateTime::fromDate(1904, 1, 1) + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()));
+                            m_creationTime = epoch + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()));
+                            m_modificationTime = epoch + TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()));
                             m_timeScale = reader().readUInt32BE();
                             m_duration = TimeSpan::fromSeconds(static_cast<TimeSpan::TickType>(reader().readUInt64BE()))
                                 / static_cast<TimeSpan::TickType>(m_timeScale);
