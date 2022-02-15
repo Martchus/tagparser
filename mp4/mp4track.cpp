@@ -47,42 +47,27 @@ struct TrackHeaderInfo {
     friend class Mp4Track;
 
 private:
-    constexpr TrackHeaderInfo();
-
     /// \brief Specifies the size which is required for <i>making a new</i> track header based one the existing one.
-    std::uint64_t requiredSize;
+    std::uint64_t requiredSize = 100;
     /// \brief Specifies whether there actually a track header exists and whether it can be used as basis for a new one.
-    bool canUseExisting;
+    bool canUseExisting = false;
     /// \brief Specifies whether the existing track header is truncated.
-    bool truncated;
+    bool truncated = false;
     /// \brief Specifies the version of the existing track header.
-    std::uint8_t version;
+    std::uint8_t version = 0;
     /// \brief Specifies the version the new track header is supposed to use.
-    std::uint8_t writeVersion;
+    std::uint8_t writeVersion = 0;
     /// \brief Specifies whether the version of the existing track header is unknown (and assumed to be 1).
-    bool versionUnknown;
+    bool versionUnknown = false;
     /// \brief Specifies timing values for the track.
     Mp4Timings timings;
     /// \brief Specifies the minimum required version for timings.
-    std::uint8_t timingsVersion;
+    std::uint8_t timingsVersion = 0;
     /// \brief Specifies the additional data offset of the existing header. Unspecified if canUseExisting is false.
-    std::uint8_t additionalDataOffset;
+    std::uint8_t additionalDataOffset = 0;
     /// \brief Specifies whether the buffered header data should be discarded when making a new track header.
-    bool discardBuffer;
+    bool discardBuffer = false;
 };
-
-constexpr TrackHeaderInfo::TrackHeaderInfo()
-    : requiredSize(100)
-    , canUseExisting(false)
-    , truncated(false)
-    , version(0)
-    , writeVersion(0)
-    , versionUnknown(false)
-    , timingsVersion(0)
-    , additionalDataOffset(0)
-    , discardBuffer(false)
-{
-}
 
 constexpr std::uint8_t Mp4Timings::requiredVersion() const
 {
