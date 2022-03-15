@@ -84,3 +84,6 @@ the ["Building this straight"](https://github.com/Martchus/tageditor#building-th
 * Support adding cue-sheet to FLAC files
 
 More TODOs are tracked in the [issue section at GitHub](https://github.com/Martchus/tagparser/issues).
+
+## License
+All code is licensed under [GPL-2-or-later](LICENSE).
