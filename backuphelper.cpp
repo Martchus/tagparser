@@ -161,8 +161,8 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
         std::filesystem::copy_file(u8originalPath, backupPathForOpen, ec);
     }
     if (ec) {
-        throw std::ios_base::failure(
-            argsToString("Unable to create backup file \"", BasicFileInfo::pathForOpen(backupPath), "\" of \"", originalPath, "\" before rewriting it: " + ec.message()));
+        throw std::ios_base::failure(argsToString("Unable to create backup file \"", BasicFileInfo::pathForOpen(backupPath), "\" of \"", originalPath,
+            "\" before rewriting it: " + ec.message()));
     }
 
     // manage streams
