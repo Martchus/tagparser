@@ -68,7 +68,7 @@ void restoreOriginalFileFromBackupFile(
     }
 
     // remove original file and restore backup
-    std::filesystem::remove(originalPath, ec);
+    std::filesystem::remove(originalPathForOpen, ec);
     if (ec) {
         throw std::ios_base::failure("Unable to remove original file: " + ec.message());
     }
