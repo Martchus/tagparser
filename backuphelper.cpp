@@ -4,6 +4,7 @@
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/io/path.h>
 
 #include <cstdio>
 #include <filesystem>
@@ -60,8 +61,8 @@ void restoreOriginalFileFromBackupFile(
     backupStream.exceptions(ios_base::badbit | ios_base::failbit);
 
     // check whether backup file actually exists and close the backup stream afterwards
-    const auto originalPathForOpen = std::filesystem::u8path(BasicFileInfo::pathForOpen(originalPath));
-    const auto backupPathForOpen = std::filesystem::u8path(BasicFileInfo::pathForOpen(backupPath));
+    const auto originalPathForOpen = std::filesystem::path(makeNativePath(BasicFileInfo::pathForOpen(originalPath)));
+    const auto backupPathForOpen = std::filesystem::path(makeNativePath(BasicFileInfo::pathForOpen(backupPath)));
     auto ec = std::error_code();
     if (!std::filesystem::exists(backupPathForOpen, ec) && !ec) {
         throw std::ios_base::failure("Backup/temporary file has not been created.");
@@ -111,7 +112,7 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
     NativeFileStream &backupStream)
 {
     // determine dirs
-    const auto backupDirRelative = std::filesystem::u8path(backupDir).is_relative();
+    const auto backupDirRelative = std::filesystem::path(makeNativePath(backupDir)).is_relative();
     const auto originalDir = backupDirRelative ? BasicFileInfo::containingDirectory(originalPath) : string();
 
     // determine the backup path
@@ -142,7 +143,7 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
         }
 
         // test whether the backup path is still unused; otherwise continue loop
-        if (!std::filesystem::exists(std::filesystem::u8path(BasicFileInfo::pathForOpen(backupPath)), ec)) {
+        if (!std::filesystem::exists(makeNativePath(BasicFileInfo::pathForOpen(backupPath)), ec)) {
             break;
         }
     }
@@ -153,8 +154,8 @@ void createBackupFile(const std::string &backupDir, const std::string &originalP
     }
 
     // rename original file
-    const auto u8originalPath = std::filesystem::u8path(originalPath);
-    const auto backupPathForOpen = std::filesystem::u8path(BasicFileInfo::pathForOpen(backupPath));
+    const auto u8originalPath = std::filesystem::path(makeNativePath(originalPath));
+    const auto backupPathForOpen = std::filesystem::path(makeNativePath(BasicFileInfo::pathForOpen(backupPath)));
     std::filesystem::rename(u8originalPath, backupPathForOpen, ec);
     if (ec) {
         // try making a copy instead, maybe backup dir is on another partition
@@ -199,7 +200,7 @@ void createBackupFileCanonical(const std::string &backupDir, std::string &origin
     CppUtilities::NativeFileStream &originalStream, CppUtilities::NativeFileStream &backupStream)
 {
     auto ec = std::error_code();
-    if (const auto canonicalPath = std::filesystem::canonical(std::filesystem::u8path(BasicFileInfo::pathForOpen(originalPath)), ec); !ec) {
+    if (const auto canonicalPath = std::filesystem::canonical(makeNativePath(BasicFileInfo::pathForOpen(originalPath)), ec); !ec) {
         originalPath = canonicalPath.string();
     } else {
         throw std::ios_base::failure("Unable to canonicalize path of original file before rewriting it: " + ec.message());
