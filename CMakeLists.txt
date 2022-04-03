@@ -194,7 +194,7 @@ use_standard_filesystem()
 include(3rdParty)
 # zlib
 use_zlib()
-use_crypto(LIBRARIES_VARIABLE "TEST_LIBRARIES" OPTIONAL)
+use_crypto(LIBRARIES_VARIABLE "TEST_LIBRARIES" PACKAGES_VARIABLE "TEST_PACKAGES" OPTIONAL)
 if (NOT "OpenSSL::Crypto" IN_LIST "TEST_LIBRARIES")
     list(REMOVE_ITEM TEST_SRC_FILES tests/testfilecheck.cpp)
     message(WARNING "Unable to check testfile integrity because OpenSSL is not available.")
