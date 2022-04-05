@@ -270,6 +270,7 @@ constexpr TAG_PARSER_EXPORT std::string_view lawRating()
 {
     return "LAW_RATING";
 }
+/// \deprecated Not sure what this is or should have been. Remove in v12.
 constexpr TAG_PARSER_EXPORT std::string_view icra()
 {
     return "ICRA";

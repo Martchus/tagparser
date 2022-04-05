@@ -180,6 +180,16 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lRating;
         case KnownField::AlbumArtist:
             return lAlbumArtist;
+        case KnownField::RemixedBy:
+            return lRemixedBy;
+        case KnownField::Copyright:
+            return lCopyright;
+        case KnownField::TaggingDate:
+            return lTaggingTime;
+        case KnownField::EncodingDate:
+            return lEncodingTime;
+        case KnownField::OriginalReleaseDate:
+            return lOriginalReleaseTime;
         default:;
         }
     } else {
@@ -228,6 +238,10 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sRating;
         case KnownField::AlbumArtist:
             return sAlbumArtist;
+        case KnownField::RemixedBy:
+            return sRemixedBy;
+        case KnownField::Copyright:
+            return sCopyright;
         default:;
         }
     }
@@ -275,10 +289,20 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::SynchronizedLyrics;
     case lAlbumArtist:
         return KnownField::AlbumArtist;
+    case lRemixedBy:
+        return KnownField::RemixedBy;
+    case lCopyright:
+        return KnownField::Copyright;
     case lContentGroupDescription:
         return KnownField::Grouping;
     case lRecordLabel:
         return KnownField::RecordLabel;
+    case lTaggingTime:
+        return KnownField::TaggingDate;
+    case lEncodingTime:
+        return KnownField::EncodingDate;
+    case lOriginalReleaseTime:
+        return KnownField::OriginalReleaseDate;
     case sAlbum:
         return KnownField::Album;
     case sArtist:
@@ -315,6 +339,10 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Grouping;
     case sRecordLabel:
         return KnownField::RecordLabel;
+    case sRemixedBy:
+        return KnownField::RemixedBy;
+    case sCopyright:
+        return KnownField::Copyright;
     default:
         return KnownField::Invalid;
     }

@@ -91,6 +91,10 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return std::string(lyrics());
     case KnownField::AlbumArtist:
         return std::string(albumArtist());
+    case KnownField::Conductor:
+        return std::string(conductor());
+    case KnownField::Copyright:
+        return std::string(copyright());
     default:
         return std::string();
     }
@@ -122,6 +126,8 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { lyricist(), KnownField::Lyricist },
          { lyrics(), KnownField::Lyrics },
          { albumArtist(), KnownField::AlbumArtist },
+                                   { conductor(), KnownField::Conductor },
+                                                      { copyright(), KnownField::Copyright },                                              { copyright(), KnownField::Copyright },
     });
     // clang-format on
     const auto knownField(fieldMap.find(id));

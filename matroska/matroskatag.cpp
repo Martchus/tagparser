@@ -65,6 +65,144 @@ MatroskaTag::IdentifierType MatroskaTag::internallyGetFieldId(KnownField field) 
         return std::string(duration());
     case KnownField::Language:
         return std::string(language());
+    case KnownField::AlbumArtist:
+        return std::string(accompaniment());
+    case KnownField::Subtitle:
+        return std::string(subtitle());
+    case KnownField::LeadPerformer:
+        return std::string(leadPerformer());
+    case KnownField::Arranger:
+        return std::string(arranger());
+    case KnownField::Conductor:
+        return std::string(conductor());
+    case KnownField::Director:
+        return std::string(director());
+    case KnownField::AssistantDirector:
+        return std::string(assistantDirector());
+    case KnownField::DirectorOfPhotography:
+        return std::string(directorOfPhotography());
+    case KnownField::SoundEngineer:
+        return std::string(soundEngineer());
+    case KnownField::ArtDirector:
+        return std::string(artDirector());
+    case KnownField::ProductionDesigner:
+        return std::string(productionDesigner());
+    case KnownField::Choregrapher:
+        return std::string(choregrapher());
+    case KnownField::CostumeDesigner:
+        return std::string(costumeDesigner());
+    case KnownField::Actor:
+        return std::string(actor());
+    case KnownField::Character:
+        return std::string(character());
+    case KnownField::WrittenBy:
+        return std::string(writtenBy());
+    case KnownField::ScreenplayBy:
+        return std::string(screenplayBy());
+    case KnownField::EditedBy:
+        return std::string(editedBy());
+    case KnownField::Producer:
+        return std::string(producer());
+    case KnownField::Coproducer:
+        return std::string(coproducer());
+    case KnownField::ExecutiveProducer:
+        return std::string(executiveProducer());
+    case KnownField::DistributedBy:
+        return std::string(distributedBy());
+    case KnownField::MasteredBy:
+        return std::string(masteredBy());
+    case KnownField::EncodedBy:
+        return std::string(encodedBy());
+    case KnownField::MixedBy:
+        return std::string(mixedBy());
+    case KnownField::RemixedBy:
+        return std::string(remixedBy());
+    case KnownField::ProductionStudio:
+        return std::string(productionStudio());
+    case KnownField::ThanksTo:
+        return std::string(thanksTo());
+    case KnownField::Publisher:
+        return std::string(publisher());
+    case KnownField::Mood:
+        return std::string(mood());
+    case KnownField::OriginalMediaType:
+        return std::string(originalMediaType());
+    case KnownField::ContentType:
+        return std::string(contentType());
+    case KnownField::Subject:
+        return std::string(subject());
+    case KnownField::Keywords:
+        return std::string(keywords());
+    case KnownField::Summary:
+        return std::string(summary());
+    case KnownField::Synopsis:
+        return std::string(synopsis());
+    case KnownField::InitialKey:
+        return std::string(initialKey());
+    case KnownField::Period:
+        return std::string(period());
+    case KnownField::LawRating:
+        return std::string(lawRating());
+    case KnownField::EncodingDate:
+        return std::string(dateEncoded());
+    case KnownField::TaggingDate:
+        return std::string(dateTagged());
+    case KnownField::DigitalizationDate:
+        return std::string(dateDigitized());
+    case KnownField::WritingDate:
+        return std::string(dateWritten());
+    case KnownField::PurchasingDate:
+        return std::string(datePurchased());
+    case KnownField::RecordingLocation:
+        return std::string(recordingLocation());
+    case KnownField::CompositionLocation:
+        return std::string(compositionLocation());
+    case KnownField::ComposerNationality:
+        return std::string(composerNationality());
+    case KnownField::PlayCounter:
+        return std::string(playCounter());
+    case KnownField::Measure:
+        return std::string(measure());
+    case KnownField::Tuning:
+        return std::string(tuning());
+    case KnownField::ISRC:
+        return std::string(isrc());
+    case KnownField::MCDI:
+        return std::string(mcdi());
+    case KnownField::ISBN:
+        return std::string(isbn());
+    case KnownField::Barcode:
+        return std::string(barcode());
+    case KnownField::CatalogNumber:
+        return std::string(catalogNumber());
+    case KnownField::LabelCode:
+        return std::string(labelCode());
+    case KnownField::LCCN:
+        return std::string(lccn());
+    case KnownField::IMDB:
+        return std::string(imdb());
+    case KnownField::TMDB:
+        return std::string(tmdb());
+    case KnownField::TVDB:
+        return std::string(tvdb());
+    case KnownField::PurchaseItem:
+        return std::string(purchaseItem());
+    case KnownField::PurchaseInfo:
+        return std::string(purchaseInfo());
+    case KnownField::PurchaseOwner:
+        return std::string(purchaseOwner());
+    case KnownField::PurchasePrice:
+        return std::string(purchasePrice());
+    case KnownField::PurchaseCurrency:
+        return std::string(purchaseCurrency());
+    case KnownField::Copyright:
+        return std::string(copyright());
+    case KnownField::ProductionCopyright:
+        return std::string(productionCopyright());
+    case KnownField::License:
+        return std::string(license());
+    case KnownField::TermsOfUse:
+        return std::string(termsOfUse());
     default:
         return std::string();
     }
@@ -95,6 +233,75 @@ KnownField MatroskaTag::internallyGetKnownField(const IdentifierType &id) const
         { composer(), KnownField::Composer },
         { duration(), KnownField::Length },
         { language(), KnownField::Language },
+        { accompaniment(), KnownField::AlbumArtist },
+        { subtitle(), KnownField::Subtitle },
+        { leadPerformer(), KnownField::LeadPerformer },
+        { arranger(), KnownField::Arranger },
+        { conductor(), KnownField::Conductor },
+        { director(), KnownField::Director },
+        { assistantDirector(), KnownField::AssistantDirector },
+        { directorOfPhotography(), KnownField::DirectorOfPhotography },
+        { soundEngineer(), KnownField::SoundEngineer },
+        { artDirector(), KnownField::ArtDirector },
+        { productionDesigner(), KnownField::ProductionDesigner },
+        { choregrapher(), KnownField::Choregrapher },
+        { costumeDesigner(), KnownField::CostumeDesigner },
+        { actor(), KnownField::Actor },
+        { character(), KnownField::Character },
+        { writtenBy(), KnownField::WrittenBy },
+        { screenplayBy(), KnownField::ScreenplayBy },
+        { editedBy(), KnownField::EditedBy },
+        { producer(), KnownField::Producer },
+        { coproducer(), KnownField::Coproducer },
+        { executiveProducer(), KnownField::ExecutiveProducer },
+        { distributedBy(), KnownField::DistributedBy },
+        { masteredBy(), KnownField::MasteredBy },
+        { encodedBy(), KnownField::EncodedBy },
+        { mixedBy(), KnownField::MixedBy },
+        { remixedBy(), KnownField::RemixedBy },
+        { productionStudio(), KnownField::ProductionStudio },
+        { thanksTo(), KnownField::ThanksTo },
+        { publisher(), KnownField::Publisher },
+        { mood(), KnownField::Mood },
+        { originalMediaType(), KnownField::OriginalMediaType },
+        { contentType(), KnownField::ContentType },
+        { subject(), KnownField::Subject },
+        { keywords(), KnownField::Keywords },
+        { summary(), KnownField::Summary },
+        { synopsis(), KnownField::Synopsis },
+        { initialKey(), KnownField::InitialKey },
+        { period(), KnownField::Period },
+        { lawRating(), KnownField::LawRating },
+        { dateEncoded(), KnownField::EncodingDate },
+        { dateTagged(), KnownField::TaggingDate },
+        { dateDigitized(), KnownField::DigitalizationDate },
+        { dateWritten(), KnownField::WritingDate },
+        { datePurchased(), KnownField::PurchasingDate },
+        { recordingLocation(), KnownField::RecordingLocation },
+        { compositionLocation(), KnownField::CompositionLocation },
+        { composerNationality(), KnownField::ComposerNationality },
+        { playCounter(), KnownField::PlayCounter },
+        { measure(), KnownField::Measure },
+        { tuning(), KnownField::Tuning },
+        { isrc(), KnownField::ISRC },
+        { mcdi(), KnownField::MCDI },
+        { isbn(), KnownField::ISBN },
+        { barcode(), KnownField::Barcode },
+        { catalogNumber(), KnownField::CatalogNumber },
+        { labelCode(), KnownField::LabelCode },
+        { lccn(), KnownField::LCCN },
+        { imdb(), KnownField::IMDB },
+        { tmdb(), KnownField::TMDB },
+        { tvdb(), KnownField::TVDB },
+        { purchaseItem(), KnownField::PurchaseItem },
+        { purchaseInfo(), KnownField::PurchaseInfo },
+        { purchaseOwner(), KnownField::PurchaseOwner },
+        { purchasePrice(), KnownField::PurchasePrice },
+        { purchaseCurrency(), KnownField::PurchaseCurrency },
+        { copyright(), KnownField::Copyright },
+        { productionCopyright(), KnownField::ProductionCopyright },
+        { license(), KnownField::License },
+        { termsOfUse(), KnownField::TermsOfUse },
     });
     const auto knownField(fieldMap.find(id));
     return knownField != fieldMap.cend() ? knownField->second : KnownField::Invalid;

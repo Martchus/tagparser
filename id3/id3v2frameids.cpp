@@ -75,6 +75,10 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sRecordLabel;
     case lUserDefinedText:
         return sUserDefinedText;
+    case lRemixedBy:
+        return sRemixedBy;
+    case lCopyright:
+        return sCopyright;
     default:
         return 0;
     }
@@ -135,6 +139,10 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lRecordLabel;
     case sUserDefinedText:
         return lUserDefinedText;
+    case sRemixedBy:
+        return lRemixedBy;
+    case sCopyright:
+        return lCopyright;
     default:
         return 0;
     }

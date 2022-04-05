@@ -42,6 +42,9 @@ enum KnownValue : std::uint32_t {
     lUniqueFileId = 0x55464944, /**< UFID */
     lComposer = 0x54434f4d, /**< TCOM */
     lRating = 0x504f504d, /**< POPM */
+    lRemixedBy = 0x54504534, /**< TPE4 */
+    lCopyright = 0x54434F50, /**< TCOP */
+    lEncodingTime = 0x5444454E, /**< TDEN */
     lUserDefinedText = 0x54585858, /**< TXXX */
 
     sAlbum = 0x54414c, /**< ?TAL */
@@ -71,6 +74,8 @@ enum KnownValue : std::uint32_t {
     sUniqueFileId = 0x554649, /**< ?UFI */
     sComposer = 0x54434d, /**< ?TCM */
     sRating = 0x504f50, /**< ?POP */
+    sRemixedBy = 0x545034, /**< TP4 */
+    sCopyright = 0x544352, /**< TCR */
     sUserDefinedText = 0x545858, /**< ?TXX */
 };
 

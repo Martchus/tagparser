@@ -70,6 +70,75 @@ enum class KnownField : unsigned int {
     Vendor, /**< vendor */
     AlbumArtist, /**< album artist */
     ReleaseDate, /**< release date */
+    Subtitle, /**< subtitle */
+    LeadPerformer, /** lead performer */
+    Arranger, /** the person who arranged the piece */
+    Conductor, /** conductor */
+    Director, /** director */
+    AssistantDirector, /** assistant director */
+    DirectorOfPhotography, /** director of photography */
+    SoundEngineer, /** sound engineer */
+    ArtDirector, /** art director */
+    ProductionDesigner, /** production designer */
+    Choregrapher, /** choregrapher */
+    CostumeDesigner, /** costume designer */
+    Actor, /** actor */
+    Character, /** character */
+    WrittenBy, /** written by */
+    ScreenplayBy, /** screenplay by */
+    EditedBy, /** edited by */
+    Producer, /** producer */
+    Coproducer, /** coproducer */
+    ExecutiveProducer, /** executive producer */
+    DistributedBy, /** distributed by */
+    MasteredBy, /** mastered by */
+    EncodedBy, /** encoded by */
+    MixedBy, /** mixed by */
+    RemixedBy, /** remixed by */
+    ProductionStudio, /** production studio */
+    ThanksTo, /** thanks to */
+    Publisher, /** publisher */
+    Mood, /** mood */
+    OriginalMediaType, /** original media type */
+    ContentType, /** content type */
+    Subject, /** subject */
+    Keywords, /** keywords */
+    Summary, /** summary */
+    Synopsis, /** synopsis */
+    InitialKey, /** initial key */
+    Period, /** period */
+    LawRating, /** law rating */
+    EncodingDate, /** encoding date */
+    TaggingDate, /** tagging date */
+    OriginalReleaseDate, /** original release date */
+    DigitalizationDate, /** digitalization date */
+    WritingDate, /** writing date */
+    PurchasingDate, /** purchasing date */
+    RecordingLocation, /** recording location */
+    CompositionLocation, /** composition location */
+    ComposerNationality, /** composer nationality */
+    PlayCounter, /** play counter */
+    Measure, /** measure */
+    Tuning, /** tuning */
+    ISRC, /** International Standard Recording Code */
+    MCDI, /** binary dump of the TOC of the CDROM that this item was taken from */
+    ISBN, /** International Standard Book Number */
+    Barcode, /** barcode */
+    CatalogNumber, /** catalog number */
+    LabelCode, /** label code */
+    LCCN, /** Library of Congress Control Number */
+    IMDB, /** Internet Movie Database ID */
+    TMDB, /** The Movie DB “movie_id” or “tv_id” identifier for movies/TV shows */
+    TVDB, /** The TV Database “Series ID” or “Episode ID” identifier for TV shows */
+    PurchaseItem, /** purchase item URL */
+    PurchaseInfo, /** purchase info */
+    PurchaseOwner, /** purchase owner */
+    PurchasePrice, /** purchase price */
+    PurchaseCurrency, /** purchase currency */
+    Copyright, /** copyright */
+    ProductionCopyright, /** production copyright */
+    License, /** license */
+    TermsOfUse, /** terms of use */
 };
 
 /*!
@@ -80,7 +149,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the TagParser::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::ReleaseDate;
+constexpr KnownField lastKnownField = KnownField::TermsOfUse;
 
 /*!
  * \brief The number of valid entries in the TagParser::KnownField enum.
@@ -229,6 +298,8 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
         return TagDataType::PositionInSet;
     case KnownField::Genre:
         return TagDataType::StandardGenreIndex;
+    case KnownField::MCDI:
+        return TagDataType::Binary;
     case KnownField::SynchronizedLyrics:
         return TagDataType::Undefined; // not supported so far
     default:
