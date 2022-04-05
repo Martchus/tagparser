@@ -421,6 +421,18 @@ constexpr TAG_PARSER_EXPORT std::string_view lccn()
 {
     return "LCCN";
 }
+constexpr TAG_PARSER_EXPORT std::string_view imdb()
+{
+    return "IMDB";
+}
+constexpr TAG_PARSER_EXPORT std::string_view tmdb()
+{
+    return "TMDB";
+}
+constexpr TAG_PARSER_EXPORT std::string_view tvdb()
+{
+    return "TVDB";
+}
 
 // commercial
 
