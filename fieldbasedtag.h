@@ -350,7 +350,7 @@ template <class ImplementationType> inline KnownField FieldMapBasedTag<Implement
 
 template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::supportsField(KnownField field) const
 {
-    static IdentifierType def;
+    static const auto def = IdentifierType();
     return fieldId(field) != def;
 }
 
