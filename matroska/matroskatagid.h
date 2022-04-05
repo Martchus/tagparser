@@ -9,6 +9,8 @@ namespace TagParser {
 
 namespace MatroskaTagIds {
 
+// nesting information
+
 constexpr TAG_PARSER_EXPORT std::string_view original()
 {
     return "ORIGINAL";
@@ -21,6 +23,8 @@ constexpr TAG_PARSER_EXPORT std::string_view country()
 {
     return "COUNTRY";
 }
+
+// organization information
 
 constexpr TAG_PARSER_EXPORT std::string_view totalParts()
 {
@@ -35,6 +39,8 @@ constexpr TAG_PARSER_EXPORT std::string_view partOffset()
     return "PART_OFFSET";
 }
 
+// titles
+
 constexpr TAG_PARSER_EXPORT std::string_view title()
 {
     return "TITLE";
@@ -43,6 +49,8 @@ constexpr TAG_PARSER_EXPORT std::string_view subtitle()
 {
     return "SUBTITLE";
 }
+
+// nested information
 
 constexpr TAG_PARSER_EXPORT std::string_view url()
 {
@@ -72,6 +80,8 @@ constexpr TAG_PARSER_EXPORT std::string_view phone()
 {
     return "PHONE";
 }
+
+// entities
 
 constexpr TAG_PARSER_EXPORT std::string_view artist()
 {
@@ -210,6 +220,8 @@ constexpr TAG_PARSER_EXPORT std::string_view label()
     return "LABEL";
 }
 
+// search and classification
+
 constexpr TAG_PARSER_EXPORT std::string_view genre()
 {
     return "GENRE";
@@ -263,6 +275,8 @@ constexpr TAG_PARSER_EXPORT std::string_view icra()
     return "ICRA";
 }
 
+// temporal information
+
 constexpr TAG_PARSER_EXPORT std::string_view dateRelease()
 {
     return "DATE_RELEASED";
@@ -292,6 +306,8 @@ constexpr TAG_PARSER_EXPORT std::string_view datePurchased()
     return "DATE_PURCHASED";
 }
 
+// spatial information
+
 constexpr TAG_PARSER_EXPORT std::string_view recordingLocation()
 {
     return "RECORDING_LOCATION";
@@ -305,6 +321,8 @@ constexpr TAG_PARSER_EXPORT std::string_view composerNationality()
     return "COMPOSER_NATIONALITY";
 }
 
+// personal
+
 constexpr TAG_PARSER_EXPORT std::string_view comment()
 {
     return "COMMENT";
@@ -317,6 +335,8 @@ constexpr TAG_PARSER_EXPORT std::string_view rating()
 {
     return "RATING";
 }
+
+// technical information
 
 constexpr TAG_PARSER_EXPORT std::string_view encoder()
 {
@@ -338,22 +358,6 @@ constexpr TAG_PARSER_EXPORT std::string_view bpm()
 {
     return "BPM";
 }
-constexpr TAG_PARSER_EXPORT std::string_view duration()
-{
-    return "DURATION";
-}
-constexpr TAG_PARSER_EXPORT std::string_view language()
-{
-    return "LANGUAGE";
-}
-constexpr TAG_PARSER_EXPORT std::string_view numberOfFrames()
-{
-    return "NUMBER_OF_FRAMES";
-}
-constexpr TAG_PARSER_EXPORT std::string_view numberOfBytes()
-{
-    return "NUMBER_OF_BYTES";
-}
 constexpr TAG_PARSER_EXPORT std::string_view measure()
 {
     return "MEASURE";
@@ -370,6 +374,21 @@ constexpr TAG_PARSER_EXPORT std::string_view replaygainPeak()
 {
     return "REPLAYGAIN_PEAK";
 }
+constexpr TAG_PARSER_EXPORT std::string_view duration()
+{
+    return "DURATION";
+}
+constexpr TAG_PARSER_EXPORT std::string_view numberOfFrames()
+{
+    return "NUMBER_OF_FRAMES";
+}
+constexpr TAG_PARSER_EXPORT std::string_view numberOfBytes()
+{
+    return "NUMBER_OF_BYTES";
+}
+
+// identifiers
+
 constexpr TAG_PARSER_EXPORT std::string_view identifiers()
 {
     return "Identifiers";
@@ -403,6 +422,8 @@ constexpr TAG_PARSER_EXPORT std::string_view lccn()
     return "LCCN";
 }
 
+// commercial
+
 constexpr TAG_PARSER_EXPORT std::string_view purchaseItem()
 {
     return "PURCHASE_ITEM";
@@ -424,6 +445,8 @@ constexpr TAG_PARSER_EXPORT std::string_view purchaseCurrency()
     return "PURCHASE_CURRENCY";
 }
 
+// legal
+
 constexpr TAG_PARSER_EXPORT std::string_view copyright()
 {
     return "COPYRIGHT";
@@ -439,6 +462,13 @@ constexpr TAG_PARSER_EXPORT std::string_view license()
 constexpr TAG_PARSER_EXPORT std::string_view termsOfUse()
 {
     return "TERMS_OF_USE";
+}
+
+// other
+
+constexpr TAG_PARSER_EXPORT std::string_view language()
+{
+    return "LANGUAGE";
 }
 
 namespace TrackSpecific {
