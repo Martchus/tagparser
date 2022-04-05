@@ -45,11 +45,17 @@ void OverallTests::checkMkvTestfile1()
         case 2422994868:
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::MicrosoftMpeg4, track->format().general);
+            CPPUNIT_ASSERT(track->isEnabled());
+            CPPUNIT_ASSERT(!track->isForced());
+            CPPUNIT_ASSERT(track->isDefault());
             break;
         case 3653291187:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT(track->isEnabled());
+            CPPUNIT_ASSERT(!track->isForced());
+            CPPUNIT_ASSERT(track->isDefault());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -89,11 +95,17 @@ void OverallTests::checkMkvTestfile2()
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
             CPPUNIT_ASSERT_EQUAL(Size(1354, 576), track->displaySize());
+            CPPUNIT_ASSERT(track->isEnabled());
+            CPPUNIT_ASSERT(!track->isForced());
+            CPPUNIT_ASSERT(track->isDefault());
             break;
         case 3134325680:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT(track->isEnabled());
+            CPPUNIT_ASSERT(!track->isForced());
+            CPPUNIT_ASSERT(track->isDefault());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -132,11 +144,17 @@ void OverallTests::checkMkvTestfile3()
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
             CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
+            CPPUNIT_ASSERT(track->isEnabled());
+            CPPUNIT_ASSERT(!track->isForced());
+            CPPUNIT_ASSERT(track->isDefault());
             break;
         case 3391885737:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
+            CPPUNIT_ASSERT(track->isEnabled());
+            CPPUNIT_ASSERT(!track->isForced());
+            CPPUNIT_ASSERT(track->isDefault());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -190,14 +208,14 @@ void OverallTests::checkMkvTestfile4()
                 CPPUNIT_ASSERT_EQUAL(string(), track->name());
                 CPPUNIT_ASSERT(track->isEnabled());
                 CPPUNIT_ASSERT(!track->isForced());
-                CPPUNIT_ASSERT(!track->isDefault());
+                CPPUNIT_ASSERT(track->isDefault());
                 break;
             case TagStatus::TestMetaDataPresent:
                 CPPUNIT_ASSERT_EQUAL(Locale("ger"sv, LocaleFormat::ISO_639_2_B), track->locale());
                 CPPUNIT_ASSERT_EQUAL("the name"s, track->name());
                 CPPUNIT_ASSERT(track->isEnabled());
                 CPPUNIT_ASSERT(track->isForced());
-                CPPUNIT_ASSERT(track->isDefault());
+                CPPUNIT_ASSERT(!track->isDefault());
                 break;
             }
             break;
@@ -235,12 +253,18 @@ void OverallTests::checkMkvTestfile5()
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
             CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
+            CPPUNIT_ASSERT_EQUAL(true, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         case 3452711582:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(true, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         case 3554194305:
             CPPUNIT_ASSERT_EQUAL(MediaType::Text, track->mediaType());
@@ -283,12 +307,18 @@ void OverallTests::checkMkvTestfile6()
             CPPUNIT_ASSERT_EQUAL(MediaType::Video, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::MicrosoftMpeg4, track->format().general);
             CPPUNIT_ASSERT_EQUAL(Size(854, 480), track->displaySize());
+            CPPUNIT_ASSERT_EQUAL(false, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         case 3653291187:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Mpeg1Audio, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(MpegChannelMode::Stereo), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(false, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -328,12 +358,18 @@ void OverallTests::checkMkvTestfile7()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
             CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
             CPPUNIT_ASSERT_EQUAL("YUV 4:2:0"s, string(track->chromaFormat()));
+            CPPUNIT_ASSERT_EQUAL(false, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         case 2088735154:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(false, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -382,12 +418,18 @@ void OverallTests::checkMkvTestfile8()
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Avc, track->format().general);
             CPPUNIT_ASSERT_EQUAL(Size(1024, 576), track->displaySize());
             CPPUNIT_ASSERT_EQUAL("YUV 4:2:0"s, string(track->chromaFormat()));
+            CPPUNIT_ASSERT_EQUAL(false, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         case 2088735154:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(48000u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(false, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         default:
             CPPUNIT_FAIL("unknown track ID");
@@ -429,12 +471,18 @@ void OverallTests::checkMkvTestfileHandbrakeChapters()
             CPPUNIT_ASSERT_EQUAL(Size(1280, 544), track->pixelSize());
             CPPUNIT_ASSERT_EQUAL(Size(1280, 544), track->displaySize());
             CPPUNIT_ASSERT_EQUAL(23u, track->fps());
+            CPPUNIT_ASSERT_EQUAL(true, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         case 2:
             CPPUNIT_ASSERT_EQUAL(MediaType::Audio, track->mediaType());
             CPPUNIT_ASSERT_EQUAL(GeneralMediaFormat::Aac, track->format().general);
             CPPUNIT_ASSERT_EQUAL(44100u, track->samplingFrequency());
             CPPUNIT_ASSERT_EQUAL(static_cast<std::uint8_t>(Mpeg4ChannelConfigs::FrontLeftFrontRight), track->channelConfig());
+            CPPUNIT_ASSERT_EQUAL(true, track->isDefault());
+            CPPUNIT_ASSERT_EQUAL(true, track->isEnabled());
+            CPPUNIT_ASSERT_EQUAL(false, track->isForced());
             break;
         default:
             CPPUNIT_FAIL(argsToString("unknown track ID ", track->id()));
@@ -601,7 +649,7 @@ void OverallTests::setMkvTestMetaData()
         CPPUNIT_ASSERT(track);
         track->setLocale(Locale("ger"sv, LocaleFormat::ISO_639_2_B));
         track->setName("the name");
-        track->setDefault(true);
+        track->setDefault(false);
         track->setEnabled(true);
         track->setForced(true);
     } else if (fileName == "handbrake-chapters-2.mkv") {
