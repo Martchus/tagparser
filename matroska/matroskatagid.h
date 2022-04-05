@@ -232,7 +232,7 @@ constexpr TAG_PARSER_EXPORT std::string_view mood()
 }
 constexpr TAG_PARSER_EXPORT std::string_view originalMediaType()
 {
-    return "ORIGINAL_TAG_PARSER_TYPE";
+    return "ORIGINAL_MEDIA_TYPE";
 }
 constexpr TAG_PARSER_EXPORT std::string_view contentType()
 {
