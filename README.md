@@ -85,5 +85,7 @@ the ["Building this straight"](https://github.com/Martchus/tageditor#building-th
 
 More TODOs are tracked in the [issue section at GitHub](https://github.com/Martchus/tagparser/issues).
 
-## License
+## Copyright notice and license
+Copyright © 2015-2022 Marius Kittler
+
 All code is licensed under [GPL-2-or-later](LICENSE).
