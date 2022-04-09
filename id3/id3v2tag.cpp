@@ -190,6 +190,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lEncodingTime;
         case KnownField::OriginalReleaseDate:
             return lOriginalReleaseTime;
+        case KnownField::Mood:
+            return lMood;
         default:;
         }
     } else {
@@ -303,6 +305,10 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::EncodingDate;
     case lOriginalReleaseTime:
         return KnownField::OriginalReleaseDate;
+    case lMood:
+        return KnownField::Mood;
+    case lISRC:
+        return KnownField::ISRC;
     case sAlbum:
         return KnownField::Album;
     case sArtist:
@@ -343,6 +349,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::RemixedBy;
     case sCopyright:
         return KnownField::Copyright;
+    case sISRC:
+        return KnownField::ISRC;
     default:
         return KnownField::Invalid;
     }

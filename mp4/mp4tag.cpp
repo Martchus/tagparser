@@ -162,6 +162,22 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return AlbumArtist;
     case KnownField::Copyright:
         return Copyright;
+    case KnownField::Conductor:
+        return Conductor;
+    case KnownField::Director:
+        return Director;
+    case KnownField::Publisher:
+        return Publisher;
+    case KnownField::SoundEngineer:
+        return SoundEngineer;
+    case KnownField::Producer:
+        return Producer;
+    case KnownField::ExecutiveProducer:
+        return ExecutiveProducer;
+    case KnownField::ArtDirector:
+        return ArtDirector;
+    case KnownField::Arranger:
+        return Arranger;
     default:
         return 0;
     }
@@ -215,6 +231,22 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::AlbumArtist;
     case Copyright:
         return KnownField::Copyright;
+    case Conductor:
+        return KnownField::Conductor;
+    case Director:
+        return KnownField::Director;
+    case Publisher:
+        return KnownField::Publisher;
+    case SoundEngineer:
+        return KnownField::SoundEngineer;
+    case Producer:
+        return KnownField::Producer;
+    case ExecutiveProducer:
+        return KnownField::ExecutiveProducer;
+    case ArtDirector:
+        return KnownField::ArtDirector;
+    case Arranger:
+        return KnownField::Arranger;
     default:
         return KnownField::Invalid;
     }

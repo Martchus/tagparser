@@ -101,6 +101,10 @@ constexpr TAG_PARSER_EXPORT std::string_view encoder()
 {
     return "ENCODER";
 }
+constexpr TAG_PARSER_EXPORT std::string_view encodedBy()
+{
+    return "ENCODED_BY";
+}
 constexpr TAG_PARSER_EXPORT std::string_view encoderSettings()
 {
     return "ENCODER_OPTIONS";
@@ -128,6 +132,10 @@ constexpr TAG_PARSER_EXPORT std::string_view subject()
 constexpr TAG_PARSER_EXPORT std::string_view description()
 {
     return "DESCRIPTION";
+}
+constexpr TAG_PARSER_EXPORT std::string_view director()
+{
+    return "DIRECTOR";
 }
 constexpr TAG_PARSER_EXPORT std::string_view isrc()
 {

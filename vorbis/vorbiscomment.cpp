@@ -73,6 +73,8 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return std::string(composer());
     case KnownField::Encoder:
         return std::string(encoder());
+    case KnownField::EncodedBy:
+        return std::string(encodedBy());
     case KnownField::EncoderSettings:
         return std::string(encoderSettings());
     case KnownField::Description:
@@ -95,6 +97,12 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return std::string(conductor());
     case KnownField::Copyright:
         return std::string(copyright());
+    case KnownField::License:
+        return std::string(license());
+    case KnownField::Director:
+        return std::string(director());
+    case KnownField::ISRC:
+        return std::string(isrc());
     default:
         return std::string();
     }
@@ -118,6 +126,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { partNumber(), KnownField::PartNumber },
          { composer(), KnownField::Composer },
          { encoder(), KnownField::Encoder },
+         { encodedBy(), KnownField::EncodedBy },
          { encoderSettings(), KnownField::EncoderSettings },
          { description(), KnownField::Description },
          { grouping(), KnownField::Grouping },
@@ -126,8 +135,11 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { lyricist(), KnownField::Lyricist },
          { lyrics(), KnownField::Lyrics },
          { albumArtist(), KnownField::AlbumArtist },
-                                   { conductor(), KnownField::Conductor },
-                                                      { copyright(), KnownField::Copyright },                                              { copyright(), KnownField::Copyright },
+         { conductor(), KnownField::Conductor },
+         { copyright(), KnownField::Copyright },
+         { license(), KnownField::License },
+         { director(), KnownField::Director },
+         { isrc(), KnownField::ISRC },
     });
     // clang-format on
     const auto knownField(fieldMap.find(id));

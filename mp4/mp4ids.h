@@ -120,6 +120,19 @@ enum KnownValue : std::uint32_t {
     TvSeason = 0x7476736e, /**< tvsn */
     TvShowName = 0x74767368, /**< tvsh */
     Year = 0xA9646179, /**< ©day */
+    Conductor = 0x40636F6E, /** ©con */
+    Director = 0x40646972, /**< @dir */
+    Narrator = 0xA96E7274, /** ©nrt */
+    Publisher = 0xA9707562, /** ©pub */
+    SortWith = 0x736F6E6D, /** sonm */
+    Compilation = 0x6370696C, /** cpil (flag, set to 1 if it is a compilation) */
+    SoundEngineer = 0xA9736E65, /** ©sne */
+    ExecutiveProducer = 0xA9787064, /** ©xpd */
+    ArtDirector = 0xA9617264, /** ©ard */
+    Arranger = 0xA9617267, /** ©arg */
+    Author = 0xA9617574, /** ©aut */
+    OriginalArtist = 0xA96F7065, /** ©ope */
+    Year2 = 0x79727263, /** yrrc (could be mapped to release date but likely not well supported elsewhere (e.g. Kodi uses ©day) */
 };
 }
 
