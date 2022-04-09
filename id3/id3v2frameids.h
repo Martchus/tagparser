@@ -53,7 +53,7 @@ enum KnownValue : std::uint32_t {
     sArtist = 0x545031, /**< ?TP1 */
     sComment = 0x434f4d, /**< ?COM */
     sYear = 0x545945, /**< ?TYE */
-    sOriginalYear = 0x544F5259, /**< TORY */
+    sOriginalYear = 0x544F52, /**< ?TOR */
     sRecordingDates = 0x545244, /**< ?TRD */
     sDate = 0x544441, /**< ?TDA */
     sTime = 0x54494D, /**< ?TIM */
