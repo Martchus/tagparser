@@ -38,7 +38,7 @@ enum KnownValue : std::uint32_t {
     lSynchronizedLyrics = 0x53594C54, /**< SYLT */
     lAlbumArtist = 0x54504532, /**< TPE2 */
     lContentGroupDescription = 0x54495431, /**< TIT1 */
-    lRecordLabel = 0x54505542, /**< TPUB */
+    lRecordLabel = 0x54505542, /**< TPUB \todo rename to lPublisher in v12 */
     lUniqueFileId = 0x55464944, /**< UFID */
     lComposer = 0x54434f4d, /**< TCOM */
     lRating = 0x504f504d, /**< POPM */
@@ -72,7 +72,7 @@ enum KnownValue : std::uint32_t {
     sSynchronizedLyrics = 0x534C54, /**< ?SLT */
     sAlbumArtist = 0x545032, /**< ?TP2 */
     sContentGroupDescription = 0x545431, /**< ?TT1 */
-    sRecordLabel = 0x545042, /**< ?TPB */
+    sRecordLabel = 0x545042, /**< ?TPB \todo rename to sPublisher in v12 */
     sUniqueFileId = 0x554649, /**< ?UFI */
     sComposer = 0x54434d, /**< ?TCM */
     sRating = 0x504f50, /**< ?POP */

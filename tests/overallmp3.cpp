@@ -135,7 +135,7 @@ void OverallTests::checkMp3Testfile2()
             CPPUNIT_ASSERT_EQUAL(m_tagStatus == TagStatus::TestMetaDataPresent ? "Test"s : "Hardstyle"s,
                 tag->value(KnownField::Genre).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("Lavf57.83.100"s, tag->value(KnownField::EncoderSettings).toString(TagTextEncoding::Utf8));
-            CPPUNIT_ASSERT_EQUAL("Roughstate"s, tag->value(KnownField::RecordLabel).toString(TagTextEncoding::Utf8));
+            CPPUNIT_ASSERT_EQUAL("Roughstate"s, tag->value(KnownField::Publisher).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL("2017"s, tag->value(KnownField::RecordDate).toString(TagTextEncoding::Utf8));
             CPPUNIT_ASSERT_EQUAL(1, tag->value(KnownField::TrackPosition).toPositionInSet().position());
             CPPUNIT_ASSERT(tag->value(KnownField::Length).toTimeSpan().isNull());

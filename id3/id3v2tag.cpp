@@ -172,7 +172,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lSynchronizedLyrics;
         case KnownField::Grouping:
             return lContentGroupDescription;
-        case KnownField::RecordLabel:
+        case KnownField::Publisher:
             return lRecordLabel;
         case KnownField::Composer:
             return lComposer;
@@ -232,7 +232,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sSynchronizedLyrics;
         case KnownField::Grouping:
             return sContentGroupDescription;
-        case KnownField::RecordLabel:
+        case KnownField::Publisher:
             return sRecordLabel;
         case KnownField::Composer:
             return sComposer;
@@ -298,7 +298,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case lContentGroupDescription:
         return KnownField::Grouping;
     case lRecordLabel:
-        return KnownField::RecordLabel;
+        return KnownField::Publisher;
     case lTaggingTime:
         return KnownField::TaggingDate;
     case lEncodingTime:
@@ -344,7 +344,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case sAlbumArtist:
         return KnownField::Grouping;
     case sRecordLabel:
-        return KnownField::RecordLabel;
+        return KnownField::Publisher;
     case sRemixedBy:
         return KnownField::RemixedBy;
     case sCopyright:
