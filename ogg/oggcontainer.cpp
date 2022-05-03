@@ -284,6 +284,7 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
         OggParameter &params = comment->oggParams();
         m_iterator.setPageIndex(params.firstPageIndex);
         m_iterator.setSegmentIndex(params.firstSegmentIndex);
+        m_iterator.setFilter(m_iterator.currentPage().streamSerialNumber());
         switch (params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
             comment->parse(m_iterator, VorbisCommentFlags::None, diag);
