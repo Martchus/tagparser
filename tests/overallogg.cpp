@@ -42,6 +42,7 @@ void OverallTests::checkOggTestfile1()
         CPPUNIT_ASSERT(m_fileInfo.hasAnyTag());
         CPPUNIT_ASSERT_EQUAL(1_st, tags.size());
         CPPUNIT_ASSERT_EQUAL("ffmpeg2theora 0.13"s, tags.front()->value(KnownField::Encoder).toString());
+        CPPUNIT_ASSERT_EQUAL(std::vector<std::uint64_t>{0x68a1ea7f}, tags.front()->target().tracks());
         // Theora tags are currently not supported and hence only the Vorbis comment is
         // taken into account here
         break;

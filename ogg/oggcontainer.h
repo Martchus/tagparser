@@ -97,6 +97,9 @@ inline TagType OggVorbisComment::type() const
 
 /*!
  * \brief Returns true; the target is used to specify the stream.
+ * \remarks At this point, one cannot move a tag from one stream to another by changing the target. So
+ *          the target is only evaluated when invoking createTag() and added to parsed tags for informative
+ *          purposes.
  * \sa OggContainer::createTag(), TagTarget
  */
 inline bool OggVorbisComment::supportsTarget() const

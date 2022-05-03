@@ -193,6 +193,7 @@ public:
     std::uint64_t size() const;
     virtual bool supportsTarget() const;
     const TagTarget &target() const;
+    TagTarget &target();
     void setTarget(const TagTarget &target);
     virtual TagTargetLevel targetLevel() const;
     std::string_view targetLevelName() const;
@@ -251,6 +252,11 @@ inline bool Tag::supportsTarget() const
 }
 
 inline const TagTarget &Tag::target() const
+{
+    return m_target;
+}
+
+inline TagTarget &Tag::target()
 {
     return m_target;
 }

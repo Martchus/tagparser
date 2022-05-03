@@ -5,6 +5,7 @@
 #include "../backuphelper.h"
 #include "../mediafileinfo.h"
 #include "../progressfeedback.h"
+#include "../tagtarget.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/copy.h>
@@ -317,8 +318,9 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
  */
 void OggContainer::announceComment(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat mediaFormat)
 {
-    m_tags.emplace_back(make_unique<OggVorbisComment>());
-    m_tags.back()->oggParams().set(pageIndex, segmentIndex, lastMetaDataBlock, mediaFormat);
+    auto &tag = m_tags.emplace_back(make_unique<OggVorbisComment>());
+    tag->oggParams().set(pageIndex, segmentIndex, lastMetaDataBlock, mediaFormat);
+    tag->target().tracks().emplace_back(m_iterator.pages()[pageIndex].streamSerialNumber());
 }
 
 void OggContainer::internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
