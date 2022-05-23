@@ -192,7 +192,7 @@ std::streamoff FlacStream::makeHeader(ostream &outputStream, Diagnostics &diag)
     do {
         // parse block header
         originalStream.read(copy.buffer(), 4);
-        header.parseHeader(copy.buffer());
+        header.parseHeader(std::string_view(copy.buffer(), 4));
 
         // skip/copy block
         switch (static_cast<FlacMetaDataBlockType>(header.type())) {
