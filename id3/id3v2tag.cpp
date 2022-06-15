@@ -307,6 +307,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::OriginalReleaseDate;
     case lMood:
         return KnownField::Mood;
+    case lRating:
+        return KnownField::Rating;
     case lISRC:
         return KnownField::ISRC;
     case sAlbum:
@@ -349,6 +351,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::RemixedBy;
     case sCopyright:
         return KnownField::Copyright;
+    case sRating:
+        return KnownField::Rating;
     case sISRC:
         return KnownField::ISRC;
     default:

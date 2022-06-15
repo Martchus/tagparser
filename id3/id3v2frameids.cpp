@@ -79,6 +79,8 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sRemixedBy;
     case lCopyright:
         return sCopyright;
+    case lRating:
+        return sRating;
     case lISRC:
         return sISRC;
     default:
@@ -145,6 +147,8 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lRemixedBy;
     case sCopyright:
         return lCopyright;
+    case sRating:
+        return lRating;
     case sISRC:
         return lISRC;
     default:
