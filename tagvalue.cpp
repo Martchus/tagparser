@@ -747,6 +747,9 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
     case TagDataType::TimeSpan:
         regularStrRes = toTimeSpan().toString();
         break;
+    case TagDataType::DateTime:
+        regularStrRes = toDateTime().toString(DateTimeOutputFormat::IsoOmittingDefaultComponents);
+        break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
