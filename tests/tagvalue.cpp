@@ -27,6 +27,7 @@ class TagValueTests : public TestFixture {
     CPPUNIT_TEST(testPositionInSet);
     CPPUNIT_TEST(testTimeSpan);
     CPPUNIT_TEST(testDateTime);
+    CPPUNIT_TEST(testPopularity);
     CPPUNIT_TEST(testString);
     CPPUNIT_TEST(testEqualityOperator);
     CPPUNIT_TEST_SUITE_END();
@@ -41,6 +42,7 @@ public:
     void testPositionInSet();
     void testTimeSpan();
     void testDateTime();
+    void testPopularity();
     void testString();
     void testEqualityOperator();
 };
@@ -147,6 +149,17 @@ void TagValueTests::testDateTime()
     CPPUNIT_ASSERT_THROW(dateTime.toPositionInSet(), ConversionException);
 }
 
+void TagValueTests::testPopularity()
+{
+    const auto tagValue = TagValue(Popularity{ .user = "foo", .rating = 42, .playCounter = 123 });
+    const auto popularity = tagValue.toPopularity();
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (user)", "foo"s, popularity.user);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (rating)", 42.0, popularity.rating);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (play counter)", std::uint64_t(123), popularity.playCounter);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", "foo|42|123"s, tagValue.toString());
+    CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to other type", TagValue("foo|bar"sv, TagTextEncoding::Latin1).toInteger(), ConversionException);
+}
+
 void TagValueTests::testString()
 {
     CPPUNIT_ASSERT_EQUAL("15\xe4"s, TagValue("15ä", 4, TagTextEncoding::Utf8).toString(TagTextEncoding::Latin1));
@@ -188,6 +201,11 @@ void TagValueTests::testString()
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to genre from name", 2, TagValue("Country", 7, TagTextEncoding::Latin1).toStandardGenreIndex());
     CPPUNIT_ASSERT_THROW_MESSAGE(
         "failing conversion to genre", TagValue("Kountry", 7, TagTextEncoding::Latin1).toStandardGenreIndex(), ConversionException);
+    const auto popularity = TagValue("foo|42|123"sv).toPopularity();
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (user)", "foo"s, popularity.user);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (rating)", 42.0, popularity.rating);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (play counter)", std::uint64_t(123), popularity.playCounter);
+    CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to popularity", TagValue("foo|bar"sv).toPopularity(), ConversionException);
 }
 
 void TagValueTests::testEqualityOperator()
@@ -211,6 +229,12 @@ void TagValueTests::testEqualityOperator()
     const TagValue fooTagValue("foo", 3, TagDataType::Text), fOoTagValue("fOo", 3, TagDataType::Text);
     CPPUNIT_ASSERT_MESSAGE("string comparison case-sensitive by default"s, fooTagValue != fOoTagValue);
     CPPUNIT_ASSERT_MESSAGE("case-insensitive string comparison"s, fooTagValue.compareTo(fOoTagValue, TagValueComparisionFlags::CaseInsensitive));
+    const auto popularity = Popularity{ .user = "some user", .rating = 200, .playCounter = 0 };
+    const auto first = TagValue(popularity), second = TagValue(popularity);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("comparison of equal popularity (string and binary representation)"s, TagValue("some user|200.0"sv), first);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("comparison of equal popularity (only binary representation)"s, first, second);
+    CPPUNIT_ASSERT_MESSAGE("default-popularity not equal to empty tag value"s, TagValue(Popularity()) != TagValue());
+    CPPUNIT_ASSERT_MESSAGE("popularity not equal"s, first != TagValue(Popularity({ .rating = 200 })));
 
     // meta-data
     TagValue withDescription(15);

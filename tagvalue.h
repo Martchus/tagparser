@@ -68,6 +68,22 @@ constexpr int characterSize(TagTextEncoding encoding)
     }
 }
 
+struct TAG_PARSER_EXPORT Popularity {
+    /// \brief The user who gave the rating / played the file, e.g. identified by e-mail address.
+    std::string user;
+    /// \brief The rating on a tag type specific scale.
+    double rating = 0.0;
+    /// \brief Play counter specific to the user.
+    std::uint64_t playCounter = 0;
+
+    std::string toString() const;
+    static Popularity fromString(std::string_view str);
+    bool operator==(const Popularity &other) const
+    {
+        return playCounter == other.playCounter && rating == other.rating && user == other.user;
+    }
+};
+
 /*!
  * \brief Specifies the data type.
  */
@@ -80,6 +96,7 @@ enum class TagDataType : unsigned int {
     DateTime, /**< date time, see ChronoUtils::DateTime */
     Picture, /**< picture file */
     Binary, /**< unspecified binary data */
+    Popularity, /**< rating with user info and play counter (as in ID3v2's "Popularimeter") */
     Undefined /**< undefined/invalid data type */
 };
 
@@ -112,6 +129,7 @@ public:
     explicit TagValue(PositionInSet value);
     explicit TagValue(CppUtilities::DateTime value);
     explicit TagValue(CppUtilities::TimeSpan value);
+    explicit TagValue(const Popularity &value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other) = default;
     ~TagValue();
@@ -139,6 +157,7 @@ public:
     PositionInSet toPositionInSet() const;
     CppUtilities::TimeSpan toTimeSpan() const;
     CppUtilities::DateTime toDateTime() const;
+    Popularity toPopularity() const;
     std::size_t dataSize() const;
     char *dataPointer();
     const char *dataPointer() const;
@@ -177,6 +196,7 @@ public:
     void assignPosition(PositionInSet value);
     void assignTimeSpan(CppUtilities::TimeSpan value);
     void assignDateTime(CppUtilities::DateTime value);
+    void assignPopularity(const Popularity &value);
 
     static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
     static void ensureHostByteOrder(std::u16string &u16str, TagTextEncoding currentEncoding);
@@ -365,6 +385,15 @@ inline TagValue::TagValue(CppUtilities::DateTime value)
 inline TagValue::TagValue(CppUtilities::TimeSpan value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::TimeSpan)
 {
+}
+
+/*!
+ * \brief Constructs a new TagValue holding a copy of the given Popularity \a value.
+ */
+inline TagValue::TagValue(const Popularity &value)
+    : TagValue()
+{
+    assignPopularity(value);
 }
 
 /*!

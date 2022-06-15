@@ -9,9 +9,12 @@
 #include <c++utilities/conversion/conversionexception.h>
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
+#include <c++utilities/io/binaryreader.h>
+#include <c++utilities/io/binarywriter.h>
 
 #include <algorithm>
 #include <cstring>
+#include <sstream>
 #include <utility>
 
 using namespace std;
@@ -269,6 +272,13 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
             return toTimeSpan() == other.toTimeSpan();
         case TagDataType::DateTime:
             return toDateTime() == other.toDateTime();
+        case TagDataType::Popularity:
+            if (options & TagValueComparisionFlags::CaseInsensitive) {
+                const auto lhs = toPopularity(), rhs = other.toPopularity();
+                return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
+            } else {
+                return toPopularity() == other.toPopularity();
+            }
         case TagDataType::Picture:
         case TagDataType::Binary:
         case TagDataType::Undefined:
@@ -291,6 +301,9 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
         }
     }
     try {
+        if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
+            return toPopularity() == other.toPopularity();
+        }
         return compareData(toString(), other.toString(m_encoding), options & TagValueComparisionFlags::CaseInsensitive);
     } catch (const ConversionException &) {
         return false;
@@ -493,6 +506,44 @@ DateTime TagValue::toDateTime() const
 }
 
 /*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        Popularity representation.
+ * \throws Throws ConversionException on failure.
+ */
+Popularity TagValue::toPopularity() const
+{
+    auto popularity = Popularity();
+    if (isEmpty()) {
+        return popularity;
+    }
+    switch (m_type) {
+    case TagDataType::Text:
+        popularity = Popularity::fromString(std::string_view(toString(TagTextEncoding::Utf8)));
+        break;
+    case TagDataType::Integer:
+        popularity.rating = static_cast<double>(toInteger());
+        break;
+    case TagDataType::Popularity: {
+        auto s = std::stringstream(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+        auto reader = BinaryReader(&s);
+        try {
+            s.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+            s.rdbuf()->pubsetbuf(m_ptr.get(), static_cast<std::streamsize>(m_size));
+            popularity.user = reader.readLengthPrefixedString();
+            popularity.rating = reader.readFloat64LE();
+            popularity.playCounter = reader.readUInt64LE();
+        } catch (const std::ios_base::failure &) {
+            throw ConversionException(argsToString("Assigned popularity is invalid"));
+        }
+        break;
+    }
+    default:
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to date time."));
+    }
+    return popularity;
+}
+
+/*!
  * \brief Converts the currently assigned text value to the specified \a encoding.
  * \throws Throws CppUtilities::ConversionException() if the conversion fails.
  * \remarks
@@ -666,6 +717,9 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
     case TagDataType::DateTime:
         result = toDateTime().toString(DateTimeOutputFormat::IsoOmittingDefaultComponents);
         break;
+    case TagDataType::Popularity:
+        result = toPopularity().toString();
+        break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
@@ -749,6 +803,9 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         break;
     case TagDataType::DateTime:
         regularStrRes = toDateTime().toString(DateTimeOutputFormat::IsoOmittingDefaultComponents);
+        break;
+    case TagDataType::Popularity:
+        regularStrRes = toPopularity().toString();
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
@@ -877,6 +934,27 @@ void TagValue::assignData(unique_ptr<char[]> &&data, size_t length, TagDataType 
 }
 
 /*!
+ * \brief Assigns the specified popularity \a value.
+ */
+void TagValue::assignPopularity(const Popularity &value)
+{
+    auto s = std::stringstream(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+    auto writer = BinaryWriter(&s);
+    try {
+        s.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+        writer.writeLengthPrefixedString(value.user);
+        writer.writeFloat64LE(value.rating);
+        writer.writeUInt64LE(value.playCounter);
+        auto size = static_cast<std::size_t>(s.tellp());
+        auto ptr = std::make_unique<char[]>(size);
+        s.read(ptr.get(), s.tellp());
+        assignData(std::move(ptr), size, TagDataType::Popularity);
+    } catch (const std::ios_base::failure &) {
+        throw ConversionException("Unable to serialize specified Popularity");
+    }
+}
+
+/*!
  * \brief Strips the byte order mask from the specified \a text.
  */
 void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encoding)
@@ -962,6 +1040,37 @@ const TagValue &TagValue::empty()
 {
     static TagValue emptyTagValue;
     return emptyTagValue;
+}
+
+/*!
+ * \brief Returns the popularity as string in the format "user|rating|play-counter".
+ */
+std::string Popularity::toString() const
+{
+    return user % '|' % numberToString(rating) % '|' + playCounter;
+}
+
+/*!
+ * \brief Parses the popularity from \a str assuming the same format as toString() produces.
+ * \throws Throws ConversionException() if the format is invalid.
+ */
+Popularity Popularity::fromString(std::string_view str)
+{
+    const auto parts = splitStringSimple<std::vector<std::string_view>>(str, "|");
+    auto res = Popularity();
+    if (parts.empty()) {
+        return res;
+    } else if (parts.size() > 3) {
+        throw ConversionException("Wrong format, expected \"user|rating|play-counter\"");
+    }
+    res.user = parts.front();
+    if (parts.size() > 1) {
+        res.rating = stringToNumber<decltype(res.rating)>(parts[1]);
+    }
+    if (parts.size() > 2) {
+        res.playCounter = stringToNumber<decltype(res.playCounter)>(parts[2]);
+    }
+    return res;
 }
 
 } // namespace TagParser

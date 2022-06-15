@@ -379,6 +379,9 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const std::uint32_t &id) con
     case lCover:
     case sCover:
         return TagDataType::Picture;
+    case lRating:
+    case sRating:
+        return TagDataType::Popularity;
     default:
         if (Id3v2FrameIds::isTextFrame(id)) {
             return TagDataType::Text;
