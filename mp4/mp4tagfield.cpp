@@ -347,7 +347,7 @@ std::vector<std::uint32_t> Mp4TagField::expectedRawDataTypes() const
         res.push_back(RawDataType::Reserved);
         break;
     case Bpm:
-    case Rating:
+    case Rating: // 0 = None, 1 = Explicit, 2 = Clean
         res.push_back(RawDataType::BeSignedInt);
         res.push_back(RawDataType::BeUnsignedInt);
         break;
