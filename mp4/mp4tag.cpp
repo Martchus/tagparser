@@ -144,7 +144,7 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return Bpm;
     case KnownField::Cover:
         return Cover;
-    case KnownField::Rating:
+    case KnownField::LawRating:
         return Rating;
     case KnownField::Grouping:
         return Grouping;
@@ -214,7 +214,7 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
     case Cover:
         return KnownField::Cover;
     case Rating:
-        return KnownField::Rating;
+        return KnownField::LawRating;
     case Grouping:
         return KnownField::Grouping;
     case Description:
