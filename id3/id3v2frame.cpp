@@ -122,6 +122,23 @@ u16string wideStringFromSubstring(tuple<const char *, size_t, const char *> subs
 }
 
 /*!
+ * \brief Reads the play counter from the specified range.
+ */
+static std::uint64_t readPlayCounter(const char *begin, const char *end, const std::string &context, Diagnostics &diag)
+{
+    auto res = std::uint64_t();
+    auto pos = end - 1;
+    if (end - begin > 8) {
+        diag.emplace_back(DiagLevel::Critical, "Play counter is bigger than eight bytes and therefore not supported.", context);
+        return res;
+    }
+    for (auto shift = 0; pos >= begin; shift += 8, --pos) {
+        res += static_cast<std::uint64_t>(static_cast<std::uint8_t>(*pos)) << shift;
+    }
+    return res;
+}
+
+/*!
  * \brief Parses a frame from the stream read using the specified \a reader.
  *
  * The position of the current character in the input stream is expected to be
@@ -363,6 +380,24 @@ void Id3v2Frame::parse(BinaryReader &reader, std::uint32_t version, std::uint32_
         // parse comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
         parseComment(buffer.get(), m_dataSize, value(), diag);
 
+    } else if (((version >= 3 && id() == Id3v2FrameIds::lRating) || (version < 3 && id() == Id3v2FrameIds::sRating))) {
+        // parse popularimeter frame
+        auto popularity = Popularity();
+        auto userEncoding = TagTextEncoding::Latin1;
+        auto substr = parseSubstring(buffer.get(), m_dataSize, userEncoding, true, diag);
+        auto end = buffer.get() + m_dataSize;
+        if (std::get<1>(substr)) {
+            popularity.user.assign(std::get<0>(substr), std::get<1>(substr));
+        }
+        auto ratingPos = std::get<2>(substr);
+        if (ratingPos >= end) {
+            diag.emplace_back(DiagLevel::Critical, "Popularimeter frame is incomplete (rating is missing).", context);
+            throw TruncatedDataException();
+        }
+        popularity.rating = static_cast<std::uint8_t>(*ratingPos);
+        popularity.playCounter = readPlayCounter(ratingPos + 1, end, context, diag);
+        value().assignPopularity(popularity);
+
     } else {
         // parse unknown/unsupported frame
         value().assignData(buffer.get(), m_dataSize, TagDataType::Undefined);
@@ -428,6 +463,28 @@ std::string Id3v2Frame::ignoreAdditionalValuesDiagMsg() const
         return argsToString("Additional value \"", m_additionalValues.front().toString(TagTextEncoding::Utf8), "\" is supposed to be ignored.");
     }
     return argsToString("Additional values ", DiagMessage::formatList(TagValue::toStrings(m_additionalValues)), " are supposed to be ignored.");
+}
+
+/*!
+ * \brief Computes the size required to serialize the specified \a playCounter value.
+ */
+static std::uint32_t computePlayCounterSize(std::uint64_t playCounter)
+{
+    auto res = 4u;
+    for (playCounter >>= 32; playCounter; playCounter >>= 8, ++res)
+        ; // additional bytes for play counter into account when it is > 0xFFFFFFFF
+    return res;
+}
+
+/*!
+ * \brief Writes the specified \a playCounter with the specified \a playCounterSize to the buffer specified
+ *        by the \a last address to write the data to.
+ */
+static void writePlayCounter(char *last, std::uint32_t playCounterSize, std::uint64_t playCounter)
+{
+    for (; playCounter || playCounterSize; playCounter >>= 8, --playCounterSize, --last) {
+        *last = static_cast<char>(playCounter & 0xFF);
+    }
 }
 
 /*!
@@ -640,6 +697,36 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
             // make comment frame or the unsynchronized lyrics frame
             m_frame.makeComment(m_data, m_decompressedSize, *values.front(), version, diag);
 
+        } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lRating) || (version < 3 && m_frameId == Id3v2FrameIds::sRating))) {
+            // make popularimeter frame
+            auto popularity = Popularity();
+            try {
+                popularity = values.front()->toPopularity();
+            } catch (const ConversionException &) {
+                diag.emplace_back(DiagLevel::Warning,
+                    argsToString(
+                        "The popularity \"", values.front()->toDisplayString(), "\" is not of the expected form, eg. \"user|rating|counter\"."),
+                    context);
+            }
+            // -> clamp rating
+            if (popularity.rating > 0xFF) {
+                popularity.rating = 0xFF;
+                diag.emplace_back(DiagLevel::Warning, argsToString("The rating has been clamped to 255."), context);
+            } else if (popularity.rating < 0x00) {
+                popularity.rating = 0x00;
+                diag.emplace_back(DiagLevel::Warning, argsToString("The rating has been clamped to 0."), context);
+            }
+            // -> compute size: user name length + termination + rating byte
+            m_decompressedSize = static_cast<std::uint32_t>(popularity.user.size() + 2);
+            const auto playCounterSize = computePlayCounterSize(popularity.playCounter);
+            m_decompressedSize += playCounterSize;
+            // -> copy data into buffer
+            m_data = make_unique<char[]>(m_decompressedSize);
+            auto pos = popularity.user.size() + 1;
+            std::memcpy(m_data.get(), popularity.user.data(), pos);
+            m_data[pos] = static_cast<char>(popularity.rating);
+            writePlayCounter(m_data.get() + pos + playCounterSize, playCounterSize, popularity.playCounter);
+
         } else {
             // make unknown frame
             const auto &value(*values.front());
@@ -648,7 +735,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
                 throw InvalidDataException();
             }
             m_data = make_unique<char[]>(m_decompressedSize = static_cast<std::uint32_t>(value.dataSize()));
-            copy(value.dataPointer(), value.dataPointer() + m_decompressedSize, m_data.get());
+            std::memcpy(m_data.get(), value.dataPointer(), m_decompressedSize);
         }
     } catch (const ConversionException &) {
         try {

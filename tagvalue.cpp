@@ -333,6 +333,30 @@ void TagValue::clearMetadata()
 }
 
 /*!
+ * \brief Returns a "display string" for the specified value.
+ * \returns
+ * - Returns the just the type if no displayable string can be made of it, eg. "picture", otherwise
+ *   returns the string representation.
+ * - Returns "invalid …" if a conversion error returned when making the string representation but
+ *   never throws a ConversionException (unlike toString()).
+ */
+std::string TagParser::TagValue::toDisplayString() const
+{
+    switch (m_type) {
+    case TagDataType::Undefined:
+    case TagDataType::Binary:
+    case TagDataType::Picture:
+        return std::string(tagDataTypeString(m_type));
+    default:
+        try {
+            return toString(TagTextEncoding::Utf8);
+        } catch (const ConversionException &e) {
+            return argsToString("invalid ", tagDataTypeString(m_type), ':', ' ', e.what());
+        }
+    }
+}
+
+/*!
  * \brief Converts the value of the current TagValue object to its equivalent
  *        integer representation.
  * \throws Throws ConversionException on failure.
@@ -1050,11 +1074,12 @@ const TagValue &TagValue::empty()
 }
 
 /*!
- * \brief Returns the popularity as string in the format "user|rating|play-counter".
+ * \brief Returns the popularity as string in the format "user|rating|play-counter" or an empty
+ *        string if the popularity isEmpty().
  */
 std::string Popularity::toString() const
 {
-    return user % '|' % numberToString(rating) % '|' + playCounter;
+    return isEmpty() ? std::string() : user % '|' % numberToString(rating) % '|' + playCounter;
 }
 
 /*!

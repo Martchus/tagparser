@@ -76,6 +76,10 @@ struct TAG_PARSER_EXPORT Popularity {
     /// \brief Play counter specific to the user.
     std::uint64_t playCounter = 0;
 
+    bool isEmpty() const
+    {
+        return user.empty() && rating != 0.0 && !playCounter;
+    }
     std::string toString() const;
     static Popularity fromString(std::string_view str);
     bool operator==(const Popularity &other) const
@@ -149,6 +153,7 @@ public:
     void clearDataAndMetadata();
     TagDataType type() const;
     std::string toString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
+    std::string toDisplayString() const;
     void toString(std::string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     void toWString(std::u16string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
