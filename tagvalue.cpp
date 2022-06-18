@@ -274,41 +274,40 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
                 return toTimeSpan() == other.toTimeSpan();
             case TagDataType::DateTime:
                 return toDateTime() == other.toDateTime();
-            case TagDataType::Popularity:
-                if (options & TagValueComparisionFlags::CaseInsensitive) {
-                    const auto lhs = toPopularity(), rhs = other.toPopularity();
-                    return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
-                } else {
-                    return toPopularity() == other.toPopularity();
-                }
             case TagDataType::Picture:
             case TagDataType::Binary:
             case TagDataType::Undefined:
                 return compareData(other);
+            default:;
             }
-            return false;
         }
 
-        // handle certain types
-        if (m_type == TagDataType::Undefined || other.m_type == TagDataType::Undefined) {
-            return false;
-        } else if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
-            return toPopularity() == other.toPopularity();
-        }
-
-        // do not attempt to convert certain types to string because it will always fail anyways
+        // do not attempt implicit conversions for certain types
+        // TODO: Maybe it would actually make sense for some of these types (at least when the other type is
+        //       string)?
         for (const auto dataType : { m_type, other.m_type }) {
             switch (dataType) {
             case TagDataType::TimeSpan:
             case TagDataType::DateTime:
             case TagDataType::Picture:
             case TagDataType::Binary:
+            case TagDataType::Undefined:
                 return false;
             default:;
             }
         }
 
-        // check for equality if types are different by comparing the string representation (if that makes sense)
+        // handle types where an implicit conversion to the specific type can be done
+        if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
+            if (options & TagValueComparisionFlags::CaseInsensitive) {
+                const auto lhs = toPopularity(), rhs = other.toPopularity();
+                return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
+            } else {
+                return toPopularity() == other.toPopularity();
+            }
+        }
+
+        // handle other types where an implicit conversion to string can be done by comparing the string representation
         return compareData(toString(), other.toString(m_encoding), options & TagValueComparisionFlags::CaseInsensitive);
 
     } catch (const ConversionException &) {
