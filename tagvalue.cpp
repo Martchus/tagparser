@@ -227,84 +227,90 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
         }
     }
 
-    // check for equality if both types are identical
-    if (m_type == other.m_type) {
-        switch (m_type) {
-        case TagDataType::Text: {
-            // compare raw data directly if the encoding is the same
-            if (m_size != other.m_size && m_encoding == other.m_encoding) {
-                return false;
-            }
-            if (m_encoding == other.m_encoding || m_encoding == TagTextEncoding::Unspecified || other.m_encoding == TagTextEncoding::Unspecified) {
-                return compareData(other, options & TagValueComparisionFlags::CaseInsensitive);
-            }
-
-            // compare UTF-8 or UTF-16 representation of strings avoiding unnecessary conversions
-            const auto utfEncodingToUse = pickUtfEncoding(m_encoding, other.m_encoding);
-            string str1, str2;
-            const char *data1, *data2;
-            size_t size1, size2;
-            if (m_encoding != utfEncodingToUse) {
-                str1 = toString(utfEncodingToUse);
-                data1 = str1.data();
-                size1 = str1.size();
-            } else {
-                data1 = m_ptr.get();
-                size1 = m_size;
-            }
-            if (other.m_encoding != utfEncodingToUse) {
-                str2 = other.toString(utfEncodingToUse);
-                data2 = str2.data();
-                size2 = str2.size();
-            } else {
-                data2 = other.m_ptr.get();
-                size2 = other.m_size;
-            }
-            return compareData(data1, size1, data2, size2, options & TagValueComparisionFlags::CaseInsensitive);
-        }
-        case TagDataType::PositionInSet:
-            return toPositionInSet() == other.toPositionInSet();
-        case TagDataType::Integer:
-            return toInteger() == other.toInteger();
-        case TagDataType::StandardGenreIndex:
-            return toStandardGenreIndex() == other.toStandardGenreIndex();
-        case TagDataType::TimeSpan:
-            return toTimeSpan() == other.toTimeSpan();
-        case TagDataType::DateTime:
-            return toDateTime() == other.toDateTime();
-        case TagDataType::Popularity:
-            if (options & TagValueComparisionFlags::CaseInsensitive) {
-                const auto lhs = toPopularity(), rhs = other.toPopularity();
-                return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
-            } else {
-                return toPopularity() == other.toPopularity();
-            }
-        case TagDataType::Picture:
-        case TagDataType::Binary:
-        case TagDataType::Undefined:
-            return compareData(other);
-        }
-        return false;
-    }
-
-    // check for equality if types are different by comparing the string representation (if that makes sense)
-    for (const auto dataType : { m_type, other.m_type }) {
-        switch (dataType) {
-        case TagDataType::TimeSpan:
-        case TagDataType::DateTime:
-        case TagDataType::Picture:
-        case TagDataType::Binary:
-        case TagDataType::Undefined:
-            // do not attempt to convert these types to string because it will always fail anyways
-            return false;
-        default:;
-        }
-    }
     try {
-        if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
+        // check for equality if both types are identical
+        if (m_type == other.m_type) {
+            switch (m_type) {
+            case TagDataType::Text: {
+                // compare raw data directly if the encoding is the same
+                if (m_size != other.m_size && m_encoding == other.m_encoding) {
+                    return false;
+                }
+                if (m_encoding == other.m_encoding || m_encoding == TagTextEncoding::Unspecified
+                    || other.m_encoding == TagTextEncoding::Unspecified) {
+                    return compareData(other, options & TagValueComparisionFlags::CaseInsensitive);
+                }
+
+                // compare UTF-8 or UTF-16 representation of strings avoiding unnecessary conversions
+                const auto utfEncodingToUse = pickUtfEncoding(m_encoding, other.m_encoding);
+                string str1, str2;
+                const char *data1, *data2;
+                size_t size1, size2;
+                if (m_encoding != utfEncodingToUse) {
+                    str1 = toString(utfEncodingToUse);
+                    data1 = str1.data();
+                    size1 = str1.size();
+                } else {
+                    data1 = m_ptr.get();
+                    size1 = m_size;
+                }
+                if (other.m_encoding != utfEncodingToUse) {
+                    str2 = other.toString(utfEncodingToUse);
+                    data2 = str2.data();
+                    size2 = str2.size();
+                } else {
+                    data2 = other.m_ptr.get();
+                    size2 = other.m_size;
+                }
+                return compareData(data1, size1, data2, size2, options & TagValueComparisionFlags::CaseInsensitive);
+            }
+            case TagDataType::PositionInSet:
+                return toPositionInSet() == other.toPositionInSet();
+            case TagDataType::Integer:
+                return toInteger() == other.toInteger();
+            case TagDataType::StandardGenreIndex:
+                return toStandardGenreIndex() == other.toStandardGenreIndex();
+            case TagDataType::TimeSpan:
+                return toTimeSpan() == other.toTimeSpan();
+            case TagDataType::DateTime:
+                return toDateTime() == other.toDateTime();
+            case TagDataType::Popularity:
+                if (options & TagValueComparisionFlags::CaseInsensitive) {
+                    const auto lhs = toPopularity(), rhs = other.toPopularity();
+                    return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
+                } else {
+                    return toPopularity() == other.toPopularity();
+                }
+            case TagDataType::Picture:
+            case TagDataType::Binary:
+            case TagDataType::Undefined:
+                return compareData(other);
+            }
+            return false;
+        }
+
+        // handle certain types
+        if (m_type == TagDataType::Undefined || other.m_type == TagDataType::Undefined) {
+            return false;
+        } else if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
             return toPopularity() == other.toPopularity();
         }
+
+        // do not attempt to convert certain types to string because it will always fail anyways
+        for (const auto dataType : { m_type, other.m_type }) {
+            switch (dataType) {
+            case TagDataType::TimeSpan:
+            case TagDataType::DateTime:
+            case TagDataType::Picture:
+            case TagDataType::Binary:
+                return false;
+            default:;
+            }
+        }
+
+        // check for equality if types are different by comparing the string representation (if that makes sense)
         return compareData(toString(), other.toString(m_encoding), options & TagValueComparisionFlags::CaseInsensitive);
+
     } catch (const ConversionException &) {
         return false;
     }
