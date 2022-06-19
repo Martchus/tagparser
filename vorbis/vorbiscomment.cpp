@@ -103,6 +103,8 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return std::string(director());
     case KnownField::ISRC:
         return std::string(isrc());
+    case KnownField::Rating:
+        return std::string(rating());
     default:
         return std::string();
     }
@@ -140,6 +142,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { license(), KnownField::License },
          { director(), KnownField::Director },
          { isrc(), KnownField::ISRC },
+         { rating(), KnownField::Rating },
     });
     // clang-format on
     const auto knownField(fieldMap.find(id));

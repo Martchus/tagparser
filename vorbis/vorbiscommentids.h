@@ -141,6 +141,10 @@ constexpr TAG_PARSER_EXPORT std::string_view isrc()
 {
     return "ISRC";
 }
+constexpr TAG_PARSER_EXPORT std::string_view rating()
+{
+    return "RATING";
+}
 constexpr TAG_PARSER_EXPORT std::string_view eanupn()
 {
     return "EAN/UPN";
