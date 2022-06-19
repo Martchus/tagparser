@@ -157,7 +157,9 @@ void TagValueTests::testPopularity()
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (rating)", 42.0, popularity.rating);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (play counter)", std::uint64_t(123), popularity.playCounter);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", "foo|42|123"s, tagValue.toString());
-    CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to other type", TagValue("foo|bar"sv, TagTextEncoding::Latin1).toInteger(), ConversionException);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", 42, tagValue.toInteger());
+    CPPUNIT_ASSERT_THROW_MESSAGE(
+        "failing conversion to other type", TagValue("foo|bar"sv, TagTextEncoding::Latin1).toPopularity(), ConversionException);
 }
 
 void TagValueTests::testString()

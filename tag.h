@@ -291,7 +291,6 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
     switch (field) {
     case KnownField::Bpm:
     case KnownField::Bps:
-    case KnownField::Rating:
     case KnownField::PartNumber:
     case KnownField::TotalParts:
         return TagDataType::Integer;
@@ -306,8 +305,13 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
         return TagDataType::StandardGenreIndex;
     case KnownField::MCDI:
         return TagDataType::Binary;
+    case KnownField::Rating:
+        // could also be a plain integer but popularity should generally be used (and can be converted
+        // to an integer)
+        return TagDataType::Popularity;
     case KnownField::SynchronizedLyrics:
-        return TagDataType::Undefined; // not supported so far
+        // not supported
+        return TagDataType::Undefined;
     default:
         return TagDataType::Text;
     }

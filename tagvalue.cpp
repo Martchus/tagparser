@@ -365,6 +365,8 @@ std::int32_t TagValue::toInteger() const
             return *reinterpret_cast<std::int32_t *>(m_ptr.get());
         }
         throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
+    case TagDataType::Popularity:
+        return static_cast<std::int32_t>(toPopularity().rating);
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to integer."));
     }
