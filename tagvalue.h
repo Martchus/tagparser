@@ -100,8 +100,8 @@ enum class TagDataType : unsigned int {
     DateTime, /**< date time, see ChronoUtils::DateTime */
     Picture, /**< picture file */
     Binary, /**< unspecified binary data */
+    Undefined, /**< undefined/invalid data type */
     Popularity, /**< rating with user info and play counter (as in ID3v2's "Popularimeter") */
-    Undefined /**< undefined/invalid data type */
 };
 
 /*!
