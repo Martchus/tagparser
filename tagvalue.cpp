@@ -266,8 +266,6 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
             }
             case TagDataType::PositionInSet:
                 return toPositionInSet() == other.toPositionInSet();
-            case TagDataType::Integer:
-                return toInteger() == other.toInteger();
             case TagDataType::StandardGenreIndex:
                 return toStandardGenreIndex() == other.toStandardGenreIndex();
             case TagDataType::TimeSpan:
@@ -298,7 +296,11 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
         }
 
         // handle types where an implicit conversion to the specific type can be done
-        if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
+        if (m_type == TagDataType::Integer || other.m_type == TagDataType::Integer) {
+            return toInteger() == other.toInteger();
+        } else if (m_type == TagDataType::UnsignedInteger || other.m_type == TagDataType::UnsignedInteger) {
+            return toUnsignedInteger() == other.toUnsignedInteger();
+        } else if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
             if (options & TagValueComparisionFlags::CaseInsensitive) {
                 const auto lhs = toPopularity(), rhs = other.toPopularity();
                 return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
@@ -391,6 +393,51 @@ std::int32_t TagValue::toInteger() const
         throw ConversionException("Can not convert assigned data to integer because the data size is not appropriate.");
     case TagDataType::Popularity:
         return static_cast<std::int32_t>(toPopularity().rating);
+    case TagDataType::UnsignedInteger: {
+        const auto unsignedInteger = toUnsignedInteger();
+        if (unsignedInteger > std::numeric_limits<std::int32_t>::max()) {
+            throw ConversionException(argsToString("Unsigned integer too big for conversion to integer."));
+        }
+        return static_cast<std::int32_t>(unsignedInteger);
+    }
+    default:
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to integer."));
+    }
+}
+
+std::uint64_t TagValue::toUnsignedInteger() const
+{
+    if (isEmpty()) {
+        return 0;
+    }
+    switch (m_type) {
+    case TagDataType::Text:
+        switch (m_encoding) {
+        case TagTextEncoding::Utf16LittleEndian:
+        case TagTextEncoding::Utf16BigEndian: {
+            auto u16str = u16string(reinterpret_cast<char16_t *>(m_ptr.get()), m_size / 2);
+            ensureHostByteOrder(u16str, m_encoding);
+            return stringToNumber<std::uint64_t>(u16str);
+        }
+        default:
+            return bufferToNumber<std::uint64_t>(m_ptr.get(), m_size);
+        }
+    case TagDataType::PositionInSet:
+    case TagDataType::Integer:
+    case TagDataType::StandardGenreIndex: {
+        const auto integer = toInteger();
+        if (integer < 0) {
+            throw ConversionException(argsToString("Can not convert negative value to unsigned integer."));
+        }
+        return static_cast<std::uint64_t>(integer);
+    }
+    case TagDataType::Popularity:
+        return static_cast<std::uint64_t>(toPopularity().rating);
+    case TagDataType::UnsignedInteger:
+        if (m_size == sizeof(std::uint64_t)) {
+            return *reinterpret_cast<std::uint64_t *>(m_ptr.get());
+        }
+        throw ConversionException("Can not convert assigned data to unsigned integer because the data size is not appropriate.");
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to integer."));
     }
@@ -423,10 +470,19 @@ int TagValue::toStandardGenreIndex() const
     }
     case TagDataType::StandardGenreIndex:
     case TagDataType::Integer:
-        if (m_size != sizeof(std::int32_t)) {
+    case TagDataType::UnsignedInteger:
+        if (m_size == sizeof(std::int32_t)) {
+            index = static_cast<int>(*reinterpret_cast<std::int32_t *>(m_ptr.get()));
+        } else if (m_size == sizeof(std::uint64_t)) {
+            const auto unsignedInt = *reinterpret_cast<std::uint64_t *>(m_ptr.get());
+            if (unsignedInt <= std::numeric_limits<int>::max()) {
+                index = static_cast<int>(unsignedInt);
+            } else {
+                index = Id3Genres::genreCount();
+            }
+        } else {
             throw ConversionException("The assigned index/integer is of unappropriate size.");
         }
-        index = static_cast<int>(*reinterpret_cast<std::int32_t *>(m_ptr.get()));
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to genre index."));
@@ -470,6 +526,17 @@ PositionInSet TagValue::toPositionInSet() const
         default:
             throw ConversionException("The size of the assigned data is not appropriate.");
         }
+    case TagDataType::UnsignedInteger:
+        switch (m_size) {
+        case sizeof(std::uint64_t): {
+            const auto track = *(reinterpret_cast<std::uint64_t *>(m_ptr.get()));
+            if (track < std::numeric_limits<std::int32_t>::max()) {
+                return PositionInSet(static_cast<std::int32_t>(track));
+            }
+        }
+        default:;
+        }
+        throw ConversionException("The size of the assigned data is not appropriate.");
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to position in set."));
     }
@@ -498,6 +565,17 @@ TimeSpan TagValue::toTimeSpan() const
         default:
             throw ConversionException("The size of the assigned integer is not appropriate for conversion to time span.");
         }
+    case TagDataType::UnsignedInteger:
+        switch (m_size) {
+        case sizeof(std::uint64_t): {
+            const auto ticks = *(reinterpret_cast<std::uint64_t *>(m_ptr.get()));
+            if (ticks < std::numeric_limits<std::int64_t>::max()) {
+                return TimeSpan(static_cast<std::int64_t>(ticks));
+            }
+        }
+        default:;
+        }
+        throw ConversionException("The size of the assigned data is not appropriate.");
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to time span."));
     }
@@ -524,9 +602,10 @@ DateTime TagValue::toDateTime() const
     }
     case TagDataType::Integer:
     case TagDataType::DateTime:
+    case TagDataType::UnsignedInteger:
         if (m_size == sizeof(std::int32_t)) {
             return DateTime(*(reinterpret_cast<std::uint32_t *>(m_ptr.get())));
-        } else if (m_size == sizeof(std::int64_t)) {
+        } else if (m_size == sizeof(std::uint64_t)) {
             return DateTime(*(reinterpret_cast<std::uint64_t *>(m_ptr.get())));
         } else {
             throw ConversionException("The size of the assigned integer is not appropriate for conversion to date time.");
@@ -568,6 +647,9 @@ Popularity TagValue::toPopularity() const
         }
         break;
     }
+    case TagDataType::UnsignedInteger:
+        popularity.rating = static_cast<double>(toUnsignedInteger());
+        break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to date time."));
     }
@@ -751,6 +833,9 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
     case TagDataType::Popularity:
         result = toPopularity().toString();
         break;
+    case TagDataType::UnsignedInteger:
+        result = numberToString(toUnsignedInteger());
+        break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
@@ -838,6 +923,9 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
     case TagDataType::Popularity:
         regularStrRes = toPopularity().toString();
         break;
+    case TagDataType::UnsignedInteger:
+        regularStrRes = numberToString(toUnsignedInteger());
+        break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
@@ -915,6 +1003,19 @@ void TagValue::assignInteger(int value)
     m_ptr = make_unique<char[]>(m_size);
     std::copy(reinterpret_cast<const char *>(&value), reinterpret_cast<const char *>(&value) + m_size, m_ptr.get());
     m_type = TagDataType::Integer;
+    m_encoding = TagTextEncoding::Latin1;
+}
+
+/*!
+ * \brief Assigns the given unsigned integer \a value.
+ * \param value Specifies the unsigned integer to be assigned.
+ */
+void TagValue::assignUnsignedInteger(std::uint64_t value)
+{
+    m_size = sizeof(value);
+    m_ptr = make_unique<char[]>(m_size);
+    std::copy(reinterpret_cast<const char *>(&value), reinterpret_cast<const char *>(&value) + m_size, m_ptr.get());
+    m_type = TagDataType::UnsignedInteger;
     m_encoding = TagTextEncoding::Latin1;
 }
 

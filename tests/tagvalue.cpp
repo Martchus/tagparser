@@ -24,6 +24,7 @@ class TagValueTests : public TestFixture {
     CPPUNIT_TEST(testBasics);
     CPPUNIT_TEST(testBinary);
     CPPUNIT_TEST(testInteger);
+    CPPUNIT_TEST(testUnsignedInteger);
     CPPUNIT_TEST(testPositionInSet);
     CPPUNIT_TEST(testTimeSpan);
     CPPUNIT_TEST(testDateTime);
@@ -39,6 +40,7 @@ public:
     void testBasics();
     void testBinary();
     void testInteger();
+    void testUnsignedInteger();
     void testPositionInSet();
     void testTimeSpan();
     void testDateTime();
@@ -77,10 +79,11 @@ void TagValueTests::testBinary()
 void TagValueTests::testInteger()
 {
     // positive number
-    TagValue integer(42);
+    auto integer = TagValue(42);
     CPPUNIT_ASSERT(!integer.isEmpty());
     CPPUNIT_ASSERT_EQUAL(TagDataType::Integer, integer.type());
     CPPUNIT_ASSERT_EQUAL(static_cast<std::int32_t>(42), integer.toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(42), integer.toUnsignedInteger());
     CPPUNIT_ASSERT_EQUAL("42"s, integer.toString());
     integer.assignInteger(2);
     CPPUNIT_ASSERT_EQUAL("Country"s, string(Id3Genres::stringFromIndex(integer.toStandardGenreIndex())));
@@ -107,16 +110,41 @@ void TagValueTests::testInteger()
     CPPUNIT_ASSERT_MESSAGE("cleared vale considered empty", integer.isEmpty());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("only date (but not type) cleared"s, TagDataType::Integer, integer.type());
     CPPUNIT_ASSERT_EQUAL(static_cast<std::int32_t>(0), integer.toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(0), integer.toUnsignedInteger());
     CPPUNIT_ASSERT_EQUAL(string(), integer.toString());
     CPPUNIT_ASSERT_EQUAL(DateTime(), integer.toDateTime());
     CPPUNIT_ASSERT_EQUAL(TimeSpan(), integer.toTimeSpan());
+}
+
+void TagValueTests::testUnsignedInteger()
+{
+    auto unsignedInteger = TagValue(static_cast<std::uint64_t>(42ul));
+    CPPUNIT_ASSERT(!unsignedInteger.isEmpty());
+    CPPUNIT_ASSERT_EQUAL(TagDataType::UnsignedInteger, unsignedInteger.type());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::int32_t>(42), unsignedInteger.toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(42), unsignedInteger.toUnsignedInteger());
+    CPPUNIT_ASSERT_EQUAL("42"s, unsignedInteger.toString());
+    unsignedInteger.assignUnsignedInteger(2);
+    CPPUNIT_ASSERT_EQUAL("Country"s, string(Id3Genres::stringFromIndex(unsignedInteger.toStandardGenreIndex())));
+    unsignedInteger.assignInteger(Id3Genres::emptyGenreIndex());
+    CPPUNIT_ASSERT_EQUAL(Id3Genres::emptyGenreIndex(), unsignedInteger.toStandardGenreIndex());
+    unsignedInteger.clearData();
+    CPPUNIT_ASSERT_EQUAL(Id3Genres::emptyGenreIndex(), unsignedInteger.toStandardGenreIndex());
+
+    // zero
+    unsignedInteger.assignInteger(0);
+    CPPUNIT_ASSERT_MESSAGE("explicitly assigned zero not considered empty", !unsignedInteger.isEmpty());
+    CPPUNIT_ASSERT_EQUAL("0"s, unsignedInteger.toString());
+    CPPUNIT_ASSERT_EQUAL(DateTime(), unsignedInteger.toDateTime());
+    CPPUNIT_ASSERT_EQUAL(TimeSpan(), unsignedInteger.toTimeSpan());
 }
 
 void TagValueTests::testPositionInSet()
 {
     const TagValue test(PositionInSet(4, 23));
     CPPUNIT_ASSERT_EQUAL(PositionInSet(4, 23), test.toPositionInSet());
-    CPPUNIT_ASSERT_EQUAL(test.toInteger(), 4);
+    CPPUNIT_ASSERT_EQUAL(4, test.toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(4), test.toUnsignedInteger());
     CPPUNIT_ASSERT_EQUAL("4/23"s, test.toString());
     CPPUNIT_ASSERT_THROW(test.toStandardGenreIndex(), ConversionException);
     CPPUNIT_ASSERT_THROW(test.toDateTime(), ConversionException);
@@ -170,6 +198,7 @@ void TagValueTests::testString()
     CPPUNIT_ASSERT_EQUAL("\x31\0\x35\0"s, TagValue(15).toString(TagTextEncoding::Utf16LittleEndian));
     CPPUNIT_ASSERT_EQUAL("\0\x31\0\x35"s, TagValue(15).toString(TagTextEncoding::Utf16BigEndian));
     CPPUNIT_ASSERT_EQUAL(15, TagValue("\0\x31\0\x35"s, TagTextEncoding::Utf16BigEndian).toInteger());
+    CPPUNIT_ASSERT_EQUAL(static_cast<std::uint64_t>(15), TagValue("\0\x31\0\x35"s, TagTextEncoding::Utf16BigEndian).toUnsignedInteger());
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
         "original encoding preserved", "15ä"s, TagValue("15ä", 4, TagTextEncoding::Utf8).toString(TagTextEncoding::Unspecified));
     CPPUNIT_ASSERT_EQUAL_MESSAGE("original encoding preserved", "\0\x31\0\x35"s,

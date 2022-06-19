@@ -102,6 +102,7 @@ enum class TagDataType : unsigned int {
     Binary, /**< unspecified binary data */
     Undefined, /**< undefined/invalid data type */
     Popularity, /**< rating with user info and play counter (as in ID3v2's "Popularimeter") */
+    UnsignedInteger, /**< unsigned integer */
 };
 
 /*!
@@ -126,6 +127,7 @@ public:
     explicit TagValue(
         std::string_view text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     explicit TagValue(int value);
+    explicit TagValue(std::uint64_t value);
     explicit TagValue(
         const char *data, std::size_t length, TagDataType type = TagDataType::Undefined, TagTextEncoding encoding = TagTextEncoding::Latin1);
     explicit TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
@@ -158,6 +160,7 @@ public:
     std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     void toWString(std::u16string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     std::int32_t toInteger() const;
+    std::uint64_t toUnsignedInteger() const;
     int toStandardGenreIndex() const;
     PositionInSet toPositionInSet() const;
     CppUtilities::TimeSpan toTimeSpan() const;
@@ -194,6 +197,7 @@ public:
     void assignText(
         std::string_view text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
+    void assignUnsignedInteger(std::uint64_t value);
     void assignStandardGenreIndex(int index);
     void assignData(const char *data, std::size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
     void assignData(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
@@ -315,6 +319,14 @@ inline TagValue::TagValue(std::string_view text, TagTextEncoding textEncoding, T
  */
 inline TagValue::TagValue(int value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::Integer)
+{
+}
+
+/*!
+ * \brief Constructs a new TagValue holding the given unsigned integer \a value.
+ */
+inline TagParser::TagValue::TagValue(std::uint64_t value)
+    : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::UnsignedInteger)
 {
 }
 
