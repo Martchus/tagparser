@@ -44,6 +44,10 @@ std::string_view tagDataTypeString(TagDataType dataType)
         return "picture";
     case TagDataType::Binary:
         return "binary";
+    case TagDataType::Popularity:
+        return "popularity";
+    case TagDataType::UnsignedInteger:
+        return "unsigned integer";
     default:
         return "undefined";
     }
