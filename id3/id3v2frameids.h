@@ -41,6 +41,7 @@ enum KnownValue : std::uint32_t {
     lRecordLabel = 0x54505542, /**< TPUB \todo rename to lPublisher in v12 */
     lUniqueFileId = 0x55464944, /**< UFID */
     lComposer = 0x54434f4d, /**< TCOM */
+    lPlayCounter = 0x50434E54, /**< PCNT */
     lRating = 0x504f504d, /**< POPM */
     lRemixedBy = 0x54504534, /**< TPE4 */
     lCopyright = 0x54434F50, /**< TCOP */
@@ -75,6 +76,7 @@ enum KnownValue : std::uint32_t {
     sRecordLabel = 0x545042, /**< ?TPB \todo rename to sPublisher in v12 */
     sUniqueFileId = 0x554649, /**< ?UFI */
     sComposer = 0x54434d, /**< ?TCM */
+    sPlayCounter = 0x434E54, /**< CNT */
     sRating = 0x504f50, /**< ?POP */
     sRemixedBy = 0x545034, /**< TP4 */
     sCopyright = 0x544352, /**< TCR */

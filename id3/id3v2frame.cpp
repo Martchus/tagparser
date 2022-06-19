@@ -380,6 +380,10 @@ void Id3v2Frame::parse(BinaryReader &reader, std::uint32_t version, std::uint32_
         // parse comment frame or unsynchronized lyrics frame (these two frame types have the same structure)
         parseComment(buffer.get(), m_dataSize, value(), diag);
 
+    } else if (((version >= 3 && id() == Id3v2FrameIds::lPlayCounter) || (version < 3 && id() == Id3v2FrameIds::sPlayCounter))) {
+        // parse play counter frame
+        value().assignUnsignedInteger(readPlayCounter(buffer.get(), buffer.get() + m_dataSize, context, diag));
+
     } else if (((version >= 3 && id() == Id3v2FrameIds::lRating) || (version < 3 && id() == Id3v2FrameIds::sRating))) {
         // parse popularimeter frame
         auto popularity = Popularity();
@@ -696,6 +700,19 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
                 || (version < 3 && m_frameId == Id3v2FrameIds::sUnsynchronizedLyrics))) {
             // make comment frame or the unsynchronized lyrics frame
             m_frame.makeComment(m_data, m_decompressedSize, *values.front(), version, diag);
+
+        } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lPlayCounter) || (version < 3 && m_frameId == Id3v2FrameIds::sPlayCounter))) {
+            // make play counter frame
+            auto playCounter = std::uint64_t();
+            try {
+                playCounter = values.front()->toUnsignedInteger();
+            } catch (const ConversionException &) {
+                diag.emplace_back(DiagLevel::Warning,
+                    argsToString("The play counter \"", values.front()->toDisplayString(), "\" is not an unsigned integer."), context);
+            }
+            m_decompressedSize = computePlayCounterSize(playCounter);
+            m_data = make_unique<char[]>(m_decompressedSize);
+            writePlayCounter(m_data.get() + m_decompressedSize - 1, m_decompressedSize, playCounter);
 
         } else if (((version >= 3 && m_frameId == Id3v2FrameIds::lRating) || (version < 3 && m_frameId == Id3v2FrameIds::sRating))) {
             // make popularimeter frame

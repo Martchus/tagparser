@@ -79,6 +79,8 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sRemixedBy;
     case lCopyright:
         return sCopyright;
+    case lPlayCounter:
+        return sPlayCounter;
     case lRating:
         return sRating;
     case lISRC:
@@ -147,6 +149,8 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lRemixedBy;
     case sCopyright:
         return lCopyright;
+    case sPlayCounter:
+        return lPlayCounter;
     case sRating:
         return lRating;
     case sISRC:

@@ -293,6 +293,7 @@ inline TagDataType Tag::proposedDataType(KnownField field) const
     case KnownField::Bps:
     case KnownField::PartNumber:
     case KnownField::TotalParts:
+    case KnownField::PlayCounter:
         return TagDataType::Integer;
     case KnownField::Cover:
         return TagDataType::Picture;

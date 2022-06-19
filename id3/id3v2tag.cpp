@@ -176,6 +176,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lRecordLabel;
         case KnownField::Composer:
             return lComposer;
+        case KnownField::PlayCounter:
+            return lPlayCounter;
         case KnownField::Rating:
             return lRating;
         case KnownField::AlbumArtist:
@@ -236,6 +238,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sRecordLabel;
         case KnownField::Composer:
             return sComposer;
+        case KnownField::PlayCounter:
+            return sPlayCounter;
         case KnownField::Rating:
             return sRating;
         case KnownField::AlbumArtist:
@@ -307,6 +311,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::OriginalReleaseDate;
     case lMood:
         return KnownField::Mood;
+    case lPlayCounter:
+        return KnownField::PlayCounter;
     case lRating:
         return KnownField::Rating;
     case lISRC:
@@ -351,6 +357,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::RemixedBy;
     case sCopyright:
         return KnownField::Copyright;
+    case sPlayCounter:
+        return KnownField::PlayCounter;
     case sRating:
         return KnownField::Rating;
     case sISRC:
@@ -371,6 +379,8 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const std::uint32_t &id) con
     case sBpm:
     case lYear:
     case sYear:
+    case lPlayCounter:
+    case sPlayCounter:
         return TagDataType::Integer;
     case lTrackPosition:
     case sTrackPosition:
