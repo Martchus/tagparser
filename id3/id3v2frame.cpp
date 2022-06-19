@@ -65,9 +65,9 @@ Id3v2Frame::Id3v2Frame(const IdentifierType &id, const TagValue &value, std::uin
  * \brief Helper function to parse the genre index.
  * \returns Returns the genre index or -1 if the specified string does not denote a genre index.
  */
-template <class stringtype> int parseGenreIndex(const stringtype &denotation)
+template <class stringtype> static int parseGenreIndex(const stringtype &denotation)
 {
-    int index = -1;
+    auto index = -1;
     for (auto c : denotation) {
         if (index == -1) {
             switch (c) {
@@ -106,17 +106,17 @@ template <class stringtype> int parseGenreIndex(const stringtype &denotation)
 /*!
  * \brief Returns an std::string instance for the substring parsed using parseSubstring().
  */
-string stringFromSubstring(tuple<const char *, size_t, const char *> substr)
+static std::string stringFromSubstring(std::tuple<const char *, std::size_t, const char *> substr)
 {
-    return string(get<0>(substr), get<1>(substr));
+    return std::string(std::get<0>(substr), std::get<1>(substr));
 }
 
 /*!
  * \brief Returns an std::u16string instance for the substring parsed using parseSubstring().
  */
-u16string wideStringFromSubstring(tuple<const char *, size_t, const char *> substr, TagTextEncoding encoding)
+static std::u16string wideStringFromSubstring(std::tuple<const char *, std::size_t, const char *> substr, TagTextEncoding encoding)
 {
-    u16string res(reinterpret_cast<u16string::const_pointer>(get<0>(substr)), get<1>(substr) / 2);
+    std::u16string res(reinterpret_cast<u16string::const_pointer>(std::get<0>(substr)), std::get<1>(substr) / 2);
     TagValue::ensureHostByteOrder(res, encoding);
     return res;
 }
