@@ -3,6 +3,7 @@
 
 #include "./localehelper.h"
 #include "./positioninset.h"
+#include "./tagtype.h"
 
 #include <c++utilities/chrono/datetime.h>
 #include <c++utilities/chrono/timespan.h>
@@ -75,16 +76,28 @@ struct TAG_PARSER_EXPORT Popularity {
     double rating = 0.0;
     /// \brief Play counter specific to the user.
     std::uint64_t playCounter = 0;
+    /// \brief Specifies the scale used for \a rating by the tag defining that scale.
+    /// \remarks The value TagType::Unspecified is preserved to denote a generic scale is used (no
+    /// conversions to/from a generic scale to tag format specific scales have been implemented at
+    /// this point).
+    TagType scale = TagType::Unspecified;
 
-    bool isEmpty() const
-    {
-        return user.empty() && rating != 0.0 && !playCounter;
-    }
     std::string toString() const;
     static Popularity fromString(std::string_view str);
+
+    /// \brief Returns whether the Popularity is empty. The \a scale and zero-values don't count.
+    bool isEmpty() const
+    {
+        return user.empty() && rating == 0.0 && !playCounter;
+    }
+
+    /// \brief Returns whether two instances are equal.
+    /// \remarks Currently they must match exactly but in the future conversions between different
+    /// scales might be implemented and two instances would be considered equal if the ratings are
+    /// considered equal (even specified using different scales).
     bool operator==(const Popularity &other) const
     {
-        return playCounter == other.playCounter && rating == other.rating && user == other.user;
+        return playCounter == other.playCounter && rating == other.rating && user == other.user && scale == other.scale;
     }
 };
 

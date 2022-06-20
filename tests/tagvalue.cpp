@@ -179,13 +179,16 @@ void TagValueTests::testDateTime()
 
 void TagValueTests::testPopularity()
 {
-    const auto tagValue = TagValue(Popularity{ .user = "foo", .rating = 42, .playCounter = 123 });
+    const auto tagValue = TagValue(Popularity{ .user = "foo", .rating = 42, .playCounter = 123, .scale = TagType::VorbisComment });
     const auto popularity = tagValue.toPopularity();
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (user)", "foo"s, popularity.user);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (rating)", 42.0, popularity.rating);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (play counter)", std::uint64_t(123), popularity.playCounter);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (scale)", TagType::VorbisComment, popularity.scale);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", "foo|42|123"s, tagValue.toString());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", 42, tagValue.toInteger());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string (only rating)", "43"s, TagValue(Popularity{ .rating = 43 }).toString());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to integer", 42, tagValue.toInteger());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to unsigned integer", static_cast<std::uint64_t>(42), tagValue.toUnsignedInteger());
     CPPUNIT_ASSERT_THROW_MESSAGE(
         "failing conversion to other type", TagValue("foo|bar"sv, TagTextEncoding::Latin1).toPopularity(), ConversionException);
 }

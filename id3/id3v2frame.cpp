@@ -4,6 +4,7 @@
 
 #include "../diagnostics.h"
 #include "../exceptions.h"
+#include "../tagtype.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
@@ -386,7 +387,7 @@ void Id3v2Frame::parse(BinaryReader &reader, std::uint32_t version, std::uint32_
 
     } else if (((version >= 3 && id() == Id3v2FrameIds::lRating) || (version < 3 && id() == Id3v2FrameIds::sRating))) {
         // parse popularimeter frame
-        auto popularity = Popularity();
+        auto popularity = Popularity{ .scale = TagType::Id3v2Tag };
         auto userEncoding = TagTextEncoding::Latin1;
         auto substr = parseSubstring(buffer.get(), m_dataSize, userEncoding, true, diag);
         auto end = buffer.get() + m_dataSize;

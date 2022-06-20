@@ -96,8 +96,19 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
                     throw Failure();
                 }
             } else if (id().size() + 1 < size) {
-                // extract other values (as string)
-                setValue(TagValue(string(data.get() + idSize + 1, size - idSize - 1), TagTextEncoding::Utf8));
+                const auto str = std::string_view(data.get() + idSize + 1, size - idSize - 1);
+                if (id() == VorbisCommentIds::rating()) {
+                    try {
+                        // set rating as Popularity to preserve the scale information
+                        value().assignPopularity(Popularity{ .rating = stringToNumber<double>(str), .scale = TagType::VorbisComment });
+                    } catch (const ConversionException &) {
+                        // fallback to text
+                        value().assignText(str, TagTextEncoding::Utf8);
+                    }
+                } else {
+                    // extract other values (as string)
+                    value().assignText(str, TagTextEncoding::Utf8);
+                }
             }
         } else {
             diag.emplace_back(DiagLevel::Critical, argsToString("Field at ", static_cast<std::streamoff>(stream.tellg()), " is truncated."), context);

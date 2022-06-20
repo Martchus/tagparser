@@ -307,7 +307,8 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
         } else if (m_type == TagDataType::Popularity || other.m_type == TagDataType::Popularity) {
             if (options & TagValueComparisionFlags::CaseInsensitive) {
                 const auto lhs = toPopularity(), rhs = other.toPopularity();
-                return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && compareData(lhs.user, rhs.user, true);
+                return lhs.rating == rhs.rating && lhs.playCounter == rhs.playCounter && lhs.scale == rhs.scale
+                    && compareData(lhs.user, rhs.user, true);
             } else {
                 return toPopularity() == other.toPopularity();
             }
@@ -646,6 +647,7 @@ Popularity TagValue::toPopularity() const
             popularity.user = reader.readLengthPrefixedString();
             popularity.rating = reader.readFloat64LE();
             popularity.playCounter = reader.readUInt64LE();
+            popularity.scale = static_cast<TagType>(reader.readUInt64LE());
         } catch (const std::ios_base::failure &) {
             throw ConversionException(argsToString("Assigned popularity is invalid"));
         }
@@ -1081,6 +1083,7 @@ void TagValue::assignPopularity(const Popularity &value)
         writer.writeLengthPrefixedString(value.user);
         writer.writeFloat64LE(value.rating);
         writer.writeUInt64LE(value.playCounter);
+        writer.writeUInt64LE(static_cast<std::uint64_t>(value.scale));
         auto size = static_cast<std::size_t>(s.tellp());
         auto ptr = std::make_unique<char[]>(size);
         s.read(ptr.get(), s.tellp());
@@ -1179,12 +1182,13 @@ const TagValue &TagValue::empty()
 }
 
 /*!
- * \brief Returns the popularity as string in the format "user|rating|play-counter" or an empty
- *        string if the popularity isEmpty().
+ * \brief Returns the popularity as string in the format "rating" if only a rating is present
+ *        or in the format "user|rating|play-counter" or an empty string if the popularity isEmpty().
  */
 std::string Popularity::toString() const
 {
-    return isEmpty() ? std::string() : user % '|' % numberToString(rating) % '|' + playCounter;
+    return isEmpty() ? std::string()
+                     : ((user.empty() && !playCounter) ? numberToString(rating) : (user % '|' % numberToString(rating) % '|' + playCounter));
 }
 
 /*!
@@ -1198,8 +1202,17 @@ Popularity Popularity::fromString(std::string_view str)
     if (parts.empty()) {
         return res;
     } else if (parts.size() > 3) {
-        throw ConversionException("Wrong format, expected \"user|rating|play-counter\"");
+        throw ConversionException("Wrong format, expected \"rating\" or \"user|rating|play-counter\"");
     }
+    // treat a single number as rating
+    if (parts.size() == 1) {
+        try {
+            res.rating = stringToNumber<decltype(res.rating)>(parts.front());
+            return res;
+        } catch (const ConversionException &) {
+        }
+    }
+    // otherwise, read user, rating and play counter
     res.user = parts.front();
     if (parts.size() > 1) {
         res.rating = stringToNumber<decltype(res.rating)>(parts[1]);
