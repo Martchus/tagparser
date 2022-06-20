@@ -86,6 +86,7 @@ set(HEADER_FILES
     size.h
     tag.h
     tagtarget.h
+    tagtype.h
     tagvalue.h
     vorbis/vorbiscomment.h
     vorbis/vorbiscommentfield.h
