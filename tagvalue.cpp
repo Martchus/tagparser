@@ -92,6 +92,14 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
  * To ensure that, the functions Tag::canEncodingBeUsed(), Tag::proposedTextEncoding() and
  * Tag::ensureTextValuesAreProperlyEncoded() can be used.
  *
+ * Values of the type TagDataType::Popularity might use different rating scales depending on the tag
+ * format.
+ * - You can assign a Popularity object of any scale. Tag implementations will convert it accordingly.
+ * - You can use TagValue::toScaledPopularity() to retrieve a Popularity object of the desired scale.
+ * - When just working with text data (via TagValue::toString() and TagValue::assignText()), no scaling
+ *   of internally assigned Popularity objects is done; so you're working with raw rating values in this
+ *   case.
+ *
  * Values of the type TagDataType::Text are not supposed to contain Byte-Order-Marks. Before assigning text
  * which might be prepended by a Byte-Order-Mark the helper function TagValue::stripBom() can be used.
  */
@@ -624,6 +632,14 @@ DateTime TagValue::toDateTime() const
  * \brief Converts the value of the current TagValue object to its equivalent
  *        Popularity representation.
  * \throws Throws ConversionException on failure.
+ * \remarks
+ * - If text is assigned, the returned popularity's scale will always be TagType::Unspecified
+ *   as the text representation does not preserve the scale. Assign the correct scale if needed
+ *   manually. Note that tag field implementations provided by this library take care to assign a
+ *   popularity (and not just text) when parsing the popularity/rating fields to preserve the
+ *   scale information.
+ * - Use TagValue::toScaledPopularity() if you want to convert the rating to a certain scale (to
+ *   use that scale consistently without having to deal with multiple scales yourself).
  */
 Popularity TagValue::toPopularity() const
 {
@@ -658,6 +674,36 @@ Popularity TagValue::toPopularity() const
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to date time."));
+    }
+    return popularity;
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        Popularity representation using the specified \a scale.
+ * \throws Throws ConversionException on failure, e.g. when Popularity::scaleTo() fails.
+ * \remarks
+ * 1. See Popularity::scaleTo() for details about scaling.
+ * 2. If text is assigned, it is converted like with TagValue::toPopularity(). However,
+ *    the specified \a a scale is *assigned* as the popularity's scale assuming that the
+ *    text representation already contains a rating with the desired \a scale. That means
+ *    if you assign text to a TagValue, the tag implementations (which use this function
+ *    internally) will use that text as-is when serializing the popularity/rating field.
+ * 3. Since TagValue::toString() also does not do any scaling the previous point means that
+ *    if you only ever use TagValue::assignText() (or equivalent c'tors) and TagValue::toString()
+ *    you will always work with raw rating values consistently.
+ * 4. Since tag implementations provided by this library always take care to assign the
+ *    popularity/rating as such (and not just as text) you do not need to care about point 2. if
+ *    you want to use a certain scale consistently. Just call this function with the desired scal
+ *    when reading and assign a popularity object with that scale before saving changes.
+ */
+Popularity TagValue::toScaledPopularity(TagType scale) const
+{
+    auto popularity = toPopularity();
+    if (m_type == TagDataType::Text) {
+        popularity.scale = scale;
+    } else if (!popularity.scaleTo(scale)) {
+        throw ConversionException(argsToString("Assigned popularity cannot be scaled accordingly"));
     }
     return popularity;
 }
@@ -770,7 +816,8 @@ void TagValue::convertDescriptionEncoding(TagTextEncoding encoding)
  * \remarks
  * - Not all types can be converted to a string, eg. TagDataType::Picture, TagDataType::Binary and
  *   TagDataType::Unspecified will always fail to convert.
- * - If UTF-16 is the desired output \a encoding, it makes sense to use the toWString() method instead.
+ * - If UTF-16 is the desired output \a encoding, it makes sense to use TagValue::toWString() instead.
+ * - If a popularity is assigned, its string representation is returned without further scaling.
  * \throws Throws ConversionException on failure.
  */
 void TagValue::toString(string &result, TagTextEncoding encoding) const
@@ -1182,6 +1229,67 @@ const TagValue &TagValue::empty()
 }
 
 /*!
+ * \brief Scales the rating from the current scale to \a targetScale.
+ * \returns
+ * Returns whether a conversion from the current scale to \a targetScale was possible. If no, the object stays unchanged.
+ * Note that it is not validated whether the currently assigned rating is a valid value in the currently assigned scale.
+ * \remarks
+ * - Providing TagType::Unspecified as \a targetScale will convert to a *generic* scale where the rating is number is between
+ *   1 and 5 with decimal values possible where 5 is the best possible rating and 1 the lowest. The value 0 means there's no
+ *   rating.
+ * - If the currently assigned scale is TagType::Unspecified than the currently assigned rating is assumed to use the *generic*
+ *   scale described in the previous point.
+ */
+bool Popularity::scaleTo(TagType targetScale)
+{
+    if (scale == targetScale) {
+        return true;
+    }
+
+    // convert to generic scale first
+    double genericRating;
+    switch (scale) {
+    case TagType::Unspecified:
+        genericRating = rating;
+        break;
+    case TagType::MatroskaTag:
+        genericRating = rating / (5.0 / 4.0) + 1.0;
+        break;
+    case TagType::Id3v2Tag:
+        genericRating = rating < 1.0 ? 0.0 : ((rating - 1.0) / (254.0 / 4.0) + 1.0);
+        break;
+    case TagType::VorbisComment:
+    case TagType::OggVorbisComment:
+        genericRating = rating / 20.0;
+        break;
+    default:
+        return false;
+    }
+
+    // convert from the generic scale to the target scale
+    switch (targetScale) {
+    case TagType::Unspecified:
+        rating = genericRating;
+        break;
+    case TagType::MatroskaTag:
+        rating = (genericRating - 1.0) * (5.0 / 4.0);
+        break;
+    case TagType::Id3v2Tag:
+        rating = genericRating < 1.0 ? 0.0 : ((genericRating - 1.0) * (254.0 / 4.0) + 1.0);
+        break;
+    case TagType::VorbisComment:
+    case TagType::OggVorbisComment:
+        rating = genericRating * 20.0;
+        break;
+    default:
+        return false;
+    }
+
+    scale = targetScale;
+    return true;
+}
+
+/*!
  * \brief Returns the popularity as string in the format "rating" if only a rating is present
  *        or in the format "user|rating|play-counter" or an empty string if the popularity isEmpty().
  */
@@ -1192,13 +1300,26 @@ std::string Popularity::toString() const
 }
 
 /*!
- * \brief Parses the popularity from \a str assuming the same format as toString() produces.
+ * \brief Parses the popularity from \a str assuming the same format as toString() produces and
+ *        sets TagType::Unspecified as scale. So \a str is expected to contain a rating within
+ *        the range of 1.0 and 5.0 or 0.0 to denote there's no rating.
  * \throws Throws ConversionException() if the format is invalid.
  */
 Popularity Popularity::fromString(std::string_view str)
 {
+    return fromString(str, TagType::Unspecified);
+}
+
+/*!
+ * \brief Parses the popularity from \a str assuming the same format as toString() produces and assigns the
+ *        specified \a scale. So \a str is expected to contain a rating according to the specifications of
+ *        the tag format passed via \a scale.
+ * \throws Throws ConversionException() if the format is invalid.
+ */
+TagParser::Popularity TagParser::Popularity::fromString(std::string_view str, TagType scale)
+{
     const auto parts = splitStringSimple<std::vector<std::string_view>>(str, "|");
-    auto res = Popularity();
+    auto res = Popularity({ .scale = scale });
     if (parts.empty()) {
         return res;
     } else if (parts.size() > 3) {

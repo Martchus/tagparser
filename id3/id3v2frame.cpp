@@ -719,7 +719,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
             // make popularimeter frame
             auto popularity = Popularity();
             try {
-                popularity = values.front()->toPopularity();
+                popularity = values.front()->toScaledPopularity(TagType::Id3v2Tag);
             } catch (const ConversionException &) {
                 diag.emplace_back(DiagLevel::Warning,
                     argsToString(

@@ -31,6 +31,7 @@ class TagValueTests : public TestFixture {
     CPPUNIT_TEST(testPopularity);
     CPPUNIT_TEST(testString);
     CPPUNIT_TEST(testEqualityOperator);
+    CPPUNIT_TEST(testPopularityScaling);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -47,6 +48,7 @@ public:
     void testPopularity();
     void testString();
     void testEqualityOperator();
+    void testPopularityScaling();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TagValueTests);
@@ -179,18 +181,22 @@ void TagValueTests::testDateTime()
 
 void TagValueTests::testPopularity()
 {
-    const auto tagValue = TagValue(Popularity{ .user = "foo", .rating = 42, .playCounter = 123, .scale = TagType::VorbisComment });
+    const auto tagValue = TagValue(Popularity{ .user = "foo", .rating = 40.0, .playCounter = 123, .scale = TagType::VorbisComment });
     const auto popularity = tagValue.toPopularity();
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (user)", "foo"s, popularity.user);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (rating)", 42.0, popularity.rating);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (rating)", 40.0, popularity.rating);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (play counter)", std::uint64_t(123), popularity.playCounter);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to popularity (scale)", TagType::VorbisComment, popularity.scale);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", "foo|42|123"s, tagValue.toString());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string", "foo|40|123"s, tagValue.toString());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to string (only rating)", "43"s, TagValue(Popularity{ .rating = 43 }).toString());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to integer", 42, tagValue.toInteger());
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to unsigned integer", static_cast<std::uint64_t>(42), tagValue.toUnsignedInteger());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to integer", 40, tagValue.toInteger());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to unsigned integer", static_cast<std::uint64_t>(40), tagValue.toUnsignedInteger());
     CPPUNIT_ASSERT_THROW_MESSAGE(
         "failing conversion to other type", TagValue("foo|bar"sv, TagTextEncoding::Latin1).toPopularity(), ConversionException);
+    const auto scaledPopularity = tagValue.toScaledPopularity();
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("rating scaled to generic scale", 2.0, scaledPopularity.rating);
+    CPPUNIT_ASSERT_THROW_MESSAGE(
+        "failed to scale if no scaling for specified format defined", tagValue.toScaledPopularity(TagType::Mp4Tag), ConversionException);
 }
 
 void TagValueTests::testString()
@@ -284,4 +290,39 @@ void TagValueTests::testEqualityOperator()
     withDescription2.setDescription("Test");
     CPPUNIT_ASSERT_MESSAGE("meta-data case must match by default"s, withDescription != withDescription2);
     CPPUNIT_ASSERT_MESSAGE("meta-data case ignored"s, withDescription.compareTo(withDescription2, TagValueComparisionFlags::CaseInsensitive));
+}
+
+void TagValueTests::testPopularityScaling()
+{
+    const auto genericZero = Popularity{ .rating = 0.0, .scale = TagType::Unspecified };
+    const auto genericMin = Popularity{ .rating = 1.0, .scale = TagType::Unspecified };
+    const auto genericMax = Popularity{ .rating = 5.0, .scale = TagType::Unspecified };
+    const auto genericMiddle = Popularity{ .rating = 3.0, .scale = TagType::Unspecified };
+    const auto id3zero = Popularity{ .rating = 0.0, .scale = TagType::Id3v2Tag };
+    const auto id3min = Popularity{ .rating = 1.0, .scale = TagType::Id3v2Tag };
+    const auto id3max = Popularity{ .rating = 255.0, .scale = TagType::Id3v2Tag };
+    const auto id3middle = Popularity{ .rating = 128.0, .scale = TagType::Id3v2Tag };
+    const auto vorbisZero = Popularity{ .rating = 0.0, .scale = TagType::VorbisComment };
+    const auto vorbisMin = Popularity{ .rating = 20.0, .scale = TagType::VorbisComment };
+    const auto vorbisMax = Popularity{ .rating = 100.0, .scale = TagType::OggVorbisComment };
+    const auto vorbisMiddle = Popularity{ .rating = 60.0, .scale = TagType::OggVorbisComment };
+    const auto mkvMin = Popularity{ .rating = 0.0, .scale = TagType::MatroskaTag };
+    const auto mkvMax = Popularity{ .rating = 5.0, .scale = TagType::MatroskaTag };
+    const auto mkvMiddle = Popularity{ .rating = 2.5, .scale = TagType::MatroskaTag };
+    for (const auto &rawZero : { id3zero, vorbisZero }) {
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("zero: raw to generic", genericZero.rating, rawZero.scaled(TagType::Unspecified).rating);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("zero: generic to raw ", rawZero.rating, genericZero.scaled(rawZero.scale).rating);
+    }
+    for (const auto &rawMin : { id3min, vorbisMin, mkvMin }) {
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("min: raw to generic", genericMin.rating, rawMin.scaled(TagType::Unspecified).rating);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("min: generic to raw ", rawMin.rating, genericMin.scaled(rawMin.scale).rating);
+    }
+    for (const auto &rawMax : { id3max, vorbisMax, mkvMax }) {
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("max: raw to generic", genericMax.rating, rawMax.scaled(TagType::Unspecified).rating);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("max: generic to raw ", rawMax.rating, genericMax.scaled(rawMax.scale).rating);
+    }
+    for (const auto &rawMiddle : { id3middle, vorbisMiddle, mkvMiddle }) {
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("middle: raw to generic", genericMiddle.rating, rawMiddle.scaled(TagType::Unspecified).rating);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("middle: generic to raw ", rawMiddle.rating, genericMiddle.scaled(rawMiddle.scale).rating);
+    }
 }
