@@ -1,6 +1,7 @@
 #include "./matroskatagfield.h"
 #include "./ebmlelement.h"
 #include "./matroskacontainer.h"
+#include "./matroskatagid.h"
 
 #include "../exceptions.h"
 
@@ -136,6 +137,15 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
                     "\"SimpleTag\"-element contains unknown element ", child->idToString(), " at ", child->startOffset(), ". It will be ignored."),
                 context);
         }
+
+        // set rating as Popularity to preserve the scale information
+        if (id() == MatroskaTagIds::rating()) {
+            try {
+                value().assignPopularity(Popularity{ .rating = stringToNumber<double>(value().toString()), .scale = TagType::MatroskaTag });
+            } catch (const ConversionException &) {
+                diag.emplace_back(DiagLevel::Warning, argsToString("The rating is not a number."), context);
+            }
+        }
     }
 }
 
@@ -207,7 +217,11 @@ MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostic
     , m_isBinary(false)
 {
     try {
-        m_stringValue = m_field.value().toString();
+        if (m_field.value().type() == TagDataType::Popularity) {
+            m_stringValue = m_field.value().toScaledPopularity(TagType::MatroskaTag).toString();
+        } else {
+            m_stringValue = m_field.value().toString();
+        }
     } catch (const ConversionException &) {
         diag.emplace_back(DiagLevel::Warning,
             "The assigned tag value can not be converted to a string and is treated as binary value (which is likely not what you want since "

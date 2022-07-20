@@ -104,6 +104,7 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
                     } catch (const ConversionException &) {
                         // fallback to text
                         value().assignText(str, TagTextEncoding::Utf8);
+                        diag.emplace_back(DiagLevel::Warning, argsToString("The rating is not a number."), context);
                     }
                 } else {
                     // extract other values (as string)
@@ -210,6 +211,8 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
                     argsToString("An IO error occurred when writing the METADATA_BLOCK_PICTURE struct: ", failure.what()), context);
                 throw Failure();
             }
+        } else if (value().type() == TagDataType::Popularity) {
+            valueString = value().toScaledPopularity(TagType::VorbisComment).toString();
         } else {
             // make normal string value
             valueString = value().toString();

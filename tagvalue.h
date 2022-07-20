@@ -77,13 +77,15 @@ struct TAG_PARSER_EXPORT Popularity {
     /// \brief Play counter specific to the user.
     std::uint64_t playCounter = 0;
     /// \brief Specifies the scale used for \a rating by the tag defining that scale.
-    /// \remarks The value TagType::Unspecified is preserved to denote a generic scale is used (no
-    /// conversions to/from a generic scale to tag format specific scales have been implemented at
-    /// this point).
+    /// \remarks The value TagType::Unspecified is used to denote a *generic* scale from 1.0 to
+    ///          5.0 where 5.0 is the best and the special value 0.0 stands for "not rated".
     TagType scale = TagType::Unspecified;
 
+    bool scaleTo(TagType targetScale);
+    Popularity scaled(TagType targetScale) const;
     std::string toString() const;
     static Popularity fromString(std::string_view str);
+    static Popularity fromString(std::string_view str, TagType scale);
 
     /// \brief Returns whether the Popularity is empty. The \a scale and zero-values don't count.
     bool isEmpty() const
@@ -100,6 +102,16 @@ struct TAG_PARSER_EXPORT Popularity {
         return playCounter == other.playCounter && rating == other.rating && user == other.user && scale == other.scale;
     }
 };
+
+/*!
+ * \brief Same as Popularity::scaleTo() but returns a new object.
+ */
+inline Popularity Popularity::scaled(TagType targetScale) const
+{
+    auto copy = *this;
+    copy.scaleTo(targetScale);
+    return copy;
+}
 
 /*!
  * \brief Specifies the data type.
@@ -179,6 +191,7 @@ public:
     CppUtilities::TimeSpan toTimeSpan() const;
     CppUtilities::DateTime toDateTime() const;
     Popularity toPopularity() const;
+    Popularity toScaledPopularity(TagType scale = TagType::Unspecified) const;
     std::size_t dataSize() const;
     char *dataPointer();
     const char *dataPointer() const;
