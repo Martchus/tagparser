@@ -213,7 +213,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
             valueString = value().toScaledPopularity(TagType::VorbisComment).toString();
         } else {
             // make normal string value
-            valueString = value().toString();
+            valueString = value().toString(TagTextEncoding::Utf8);
         }
         const auto size(valueString.size() + id().size() + 1);
         if (size > numeric_limits<std::uint32_t>::max()) {

@@ -87,10 +87,22 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
  * TagValue class take care of neccassary conversions, eg. TagValue::toInteger() will attempt to convert a
  * string to a number (an possibly throw a ConversionException on failure).
  *
- * Values of the type TagDataType::Text can be differently encoded. See TagParser::TagTextEncoding for a
- * list of supported encodings. Be sure to use an encoding which is supported by the tag implementation.
- * To ensure that, the functions Tag::canEncodingBeUsed(), Tag::proposedTextEncoding() and
- * Tag::ensureTextValuesAreProperlyEncoded() can be used.
+ * Values of the type TagDataType::Text can be differently encoded.
+ * - See TagParser::TagTextEncoding for a list of encodings supported by this library.
+ * - Tag formats usually only support a subset of these encodings. The serializers for the varoius tag
+ *   formats provided by this library will keep the encoding if possible and otherwise convert the assigned
+ *   text to an encoding supported by the tag format on the fly. Note that ID3v1 does not specify which
+ *   encodings are supported (or unsupported) so the serializer will just write text data as-is.
+ * - The deserializers will store text data in the encoding that is used in the tag.
+ * - The functions Tag::canEncodingBeUsed() and Tag::proposedTextEncoding() can be used to check
+ *   whether an encoding can be used by a certain tag format to avoid any unnecessary character set
+ *   conversions.
+ * - There's also the function Tag::ensureTextValuesAreProperlyEncoded() which can be used to convert all
+ *   text values currently assigned to a tag to the encoding which is deemed best for the current tag format.
+ *   This function is a bit more agressive than the implict conversions, e.g. it ensures no UTF-16 encoded
+ *   text ends up in ID3v1 tags.
+ * - If you want to use UTF-8 everywhere, simply always assign UTF-8 text and use
+ *   TagValue::toString(TagTextEncoding::Utf8) when reading text.
  *
  * Values of the type TagDataType::Popularity might use different rating scales depending on the tag
  * format.

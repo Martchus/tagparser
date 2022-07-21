@@ -220,7 +220,7 @@ MatroskaTagFieldMaker::MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostic
         if (m_field.value().type() == TagDataType::Popularity) {
             m_stringValue = m_field.value().toScaledPopularity(TagType::MatroskaTag).toString();
         } else {
-            m_stringValue = m_field.value().toString();
+            m_stringValue = m_field.value().toString(TagTextEncoding::Utf8);
         }
     } catch (const ConversionException &) {
         diag.emplace_back(DiagLevel::Warning,
