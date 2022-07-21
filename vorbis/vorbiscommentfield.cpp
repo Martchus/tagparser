@@ -5,8 +5,6 @@
 
 #include "../ogg/oggiterator.h"
 
-#include "../id3/id3v2frame.h"
-
 #include "../diagnostics.h"
 #include "../exceptions.h"
 
