@@ -73,6 +73,13 @@ pair<const char *, float> encodingParameter(TagTextEncoding tagTextEncoding)
 }
 
 /*!
+ * \class TagParser::Popularity
+ * \brief The Popularity class contains a value for ID3v2's "Popularimeter" field.
+ * \remarks It can also be used for other formats than ID3v2.
+ * \sa See documentation of TagParser::Popularity for scaling.
+ */
+
+/*!
  * \class TagParser::TagValue
  * \brief The TagValue class wraps values of different types. It is meant to be assigned to a tag field.
  *

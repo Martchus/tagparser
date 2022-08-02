@@ -12,9 +12,11 @@
 #include <tuple>
 #include <unordered_map>
 
+/// \cond
 namespace CppUtilities {
 template <std::size_t bufferSize> class CopyHelper;
 }
+/// \endcond
 
 namespace TagParser {
 
