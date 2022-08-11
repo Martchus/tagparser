@@ -1803,7 +1803,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 progress.updateStep("Writing MPEG audio frames ...");
                 break;
             default:
-                progress.updateStep("Writing frames ...");
+                progress.updateStep("Writing data ...");
             }
             backupStream.seekg(static_cast<streamoff>(streamOffset));
             CopyHelper<0x4000> copyHelper;
