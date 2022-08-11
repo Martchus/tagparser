@@ -1359,7 +1359,7 @@ void MediaFileInfo::mergeId3v2Tags()
     for (auto i = isecond; i != end; ++i) {
         first.insertFields(**i, false);
     }
-    m_id3v2Tags.erase(isecond, end - 1);
+    m_id3v2Tags.erase(isecond, end);
 }
 
 /*!
