@@ -185,6 +185,10 @@ constexpr TAG_PARSER_EXPORT std::string_view cover()
 {
     return "METADATA_BLOCK_PICTURE";
 }
+constexpr TAG_PARSER_EXPORT std::string_view bpm()
+{
+    return "BPM";
+}
 
 } // namespace VorbisCommentIds
 
