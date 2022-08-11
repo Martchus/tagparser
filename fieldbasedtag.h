@@ -185,7 +185,17 @@ template <class ImplementationType> inline std::vector<const TagValue *> FieldMa
 
 template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::setValue(KnownField field, const TagValue &value)
 {
-    return setValue(fieldId(field), value);
+    const auto id = fieldId(field);
+    if constexpr (std::is_arithmetic_v<IdentifierType>) {
+        if (!id) {
+            return false;
+        }
+    } else {
+        if (id.empty()) {
+            return false;
+        }
+    }
+    return setValue(id, value);
 }
 
 /*!
@@ -266,7 +276,17 @@ bool FieldMapBasedTag<ImplementationType>::setValues(const IdentifierType &id, c
  */
 template <class ImplementationType> bool FieldMapBasedTag<ImplementationType>::setValues(KnownField field, const std::vector<TagValue> &values)
 {
-    return setValues(fieldId(field), values);
+    const auto id = fieldId(field);
+    if constexpr (std::is_arithmetic_v<IdentifierType>) {
+        if (!id) {
+            return false;
+        }
+    } else {
+        if (id.empty()) {
+            return false;
+        }
+    }
+    return setValues(id, values);
 }
 
 template <class ImplementationType> inline bool FieldMapBasedTag<ImplementationType>::hasField(KnownField field) const
