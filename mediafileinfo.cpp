@@ -148,6 +148,7 @@ void MediaFileInfo::parseContainerFormat(Diagnostics &diag, AbortableProgressFee
     m_paddingSize = 0;
     m_containerOffset = 0;
     std::size_t bytesSkippedBeforeContainer = 0;
+    std::streamoff id3v2Size = 0;
 
     // read signatrue
     char buff[16];
@@ -178,6 +179,7 @@ startParsingSignature:
             if ((bytesSkippedBeforeContainer += bytesSkipped) >= 0x800u) {
                 m_containerParsingStatus = ParsingStatus::NotSupported;
                 m_containerFormat = ContainerFormat::Unknown;
+                m_containerOffset = id3v2Size;
                 return;
             }
 
@@ -204,6 +206,7 @@ startParsingSignature:
                 // footer present
                 m_containerOffset += 10;
             }
+            id3v2Size = m_containerOffset;
 
             // continue reading signature
             goto startParsingSignature;
