@@ -141,7 +141,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Comment:
             return lComment;
         case KnownField::RecordDate:
-            return lRecordingTime; // (de)serializer takes to convert to/from lYear/lRecordingDates/lDate/lTime
+            return lRecordingTime; // (de)serializer converts to/from lYear/lRecordingDates/lDate/lTime
         case KnownField::ReleaseDate:
             return lReleaseTime;
         case KnownField::Title:
@@ -205,7 +205,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
         case KnownField::Comment:
             return sComment;
         case KnownField::RecordDate:
-            return lRecordingTime; // (de)serializer takes to convert to/from sYear/sRecordingDates/sDate/sTime
+            return lRecordingTime; // (de)serializer converts to/from sYear/sRecordingDates/sDate/sTime
         case KnownField::Title:
             return sTitle;
         case KnownField::Genre:
