@@ -751,14 +751,14 @@ void Id3v2Tag::prepareRecordDataForMaking(const std::string &diagContext, Diagno
         setValue(Id3v2FrameIds::lTime, TagValue(time.str()));
         if (asDateTime.second() || asDateTime.millisecond()) {
             diag.emplace_back(DiagLevel::Warning,
-                "The recording time field (TRDA) has been truncated to full minutes when converting to corresponding fields for older ID3v2 "
+                "The recording time field (TDRC) has been truncated to full minutes when converting to corresponding fields for older ID3v2 "
                 "versions.",
                 diagContext);
         }
     } catch (const ConversionException &e) {
         try {
             diag.emplace_back(DiagLevel::Critical,
-                argsToString("Unable to convert recording time field (TRDA) with the value \"", recordingTime.toString(),
+                argsToString("Unable to convert recording time field (TDRC) with the value \"", recordingTime.toString(),
                     "\" to corresponding fields for older ID3v2 versions: ", e.what()),
                 diagContext);
         } catch (const ConversionException &) {
