@@ -48,6 +48,8 @@ std::string_view tagDataTypeString(TagDataType dataType)
         return "popularity";
     case TagDataType::UnsignedInteger:
         return "unsigned integer";
+    case TagDataType::DateTimeExpression:
+        return "date time expression";
     default:
         return "undefined";
     }
@@ -203,8 +205,6 @@ TagTextEncoding pickUtfEncoding(TagTextEncoding encoding1, TagTextEncoding encod
  * - If any of the differently typed values can not be converted to a string (eg. it is binary data) the values
  *   are *not* considered equal. So the text "foo" and the binary value "foo" are not considered equal although
  *   the raw data is identical.
- * - In fact, values of the types TagDataType::DateTime, TagDataType::TimeSpan, TagDataType::Picture, TagDataType::Binary
- *   and TagDataType::Unspecified will never be considered equal with a value of another type.
  * - If the type is TagDataType::Text and the encoding differs values might still be considered equal if they
  *   represent the same characters. The same counts for the description.
  * - This might be a costly operation due to possible conversions.
@@ -303,6 +303,8 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
                 return toTimeSpan() == other.toTimeSpan();
             case TagDataType::DateTime:
                 return toDateTime() == other.toDateTime();
+            case TagDataType::DateTimeExpression:
+                return toDateTimeExpression() == other.toDateTimeExpression();
             case TagDataType::Picture:
             case TagDataType::Binary:
             case TagDataType::Undefined:
@@ -318,6 +320,7 @@ bool TagValue::compareTo(const TagValue &other, TagValueComparisionFlags options
             switch (dataType) {
             case TagDataType::TimeSpan:
             case TagDataType::DateTime:
+            case TagDataType::DateTimeExpression:
             case TagDataType::Picture:
             case TagDataType::Binary:
             case TagDataType::Undefined:
@@ -595,7 +598,7 @@ TimeSpan TagValue::toTimeSpan() const
         case sizeof(std::int64_t):
             return TimeSpan(*(reinterpret_cast<std::int64_t *>(m_ptr.get())));
         default:
-            throw ConversionException("The size of the assigned integer is not appropriate for conversion to time span.");
+            throw ConversionException("The size of the assigned data is not appropriate for conversion to time span.");
         }
     case TagDataType::UnsignedInteger:
         switch (m_size) {
@@ -615,7 +618,7 @@ TimeSpan TagValue::toTimeSpan() const
 
 /*!
  * \brief Converts the value of the current TagValue object to its equivalent
- *        DateTime representation.
+ *        DateTime representation (using the UTC timezone).
  * \throws Throws ConversionException on failure.
  */
 DateTime TagValue::toDateTime() const
@@ -640,7 +643,43 @@ DateTime TagValue::toDateTime() const
         } else if (m_size == sizeof(std::uint64_t)) {
             return DateTime(*(reinterpret_cast<std::uint64_t *>(m_ptr.get())));
         } else {
-            throw ConversionException("The size of the assigned integer is not appropriate for conversion to date time.");
+            throw ConversionException("The size of the assigned data is not appropriate for conversion to date time.");
+        }
+    case TagDataType::DateTimeExpression:
+        return toDateTimeExpression().gmt();
+    default:
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to date time."));
+    }
+}
+
+/*!
+ * \brief Converts the value of the current TagValue object to its equivalent
+ *        DateTimeExpression representation.
+ * \throws Throws ConversionException on failure.
+ */
+CppUtilities::DateTimeExpression TagParser::TagValue::toDateTimeExpression() const
+{
+    if (isEmpty()) {
+        return DateTimeExpression();
+    }
+    switch (m_type) {
+    case TagDataType::Text: {
+        const auto str = toString(m_encoding == TagTextEncoding::Utf8 ? TagTextEncoding::Utf8 : TagTextEncoding::Latin1);
+        try {
+            return DateTimeExpression::fromIsoString(str.data());
+        } catch (const ConversionException &) {
+            return DateTimeExpression::fromString(str.data());
+        }
+    }
+    case TagDataType::Integer:
+    case TagDataType::DateTime:
+    case TagDataType::UnsignedInteger:
+        return DateTimeExpression{ .value = toDateTime(), .delta = TimeSpan(), .parts = DateTimeParts::DateTime };
+    case TagDataType::DateTimeExpression:
+        if (m_size == sizeof(DateTimeExpression)) {
+            return *reinterpret_cast<DateTimeExpression *>(m_ptr.get());
+        } else {
+            throw ConversionException("The size of the assigned data is not appropriate for conversion to date time expression.");
         }
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to date time."));
@@ -908,6 +947,9 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
     case TagDataType::UnsignedInteger:
         result = numberToString(toUnsignedInteger());
         break;
+    case TagDataType::DateTimeExpression:
+        result = toDateTimeExpression().toIsoString();
+        break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));
     }
@@ -997,6 +1039,9 @@ void TagValue::toWString(std::u16string &result, TagTextEncoding encoding) const
         break;
     case TagDataType::UnsignedInteger:
         regularStrRes = numberToString(toUnsignedInteger());
+        break;
+    case TagDataType::DateTimeExpression:
+        regularStrRes = toDateTimeExpression().toIsoString();
         break;
     default:
         throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to string."));

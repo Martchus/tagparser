@@ -28,6 +28,7 @@ class TagValueTests : public TestFixture {
     CPPUNIT_TEST(testPositionInSet);
     CPPUNIT_TEST(testTimeSpan);
     CPPUNIT_TEST(testDateTime);
+    CPPUNIT_TEST(testDateTimeExpression);
     CPPUNIT_TEST(testPopularity);
     CPPUNIT_TEST(testString);
     CPPUNIT_TEST(testEqualityOperator);
@@ -45,6 +46,7 @@ public:
     void testPositionInSet();
     void testTimeSpan();
     void testDateTime();
+    void testDateTimeExpression();
     void testPopularity();
     void testString();
     void testEqualityOperator();
@@ -179,6 +181,20 @@ void TagValueTests::testDateTime()
     CPPUNIT_ASSERT_THROW(dateTime.toPositionInSet(), ConversionException);
 }
 
+void TagValueTests::testDateTimeExpression()
+{
+    auto expr = DateTimeExpression::fromIsoString("2007");
+    auto value = TagValue();
+    value.assignDateTimeExpression(expr);
+    CPPUNIT_ASSERT_EQUAL(value, TagValue(expr));
+    CPPUNIT_ASSERT_EQUAL(expr.value, value.toDateTime());
+    CPPUNIT_ASSERT_EQUAL(expr, value.toDateTimeExpression());
+    CPPUNIT_ASSERT_EQUAL(expr.toIsoString(), value.toString());
+    CPPUNIT_ASSERT_THROW(value.toInteger(), ConversionException);
+    CPPUNIT_ASSERT_THROW(value.toTimeSpan(), ConversionException);
+    CPPUNIT_ASSERT_THROW(value.toPositionInSet(), ConversionException);
+}
+
 void TagValueTests::testPopularity()
 {
     const auto tagValue = TagValue(Popularity{ .user = "foo", .rating = 40.0, .playCounter = 123, .scale = TagType::VorbisComment });
@@ -228,7 +244,9 @@ void TagValueTests::testString()
         "conversion to pos", PositionInSet(15), TagValue("\0\x31\0\x35", 4, TagTextEncoding::Utf16BigEndian).toPositionInSet());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion pos", TagValue("a4 / 15", 7, TagTextEncoding::Utf8).toPositionInSet(), ConversionException);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
-        "conversion to date", DateTime::fromDate(2004, 4, 15), TagValue("2004-04-15", 10, TagTextEncoding::Utf8).toDateTime());
+        "conversion to date time", DateTime::fromDate(2004, 4, 15), TagValue("2004-04-15", 10, TagTextEncoding::Utf8).toDateTime());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to date time expression", DateTimeExpression::fromIsoString("2004-04"),
+        TagValue("2004-04-15", 7, TagTextEncoding::Utf8).toDateTimeExpression());
     CPPUNIT_ASSERT_EQUAL_MESSAGE("conversion to date from UTF-16", DateTime::fromDate(2015, 4, 15),
         TagValue("\0\x32\0\x30\0\x31\0\x35\0\x2d\0\x30\0\x34\0\x2d\0\x31\0\x35", 20, TagTextEncoding::Utf16BigEndian).toDateTime());
     CPPUNIT_ASSERT_THROW_MESSAGE("failing conversion to date", TagValue("_", 1, TagTextEncoding::Utf8).toDateTime(), ConversionException);

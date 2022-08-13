@@ -128,6 +128,7 @@ enum class TagDataType : unsigned int {
     Undefined, /**< undefined/invalid data type */
     Popularity, /**< rating with user info and play counter (as in ID3v2's "Popularimeter") */
     UnsignedInteger, /**< unsigned integer */
+    DateTimeExpression, /**< date time expression, see CppUtilities::DateTimeExpression */
 };
 
 /*!
@@ -159,6 +160,7 @@ public:
         TagTextEncoding encoding = TagTextEncoding::Latin1);
     explicit TagValue(PositionInSet value);
     explicit TagValue(CppUtilities::DateTime value);
+    explicit TagValue(const CppUtilities::DateTimeExpression &value);
     explicit TagValue(CppUtilities::TimeSpan value);
     explicit TagValue(const Popularity &value);
     TagValue(const TagValue &other);
@@ -190,6 +192,7 @@ public:
     PositionInSet toPositionInSet() const;
     CppUtilities::TimeSpan toTimeSpan() const;
     CppUtilities::DateTime toDateTime() const;
+    CppUtilities::DateTimeExpression toDateTimeExpression() const;
     Popularity toPopularity() const;
     Popularity toScaledPopularity(TagType scale = TagType::Unspecified) const;
     std::size_t dataSize() const;
@@ -231,6 +234,7 @@ public:
     void assignPosition(PositionInSet value);
     void assignTimeSpan(CppUtilities::TimeSpan value);
     void assignDateTime(CppUtilities::DateTime value);
+    void assignDateTimeExpression(const CppUtilities::DateTimeExpression &value);
     void assignPopularity(const Popularity &value);
 
     static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
@@ -423,6 +427,14 @@ inline TagValue::TagValue(CppUtilities::DateTime value)
 }
 
 /*!
+ * \brief Constructs a new TagValue holding a copy of the given DateTimeExpression \a value.
+ */
+inline TagValue::TagValue(const CppUtilities::DateTimeExpression &value)
+    : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::DateTimeExpression)
+{
+}
+
+/*!
  * \brief Constructs a new TagValue holding a copy of the given TimeSpan \a value.
  */
 inline TagValue::TagValue(CppUtilities::TimeSpan value)
@@ -521,6 +533,14 @@ inline void TagValue::assignTimeSpan(CppUtilities::TimeSpan value)
 inline void TagValue::assignDateTime(CppUtilities::DateTime value)
 {
     assignData(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::DateTime);
+}
+
+/*!
+ * \brief Assigns the given DateTimeExpression \a value.
+ */
+inline void TagParser::TagValue::assignDateTimeExpression(const CppUtilities::DateTimeExpression &value)
+{
+    assignData(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::DateTimeExpression);
 }
 
 /*!
