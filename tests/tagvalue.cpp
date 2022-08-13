@@ -170,15 +170,15 @@ void TagValueTests::testTimeSpan()
 
 void TagValueTests::testDateTime()
 {
-    const DateTime now(DateTime::now());
-    TagValue dateTime;
-    dateTime.assignDateTime(now);
-    CPPUNIT_ASSERT_EQUAL(dateTime, TagValue(dateTime));
-    CPPUNIT_ASSERT_EQUAL(now, dateTime.toDateTime());
-    CPPUNIT_ASSERT_EQUAL(now.toIsoString(), dateTime.toString());
-    CPPUNIT_ASSERT_THROW(dateTime.toInteger(), ConversionException);
-    CPPUNIT_ASSERT_THROW(dateTime.toTimeSpan(), ConversionException);
-    CPPUNIT_ASSERT_THROW(dateTime.toPositionInSet(), ConversionException);
+    const auto now = DateTime::now();
+    auto value = TagValue();
+    value.assignDateTime(now);
+    CPPUNIT_ASSERT_EQUAL(value, TagValue(value));
+    CPPUNIT_ASSERT_EQUAL(now, value.toDateTime());
+    CPPUNIT_ASSERT_EQUAL(now.toIsoString(), value.toString());
+    CPPUNIT_ASSERT_THROW(value.toInteger(), ConversionException);
+    CPPUNIT_ASSERT_THROW(value.toTimeSpan(), ConversionException);
+    CPPUNIT_ASSERT_THROW(value.toPositionInSet(), ConversionException);
 }
 
 void TagValueTests::testDateTimeExpression()
