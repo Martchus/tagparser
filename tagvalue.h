@@ -121,8 +121,8 @@ enum class TagDataType : unsigned int {
     Integer, /**< integer */
     PositionInSet, /**< position in set, see TagParser::PositionInSet */
     StandardGenreIndex, /**< pre-defined genre name denoted by numerical code */
-    TimeSpan, /**< time span, see ChronoUtils::TimeSpan */
-    DateTime, /**< date time, see ChronoUtils::DateTime */
+    TimeSpan, /**< time span, see CppUtilities::TimeSpan */
+    DateTime, /**< date time, see CppUtilities::DateTime */
     Picture, /**< picture file */
     Binary, /**< unspecified binary data */
     Undefined, /**< undefined/invalid data type */
