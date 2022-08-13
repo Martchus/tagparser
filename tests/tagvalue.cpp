@@ -175,7 +175,7 @@ void TagValueTests::testDateTime()
     dateTime.assignDateTime(now);
     CPPUNIT_ASSERT_EQUAL(dateTime, TagValue(dateTime));
     CPPUNIT_ASSERT_EQUAL(now, dateTime.toDateTime());
-    CPPUNIT_ASSERT_EQUAL(now.toString(DateTimeOutputFormat::IsoOmittingDefaultComponents), dateTime.toString());
+    CPPUNIT_ASSERT_EQUAL(now.toString(), dateTime.toString());
     CPPUNIT_ASSERT_THROW(dateTime.toInteger(), ConversionException);
     CPPUNIT_ASSERT_THROW(dateTime.toTimeSpan(), ConversionException);
     CPPUNIT_ASSERT_THROW(dateTime.toPositionInSet(), ConversionException);
