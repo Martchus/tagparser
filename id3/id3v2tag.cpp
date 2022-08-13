@@ -738,18 +738,25 @@ void Id3v2Tag::prepareRecordDataForMaking(const std::string &diagContext, Diagno
     }
     // -> convert lRecordingTime (which is supposed to be an ISO string) to a DateTime
     try {
-        const auto asDateTime = recordingTime.toDateTime();
+        const auto dateTimeExpr = recordingTime.toDateTimeExpression();
+        const auto &asDateTime = dateTimeExpr.value;
         // -> remove any existing old fields to avoid any leftovers
         removeOldRecordDateRelatedFields();
         // -> assign old fields from parsed DateTime
         std::stringstream year, date, time;
-        year << std::setfill('0') << std::setw(4) << asDateTime.year();
-        setValue(Id3v2FrameIds::lYear, TagValue(year.str()));
-        date << std::setfill('0') << std::setw(2) << asDateTime.day() << std::setfill('0') << std::setw(2) << asDateTime.month();
-        setValue(Id3v2FrameIds::lDate, TagValue(date.str()));
-        time << std::setfill('0') << std::setw(2) << asDateTime.hour() << std::setfill('0') << std::setw(2) << asDateTime.minute();
-        setValue(Id3v2FrameIds::lTime, TagValue(time.str()));
-        if (asDateTime.second() || asDateTime.millisecond()) {
+        if (dateTimeExpr.parts & DateTimeParts::Year) {
+            year << std::setfill('0') << std::setw(4) << asDateTime.year();
+            setValue(Id3v2FrameIds::lYear, TagValue(year.str()));
+        }
+        if (dateTimeExpr.parts & (DateTimeParts::Day | DateTimeParts::Month)) {
+            date << std::setfill('0') << std::setw(2) << asDateTime.day() << std::setfill('0') << std::setw(2) << asDateTime.month();
+            setValue(Id3v2FrameIds::lDate, TagValue(date.str()));
+        }
+        if (dateTimeExpr.parts & DateTimeParts::Time) {
+            time << std::setfill('0') << std::setw(2) << asDateTime.hour() << std::setfill('0') << std::setw(2) << asDateTime.minute();
+            setValue(Id3v2FrameIds::lTime, TagValue(time.str()));
+        }
+        if (dateTimeExpr.parts & (DateTimeParts::Second | DateTimeParts::SubSecond)) {
             diag.emplace_back(DiagLevel::Warning,
                 "The recording time field (TDRC) has been truncated to full minutes when converting to corresponding fields for older ID3v2 "
                 "versions.",
