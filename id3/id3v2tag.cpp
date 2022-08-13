@@ -415,10 +415,10 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
     }
 
     // parse values of lYear/lRecordingDates/lDate/lTime/sYear/sRecordingDates/sDate/sTime fields
-    bool hasAnyValue = false;
-    int year = 1, month = 1, day = 1, hour = 0, minute = 0;
+    auto expr = DateTimeExpression();
+    auto year = 1, month = 1, day = 1, hour = 0, minute = 0;
     if (const auto &v = value(Id3v2FrameIds::lYear)) {
-        hasAnyValue = true;
+        expr.parts |= DateTimeParts::Year;
         try {
             year = v.toInteger();
         } catch (const ConversionException &e) {
@@ -426,7 +426,7 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
         }
     }
     if (const auto &v = value(Id3v2FrameIds::lDate)) {
-        hasAnyValue = true;
+        expr.parts |= DateTimeParts::Day | DateTimeParts::Month;
         try {
             auto str = v.toString();
             if (str.size() != 4) {
@@ -439,7 +439,7 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
         }
     }
     if (const auto &v = value(Id3v2FrameIds::lTime)) {
-        hasAnyValue = true;
+        expr.parts |= DateTimeParts::Hour | DateTimeParts::Minute;
         try {
             auto str = v.toString();
             if (str.size() != 4) {
@@ -453,15 +453,18 @@ void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagno
     }
 
     // set the field values as DateTime
-    if (!hasAnyValue) {
+    if (expr.parts == DateTimeParts::None) {
         return;
     }
     try {
-        setValue(Id3v2FrameIds::lRecordingTime, TagValue(DateTime::fromDateAndTime(year, month, day, hour, minute)));
+        expr.value = DateTime::fromDateAndTime(year, month, day, hour, minute);
+        setValue(Id3v2FrameIds::lRecordingTime, TagValue(expr));
     } catch (const ConversionException &e) {
         try {
             // try to set at least the year
-            setValue(Id3v2FrameIds::lRecordingTime, TagValue(DateTime::fromDate(year)));
+            expr.parts = DateTimeParts::Year;
+            expr.value = DateTime::fromDate(year);
+            setValue(Id3v2FrameIds::lRecordingTime, TagValue(expr));
             diag.emplace_back(DiagLevel::Critical,
                 argsToString(
                     "Unable to parse the full date of the recording. Only the 'Year' frame could be parsed; related frames failed: ", e.what()),
