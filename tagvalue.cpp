@@ -939,7 +939,7 @@ void TagValue::toString(string &result, TagTextEncoding encoding) const
         result = toTimeSpan().toString();
         break;
     case TagDataType::DateTime:
-        result = toDateTime().toString(DateTimeOutputFormat::IsoOmittingDefaultComponents);
+        result = toDateTime().toIsoString();
         break;
     case TagDataType::Popularity:
         result = toPopularity().toString();
