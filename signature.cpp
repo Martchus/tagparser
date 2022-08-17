@@ -39,6 +39,13 @@ enum Sig48 : std::uint64_t {
 };
 
 /*!
+ * \brief Holds 40-bit signatures.
+ */
+enum Sig40 : std::uint64_t {
+    Aiff = 0x464F524D00ul,
+};
+
+/*!
  * \brief Holds 32-bit signatures.
  */
 enum Sig32 : std::uint32_t {
@@ -154,6 +161,11 @@ ContainerFormat parseSignature(std::string_view buffer)
         return ContainerFormat::SevenZ;
     case Xz:
         return ContainerFormat::Xz;
+    default:;
+    }
+    switch (sig >> 24) { // check 40-bit signatures
+    case Aiff:
+        return ContainerFormat::Aiff;
     default:;
     }
     switch (sig >> 32) { // check 32-bit signatures
@@ -360,6 +372,8 @@ std::string_view containerFormatAbbreviation(ContainerFormat containerFormat, Me
         return "ape";
     case ContainerFormat::Midi:
         return "mid";
+    case ContainerFormat::Aiff:
+        return "aiff";
     default:
         return "";
     }
@@ -465,6 +479,8 @@ std::string_view containerFormatName(ContainerFormat containerFormat)
         return "Monkey's Audio";
     case ContainerFormat::Midi:
         return "MIDI";
+    case ContainerFormat::Aiff:
+        return "Audio Interchange File Format";
     default:
         return "unknown";
     }
