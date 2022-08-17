@@ -601,6 +601,7 @@ bool MediaFileInfo::createAppropriateTags(const TagCreationSettings &settings)
         if (!hasAnyTag() && !(flags & TagCreationFlags::TreatUnknownFilesAsMp3Files)) {
             switch (containerFormat()) {
             case ContainerFormat::Adts:
+            case ContainerFormat::Aiff:
             case ContainerFormat::MpegAudioFrames:
             case ContainerFormat::WavPack:
                 break;
