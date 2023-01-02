@@ -1588,12 +1588,14 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
         m_rawTkhdCreationTime = reader.readUInt32BE();
         m_rawTkhdModificationTime = reader.readUInt32BE();
         m_id = reader.readUInt32BE();
+        m_istream->seekg(4, std::ios_base::cur);
         m_rawTkhdDuration = reader.readUInt32BE();
         break;
     case 1:
         m_rawTkhdCreationTime = reader.readUInt64BE();
         m_rawTkhdModificationTime = reader.readUInt64BE();
         m_id = reader.readUInt32BE();
+        m_istream->seekg(4, std::ios_base::cur);
         m_rawTkhdDuration = reader.readUInt64BE();
         break;
     default:
