@@ -1335,29 +1335,36 @@ void Mp4Track::makeMedia(Diagnostics &diag)
         writer().writeUInt32BE(static_cast<std::uint32_t>(timings.mdhdDuration));
     }
     // convert and write language
-    const std::string &language = m_locale.abbreviatedName(LocaleFormat::ISO_639_2_T, LocaleFormat::Unknown);
-    std::uint16_t codedLanguage = 0;
-    for (size_t charIndex = 0; charIndex != 3; ++charIndex) {
-        const char langChar = charIndex < language.size() ? language[charIndex] : 0;
+    // note: Not using m_locale.abbreviatedName() here to preserve "und" (explicitly undefined).
+    const auto *language = static_cast<const std::string *>(&LocaleDetail::getEmpty());
+    for (const auto &detail : m_locale) {
+        if (!detail.empty() && (detail.format == LocaleFormat::ISO_639_2_T || detail.format == LocaleFormat::Unknown)) {
+            language = &detail;
+            break;
+        }
+    }
+    auto codedLanguage = static_cast<std::uint16_t>(0u);
+    for (auto charIndex = static_cast<std::size_t>(0); charIndex != 3; ++charIndex) {
+        const char langChar = charIndex < language->size() ? (*language)[charIndex] : 0;
         if (langChar >= 'a' && langChar <= 'z') {
             codedLanguage |= static_cast<std::uint16_t>((langChar - 0x60) << (0xA - charIndex * 0x5));
             continue;
         }
 
         // handle invalid characters
-        if (language.empty()) {
-            // preserve empty language field
+        if (language->empty()) {
+            // preserve null value (empty language field) which is not the same as "und" (explicitly undefined)
             codedLanguage = 0;
             break;
         }
         diag.emplace_back(
-            DiagLevel::Warning, "Assigned language \"" % language + "\" is of an invalid format. Setting language to undefined.", "making mdhd atom");
+            DiagLevel::Warning, "Assigned language \"" % *language + "\" is of an invalid format. Setting language to undefined.", "making mdhd atom");
         codedLanguage = 0x55C4; // und(efined)
         break;
     }
-    if (language.size() > 3) {
+    if (language->size() > 3) {
         diag.emplace_back(
-            DiagLevel::Warning, "Assigned language \"" % language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
+            DiagLevel::Warning, "Assigned language \"" % *language + "\" is longer than 3 byte and hence will be truncated.", "making mdhd atom");
     }
     writer().writeUInt16BE(codedLanguage);
     writer().writeUInt16BE(0); // pre defined
