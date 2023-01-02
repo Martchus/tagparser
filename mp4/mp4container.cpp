@@ -243,7 +243,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     // -> whether media data is written chunk by chunk (need to write chunk by chunk if tracks have been altered)
     const bool writeChunkByChunk = m_tracksAltered;
     // -> whether rewrite is required (always required when forced to rewrite or when tracks have been altered)
-    bool rewriteRequired = fileInfo().isForcingRewrite() || writeChunkByChunk;
+    bool rewriteRequired = fileInfo().isForcingRewrite() || writeChunkByChunk || !fileInfo().saveFilePath().empty();
     // -> use the preferred tag position/index position (force one wins, if both are force tag pos wins; might be changed later if none is forced)
     ElementPosition initialNewTagPos
         = fileInfo().forceTagPosition() || !fileInfo().forceIndexPosition() ? fileInfo().tagPosition() : fileInfo().indexPosition();
