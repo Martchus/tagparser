@@ -6,6 +6,7 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <openssl/evp.h>
 #include <openssl/sha.h>
 
 #include <fstream>
@@ -81,14 +82,33 @@ struct TestFile {
     { "ogg/example-cover.png", { "897e1a2d0cfb79c1fe5068108bb34610c3758bd0b9a7e90c1702c4e6972e0801" } },
 };
 
+struct EvpMdCtx {
+    EvpMdCtx()
+        : handle(EVP_MD_CTX_new())
+    {
+    }
+    ~EvpMdCtx()
+    {
+        if (handle) {
+            EVP_MD_CTX_free(handle);
+        }
+    }
+    EVP_MD_CTX *handle;
+};
+
 /*!
  * \brief Computes the SHA-256 checksums for the file using OpenSSL.
  */
 Sha256Checksum TestFile::computeSha256Sum() const
 {
     // init sha256 hashing
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
+    const auto mdctx = EvpMdCtx();
+    if (!mdctx.handle) {
+        throw std::runtime_error("Unable to create EVP context.");
+    }
+    if (EVP_DigestInit_ex(mdctx.handle, EVP_sha256(), nullptr) != 1) {
+        throw std::runtime_error("Unable to init SHA256-EVP context.");
+    }
 
     // read and hash file
     {
@@ -100,11 +120,15 @@ Sha256Checksum TestFile::computeSha256Sum() const
         try {
             for (;;) {
                 file.read(readBuffer, sizeof(readBuffer));
-                SHA256_Update(&sha256, readBuffer, static_cast<size_t>(file.gcount()));
+                if (EVP_DigestUpdate(mdctx.handle, readBuffer, static_cast<std::size_t>(file.gcount())) != 1) {
+                    throw std::runtime_error("Unable to update SHA256-EVP.");
+                }
             }
         } catch (const std::ios_base::failure &) {
             if (file.eof() && !file.bad()) {
-                SHA256_Update(&sha256, readBuffer, static_cast<size_t>(file.gcount()));
+                if (EVP_DigestUpdate(mdctx.handle, readBuffer, static_cast<std::size_t>(file.gcount())) != 1) {
+                    throw std::runtime_error("Unable to update SHA256-EVP.");
+                }
             } else {
                 throw;
             }
@@ -113,7 +137,10 @@ Sha256Checksum TestFile::computeSha256Sum() const
 
     // compute final hash
     unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_Final(hash, &sha256);
+    auto length = static_cast<unsigned int>(SHA256_DIGEST_LENGTH);
+    if (EVP_DigestFinal_ex(mdctx.handle, hash, &length) != 1) {
+        throw std::runtime_error("Unable to finalize SHA256-EVP.");
+    }
 
     // convert to "hex string"
     Sha256Checksum hexString;
