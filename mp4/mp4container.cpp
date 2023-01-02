@@ -277,7 +277,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             fileTypeAtom->makeBuffer();
         } else {
             // throw error if missing
-            diag.emplace_back(DiagLevel::Critical, "Mandatory \"ftyp\"-atom not found.", context);
+            diag.emplace_back(DiagLevel::Critical, "Mandatory \"ftyp\"-atom not found in the source file.", context);
             throw InvalidDataException();
         }
 
@@ -290,7 +290,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         // movie atom (mandatory)
         if (!(movieAtom = firstElement()->siblingByIdIncludingThis(Mp4AtomIds::Movie, diag))) {
             // throw error if missing
-            diag.emplace_back(DiagLevel::Critical, "Mandatory \"moov\"-atom not in the source file found.", context);
+            diag.emplace_back(DiagLevel::Critical, "Mandatory \"moov\"-atom not found in the source file.", context);
             throw InvalidDataException();
         }
 
