@@ -425,7 +425,7 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
             return;
         } else if (m_container) {
             m_container->parseTags(diag, progress);
-        } else {
+        } else if (m_containerFormat != ContainerFormat::MpegAudioFrames) {
             throw NotImplementedException();
         }
 
