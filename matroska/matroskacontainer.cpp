@@ -834,7 +834,7 @@ struct SegmentData {
     /// \brief size of the "SegmentInfo"-element
     std::uint64_t infoDataSize;
     /// \brief cluster sizes
-    vector<std::uint64_t> clusterSizes;
+    std::vector<std::uint64_t> clusterSizes;
     /// \brief first "Cluster"-element (original file)
     EbmlElement *firstClusterElement;
     /// \brief end offset of last "Cluster"-element (original file)
@@ -881,15 +881,15 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     EbmlElement *level1Element, *level2Element;
 
     // define variables needed for precalculation of "Tags"- and "Attachments"-element
-    vector<MatroskaTagMaker> tagMaker;
+    std::vector<MatroskaTagMaker> tagMaker;
     tagMaker.reserve(tags().size());
     std::uint64_t tagElementsSize = 0;
     std::uint64_t tagsSize;
-    vector<MatroskaAttachmentMaker> attachmentMaker;
+    std::vector<MatroskaAttachmentMaker> attachmentMaker;
     attachmentMaker.reserve(m_attachments.size());
     std::uint64_t attachedFileElementsSize = 0;
     std::uint64_t attachmentsSize;
-    vector<MatroskaTrackHeaderMaker> trackHeaderMaker;
+    std::vector<MatroskaTrackHeaderMaker> trackHeaderMaker;
     trackHeaderMaker.reserve(tracks().size());
     std::uint64_t trackHeaderElementsSize = 0;
     std::uint64_t trackHeaderSize;
@@ -898,7 +898,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // current segment index
     unsigned int segmentIndex = 0;
     // segment specific data
-    vector<SegmentData> segmentData;
+    std::vector<SegmentData> segmentData;
     // offset of the segment which is currently written / offset of "Cues"-element in segment
     std::uint64_t offset;
     // current total offset (including EBML header)
@@ -906,7 +906,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     // current write offset (used to calculate positions)
     std::uint64_t currentPosition = 0;
     // holds the offsets of all CRC-32 elements and the length of the enclosing block
-    vector<tuple<std::uint64_t, std::uint64_t>> crc32Offsets;
+    std::vector<std::tuple<std::uint64_t, std::uint64_t>> crc32Offsets;
     // size length used to make size denotations
     std::uint8_t sizeLength;
     // sizes and offsets for cluster calculation
