@@ -11,9 +11,9 @@
 #include <c++utilities/io/binaryreader.h>
 #include <c++utilities/io/binarywriter.h>
 #include <c++utilities/io/copy.h>
+#include <c++utilities/io/path.h>
 
-#include <unistd.h>
-
+#include <filesystem>
 #include <memory>
 #include <numeric>
 #include <tuple>
@@ -838,10 +838,12 @@ calculatePadding:
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if (truncate(BasicFileInfo::pathForOpen(fileInfo().path()).data(), static_cast<iostream::off_type>(newSize)) == 0) {
+                auto ec = std::error_code();
+                std::filesystem::resize_file(makeNativePath(BasicFileInfo::pathForOpen(fileInfo().path())), newSize, ec);
+                if (!ec) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
-                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file: " + ec.message(), context);
                 }
                 // -> reopen the stream again
                 outputStream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);

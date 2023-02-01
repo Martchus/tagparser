@@ -13,10 +13,10 @@
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
-
-#include <unistd.h>
+#include <c++utilities/io/path.h>
 
 #include <chrono>
+#include <filesystem>
 #include <functional>
 #include <initializer_list>
 #include <limits>
@@ -1837,10 +1837,12 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 // -> close stream before truncating
                 outputStream.close();
                 // -> truncate file
-                if (truncate(fileInfo().path().c_str(), static_cast<iostream::off_type>(newSize)) == 0) {
+                auto ec = std::error_code();
+                std::filesystem::resize_file(makeNativePath(fileInfo().path()), newSize, ec);
+                if (!ec) {
                     fileInfo().reportSizeChanged(newSize);
                 } else {
-                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file: " + ec.message(), context);
                 }
                 // -> reopen the stream again
                 outputStream.open(fileInfo().path(), ios_base::in | ios_base::out | ios_base::binary);

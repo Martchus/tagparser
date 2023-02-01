@@ -37,11 +37,11 @@
 
 #include <c++utilities/chrono/timespan.h>
 #include <c++utilities/conversion/stringconversion.h>
-
-#include <unistd.h>
+#include <c++utilities/io/path.h>
 
 #include <algorithm>
 #include <cstdio>
+#include <filesystem>
 #include <functional>
 #include <iomanip>
 #include <ios>
@@ -1599,10 +1599,12 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             }
             progress.updateStep("Removing ID3v1 tag ...");
             stream().close();
-            if (truncate(BasicFileInfo::pathForOpen(path()).data(), static_cast<std::streamoff>(size() - 128)) == 0) {
+            auto ec = std::error_code();
+            std::filesystem::resize_file(makeNativePath(BasicFileInfo::pathForOpen(path())), size() - 128, ec);
+            if (!ec) {
                 reportSizeChanged(size() - 128);
             } else {
-                diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag.", context);
+                diag.emplace_back(DiagLevel::Critical, "Unable to truncate file to remove ID3v1 tag: " + ec.message(), context);
                 throw std::ios_base::failure("Unable to truncate file to remove ID3v1 tag.");
             }
             return;
@@ -1844,10 +1846,12 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
                 // -> prevent deferring final write operations
                 outputStream.close();
                 // -> truncate file
-                if (truncate(BasicFileInfo::pathForOpen(path()).data(), static_cast<streamoff>(newSize)) == 0) {
+                auto ec = std::error_code();
+                std::filesystem::resize_file(makeNativePath(BasicFileInfo::pathForOpen(path())), newSize, ec);
+                if (!ec) {
                     reportSizeChanged(newSize);
                 } else {
-                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file.", context);
+                    diag.emplace_back(DiagLevel::Critical, "Unable to truncate the file: " + ec.message(), context);
                 }
             } else {
                 // file is longer after the modification
