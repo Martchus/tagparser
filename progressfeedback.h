@@ -187,6 +187,7 @@ class AbortableProgressFeedback : public BasicProgressFeedback<AbortableProgress
 public:
     explicit AbortableProgressFeedback(const Callback &callback, const Callback &percentageOnlyCallback = Callback());
     explicit AbortableProgressFeedback(Callback &&callback = Callback(), Callback &&percentageOnlyCallback = Callback());
+    AbortableProgressFeedback(const AbortableProgressFeedback&);
 
     bool isAborted() const;
     void tryToAbort();
@@ -217,6 +218,15 @@ inline AbortableProgressFeedback::AbortableProgressFeedback(const Callback &call
 inline AbortableProgressFeedback::AbortableProgressFeedback(Callback &&callback, Callback &&percentageOnlyCallback)
     : BasicProgressFeedback<AbortableProgressFeedback>(callback, percentageOnlyCallback)
     , m_aborted(false)
+{
+}
+
+/*!
+/* \brief Constructs a new AbortableProgressFeedback based on \a other.
+ */
+inline AbortableProgressFeedback::AbortableProgressFeedback(const AbortableProgressFeedback& other)
+    : BasicProgressFeedback<AbortableProgressFeedback>(other)
+    , m_aborted(other.isAborted())
 {
 }
 
