@@ -822,6 +822,7 @@ struct SegmentData {
         , sizeDenotationLength(0)
     {
     }
+    SegmentData(SegmentData&&) = default;
 
     /// \brief whether CRC-32 checksum is present
     bool hasCrc32;
