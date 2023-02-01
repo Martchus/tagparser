@@ -3,7 +3,9 @@
 
 #include "./ebmlelement.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 namespace TagParser {
 
