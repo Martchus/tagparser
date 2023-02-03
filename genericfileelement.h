@@ -31,8 +31,7 @@ class Diagnostics;
  *
  * For an example of such a specialization see FileElementTraits<Mp4Atom> or FileElementTraits<EbmlElement>.
  */
-template <typename ImplementationType> class FileElementTraits {
-};
+template <typename ImplementationType> class FileElementTraits {};
 
 /*!
  * \class TagParser::GenericFileElement

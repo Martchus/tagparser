@@ -13,8 +13,7 @@ template <class implementationType> class TagField;
  *
  * A template specialization for each TagField subclass must be provided.
  */
-template <typename ImplementationType> class TagFieldTraits {
-};
+template <typename ImplementationType> class TagFieldTraits {};
 
 /*!
  * \brief The TagField class is used by FieldMapBasedTag to store the fields.

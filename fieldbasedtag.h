@@ -14,8 +14,7 @@ namespace TagParser {
  *
  * A template specialization for each FieldMapBasedTag subclass must be provided.
  */
-template <typename ImplementationType> class FieldMapBasedTagTraits {
-};
+template <typename ImplementationType> class FieldMapBasedTagTraits {};
 
 /*!
  * \class TagParser::FieldMapBasedTag

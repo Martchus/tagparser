@@ -1357,8 +1357,8 @@ void Mp4Track::makeMedia(Diagnostics &diag)
             codedLanguage = 0;
             break;
         }
-        diag.emplace_back(
-            DiagLevel::Warning, "Assigned language \"" % *language + "\" is of an invalid format. Setting language to undefined.", "making mdhd atom");
+        diag.emplace_back(DiagLevel::Warning, "Assigned language \"" % *language + "\" is of an invalid format. Setting language to undefined.",
+            "making mdhd atom");
         codedLanguage = 0x55C4; // und(efined)
         break;
     }
