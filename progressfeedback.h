@@ -222,7 +222,7 @@ inline AbortableProgressFeedback::AbortableProgressFeedback(Callback &&callback,
 }
 
 /*!
-/* \brief Constructs a new AbortableProgressFeedback based on \a other.
+ * \brief Constructs a new AbortableProgressFeedback based on \a other.
  */
 inline AbortableProgressFeedback::AbortableProgressFeedback(const AbortableProgressFeedback& other)
     : BasicProgressFeedback<AbortableProgressFeedback>(other)
