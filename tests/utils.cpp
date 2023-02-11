@@ -21,9 +21,8 @@ using namespace CppUtilities;
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <cstdio>
+#include <filesystem>
 #include <regex>
-
-#include <unistd.h>
 
 using namespace std;
 using namespace CppUtilities::Literals;
@@ -335,8 +334,7 @@ void UtilitiesTests::testBackupFile()
     // get rid of 2nd backup (again)
     backupStream2.close();
     CPPUNIT_ASSERT_EQUAL_MESSAGE("remove " + backupPath2, 0, remove(backupPath2.data()));
-    const auto backupDir(workingDir + "/bak");
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("remove " + backupDir, 0, rmdir(backupDir.data()));
+    std::filesystem::remove_all(workingDir + "/bak");
 
     // should be able to use backup stream, eg. seek to the end
     backupStream1.seekg(0, ios_base::end);
