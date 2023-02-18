@@ -135,6 +135,8 @@ std::string_view MediaFormat::name() const
         return "3GPP2 Compact Multimedia Format (CMF)";
     case GeneralMediaFormat::Hevc:
         return "High Efficiency Video Coding";
+    case GeneralMediaFormat::Vcc:
+        return "Versatile Video Coding";
     case GeneralMediaFormat::ImaadpcmAcm:
         return "IMAADPCM ACM";
     case GeneralMediaFormat::ImageSubtitle:
@@ -564,6 +566,8 @@ std::string_view MediaFormat::abbreviation() const
         return "3GPP2 CMF";
     case GeneralMediaFormat::Hevc:
         return "H.265";
+    case GeneralMediaFormat::Vcc:
+        return "H.266";
     case GeneralMediaFormat::ImaadpcmAcm:
         return "IMAADPCM ACM";
     case GeneralMediaFormat::ImageSubtitle:
@@ -873,6 +877,8 @@ std::string_view MediaFormat::shortAbbreviation() const
         return "3GPP2-CMF";
     case GeneralMediaFormat::Hevc:
         return "H.265";
+    case GeneralMediaFormat::Vcc:
+        return "H.266";
     case GeneralMediaFormat::ImaadpcmAcm:
         return "IMAADPCM-ACM";
     case GeneralMediaFormat::ImageSubtitle:

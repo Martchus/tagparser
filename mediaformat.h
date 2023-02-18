@@ -99,6 +99,7 @@ enum class GeneralMediaFormat : unsigned int {
     WavPack, /**< WavPack */
     WindowsMediaAudio, /**< Windows Media Audio */
     WindowsMediaVideo, /**< Windows Media Video */
+    Vcc, /**< H.266/Versatile Video Coding */
 };
 
 /*!
