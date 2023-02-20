@@ -526,31 +526,31 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag, AbortableProgress
                                             switch (element->id()) {
                                             case MatroskaIds::SegmentInfo:
                                                 if (excludesOffset(m_segmentInfoElements, offset)) {
-                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_additionalElements.emplace_back(std::move(element));
                                                     m_segmentInfoElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Tracks:
                                                 if (excludesOffset(m_tracksElements, offset)) {
-                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_additionalElements.emplace_back(std::move(element));
                                                     m_tracksElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Tags:
                                                 if (excludesOffset(m_tagsElements, offset)) {
-                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_additionalElements.emplace_back(std::move(element));
                                                     m_tagsElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Chapters:
                                                 if (excludesOffset(m_chaptersElements, offset)) {
-                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_additionalElements.emplace_back(std::move(element));
                                                     m_chaptersElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;
                                             case MatroskaIds::Attachments:
                                                 if (excludesOffset(m_attachmentsElements, offset)) {
-                                                    m_additionalElements.emplace_back(move(element));
+                                                    m_additionalElements.emplace_back(std::move(element));
                                                     m_attachmentsElements.emplace_back(m_additionalElements.back().get());
                                                 }
                                                 break;

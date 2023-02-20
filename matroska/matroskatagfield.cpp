@@ -74,10 +74,10 @@ void MatroskaTagField::reparse(EbmlElement &simpleTagElement, Diagnostics &diag,
                 child->stream().read(buffer.get(), static_cast<streamoff>(child->dataSize()));
                 switch (child->id()) {
                 case MatroskaIds::TagString:
-                    value().assignData(move(buffer), child->dataSize(), TagDataType::Text, TagTextEncoding::Utf8);
+                    value().assignData(std::move(buffer), child->dataSize(), TagDataType::Text, TagTextEncoding::Utf8);
                     break;
                 case MatroskaIds::TagBinary:
-                    value().assignData(move(buffer), child->dataSize(), TagDataType::Undefined);
+                    value().assignData(std::move(buffer), child->dataSize(), TagDataType::Undefined);
                     break;
                 }
             } else {

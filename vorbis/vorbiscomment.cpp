@@ -178,7 +178,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
                 if (vendorSize <= maxSize) {
                     auto buff = make_unique<char[]>(vendorSize);
                     stream.read(buff.get(), vendorSize);
-                    m_vendor.assignData(move(buff), vendorSize, TagDataType::Text, TagTextEncoding::Utf8);
+                    m_vendor.assignData(std::move(buff), vendorSize, TagDataType::Text, TagTextEncoding::Utf8);
                     // TODO: Is the vendor string actually UTF-8 (like the field values)?
                 } else {
                     diag.emplace_back(DiagLevel::Critical, "Vendor information is truncated.", context);
@@ -195,7 +195,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
                 VorbisCommentField field;
                 try {
                     field.parse(stream, maxSize, diag);
-                    fields().emplace(field.id(), move(field));
+                    fields().emplace(field.id(), std::move(field));
                 } catch (const TruncatedDataException &) {
                     throw;
                 } catch (const Failure &) {

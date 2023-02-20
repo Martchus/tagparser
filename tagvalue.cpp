@@ -1179,7 +1179,7 @@ void TagValue::assignData(unique_ptr<char[]> &&data, size_t length, TagDataType 
     m_size = length;
     m_type = type;
     m_encoding = encoding;
-    m_ptr = move(data);
+    m_ptr = std::move(data);
 }
 
 /*!

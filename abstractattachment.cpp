@@ -180,7 +180,7 @@ void AbstractAttachment::setFile(string_view path, Diagnostics &diag, AbortableP
     if (!mimeType.empty()) {
         m_mimeType = mimeType;
     }
-    m_data = move(file);
+    m_data = std::move(file);
     m_isDataFromFile = true;
 }
 

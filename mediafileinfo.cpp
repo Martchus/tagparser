@@ -245,7 +245,7 @@ startParsingSignature:
             } catch (const Failure &) {
                 m_containerParsingStatus = ParsingStatus::CriticalFailure;
             }
-            m_container = move(container);
+            m_container = std::move(container);
             break;
         }
         case ContainerFormat::Ogg:
@@ -962,7 +962,7 @@ string MediaFileInfo::technicalSummary() const
         for (size_t i = 0; i != trackCount; ++i) {
             const string description(m_container->track(i)->description());
             if (!description.empty()) {
-                parts.emplace_back(move(description));
+                parts.emplace_back(std::move(description));
             }
         }
         return joinStrings(parts, " / ");
@@ -1810,8 +1810,8 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
             }
             backupStream.seekg(static_cast<streamoff>(streamOffset));
             CopyHelper<0x4000> copyHelper;
-            copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, bind(&AbortableProgressFeedback::isAborted, ref(progress)),
-                bind(&AbortableProgressFeedback::updateStepPercentage, ref(progress), _1));
+            copyHelper.callbackCopy(backupStream, stream(), mediaDataSize, std::bind(&AbortableProgressFeedback::isAborted, std::ref(progress)),
+                std::bind(&AbortableProgressFeedback::updateStepPercentage, std::ref(progress), _1));
         } else {
             // just skip actual stream data
             outputStream.seekp(static_cast<std::streamoff>(mediaDataSize), ios_base::cur);

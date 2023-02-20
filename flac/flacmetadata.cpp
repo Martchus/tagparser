@@ -98,7 +98,7 @@ void FlacMetaDataBlockPicture::parse(istream &inputStream, std::uint32_t maxSize
     if (size) {
         auto data = make_unique<char[]>(size);
         inputStream.read(data.get(), size);
-        m_value.assignData(move(data), size, TagDataType::Picture);
+        m_value.assignData(std::move(data), size, TagDataType::Picture);
     } else {
         m_value.clearData();
     }

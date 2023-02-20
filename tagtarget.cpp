@@ -81,7 +81,7 @@ std::string TagTarget::toString(TagTargetLevel tagTargetLevel) const
     if (levelString.empty()) {
         parts.emplace_back("undefined target");
     } else {
-        parts.emplace_back(move(levelString));
+        parts.emplace_back(std::move(levelString));
     }
     for (auto v : tracks()) {
         parts.emplace_back("track " + numberToString(v));

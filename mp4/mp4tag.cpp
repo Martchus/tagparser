@@ -413,7 +413,7 @@ void Mp4Tag::parse(Mp4Atom &metaAtom, Diagnostics &diag)
         try {
             child->parse(diag);
             tagField.reparse(*child, diag);
-            fields().emplace(child->id(), move(tagField));
+            fields().emplace(child->id(), std::move(tagField));
         } catch (const Failure &) {
         }
     }

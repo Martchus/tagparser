@@ -153,7 +153,7 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     const auto coverSize = static_cast<streamoff>(dataAtom->dataSize() - 8);
                     auto coverData = make_unique<char[]>(static_cast<size_t>(coverSize));
                     stream.read(coverData.get(), coverSize);
-                    val->assignData(move(coverData), static_cast<size_t>(coverSize), TagDataType::Picture);
+                    val->assignData(std::move(coverData), static_cast<size_t>(coverSize), TagDataType::Picture);
                     break;
                 }
                 case RawDataType::BeSignedInt: {
@@ -229,9 +229,9 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                         auto data = make_unique<char[]>(static_cast<size_t>(dataSize));
                         stream.read(data.get(), dataSize);
                         if (ilstChild.id() == Mp4TagAtomIds::Cover) {
-                            val->assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Picture);
+                            val->assignData(std::move(data), static_cast<size_t>(dataSize), TagDataType::Picture);
                         } else {
-                            val->assignData(move(data), static_cast<size_t>(dataSize), TagDataType::Undefined);
+                            val->assignData(std::move(data), static_cast<size_t>(dataSize), TagDataType::Undefined);
                         }
                     }
                 }

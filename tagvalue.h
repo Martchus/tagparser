@@ -406,7 +406,7 @@ inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, Ta
     , m_flags(TagValueFlags::None)
 {
     if (length) {
-        m_ptr = move(data);
+        m_ptr = std::move(data);
     }
 }
 

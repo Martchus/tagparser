@@ -139,7 +139,7 @@ void FlacStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedbac
                         m_vorbisComment = make_unique<VorbisComment>();
                         m_vorbisComment->setVendor(TagValue(APP_NAME " v" APP_VERSION, TagTextEncoding::Utf8));
                     }
-                    m_vorbisComment->fields().insert(make_pair(coverField.id(), move(coverField)));
+                    m_vorbisComment->fields().insert(make_pair(coverField.id(), std::move(coverField)));
                 }
 
             } catch (const TruncatedDataException &) {

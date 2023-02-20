@@ -119,13 +119,13 @@ void EbmlElement::internalParse(Diagnostics &diag)
                     if (m_parent->firstChild() == this) {
                         // ... parent
                         m_parent->m_firstChild.release();
-                        m_parent->m_firstChild = move(m_nextSibling);
+                        m_parent->m_firstChild = std::move(m_nextSibling);
                     } else {
                         // ... previous sibling
                         for (EbmlElement *sibling = m_parent->firstChild(); sibling; sibling = sibling->nextSibling()) {
                             if (sibling->nextSibling() == this) {
                                 sibling->m_nextSibling.release();
-                                sibling->m_nextSibling = move(m_nextSibling);
+                                sibling->m_nextSibling = std::move(m_nextSibling);
                                 break;
                             }
                         }

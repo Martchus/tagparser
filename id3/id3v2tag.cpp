@@ -552,7 +552,7 @@ void Id3v2Tag::parse(istream &stream, const std::uint64_t maximalSize, Diagnosti
             if (Id3v2FrameIds::isTextFrame(frame.id()) && fields().count(frame.id()) == 1) {
                 diag.emplace_back(DiagLevel::Warning, "The text frame " % frame.idToString() + " exists more than once.", context);
             }
-            fields().emplace(frame.id(), move(frame));
+            fields().emplace(frame.id(), std::move(frame));
         } catch (const NoDataFoundException &) {
             if (frame.hasPaddingReached()) {
                 m_paddingSize = startOffset + m_size - pos;
