@@ -78,7 +78,11 @@ template <class StreamType> void VorbisCommentField::internalParse(StreamType &s
                     auto decoded = decodeBase64(data.get() + idSize + 1, size - idSize - 1);
                     stringstream bufferStream(ios_base::in | ios_base::out | ios_base::binary);
                     bufferStream.exceptions(ios_base::failbit | ios_base::badbit);
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
                     bufferStream.rdbuf()->pubsetbuf(reinterpret_cast<char *>(decoded.first.get()), decoded.second);
+#else
+                    bufferStream.write(reinterpret_cast<const char *>(decoded.first.get()), decoded.second);
+#endif
                     FlacMetaDataBlockPicture pictureBlock(value());
                     pictureBlock.parse(bufferStream, decoded.second);
                     setTypeInfo(pictureBlock.pictureType());
@@ -197,10 +201,15 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
                 auto buffer = make_unique<char[]>(requiredSize);
                 stringstream bufferStream(ios_base::in | ios_base::out | ios_base::binary);
                 bufferStream.exceptions(ios_base::failbit | ios_base::badbit);
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
                 bufferStream.rdbuf()->pubsetbuf(buffer.get(), requiredSize);
-
+#endif
                 pictureBlock.make(bufferStream);
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+                bufferStream.read(buffer.get(), static_cast<std::streamsize>(requiredSize));
+#endif
                 valueString = encodeBase64(reinterpret_cast<std::uint8_t *>(buffer.get()), requiredSize);
+
             } catch (const Failure &) {
                 diag.emplace_back(DiagLevel::Critical, "Unable to make METADATA_BLOCK_PICTURE struct from the assigned value.", context);
                 throw;

@@ -717,7 +717,11 @@ Popularity TagValue::toPopularity() const
         auto reader = BinaryReader(&s);
         try {
             s.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
             s.rdbuf()->pubsetbuf(m_ptr.get(), static_cast<std::streamsize>(m_size));
+#else
+            s.write(m_ptr.get(), static_cast<std::streamsize>(m_size));
+#endif
             popularity.user = reader.readLengthPrefixedString();
             popularity.rating = reader.readFloat64LE();
             popularity.playCounter = reader.readUInt64LE();
