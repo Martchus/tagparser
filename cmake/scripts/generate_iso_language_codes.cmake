@@ -2,13 +2,19 @@
 # generates C++ code for ISO-639-2 language codes
 cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
 
+# get language file if not specified
 if (NOT LANGUAGE_FILE)
     # default to path provided usually by iso-codecs package (https://salsa.debian.org/iso-codes-team/iso-codes)
     set(LANGUAGE_FILE "/usr/share/iso-codes/json/iso_639-2.json")
+    # download the file from upstream repo if it is not installed locally
+    if (NOT EXISTS "${LANGUAGE_FILE}")
+        set(LANGUAGE_FILE "resources/iso_639-2.json")
+        message(STATUS "Downloading ${LANGUAGE_FILE}")
+        file(DOWNLOAD "https://salsa.debian.org/iso-codes-team/iso-codes/-/raw/main/data/iso_639-2.json" "${LANGUAGE_FILE}" SHOW_PROGRESS TLS_VERIFY ON)
+    endif()
 endif ()
 if (NOT EXISTS "${LANGUAGE_FILE}")
     message(FATAL_ERROR "The file ${LANGUAGE_FILE} does not exist.")
-else()
 endif()
 if (NOT OUTPUT_PATH)
     message(FATAL_ERROR "No OUTPUT_PATH specified.")
