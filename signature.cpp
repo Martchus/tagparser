@@ -72,6 +72,7 @@ enum Sig32 : std::uint32_t {
     Zip1 = 0x504B0304u,
     Zip2 = 0x504B0506u,
     Zip3 = 0x504B0708u,
+    Zstd = 0x28b52ffdu,
 };
 
 /*!
@@ -213,6 +214,8 @@ ContainerFormat parseSignature(std::string_view buffer)
     case Zip2:
     case Zip3:
         return ContainerFormat::Zip;
+    case Zstd:
+        return ContainerFormat::Zstd;
     default:;
     }
     switch (sig >> 40) { // check 24-bit signatures
@@ -374,6 +377,8 @@ std::string_view containerFormatAbbreviation(ContainerFormat containerFormat, Me
         return "mid";
     case ContainerFormat::Aiff:
         return "aiff";
+    case ContainerFormat::Zstd:
+        return "zst";
     default:
         return "";
     }
@@ -481,6 +486,8 @@ std::string_view containerFormatName(ContainerFormat containerFormat)
         return "MIDI";
     case ContainerFormat::Aiff:
         return "Audio Interchange File Format";
+    case ContainerFormat::Zstd:
+        return "Zstandard compressed file";
     default:
         return "unknown";
     }
@@ -577,6 +584,8 @@ std::string_view containerMimeType(ContainerFormat containerFormat, MediaType me
         return "image/bmp";
     case ContainerFormat::WindowsIcon:
         return "image/vnd.microsoft.icon";
+    case ContainerFormat::Zstd:
+        return "application/zstd";
     default:
         return "";
     }

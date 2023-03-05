@@ -66,6 +66,7 @@ enum class ContainerFormat : unsigned int {
     YUV4Mpeg2, /**< YUV4MPEG2 */
     Zip, /**< ZIP archive */
     Aiff, /**< Audio Interchange File Format */
+    Zstd, /**< Zstandard-compressed data */
 };
 
 TAG_PARSER_EXPORT ContainerFormat parseSignature(const char *buffer, std::size_t bufferSize);
