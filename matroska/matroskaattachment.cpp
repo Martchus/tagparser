@@ -3,6 +3,8 @@
 #include "./matroskacontainer.h"
 #include "./matroskaid.h"
 
+#include "../mediafileinfo.h"
+
 #include <c++utilities/conversion/binaryconversion.h>
 #include <c++utilities/conversion/stringbuilder.h>
 
