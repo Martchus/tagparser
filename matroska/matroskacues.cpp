@@ -1,6 +1,8 @@
 #include "./matroskacues.h"
 #include "./matroskacontainer.h"
 
+#include "../mediafileinfo.h"
+
 #include <c++utilities/conversion/binaryconversion.h>
 
 using namespace std;

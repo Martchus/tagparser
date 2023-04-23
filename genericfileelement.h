@@ -116,13 +116,17 @@ public:
     static constexpr std::uint32_t maximumIdLengthSupported();
     static constexpr std::uint32_t maximumSizeLengthSupported();
     static constexpr std::uint8_t minimumElementSize();
-    void copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
-    void copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
-    void copyEntirely(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
+    template <typename TargetStream = std::ostream>
+    void copyHeader(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
+    template <typename TargetStream = std::ostream>
+    void copyWithoutChilds(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
+    template <typename TargetStream = std::ostream>
+    void copyEntirely(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     void makeBuffer();
     void discardBuffer();
-    void copyBuffer(std::ostream &targetStream);
-    void copyPreferablyFromBuffer(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
+    template <typename TargetStream = std::ostream> void copyBuffer(TargetStream &targetStream);
+    template <typename TargetStream = std::ostream>
+    void copyPreferablyFromBuffer(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress);
     const std::unique_ptr<char[]> &buffer();
     ImplementationType *denoteFirstChild(std::uint32_t offset);
 
@@ -139,8 +143,9 @@ protected:
     std::unique_ptr<char[]> m_buffer;
 
 private:
+    template <typename TargetStream = std::ostream>
     void copyInternal(
-        std::ostream &targetStream, std::uint64_t startOffset, std::uint64_t bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress);
+        TargetStream &targetStream, std::uint64_t startOffset, std::uint64_t bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress);
 
     ContainerType *m_container;
     bool m_parsed;
@@ -840,7 +845,8 @@ void GenericFileElement<ImplementationType>::validateSubsequentElementStructure(
  * \brief Writes the header information of the element to the specified \a targetStream.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
+template <typename TargetStream>
+void GenericFileElement<ImplementationType>::copyHeader(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     copyInternal(targetStream, startOffset(), headerSize(), diag, progress);
 }
@@ -849,7 +855,8 @@ void GenericFileElement<ImplementationType>::copyHeader(std::ostream &targetStre
  * \brief Writes the element without its children to the specified \a targetStream.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
+template <typename TargetStream>
+void GenericFileElement<ImplementationType>::copyWithoutChilds(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     if (std::uint32_t firstChildOffset = this->firstChildOffset()) {
         copyInternal(targetStream, startOffset(), firstChildOffset, diag, progress);
@@ -862,7 +869,8 @@ void GenericFileElement<ImplementationType>::copyWithoutChilds(std::ostream &tar
  * \brief Writes the entire element including all children to the specified \a targetStream.
  */
 template <class ImplementationType>
-void GenericFileElement<ImplementationType>::copyEntirely(std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
+template <typename TargetStream>
+void GenericFileElement<ImplementationType>::copyEntirely(TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     copyInternal(targetStream, startOffset(), totalSize(), diag, progress);
 }
@@ -890,7 +898,9 @@ template <class ImplementationType> inline void GenericFileElement<Implementatio
  * \brief Copies buffered data to \a targetStream.
  * \remarks Data must have been buffered using the makeBuffer() method.
  */
-template <class ImplementationType> inline void GenericFileElement<ImplementationType>::copyBuffer(std::ostream &targetStream)
+template <class ImplementationType>
+template <typename TargetStream>
+inline void GenericFileElement<ImplementationType>::copyBuffer(TargetStream &targetStream)
 {
     targetStream.write(m_buffer.get(), static_cast<std::streamsize>(totalSize()));
 }
@@ -900,8 +910,9 @@ template <class ImplementationType> inline void GenericFileElement<Implementatio
  * \remarks So this is copyBuffer() with a fallback to copyEntirely().
  */
 template <class ImplementationType>
+template <typename TargetStream>
 inline void GenericFileElement<ImplementationType>::copyPreferablyFromBuffer(
-    std::ostream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
+    TargetStream &targetStream, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     m_buffer ? copyBuffer(targetStream) : copyEntirely(targetStream, diag, progress);
 }
@@ -923,8 +934,9 @@ template <class ImplementationType> inline const std::unique_ptr<char[]> &Generi
  * \sa copyEntireAtomToStream()
  */
 template <class ImplementationType>
+template <typename TargetStream>
 void GenericFileElement<ImplementationType>::copyInternal(
-    std::ostream &targetStream, std::uint64_t startOffset, std::uint64_t bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
+    TargetStream &targetStream, std::uint64_t startOffset, std::uint64_t bytesToCopy, Diagnostics &diag, AbortableProgressFeedback *progress)
 {
     // ensure the header has been parsed correctly
     try {
@@ -932,7 +944,7 @@ void GenericFileElement<ImplementationType>::copyInternal(
     } catch (const Failure &) {
         throw InvalidDataException();
     }
-    auto &stream = container().stream();
+    auto &stream = container().fileInfo().stream();
     stream.seekg(static_cast<std::streamoff>(startOffset), std::ios_base::beg);
     CppUtilities::CopyHelper<0x10000> copyHelper;
     if (progress) {
