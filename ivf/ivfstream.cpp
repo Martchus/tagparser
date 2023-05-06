@@ -16,7 +16,7 @@ namespace TagParser {
 
 /*!
  * \class TagParser::IvfStream
- * \brief Implementation of TagParser::AbstractTrack for ADTS streams.
+ * \brief Implementation of TagParser::AbstractTrack for IVF streams.
  * \sa https://wiki.multimedia.cx/index.php/IVF
  */
 
