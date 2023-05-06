@@ -488,6 +488,8 @@ std::string_view containerFormatName(ContainerFormat containerFormat)
         return "Audio Interchange File Format";
     case ContainerFormat::Zstd:
         return "Zstandard compressed file";
+    case ContainerFormat::Id2v2Tag:
+        return "ID3v2 tag";
     default:
         return "unknown";
     }
