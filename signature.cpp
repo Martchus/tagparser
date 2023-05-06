@@ -13,6 +13,7 @@ namespace TagParser {
  * \brief Holds 64-bit signatures.
  */
 enum Sig64 : std::uint64_t {
+    ApeTag = 0x4150455441474558ul, // APETAGEX
     Ar = 0x213C617263683E0A,
     Asf1 = 0x3026B2758E66CF11ul,
     Asf2 = 0xA6D900AA0062CE6Cul,
@@ -126,6 +127,8 @@ ContainerFormat parseSignature(std::string_view buffer)
     }
     // return corresponding container format
     switch (sig) { // check 64-bit signatures
+    case ApeTag:
+        return ContainerFormat::ApeTag;
     case Ar:
         return ContainerFormat::Ar;
     case Asf1:
@@ -490,6 +493,8 @@ std::string_view containerFormatName(ContainerFormat containerFormat)
         return "Zstandard compressed file";
     case ContainerFormat::Id2v2Tag:
         return "ID3v2 tag";
+    case ContainerFormat::ApeTag:
+        return "APE tag";
     default:
         return "unknown";
     }

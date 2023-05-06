@@ -254,6 +254,23 @@ startParsingSignature:
             static_cast<OggContainer *>(m_container.get())->setChecksumValidationEnabled(isForcingFullParse());
             break;
         case ContainerFormat::Unknown:
+        case ContainerFormat::ApeTag:
+            // skip APE tag if the specified size makes sense at all
+            if (m_containerFormat == ContainerFormat::ApeTag) {
+                if (const auto apeEnd = m_containerOffset + 32 + LE::toUInt32(buff + 12); apeEnd <= static_cast<std::streamoff>(size())) {
+                    // take record of APE tag
+                    diag.emplace_back(DiagLevel::Critical,
+                        argsToString("Found an APE tag at the beginning of the file at offset ", m_containerOffset,
+                            ". This tag format is not supported and the tag will therefore be ignored. It will NOT be preserved when saving as "
+                            "placing an APE tag at the beginning of a file is strongly unrecommended."),
+                        context);
+                    // continue reading signature
+                    m_containerOffset = apeEnd;
+                    goto startParsingSignature;
+                }
+                m_containerFormat = ContainerFormat::Unknown;
+            }
+
             // check for magic numbers at odd offsets
             // -> check for tar (magic number at offset 0x101)
             if (size() > 0x107) {
@@ -378,12 +395,14 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
     static const string context("parsing tag");
 
     // check for ID3v1 tag
-    if (size() >= 128) {
+    auto effectiveSize = static_cast<std::streamoff>(size());
+    if (effectiveSize >= 128) {
         m_id3v1Tag = make_unique<Id3v1Tag>();
         try {
-            stream().seekg(-128, ios_base::end);
+            stream().seekg(effectiveSize - 128, std::ios_base::beg);
             m_id3v1Tag->parse(stream(), diag);
             m_fileStructureFlags += MediaFileStructureFlags::ActualExistingId3v1Tag;
+            effectiveSize -= 128;
         } catch (const NoDataFoundException &) {
             m_id3v1Tag.reset();
         } catch (const OperationAbortedException &) {
@@ -392,6 +411,22 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
         } catch (const Failure &) {
             m_tagsParsingStatus = ParsingStatus::CriticalFailure;
             diag.emplace_back(DiagLevel::Critical, "Unable to parse ID3v1 tag.", context);
+        }
+    }
+
+    // check for APE tag at the end of the file (APE tags a the beginning are already covered when parsing the container format)
+    if (constexpr auto apeHeaderSize = 32; effectiveSize >= apeHeaderSize) {
+        const auto footerOffset = effectiveSize - apeHeaderSize;
+        char buffer[apeHeaderSize];
+        stream().seekg(footerOffset, std::ios_base::beg);
+        stream().read(buffer, sizeof(buffer));
+        if (BE::toUInt64(buffer) == 0x4150455441474558ul /* APETAGEX */) {
+            // take record of APE tag
+            const auto tagSize = static_cast<std::streamoff>(LE::toUInt32(buffer + 12));
+            diag.emplace_back(DiagLevel::Warning,
+                argsToString("Found an APE tag at the end of the file at offset ", (footerOffset - tagSize),
+                    ". This tag format is not supported and the tag will therefore be ignored. It will be preserved when saving as-is."),
+                context);
         }
     }
 
