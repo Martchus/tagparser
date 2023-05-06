@@ -132,6 +132,7 @@ public:
     MediaType mediaType() const;
     std::string_view mediaTypeName() const;
     std::uint64_t size() const;
+    void setSize(std::uint64_t size);
     std::uint32_t trackNumber() const;
     void setTrackNumber(std::uint32_t trackNumber);
     std::uint64_t id() const;
@@ -394,6 +395,19 @@ inline std::string_view AbstractTrack::mediaTypeName() const
 inline std::uint64_t AbstractTrack::size() const
 {
     return m_size;
+}
+
+/*!
+ * \brief Sets the size in bytes.
+ * \remarks
+ * This is used by MediaFileInfo to set the track size for certain types of tracks before invoking the parsing.
+ * If you use this a class derived from AbstractTrack directly you may want to do the same if not the entire
+ * input stream is supposed to be considered part of the track and the parser would otherwise assume that (like
+ * the parser of MpegAudioFrameStream might do).
+ */
+inline void AbstractTrack::setSize(std::uint64_t size)
+{
+    m_size = size;
 }
 
 /*!

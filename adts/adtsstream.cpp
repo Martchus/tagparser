@@ -24,15 +24,8 @@ void AdtsStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedbac
     if (!m_istream) {
         throw NoDataFoundException();
     }
-    // get size
-    m_istream->seekg(-128, ios_base::end);
-    if (m_reader.readUInt24BE() == 0x544147) {
-        m_size = static_cast<std::uint64_t>(m_istream->tellg()) - 3u - m_startOffset;
-    } else {
-        m_size = static_cast<std::uint64_t>(m_istream->tellg()) + 125u - m_startOffset;
-    }
-    m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     // parse frame header
+    m_istream->seekg(static_cast<std::streamoff>(m_startOffset), ios_base::beg);
     m_firstFrame.parseHeader(m_reader);
     m_format = Mpeg4AudioObjectIds::idToMediaFormat(m_firstFrame.mpeg4AudioObjectId());
     m_channelCount = Mpeg4ChannelConfigs::channelCount(m_channelConfig = m_firstFrame.mpeg4ChannelConfig());

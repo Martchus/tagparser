@@ -83,6 +83,7 @@ MediaFileInfo::MediaFileInfo(std::string &&path)
     , m_containerFormat(ContainerFormat::Unknown)
     , m_containerOffset(0)
     , m_paddingSize(0)
+    , m_effectiveSize(0)
     , m_fileStructureFlags(MediaFileStructureFlags::None)
     , m_tracksParsingStatus(ParsingStatus::NotParsedYet)
     , m_tagsParsingStatus(ParsingStatus::NotParsedYet)
@@ -354,6 +355,13 @@ void MediaFileInfo::parseTracks(Diagnostics &diag, AbortableProgressFeedback &pr
         default:
             throw NotImplementedException();
         }
+        if (m_containerFormat != ContainerFormat::Flac) {
+            // ensure the effective size has been determined
+            // note: This is not required for FLAC and should also be avoided as parseTags() will invoke
+            //       parseTracks() when dealing with FLAC files.
+            parseTags(diag, progress);
+            m_singleTrack->setSize(m_effectiveSize);
+        }
         m_singleTrack->parseHeader(diag, progress);
 
         // take padding for some "single-track" formats into account
@@ -452,6 +460,9 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
         }
         m_id3v2Tags.emplace_back(id3v2Tag.release());
     }
+
+    // compute effective size
+    m_effectiveSize = static_cast<std::uint64_t>(effectiveSize - m_containerOffset);
 
     // check for tags in tracks (FLAC only) or via container object
     try {

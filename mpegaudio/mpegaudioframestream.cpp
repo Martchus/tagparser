@@ -35,15 +35,8 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag, AbortableProgr
     if (!m_istream) {
         throw NoDataFoundException();
     }
-    // get size
-    m_istream->seekg(-128, ios_base::end);
-    if (m_reader.readUInt24BE() == 0x544147) {
-        m_size = static_cast<std::uint64_t>(m_istream->tellg()) - 3u - m_startOffset;
-    } else {
-        m_size = static_cast<std::uint64_t>(m_istream->tellg()) + 125u - m_startOffset;
-    }
-    m_istream->seekg(static_cast<streamoff>(m_startOffset), ios_base::beg);
     // parse frames until the first valid, non-empty frame is reached
+    m_istream->seekg(static_cast<std::streamoff>(m_startOffset), ios_base::beg);
     for (size_t invalidByteskipped = 0; m_frames.size() < 200 && invalidByteskipped <= 0x600u;) {
         MpegAudioFrame &frame = invalidByteskipped > 0 ? m_frames.back() : m_frames.emplace_back();
         try {

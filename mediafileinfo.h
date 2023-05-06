@@ -105,6 +105,7 @@ public:
     std::string_view mimeType() const;
     std::uint64_t containerOffset() const;
     std::uint64_t paddingSize() const;
+    std::uint64_t effectiveSize() const;
     AbstractContainer *container() const;
     ParsingStatus containerParsingStatus() const;
     // ... the chapters
@@ -201,6 +202,7 @@ private:
     ContainerFormat m_containerFormat;
     std::streamoff m_containerOffset;
     std::uint64_t m_paddingSize;
+    std::uint64_t m_effectiveSize;
     std::vector<std::streamoff> m_actualId3v2TagOffsets;
     std::unique_ptr<AbstractContainer> m_container;
     MediaFileStructureFlags m_fileStructureFlags;
@@ -294,6 +296,15 @@ inline std::uint64_t MediaFileInfo::containerOffset() const
 inline std::uint64_t MediaFileInfo::paddingSize() const
 {
     return m_paddingSize;
+}
+
+/*!
+ * \brief Returns the "effective size" of the file if know; otherwise returns 0.
+ * \remarks This is the size of the file minus tags at the beginning and the end.
+ */
+inline std::uint64_t MediaFileInfo::effectiveSize() const
+{
+    return m_effectiveSize;
 }
 
 /*!
