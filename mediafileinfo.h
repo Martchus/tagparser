@@ -105,7 +105,7 @@ public:
     std::uint64_t paddingSize() const;
     AbstractContainer *container() const;
     ParsingStatus containerParsingStatus() const;
-    // ... the capters
+    // ... the chapters
     ParsingStatus chaptersParsingStatus() const;
     std::vector<AbstractChapter *> chapters() const;
     bool areChaptersSupported() const;

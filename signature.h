@@ -30,7 +30,7 @@ enum class ContainerFormat : unsigned int {
     Gif87a, /**< Graphics Interchange Format (1987) */
     Gif89a, /**< Graphics Interchange Format (1989) */
     Gzip, /**< gzip compressed file */
-    Id2v2Tag, /**< file holding an ID2v2 tag only */
+    Id2v2Tag, /**< file holding an ID3v2 tag only (FIXME v12: change enum entry to Id3v2Tag) */
     Ivf, /**< IVF (simple file format that transports raw VP8/VP9/AV1 data) */
     JavaClassFile, /**< Java class file */
     Jpeg, /**< JPEG File Interchange Format */
