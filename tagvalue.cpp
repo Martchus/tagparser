@@ -604,7 +604,7 @@ TimeSpan TagValue::toTimeSpan() const
         switch (m_size) {
         case sizeof(std::uint64_t): {
             const auto ticks = *(reinterpret_cast<std::uint64_t *>(m_ptr.get()));
-            if (ticks < std::numeric_limits<std::int64_t>::max()) {
+            if (ticks < static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max())) {
                 return TimeSpan(static_cast<std::int64_t>(ticks));
             }
         }

@@ -48,7 +48,7 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag, AbortableProgr
         MpegAudioFrame &frame = invalidByteskipped > 0 ? m_frames.back() : m_frames.emplace_back();
         try {
             frame.parseHeader(m_reader, diag);
-        } catch (const InvalidDataException &e) {
+        } catch (const InvalidDataException &) {
             if (++invalidByteskipped > 1) {
                 diag.pop_back();
             }

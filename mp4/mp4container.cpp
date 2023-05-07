@@ -749,7 +749,7 @@ calculatePadding:
 
                             // increase total chunk count and size
                             totalChunkCount += track->chunkCount();
-                            totalMediaDataSize += accumulate(chunkSizesTable.cbegin(), chunkSizesTable.cend(), 0ul);
+                            totalMediaDataSize += std::accumulate(chunkSizesTable.cbegin(), chunkSizesTable.cend(), static_cast<std::uint64_t>(0u));
                         }
 
                         // write media data chunk-by-chunk
