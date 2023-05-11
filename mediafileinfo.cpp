@@ -59,6 +59,9 @@ using namespace CppUtilities;
 
 namespace TagParser {
 
+/// \brief The MediaFileInfoPrivate struct contains private fields of the MediaFileInfo class.
+struct MediaFileInfoPrivate {};
+
 /*!
  * \class TagParser::MediaFileInfo
  * \brief The MediaFileInfo class allows to read and write tag information providing

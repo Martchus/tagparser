@@ -4,6 +4,9 @@ using namespace std;
 
 namespace TagParser {
 
+/// \brief The TagPrivate struct contains private fields of the Tag class.
+struct TagPrivate {};
+
 /*!
  * \class TagParser::Tag
  * \brief The Tag class is used to store, read and write tag information.

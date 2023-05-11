@@ -5,6 +5,7 @@
 
 #include <c++utilities/chrono/timespan.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@ namespace TagParser {
 
 class AbortableProgressFeedback;
 class Diagnostics;
+struct AbstractChapterPrivate;
 
 class TAG_PARSER_EXPORT AbstractChapter {
 public:
@@ -41,6 +43,7 @@ protected:
     CppUtilities::TimeSpan m_startTime;
     CppUtilities::TimeSpan m_endTime;
     std::vector<std::uint64_t> m_tracks;
+    std::unique_ptr<AbstractChapterPrivate> m_p;
     bool m_hidden;
     bool m_enabled;
 };

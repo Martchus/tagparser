@@ -6,6 +6,9 @@ using namespace CppUtilities;
 
 namespace TagParser {
 
+/// \brief The AbstractContainerPrivate struct contains private fields of the AbstractContainer class.
+struct AbstractContainerPrivate {};
+
 /*!
  * \class TagParser::AbstractContainer
  * \brief The AbstractContainer class provides an interface and common functionality to parse and make a certain container format.

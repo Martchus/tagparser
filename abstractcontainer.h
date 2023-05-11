@@ -11,6 +11,7 @@
 #include <c++utilities/io/binarywriter.h>
 
 #include <iostream>
+#include <memory>
 
 namespace CppUtilities {
 class BinaryReader;
@@ -25,6 +26,7 @@ class AbstractChapter;
 class AbstractAttachment;
 class Diagnostics;
 class AbortableProgressFeedback;
+struct AbstractContainerPrivate;
 
 class TAG_PARSER_EXPORT AbstractContainer {
 public:
@@ -119,6 +121,7 @@ private:
     std::iostream *m_stream;
     CppUtilities::BinaryReader m_reader;
     CppUtilities::BinaryWriter m_writer;
+    std::unique_ptr<AbstractContainerPrivate> m_p;
 };
 
 /*!

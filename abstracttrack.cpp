@@ -11,6 +11,9 @@ using namespace CppUtilities;
 
 namespace TagParser {
 
+/// \brief The AbstractTrackPrivate struct contains private fields of the AbstractTrack class.
+struct AbstractTrackPrivate {};
+
 /*!
  * \class TagParser::AbstractTrack
  * \brief The AbstractTrack class parses and stores technical information about

@@ -15,6 +15,7 @@
 #include <c++utilities/misc/flagenumclass.h>
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -103,6 +104,8 @@ enum class AspectRatioType : std::uint64_t {
 CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::TrackFlags)
 
 namespace TagParser {
+
+struct AbstractTrackPrivate;
 
 class TAG_PARSER_EXPORT AbstractTrack {
     friend class MpegAudioFrameStream;
@@ -232,6 +235,7 @@ protected:
     AlphaMode m_alphaMode;
     DisplayUnit m_displayUnit;
     AspectRatioType m_aspectRatioType;
+    std::unique_ptr<AbstractTrackPrivate> m_p;
 
 private:
     std::string makeDescription(bool verbose) const;

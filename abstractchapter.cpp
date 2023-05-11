@@ -8,6 +8,9 @@ using namespace CppUtilities;
 
 namespace TagParser {
 
+/// \brief The AbstractChapterPrivate struct contains private fields of the AbstractChapter class.
+struct AbstractChapterPrivate {};
+
 /*!
  * \class TagParser::AbstractChapter
  * \brief The AbstractChapter class parses chapter information.

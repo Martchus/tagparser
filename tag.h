@@ -8,6 +8,7 @@
 #include <c++utilities/io/binaryreader.h>
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -160,6 +161,8 @@ constexpr KnownField nextKnownField(KnownField field)
     return isKnownFieldDeprecated(next) ? nextKnownField(next) : next;
 }
 
+struct TagPrivate;
+
 class TAG_PARSER_EXPORT Tag {
 public:
     virtual ~Tag();
@@ -199,6 +202,7 @@ protected:
 
     std::string m_version;
     std::uint64_t m_size;
+    std::unique_ptr<TagPrivate> m_p;
     TagTarget m_target;
 };
 

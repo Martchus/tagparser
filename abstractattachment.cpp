@@ -14,6 +14,9 @@ using namespace CppUtilities;
 
 namespace TagParser {
 
+/// \brief The AbstractAttachmentPrivate struct contains private fields of the AbstractAttachment class.
+struct AbstractAttachmentPrivate {};
+
 /*!
  * \class TagParser::StreamDataBlock
  * \brief The StreamDataBlock class is a reference to a certain data block of a stream.
@@ -126,6 +129,23 @@ FileDataBlock::~FileDataBlock()
  * \class TagParser::AbstractAttachment
  * \brief The AbstractAttachment class parses and stores attachment information.
  */
+
+/*!
+ * \brief Constructs a new attachment.
+ */
+AbstractAttachment::AbstractAttachment()
+    : m_id(0)
+    , m_isDataFromFile(false)
+    , m_ignored(false)
+{
+}
+
+/*!
+ * \brief Destroys the attachment.
+ */
+AbstractAttachment::~AbstractAttachment()
+{
+}
 
 /*!
  * \brief Returns a label for the track.

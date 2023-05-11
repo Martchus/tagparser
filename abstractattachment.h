@@ -102,6 +102,8 @@ inline const MediaFileInfo *FileDataBlock::fileInfo() const
     return m_fileInfo.get();
 }
 
+struct AbstractAttachmentPrivate;
+
 class TAG_PARSER_EXPORT AbstractAttachment {
 public:
     const std::string &description() const;
@@ -123,7 +125,8 @@ public:
     bool isEmpty() const;
 
 protected:
-    AbstractAttachment();
+    explicit AbstractAttachment();
+    virtual ~AbstractAttachment();
 
 private:
     std::string m_description;
@@ -131,19 +134,10 @@ private:
     std::string m_mimeType;
     std::uint64_t m_id;
     std::unique_ptr<StreamDataBlock> m_data;
+    std::unique_ptr<AbstractAttachmentPrivate> m_p;
     bool m_isDataFromFile;
     bool m_ignored;
 };
-
-/*!
- * \brief Constructs a new attachment.
- */
-inline AbstractAttachment::AbstractAttachment()
-    : m_id(0)
-    , m_isDataFromFile(false)
-    , m_ignored(false)
-{
-}
 
 /*!
  * \brief Returns a description of the attachment.

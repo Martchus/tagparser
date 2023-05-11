@@ -73,6 +73,8 @@ CPP_UTILITIES_MARK_FLAG_ENUM_CLASS(TagParser, TagParser::MediaFileHandlingFlags)
 
 namespace TagParser {
 
+struct MediaFileInfoPrivate;
+
 class TAG_PARSER_EXPORT MediaFileInfo : public BasicFileInfo {
 public:
     // constructor, destructor
@@ -226,6 +228,7 @@ private:
     ElementPosition m_tagPosition;
     ElementPosition m_indexPosition;
     MediaFileHandlingFlags m_fileHandlingFlags;
+    std::unique_ptr<MediaFileInfoPrivate> m_p;
 };
 
 /*!

@@ -140,6 +140,8 @@ enum class TagValueComparisionFlags : unsigned int {
     IgnoreMetaData = 0x2, /**< do *not* take meta-data like description and MIME-types into account */
 };
 
+struct TagValuePrivate;
+
 class TAG_PARSER_EXPORT TagValue {
 public:
     // constructor, destructor
@@ -164,12 +166,12 @@ public:
     explicit TagValue(CppUtilities::TimeSpan value);
     explicit TagValue(const Popularity &value);
     TagValue(const TagValue &other);
-    TagValue(TagValue &&other) = default;
+    TagValue(TagValue &&other);
     ~TagValue();
 
     // operators
     TagValue &operator=(const TagValue &other);
-    TagValue &operator=(TagValue &&other) = default;
+    TagValue &operator=(TagValue &&other);
     bool operator==(const TagValue &other) const;
     bool operator!=(const TagValue &other) const;
     operator bool() const;
@@ -260,89 +262,8 @@ private:
     TagTextEncoding m_encoding;
     TagTextEncoding m_descEncoding;
     TagValueFlags m_flags;
+    std::unique_ptr<TagValuePrivate> m_p;
 };
-
-/*!
- * \brief Constructs an empty TagValue.
- */
-inline TagValue::TagValue()
-    : m_size(0)
-    , m_type(TagDataType::Undefined)
-    , m_encoding(TagTextEncoding::Latin1)
-    , m_descEncoding(TagTextEncoding::Latin1)
-    , m_flags(TagValueFlags::None)
-{
-}
-
-/*!
- * \brief Destroys the TagValue.
- */
-inline TagValue::~TagValue()
-{
-}
-
-/*!
- * \brief Constructs a new TagValue holding a copy of the given \a text.
- * \param text Specifies the text to be assigned.
- * \param textSize Specifies the size of \a text. (The actual number of bytes, not the number of characters.)
- * \param textEncoding Specifies the encoding of the given \a text.
- * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
- *                  use \a textEncoding without any character set conversions.
- * \throws Throws a ConversionException if the conversion the specified character set fails.
- * \remarks Strips the BOM of the specified \a text.
- */
-inline TagValue::TagValue(const char *text, std::size_t textSize, TagTextEncoding textEncoding, TagTextEncoding convertTo)
-    : m_descEncoding(TagTextEncoding::Latin1)
-    , m_flags(TagValueFlags::None)
-{
-    assignText(text, textSize, textEncoding, convertTo);
-}
-
-/*!
- * \brief Constructs a new TagValue holding a copy of the given \a text.
- * \param text Specifies the text to be assigned. This string must be null-terminated.
- * \param textEncoding Specifies the encoding of the given \a text.
- * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
- *                  use \a textEncoding without any character set conversions.
- * \throws Throws a ConversionException if the conversion the specified character set fails.
- * \remarks Strips the BOM of the specified \a text.
- */
-inline TagValue::TagValue(const char *text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
-{
-    assignText(text, std::strlen(text), textEncoding, convertTo);
-}
-
-/*!
- * \brief Constructs a new TagValue holding a copy of the given \a text.
- * \param text Specifies the text to be assigned.
- * \param textEncoding Specifies the encoding of the given \a text.
- * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
- *                  use \a textEncoding without any character set conversions.
- * \throws Throws a ConversionException if the conversion the specified character set fails.
- * \remarks Strips the BOM of the specified \a text.
- */
-inline TagValue::TagValue(const std::string &text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
-    : m_descEncoding(TagTextEncoding::Latin1)
-    , m_flags(TagValueFlags::None)
-{
-    assignText(text, textEncoding, convertTo);
-}
-
-/*!
- * \brief Constructs a new TagValue holding a copy of the given \a text.
- * \param text Specifies the text to be assigned.
- * \param textEncoding Specifies the encoding of the given \a text.
- * \param convertTo Specifies the encoding to convert \a text to; set to TagTextEncoding::Unspecified to
- *                  use \a textEncoding without any character set conversions.
- * \throws Throws a ConversionException if the conversion the specified character set fails.
- * \remarks Strips the BOM of the specified \a text.
- */
-inline TagValue::TagValue(std::string_view text, TagTextEncoding textEncoding, TagTextEncoding convertTo)
-    : m_descEncoding(TagTextEncoding::Latin1)
-    , m_flags(TagValueFlags::None)
-{
-    assignText(text, textEncoding, convertTo);
-}
 
 /*!
  * \brief Constructs a new TagValue holding the given integer \a value.
@@ -358,56 +279,6 @@ inline TagValue::TagValue(int value)
 inline TagParser::TagValue::TagValue(std::uint64_t value)
     : TagValue(reinterpret_cast<const char *>(&value), sizeof(value), TagDataType::UnsignedInteger)
 {
-}
-
-/*!
- * \brief Constructs a new TagValue with a copy of the given \a data.
- *
- * \param data Specifies a pointer to the data.
- * \param length Specifies the length of the data.
- * \param type Specifies the type of the data as TagDataType.
- * \param encoding Specifies the encoding of the data as TagTextEncoding. The
- *                 encoding will only be considered if a text is assigned.
- * \remarks Strips the BOM of the specified \a data if \a type is TagDataType::Text.
- */
-inline TagValue::TagValue(const char *data, std::size_t length, TagDataType type, TagTextEncoding encoding)
-    : m_size(length)
-    , m_type(type)
-    , m_encoding(encoding)
-    , m_descEncoding(TagTextEncoding::Latin1)
-    , m_flags(TagValueFlags::None)
-{
-    if (length) {
-        if (type == TagDataType::Text) {
-            stripBom(data, m_size, encoding);
-        }
-        m_ptr = std::make_unique<char[]>(m_size);
-        std::copy(data, data + m_size, m_ptr.get());
-    }
-}
-
-/*!
- * \brief Constructs a new TagValue holding with the given \a data.
- *
- * The \a data is not copied. It is moved.
- *
- * \param data Specifies a pointer to the data.
- * \param length Specifies the length of the data.
- * \param type Specifies the type of the data as TagDataType.
- * \param encoding Specifies the encoding of the data as TagTextEncoding. The
- *                 encoding will only be considered if a text is assigned.
- * \remarks Does not strip the BOM so for consistency the caller must ensure there is no BOM present.
- */
-inline TagValue::TagValue(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type, TagTextEncoding encoding)
-    : m_size(length)
-    , m_type(type)
-    , m_encoding(encoding)
-    , m_descEncoding(TagTextEncoding::Latin1)
-    , m_flags(TagValueFlags::None)
-{
-    if (length) {
-        m_ptr = std::move(data);
-    }
 }
 
 /*!
