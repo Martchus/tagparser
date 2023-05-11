@@ -42,3 +42,7 @@ Makefile*
 
 # clang-format
 /.clang-format
+
+# file with language codes one might store in the a local checkout
+iso_639-2.json
+
