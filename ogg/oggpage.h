@@ -48,6 +48,7 @@ private:
     std::uint32_t m_sequenceNumber;
     std::uint32_t m_checksum;
     std::uint8_t m_segmentCount;
+    bool m_lastSegmentUnconcluded;
     std::vector<std::uint32_t> m_segmentSizes;
 };
 
@@ -63,6 +64,7 @@ inline OggPage::OggPage()
     , m_sequenceNumber(0)
     , m_checksum(0)
     , m_segmentCount(0)
+    , m_lastSegmentUnconcluded(false)
 {
 }
 
@@ -134,7 +136,7 @@ inline bool OggPage::isLastPage() const
  */
 inline bool OggPage::isLastSegmentUnconcluded() const
 {
-    return m_headerTypeFlag & 0x80;
+    return m_lastSegmentUnconcluded;
 }
 
 /*!

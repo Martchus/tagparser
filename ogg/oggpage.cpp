@@ -62,7 +62,7 @@ void OggPage::parseHeader(istream &stream, std::uint64_t startOffset, std::int32
             if (++i < m_segmentCount && entry < 0xFF) {
                 m_segmentSizes.emplace_back(0);
             } else if (i == m_segmentCount && entry == 0xFF) {
-                m_headerTypeFlag |= 0x80; // FIXME v11: don't abuse header type flags
+                m_lastSegmentUnconcluded = true;
             }
         }
         // check whether the maximum size is exceeded
