@@ -229,7 +229,7 @@ ContainerFormat parseSignature(std::string_view buffer)
     case Gzip:
         return ContainerFormat::Gzip;
     case Id3v2:
-        return ContainerFormat::Id2v2Tag;
+        return ContainerFormat::Id3v2Tag;
     case Utf8Text:
         return ContainerFormat::Utf8Text;
     }
@@ -491,7 +491,7 @@ std::string_view containerFormatName(ContainerFormat containerFormat)
         return "Audio Interchange File Format";
     case ContainerFormat::Zstd:
         return "Zstandard compressed file";
-    case ContainerFormat::Id2v2Tag:
+    case ContainerFormat::Id3v2Tag:
         return "ID3v2 tag";
     case ContainerFormat::ApeTag:
         return "APE tag";

@@ -193,7 +193,7 @@ startParsingSignature:
 
         // parse signature
         switch ((m_containerFormat = parseSignature(buff, sizeof(buff)))) {
-        case ContainerFormat::Id2v2Tag:
+        case ContainerFormat::Id3v2Tag:
             // save position of ID3v2 tag
             m_actualId3v2TagOffsets.push_back(m_containerOffset);
             if (m_actualId3v2TagOffsets.size() == 2) {
