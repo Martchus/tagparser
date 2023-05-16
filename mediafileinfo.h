@@ -187,6 +187,8 @@ public:
     void setIndexPosition(ElementPosition indexPosition);
     bool forceIndexPosition() const;
     void setForceIndexPosition(bool forceTagPosition);
+    std::uint64_t maxFullParseSize() const;
+    void setMaxFullParseSize(std::uint64_t maxFullParseSize);
 
 protected:
     void invalidated() override;
@@ -230,6 +232,7 @@ private:
     ElementPosition m_tagPosition;
     ElementPosition m_indexPosition;
     MediaFileHandlingFlags m_fileHandlingFlags;
+    std::uint64_t m_maxFullParseSize;
     std::unique_ptr<MediaFileInfoPrivate> m_p;
 };
 
@@ -704,6 +707,33 @@ inline bool MediaFileInfo::forceIndexPosition() const
 inline void MediaFileInfo::setForceIndexPosition(bool forceIndexPosition)
 {
     CppUtilities::modFlagEnum(m_fileHandlingFlags, MediaFileHandlingFlags::ForceIndexPosition, forceIndexPosition);
+}
+
+/*!
+ * \brief Returns the maximal file size for a "full parse" in byte.
+ * \remarks
+ * So far this is Matroska-specific: The "Tags" element (which holds the tag information) is commonly at the end
+ * of a Matroska file. Hence the parser needs to walk through the entire file to find the tag information if no
+ * "SeekHead" element is present which might causes long loading times. To avoid this a maximal file size for a
+ * "full parse" can be specified. The disadvantage is that the parser relies on the presence of a SeekHead element
+ * on larger files to retrieve tag information.
+ *
+ * The default value is 50 MiB.
+ *
+ * \sa setMaxFullParseSize()
+ */
+inline std::uint64_t MediaFileInfo::maxFullParseSize() const
+{
+    return m_maxFullParseSize;
+}
+
+/*!
+ * \brief Sets the maximal file size for a "full parse" in byte.
+ * \sa maxFullParseSize()
+ */
+inline void MediaFileInfo::setMaxFullParseSize(std::uint64_t maxFullParseSize)
+{
+    m_maxFullParseSize = maxFullParseSize;
 }
 
 } // namespace TagParser

@@ -31,8 +31,6 @@ public:
     std::uint64_t maxSizeLength() const;
     const std::vector<std::unique_ptr<MatroskaSeekInfo>> &seekInfos() const;
 
-    static std::uint64_t maxFullParseSize();
-    void setMaxFullParseSize(std::uint64_t maxFullParseSize);
     const std::vector<std::unique_ptr<MatroskaEditionEntry>> &editionEntires() const;
     MatroskaChapter *chapter(std::size_t index) override;
     std::size_t chapterCount() const override;
@@ -72,7 +70,6 @@ private:
     std::vector<std::unique_ptr<MatroskaEditionEntry>> m_editionEntries;
     std::vector<std::unique_ptr<MatroskaAttachment>> m_attachments;
     std::size_t m_segmentCount;
-    static std::uint64_t m_maxFullParseSize;
 };
 
 /*!
@@ -97,33 +94,6 @@ inline std::uint64_t MatroskaContainer::maxSizeLength() const
 inline const std::vector<std::unique_ptr<MatroskaSeekInfo>> &MatroskaContainer::seekInfos() const
 {
     return m_seekInfos;
-}
-
-/*!
- * \brief Returns the maximal file size for a "full parse" in byte.
- *
- * The "Tags" element (which holds the tag information) is commonly at the end of a Matroska file. Hence the
- * parser needs to walk through the entire file to find the tag information if no "SeekHead" element is present
- * which might causes long loading times. To avoid this a maximal file size for a "full parse" can be specified.
- * The disadvantage is that the parser relies on the presence of a SeekHead element on larger files to retrieve
- * tag information.
- *
- * The default value is 50 MiB.
- *
- * \sa setMaxFullParseSize()
- */
-inline std::uint64_t MatroskaContainer::maxFullParseSize()
-{
-    return m_maxFullParseSize;
-}
-
-/*!
- * \brief Sets the maximal file size for a "full parse" in byte.
- * \sa maxFullParseSize()
- */
-inline void MatroskaContainer::setMaxFullParseSize(std::uint64_t maxFullParseSize)
-{
-    m_maxFullParseSize = maxFullParseSize;
 }
 
 /*!

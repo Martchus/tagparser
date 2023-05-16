@@ -35,8 +35,6 @@ namespace TagParser {
  * \brief Implementation of GenericContainer<MediaFileInfo, MatroskaTag, MatroskaTrack, EbmlElement>.
  */
 
-std::uint64_t MatroskaContainer::m_maxFullParseSize = 0x3200000; // FIXME v11: move to MediaFileInfo
-
 /*!
  * \brief Constructs a new container for the specified \a fileInfo at the specified \a startOffset.
  */
@@ -564,7 +562,7 @@ void MatroskaContainer::internalParseHeader(Diagnostics &diag, AbortableProgress
                                 }
                             }
                             // -> stop if tracks and tags have been found or the file exceeds the max. size to fully process
-                            if (((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > m_maxFullParseSize)
+                            if (((!m_tracksElements.empty() && !m_tagsElements.empty()) || fileInfo().size() > fileInfo().maxFullParseSize())
                                 && !m_segmentInfoElements.empty()) {
                                 goto finish;
                             }

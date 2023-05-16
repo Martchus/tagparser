@@ -96,6 +96,7 @@ MediaFileInfo::MediaFileInfo(std::string &&path)
     , m_indexPosition(ElementPosition::BeforeData)
     , m_fileHandlingFlags(MediaFileHandlingFlags::ForceRewrite | MediaFileHandlingFlags::ForceTagPosition | MediaFileHandlingFlags::ForceIndexPosition
           | MediaFileHandlingFlags::NormalizeKnownTagFieldIds | MediaFileHandlingFlags::PreserveRawTimingValues)
+    , m_maxFullParseSize(0x3200000)
 {
 }
 
