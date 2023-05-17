@@ -435,6 +435,15 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
         if (BE::toUInt64(buffer) == 0x4150455441474558ul /* APETAGEX */) {
             // take record of APE tag
             const auto tagSize = static_cast<std::streamoff>(LE::toUInt32(buffer + 12));
+            const auto flags = LE::toUInt32(buffer + 20);
+            // subtract tag size (footer size and contents) from effective size
+            if (tagSize <= effectiveSize) {
+                effectiveSize -= tagSize;
+            }
+            // subtract header size (not included in tag size) from effective size if flags indicate presence of header
+            if ((flags & 0x80000000u) && (apeHeaderSize <= effectiveSize)) {
+                effectiveSize -= apeHeaderSize;
+            }
             diag.emplace_back(DiagLevel::Warning,
                 argsToString("Found an APE tag at the end of the file at offset ", (footerOffset - tagSize),
                     ". This tag format is not supported and the tag will therefore be ignored. It will be preserved when saving as-is."),
