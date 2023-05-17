@@ -3,6 +3,8 @@
 #include "../exceptions.h"
 #include "../mediaformat.h"
 
+#include <c++utilities/conversion/stringbuilder.h>
+
 #include <sstream>
 
 using namespace std;
@@ -69,7 +71,8 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag, AbortableProgr
         std::uint32_t xingSize = frame.xingBytesfield();
         if (m_size && xingSize != m_size) {
             diag.emplace_back(DiagLevel::Warning,
-                "Real length of MPEG audio frames is not in accordance with value provided by Xing header. The Xing header value will be used.",
+                argsToString("Real length of MPEG audio frames (", m_size, " byte) is not in accordance with value provided by Xing header (",
+                    xingSize, " byte). The Xing header value will be used."),
                 context);
             m_size = xingSize;
         }
