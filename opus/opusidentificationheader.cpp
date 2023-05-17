@@ -25,15 +25,15 @@ void OpusIdentificationHeader::parseHeader(OggIterator &iterator)
 {
     char buff[19 - 8];
     iterator.read(buff, 8);
-    if (BE::toUInt64(buff) != 0x4F70757348656164u) {
+    if (BE::toInt<std::uint64_t>(buff) != 0x4F70757348656164u) {
         throw InvalidDataException(); // not Opus identification header
     }
     iterator.read(buff, sizeof(buff));
     m_version = static_cast<std::uint8_t>(*(buff));
     m_channels = static_cast<std::uint8_t>(*(buff + 1));
-    m_preSkip = LE::toUInt16(buff + 2);
+    m_preSkip = LE::toInt<std::uint16_t>(buff + 2);
     m_sampleRate = LE::toUInt32(buff + 4);
-    m_outputGain = LE::toUInt16(buff + 8);
+    m_outputGain = LE::toInt<std::uint16_t>(buff + 8);
     m_channelMap = static_cast<std::uint8_t>(*(buff + 10));
 }
 

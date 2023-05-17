@@ -35,7 +35,7 @@ void OverallTests::checkFlacTestfile1()
         CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::RecordDate).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
         //CPPUNIT_ASSERT(tags.front()->value(KnownField::Cover).dataSize() == 0x58f3);
-        //CPPUNIT_ASSERT(BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()) == 0xFFD8FFE000104A46);
+        //CPPUNIT_ASSERT(BE::toInt<std::uint64_t>(tags.front()->value(KnownField::Cover).dataPointer()) == 0xFFD8FFE000104A46);
         CPPUNIT_ASSERT_EQUAL(PositionInSet(3, 4), tags.front()->value(KnownField::TrackPosition).toPositionInSet());
         CPPUNIT_ASSERT_EQUAL(PositionInSet(1, 1), tags.front()->value(KnownField::DiskPosition).toPositionInSet());
         break;

@@ -185,7 +185,7 @@ set(RES_FILES "${LANGUAGE_HEADER_ISO_639_2}")
 set(CONFIGURATION_PACKAGE_SUFFIX
     ""
     CACHE STRING "sets the suffix for find_package() calls to packages configured via c++utilities")
-find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.19.0 REQUIRED)
+find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.21.0 REQUIRED)
 use_cpp_utilities(VISIBILITY PUBLIC)
 
 # link against a possibly required extra library for std::filesystem

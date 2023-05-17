@@ -209,7 +209,7 @@ void OverallTests::checkMp4Testfile4()
         CPPUNIT_ASSERT_EQUAL("1998"s, tags.front()->value(KnownField::RecordDate).toString());
         CPPUNIT_ASSERT(tags.front()->value(KnownField::Comment).isEmpty());
         CPPUNIT_ASSERT_EQUAL(0x58f3_st, tags.front()->value(KnownField::Cover).dataSize());
-        CPPUNIT_ASSERT_EQUAL(0xFFD8FFE000104A46ul, BE::toUInt64(tags.front()->value(KnownField::Cover).dataPointer()));
+        CPPUNIT_ASSERT_EQUAL(0xFFD8FFE000104A46ul, BE::toInt<std::uint64_t>(tags.front()->value(KnownField::Cover).dataPointer()));
         CPPUNIT_ASSERT_EQUAL(PositionInSet(3, 4), tags.front()->value(KnownField::TrackPosition).toPositionInSet());
         CPPUNIT_ASSERT_EQUAL(PositionInSet(1, 1), tags.front()->value(KnownField::DiskPosition).toPositionInSet());
         break;

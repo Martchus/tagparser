@@ -27,7 +27,7 @@ void FlacToOggMappingHeader::parseHeader(OggIterator &iterator)
     constexpr auto idSize = 0x05, mappingHeaderSize = 0x0D, blockHeaderSize = 0x04, streamInfoSize = 0x22;
     char buff[mappingHeaderSize + blockHeaderSize + streamInfoSize - idSize];
     iterator.read(buff, idSize);
-    if (*buff != 0x7Fu || BE::toUInt32(buff + 1) != 0x464C4143u) {
+    if (*buff != 0x7Fu || BE::toInt<std::uint32_t>(buff + 1) != 0x464C4143u) {
         throw InvalidDataException(); // not FLAC-to-Ogg mapping header
     }
     iterator.read(buff, sizeof(buff));
@@ -35,8 +35,8 @@ void FlacToOggMappingHeader::parseHeader(OggIterator &iterator)
     // parse FLAC-to-Ogg mapping header
     m_majorVersion = static_cast<std::uint8_t>(*(buff + 0x00));
     m_minorVersion = static_cast<std::uint8_t>(*(buff + 0x01));
-    m_headerCount = BE::toUInt16(buff + 0x02);
-    if (BE::toUInt32(buff + 0x04) != 0x664C6143u) {
+    m_headerCount = BE::toInt<std::uint16_t>(buff + 0x02);
+    if (BE::toInt<std::uint32_t>(buff + 0x04) != 0x664C6143u) {
         throw InvalidDataException(); // native FLAC signature not present
     }
 

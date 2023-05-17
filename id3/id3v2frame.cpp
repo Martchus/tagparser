@@ -934,7 +934,7 @@ tuple<const char *, size_t, const char *> Id3v2Frame::parseSubstring(
     case TagTextEncoding::Utf16BigEndian:
     case TagTextEncoding::Utf16LittleEndian: {
         if (bufferSize >= 2) {
-            switch (LE::toUInt16(buffer)) {
+            switch (LE::toInt<std::uint16_t>(buffer)) {
             case 0xFEFF:
                 if (encoding == TagTextEncoding::Utf16BigEndian) {
                     diag.emplace_back(DiagLevel::Critical,
@@ -1002,9 +1002,9 @@ void Id3v2Frame::parseBom(const char *buffer, std::size_t maxSize, TagTextEncodi
     switch (encoding) {
     case TagTextEncoding::Utf16BigEndian:
     case TagTextEncoding::Utf16LittleEndian:
-        if ((maxSize >= 2) && (BE::toUInt16(buffer) == 0xFFFE)) {
+        if ((maxSize >= 2) && (BE::toInt<std::uint16_t>(buffer) == 0xFFFE)) {
             encoding = TagTextEncoding::Utf16LittleEndian;
-        } else if ((maxSize >= 2) && (BE::toUInt16(buffer) == 0xFEFF)) {
+        } else if ((maxSize >= 2) && (BE::toInt<std::uint16_t>(buffer) == 0xFEFF)) {
             encoding = TagTextEncoding::Utf16BigEndian;
         }
         break;

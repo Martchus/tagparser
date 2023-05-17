@@ -338,7 +338,7 @@ inline Id3v2Frame::IdentifierType Id3v2Frame::fieldIdFromString(std::string_view
     case 3:
         return CppUtilities::BE::toUInt24(idString.data());
     case 4:
-        return CppUtilities::BE::toUInt32(idString.data());
+        return CppUtilities::BE::toInt<std::uint32_t>(idString.data());
     default:
         throw CppUtilities::ConversionException("ID3v2 ID must be 3 or 4 chars");
     }

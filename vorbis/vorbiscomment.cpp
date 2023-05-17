@@ -167,7 +167,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
         if (!skipSignature) {
             CHECK_MAX_SIZE(7)
             stream.read(sig, 7);
-            skipSignature = (BE::toUInt64(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
+            skipSignature = (BE::toInt<std::uint64_t>(sig) & 0xffffffffffffff00u) == 0x03766F7262697300u;
         }
         if (skipSignature) {
             // read vendor (length prefixed string)

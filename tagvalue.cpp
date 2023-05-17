@@ -1360,13 +1360,13 @@ void TagValue::stripBom(const char *&text, size_t &length, TagTextEncoding encod
         }
         break;
     case TagTextEncoding::Utf16LittleEndian:
-        if ((length >= 2) && (LE::toUInt16(text) == 0xFEFF)) {
+        if ((length >= 2) && (LE::toInt<std::uint16_t>(text) == 0xFEFF)) {
             text += 2;
             length -= 2;
         }
         break;
     case TagTextEncoding::Utf16BigEndian:
-        if ((length >= 2) && (BE::toUInt16(text) == 0xFEFF)) {
+        if ((length >= 2) && (BE::toInt<std::uint16_t>(text) == 0xFEFF)) {
             text += 2;
             length -= 2;
         }

@@ -115,12 +115,12 @@ ContainerFormat parseSignature(std::string_view buffer)
     // read signature
     std::uint64_t sig = 0;
     if (buffer.size() >= 8) {
-        sig = BE::toUInt64(buffer.data());
+        sig = BE::toInt<std::uint64_t>(buffer.data());
     } else if (buffer.size() >= 4) {
-        sig = BE::toUInt32(buffer.data());
+        sig = BE::toInt<std::uint32_t>(buffer.data());
         sig <<= 4;
     } else if (buffer.size() >= 2) {
-        sig = BE::toUInt16(buffer.data());
+        sig = BE::toInt<std::uint16_t>(buffer.data());
         sig <<= 6;
     } else {
         return ContainerFormat::Unknown;
@@ -194,9 +194,9 @@ ContainerFormat parseSignature(std::string_view buffer)
     case PhotoshopDocument:
         return ContainerFormat::PhotoshopDocument;
     case Riff:
-        if (buffer.size() >= 16 && BE::toUInt64(buffer.data() + 8) == Sig64::RiffAvi) {
+        if (buffer.size() >= 16 && BE::toInt<std::uint64_t>(buffer.data() + 8) == Sig64::RiffAvi) {
             return ContainerFormat::RiffAvi;
-        } else if (buffer.size() >= 12 && BE::toUInt32(buffer.data() + 8) == RiffWave) {
+        } else if (buffer.size() >= 12 && BE::toInt<std::uint32_t>(buffer.data() + 8) == RiffWave) {
             return ContainerFormat::RiffWave;
         } else {
             return ContainerFormat::Riff;

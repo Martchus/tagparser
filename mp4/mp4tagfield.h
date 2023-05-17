@@ -257,7 +257,7 @@ inline Mp4TagField::IdentifierType Mp4TagField::fieldIdFromString(std::string_vi
     const auto latin1 = CppUtilities::convertUtf8ToLatin1(idString.data(), idString.size());
     switch (latin1.second) {
     case 4:
-        return CppUtilities::BE::toUInt32(latin1.first.get());
+        return CppUtilities::BE::toInt<std::uint32_t>(latin1.first.get());
     default:
         throw CppUtilities::ConversionException("MP4 ID must be exactly 4 chars");
     }

@@ -40,6 +40,7 @@
 #include <c++utilities/io/path.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <filesystem>
 #include <functional>
@@ -206,7 +207,7 @@ startParsingSignature:
             stream().read(buff, 5);
 
             // set the container offset to skip ID3v2 header
-            m_containerOffset += toNormalInt(BE::toUInt32(buff + 1)) + 10;
+            m_containerOffset += toNormalInt(BE::toInt<std::uint32_t>(buff + 1)) + 10;
             if ((*buff) & 0x10) {
                 // footer present
                 m_containerOffset += 10;
@@ -432,10 +433,10 @@ void MediaFileInfo::parseTags(Diagnostics &diag, AbortableProgressFeedback &prog
         char buffer[apeHeaderSize];
         stream().seekg(footerOffset, std::ios_base::beg);
         stream().read(buffer, sizeof(buffer));
-        if (BE::toUInt64(buffer) == 0x4150455441474558ul /* APETAGEX */) {
+        if (BE::toInt<std::uint64_t>(buffer) == 0x4150455441474558ul /* APETAGEX */) {
             // take record of APE tag
-            const auto tagSize = static_cast<std::streamoff>(LE::toUInt32(buffer + 12));
-            const auto flags = LE::toUInt32(buffer + 20);
+            const auto tagSize = static_cast<std::streamoff>(LE::toInt<std::uint32_t>(buffer + 12));
+            const auto flags = LE::toInt<std::uint32_t>(buffer + 20);
             // subtract tag size (footer size and contents) from effective size
             if (tagSize <= effectiveSize) {
                 effectiveSize -= tagSize;

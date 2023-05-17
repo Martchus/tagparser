@@ -100,7 +100,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
             continue; // try again
         }
         reader().read(buf + (maximumIdLengthSupported() - m_idLength), m_idLength);
-        m_id = BE::toUInt32(buf);
+        m_id = BE::toInt<std::uint32_t>(buf);
 
         // check whether this element is actually a sibling of one of its parents rather then a child
         // (might be the case if the parent's size is unknown and hence assumed to be the max file size)
@@ -172,7 +172,7 @@ void EbmlElement::internalParse(Diagnostics &diag)
             reader().read(buf + (maximumSizeLengthSupported() - m_sizeLength), m_sizeLength);
             // xor the first byte in buffer which has been read from the file with mask
             *(buf + (maximumSizeLengthSupported() - m_sizeLength)) ^= static_cast<char>(mask);
-            m_dataSize = BE::toUInt64(buf);
+            m_dataSize = BE::toInt<std::uint64_t>(buf);
             // check if element is truncated
             if (totalSize() > maxTotalSize()) {
                 if (m_idLength + m_sizeLength > maxTotalSize()) { // header truncated
@@ -242,7 +242,7 @@ std::uint64_t EbmlElement::readUInteger()
     const auto bytesToSkip = maxBytesToRead - min(dataSize(), maxBytesToRead);
     stream().seekg(static_cast<streamoff>(dataOffset()), ios_base::beg);
     stream().read(buff + bytesToSkip, static_cast<streamoff>(sizeof(buff) - bytesToSkip));
-    return BE::toUInt64(buff);
+    return BE::toInt<std::uint64_t>(buff);
 }
 
 /*!
