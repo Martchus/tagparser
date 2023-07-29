@@ -131,6 +131,8 @@ enum class TagDataType : unsigned int {
     DateTimeExpression, /**< date time expression, see CppUtilities::DateTimeExpression */
 };
 
+TAG_PARSER_EXPORT std::string_view tagDataTypeString(TagDataType dataType);
+
 /*!
  * \brief The TagValueComparisionOption enum specifies options for TagValue::compareTo().
  */
