@@ -26,7 +26,9 @@ public:
     PositionInSet(const StringType &numericString);
 
     constexpr std::int32_t position() const;
+    void setPosition(std::int32_t position);
     constexpr std::int32_t total() const;
+    void setTotal(std::int32_t total);
     constexpr bool isNull() const;
     constexpr bool operator==(const PositionInSet &other) const;
 
@@ -81,11 +83,27 @@ constexpr inline std::int32_t PositionInSet::position() const
 }
 
 /*!
+ * \brief Sets the element position of the current instance.
+ */
+inline void PositionInSet::setPosition(int32_t position)
+{
+    m_position = position;
+}
+
+/*!
  * \brief Returns the total element count of the current instance.
  */
 constexpr inline std::int32_t PositionInSet::total() const
 {
     return m_total;
+}
+
+/*!
+ * \brief Sets the total element count of the current instance.
+ */
+inline void PositionInSet::setTotal(int32_t total)
+{
+    m_total = total;
 }
 
 /*!
