@@ -627,6 +627,12 @@ void MatroskaContainer::parseSegmentInfo(Diagnostics &diag)
             case MatroskaIds::TimeCodeScale:
                 timeScale = subElement->readUInteger();
                 break;
+            case MatroskaIds::MuxingApp:
+                muxingApplications().emplace_back(subElement->readString());
+                break;
+            case MatroskaIds::WrittingApp:
+                writingApplications().emplace_back(subElement->readString());
+                break;
             }
             subElement = subElement->nextSibling();
         }
@@ -942,13 +948,18 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     const std::uint64_t ebmlHeaderSize = 4 + EbmlElement::calculateSizeDenotationLength(ebmlHeaderDataSize) + ebmlHeaderDataSize;
 
     // calculate size of "WritingLib"-element
-    constexpr std::string_view muxingAppName = APP_NAME " v" APP_VERSION;
-    constexpr std::uint64_t muxingAppElementTotalSize = 2 + 1 + muxingAppName.size();
+    const auto &muxingApps = const_cast<const MatroskaContainer *>(this)->muxingApplications();
+    const auto muxingAppName = (fileInfo().fileHandlingFlags() == MediaFileHandlingFlags::PreserveMuxingApplication && !muxingApps.empty())
+        ? std::string_view(muxingApps.front())
+        : std::string_view(APP_NAME " v" APP_VERSION);
+    const auto muxingAppElementTotalSize = std::uint64_t(2 + 1 + muxingAppName.size());
 
     // calculate size of "WritingApp"-element
-    const std::uint64_t writingAppElementDataSize
-        = fileInfo().writingApplication().empty() ? muxingAppName.size() : fileInfo().writingApplication().size();
-    const std::uint64_t writingAppElementTotalSize = 2 + 1 + writingAppElementDataSize;
+    const auto writingApps = const_cast<const MatroskaContainer *>(this)->writingApplications();
+    const auto writingAppName = (fileInfo().fileHandlingFlags() == MediaFileHandlingFlags::PreserveWritingApplication && !writingApps.empty())
+        ? std::string_view(writingApps.front())
+        : std::string_view(fileInfo().writingApplication().empty() ? muxingAppName : std::string_view(fileInfo().writingApplication()));
+    const auto writingAppElementTotalSize = std::uint64_t(2 + 1 + writingAppName.size());
 
     try {
         // calculate size of "Tags"-element

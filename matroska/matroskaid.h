@@ -43,7 +43,7 @@ enum SeekIds { SeekID = 0x53AB, SeekPosition = 0x53AC };
 enum SegmentInfoIds {
     TimeCodeScale = 0x2AD7B1,
     Duration = 0x4489,
-    WrittingApp = 0x5741,
+    WrittingApp = 0x5741, // TODOv13: change to WritingApp
     MuxingApp = 0x4D80,
     DateUTC = 0x4461,
     SegmentUID = 0x73A4,

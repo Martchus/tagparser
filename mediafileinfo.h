@@ -64,6 +64,8 @@ enum class MediaFileHandlingFlags : std::uint64_t {
     ForceIndexPosition = (1 << 3), /**< enforces the index position when applying changes, see remarks of MediaFileInfo::setIndexPosition() */
     NormalizeKnownTagFieldIds = (1 << 4), /**< normalizes known tag field IDs when parsing to match the tag specification's recommendations */
     PreserveRawTimingValues = (1 << 8), /**< preverves raw timing values (so far only used when making MP4 tracks) */
+    PreserveMuxingApplication = (1 << 9), /**< preverves the muxing application (so far only used when making Matroska container) */
+    PreserveWritingApplication = (1 << 10), /**< preverves the writing application (so far only used when making Matroska container) */
 };
 
 } // namespace TagParser
@@ -471,7 +473,9 @@ inline const std::string &MediaFileInfo::writingApplication() const
 
 /*!
  * \brief Sets the writing application as container-level meta-data. Put the name of your application here.
- * \remarks Might not be used (depends on the format).
+ * \remarks
+ * - Currently only used when making Matroska files.
+ * - The assigned value is ignored when MediaFileHandlingFlags::PreserveWritingApplication is set.
  */
 inline void MediaFileInfo::setWritingApplication(std::string_view writingApplication)
 {

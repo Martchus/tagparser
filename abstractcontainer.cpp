@@ -7,7 +7,9 @@ using namespace CppUtilities;
 namespace TagParser {
 
 /// \brief The AbstractContainerPrivate struct contains private fields of the AbstractContainer class.
-struct AbstractContainerPrivate {};
+struct AbstractContainerPrivate {
+    std::vector<std::string> muxingApps, writingApps;
+};
 
 /*!
  * \class TagParser::AbstractContainer
@@ -476,6 +478,40 @@ bool AbstractContainer::supportsTitle() const
 }
 
 /*!
+ * \brief Returns the muxing applications specified as meta-data.
+ */
+const std::vector<std::string> &AbstractContainer::muxingApplications() const
+{
+    static const auto empty = std::vector<std::string>();
+    return m_p ? m_p->muxingApps : empty;
+}
+
+/*!
+ * \brief Returns the muxing applications specified as meta-data.
+ */
+std::vector<std::string> &AbstractContainer::muxingApplications()
+{
+    return p()->muxingApps;
+}
+
+/*!
+ * \brief Returns the writing applications specified as meta-data.
+ */
+const std::vector<std::string> &AbstractContainer::writingApplications() const
+{
+    static const auto empty = std::vector<std::string>();
+    return m_p ? m_p->writingApps : empty;
+}
+
+/*!
+ * \brief Returns the writing applications specified as meta-data.
+ */
+std::vector<std::string> &AbstractContainer::writingApplications()
+{
+    return p()->writingApps;
+}
+
+/*!
  * \brief Returns the number of segments.
  */
 size_t AbstractContainer::segmentCount() const
@@ -500,6 +536,17 @@ void AbstractContainer::reset()
     m_doctypeReadVersion = 0;
     m_timeScale = 0;
     m_titles.clear();
+}
+
+/*!
+ * \brief Returns the private data for the container.
+ */
+std::unique_ptr<AbstractContainerPrivate> &AbstractContainer::p()
+{
+    if (!m_p) {
+        m_p = std::make_unique<AbstractContainerPrivate>();
+    }
+    return m_p;
 }
 
 } // namespace TagParser

@@ -80,6 +80,8 @@ public:
     const std::vector<std::string> &titles() const;
     void setTitle(std::string_view title, std::size_t segmentIndex = 0);
     virtual bool supportsTitle() const;
+    const std::vector<std::string> &muxingApplications() const;
+    const std::vector<std::string> &writingApplications() const;
     virtual std::size_t segmentCount() const;
     CppUtilities::TimeSpan duration() const;
     CppUtilities::DateTime creationTime() const;
@@ -97,6 +99,8 @@ protected:
     virtual void internalParseChapters(Diagnostics &diag, AbortableProgressFeedback &progress);
     virtual void internalParseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress);
     virtual void internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
+    std::vector<std::string> &muxingApplications();
+    std::vector<std::string> &writingApplications();
 
     std::uint64_t m_version;
     std::uint64_t m_readVersion;
@@ -117,6 +121,8 @@ protected:
     bool m_attachmentsParsed;
 
 private:
+    std::unique_ptr<AbstractContainerPrivate> &p();
+
     std::uint64_t m_startOffset;
     std::iostream *m_stream;
     CppUtilities::BinaryReader m_reader;
