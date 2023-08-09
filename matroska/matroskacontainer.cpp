@@ -1648,8 +1648,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     }
                     // -> write "MuxingApp"- and "WritingApp"-element
                     EbmlElement::makeSimpleElement(outputStream, MatroskaIds::MuxingApp, muxingAppName);
-                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp,
-                        fileInfo().writingApplication().empty() ? muxingAppName : fileInfo().writingApplication());
+                    EbmlElement::makeSimpleElement(outputStream, MatroskaIds::WrittingApp, writingAppName);
                 }
 
                 // write "Tracks"-element
