@@ -949,14 +949,14 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
     // calculate size of "WritingLib"-element
     const auto &muxingApps = const_cast<const MatroskaContainer *>(this)->muxingApplications();
-    const auto muxingAppName = (fileInfo().fileHandlingFlags() == MediaFileHandlingFlags::PreserveMuxingApplication && !muxingApps.empty())
+    const auto muxingAppName = (fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::PreserveMuxingApplication && !muxingApps.empty())
         ? std::string_view(muxingApps.front())
         : std::string_view(APP_NAME " v" APP_VERSION);
     const auto muxingAppElementTotalSize = std::uint64_t(2 + 1 + muxingAppName.size());
 
     // calculate size of "WritingApp"-element
     const auto writingApps = const_cast<const MatroskaContainer *>(this)->writingApplications();
-    const auto writingAppName = (fileInfo().fileHandlingFlags() == MediaFileHandlingFlags::PreserveWritingApplication && !writingApps.empty())
+    const auto writingAppName = (fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::PreserveWritingApplication && !writingApps.empty())
         ? std::string_view(writingApps.front())
         : std::string_view(fileInfo().writingApplication().empty() ? muxingAppName : std::string_view(fileInfo().writingApplication()));
     const auto writingAppElementTotalSize = std::uint64_t(2 + 1 + writingAppName.size());
