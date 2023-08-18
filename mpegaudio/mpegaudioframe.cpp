@@ -74,7 +74,7 @@ void MpegAudioFrame::parseHeader(BinaryReader &reader, Diagnostics &diag)
             m_xingBytesfield = reader.readUInt32BE();
         }
         if (isXingTocFieldPresent()) {
-            reader.stream()->seekg(64, ios_base::cur);
+            reader.stream()->seekg(0x64, ios_base::cur);
         }
         if (isXingQualityIndicatorFieldPresent()) {
             m_xingQualityIndicator = reader.readUInt32BE();
