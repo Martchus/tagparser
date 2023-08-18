@@ -174,7 +174,7 @@ constexpr XingHeaderFlags MpegAudioFrame::xingHeaderFlags() const
  */
 constexpr bool MpegAudioFrame::isXingFramefieldPresent() const
 {
-    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField) : false;
+    return isXingHeaderAvailable() && ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField);
 }
 
 /*!
@@ -182,7 +182,7 @@ constexpr bool MpegAudioFrame::isXingFramefieldPresent() const
  */
 constexpr bool MpegAudioFrame::isXingBytesfieldPresent() const
 {
-    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasFramesField) == XingHeaderFlags::HasFramesField) : false;
+    return isXingHeaderAvailable() && ((m_xingHeaderFlags & XingHeaderFlags::HasBytesField) == XingHeaderFlags::HasBytesField);
 }
 
 /*!
@@ -190,7 +190,7 @@ constexpr bool MpegAudioFrame::isXingBytesfieldPresent() const
  */
 constexpr bool MpegAudioFrame::isXingTocFieldPresent() const
 {
-    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasTocField) == XingHeaderFlags::HasTocField) : false;
+    return isXingHeaderAvailable() && ((m_xingHeaderFlags & XingHeaderFlags::HasTocField) == XingHeaderFlags::HasTocField);
 }
 
 /*!
@@ -198,7 +198,7 @@ constexpr bool MpegAudioFrame::isXingTocFieldPresent() const
  */
 constexpr bool MpegAudioFrame::isXingQualityIndicatorFieldPresent() const
 {
-    return (isXingHeaderAvailable()) ? ((m_xingHeaderFlags & XingHeaderFlags::HasQualityIndicator) == XingHeaderFlags::HasQualityIndicator) : false;
+    return isXingHeaderAvailable() && ((m_xingHeaderFlags & XingHeaderFlags::HasQualityIndicator) == XingHeaderFlags::HasQualityIndicator);
 }
 
 /*!
