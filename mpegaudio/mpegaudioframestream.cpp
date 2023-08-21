@@ -68,19 +68,24 @@ void MpegAudioFrameStream::internalParseHeader(Diagnostics &diag, AbortableProgr
     const MpegAudioFrame &frame = m_frames.back();
     addInfo(frame, *this);
     if (frame.isXingBytesfieldPresent()) {
-        std::uint32_t xingSize = frame.xingBytesfield();
-        if (m_size && xingSize != m_size) {
-            diag.emplace_back(DiagLevel::Warning,
-                argsToString("Real length of MPEG audio frames (", m_size, " byte) is not in accordance with value provided by Xing header (",
-                    xingSize, " byte). The Xing header value will be used."),
-                context);
+        const auto xingSize = frame.xingBytesfield();
+        if (!m_size) {
             m_size = xingSize;
+        } else if (xingSize != m_size) {
+            diag.emplace_back(DiagLevel::Warning,
+                argsToString("Real size of MPEG audio frames (", m_size, " byte) is not in accordance with value provided by Xing header (", xingSize,
+                    " byte). The real size will be used."),
+                context);
         }
     }
-    m_bitrate = frame.isXingFramefieldPresent() ? ((static_cast<double>(m_size) * 8.0)
-                    / (static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samplingFrequency())) / 1024.0)
-                                                : frame.bitrate();
-    m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bytesPerSecond = static_cast<std::uint32_t>(m_bitrate * 125)));
+    if (frame.isXingFramefieldPresent()) {
+        const auto duration = static_cast<double>(frame.xingFrameCount() * frame.sampleCount()) / static_cast<double>(frame.samplingFrequency());
+        m_bitrate = static_cast<double>(m_size) / duration / 125.0;
+        m_duration = TimeSpan::fromSeconds(duration);
+    } else {
+        m_bitrate = frame.bitrate();
+        m_duration = TimeSpan::fromSeconds(static_cast<double>(m_size) / (m_bytesPerSecond = static_cast<std::uint32_t>(m_bitrate * 125)));
+    }
 }
 
 } // namespace TagParser
