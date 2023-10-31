@@ -82,12 +82,12 @@ void MatroskaContainer::reset()
  */
 void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    static const string context("validating Matroska file index (cues)");
-    bool cuesElementsFound = false;
+    static const auto context = std::string("validating Matroska file index (cues)");
+    auto cuesElementsFound = false;
     if (m_firstElement) {
-        unordered_set<EbmlElement::IdentifierType> ids;
-        bool cueTimeFound = false, cueTrackPositionsFound = false;
-        unique_ptr<EbmlElement> clusterElement;
+        auto ids = std::unordered_set<EbmlElement::IdentifierType>();
+        auto cueTimeFound = false, cueTrackPositionsFound = false;
+        auto clusterElement = std::unique_ptr<EbmlElement>();
         auto pos = std::uint64_t(), prevClusterSize = std::uint64_t(), currentOffset = std::uint64_t();
         // iterate through all segments
         for (EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement;

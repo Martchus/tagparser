@@ -435,11 +435,11 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
 
         // define misc variables
-        CopyHelper<65307> copyHelper;
-        vector<std::uint64_t> updatedPageOffsets;
         const OggPage *lastPage = nullptr;
+        auto copyHelper = CopyHelper<65307>();
+        auto updatedPageOffsets = std::vector<std::uint64_t>();
         auto nextPageOffset = std::uint64_t();
-        unordered_map<std::uint32_t, std::uint32_t> pageSequenceNumberBySerialNo;
+        auto pageSequenceNumberBySerialNo = std::unordered_map<std::uint32_t, std::uint32_t>();
 
         // iterate through all pages of the original file
         auto updateTick = 0u;

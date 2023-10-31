@@ -1702,9 +1702,9 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     progress.updateStep(flacStream ? "Updating FLAC tags ..." : "Updating ID3v2 tags ...");
 
     // prepare ID3v2 tags
-    vector<Id3v2TagMaker> makers;
+    auto makers = std::vector<Id3v2TagMaker>();
     makers.reserve(m_id3v2Tags.size());
-    std::uint64_t tagsSize = 0;
+    auto tagsSize = std::uint64_t();
     for (auto &tag : m_id3v2Tags) {
         try {
             makers.emplace_back(tag->prepareMaking(diag));
@@ -1714,9 +1714,9 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     }
 
     // determine stream offset and make track/format specific metadata
-    std::uint32_t streamOffset; // where the actual stream starts
-    stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
-    flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
+    auto streamOffset = std::uint32_t(); // where the actual stream starts
+    auto flacMetaData = std::stringstream(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+    flacMetaData.exceptions(std::ios_base::badbit | std::ios_base::failbit);
     auto startOfLastMetaDataBlock = std::streamoff();
     if (flacStream) {
         // if it is a raw FLAC stream, make FLAC metadata
@@ -1729,8 +1729,8 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     }
 
     // check whether rewrite is required
-    bool rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > streamOffset);
-    size_t padding = 0;
+    auto rewriteRequired = isForcingRewrite() || !m_saveFilePath.empty() || (tagsSize > streamOffset);
+    auto padding = std::size_t();
     if (!rewriteRequired) {
         // rewriting is not forced and new tag is not too big for available space
         // -> calculate new padding
