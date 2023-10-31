@@ -1717,7 +1717,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
     std::uint32_t streamOffset; // where the actual stream starts
     stringstream flacMetaData(ios_base::in | ios_base::out | ios_base::binary);
     flacMetaData.exceptions(ios_base::badbit | ios_base::failbit);
-    std::streamoff startOfLastMetaDataBlock;
+    auto startOfLastMetaDataBlock = std::streamoff();
     if (flacStream) {
         // if it is a raw FLAC stream, make FLAC metadata
         startOfLastMetaDataBlock = flacStream->makeHeader(flacMetaData, diag);

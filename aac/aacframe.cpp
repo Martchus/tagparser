@@ -955,7 +955,7 @@ std::int16_t AacFrameElementParser::sbrHuffmanDec(SbrHuffTab table)
 
 void AacFrameElementParser::parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel)
 {
-    std::uint8_t tmp, bsEnvCount;
+    std::uint8_t tmp, bsEnvCount = 0;
     //byte bsRelCount0, bsRelCount1;
     switch ((sbr->bsFrameClass[channel] = m_reader.readBits<std::uint8_t>(2))) {
         using namespace BsFrameClasses;

@@ -78,7 +78,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                     cuePointElementSize += cuePointChild->totalSize();
                     break;
                 case MatroskaIds::CueTrackPositions:
-                    cueTrackPositionsElementSize = 0;
+                    cueTrackPositionsElementSize = relPos = 0;
                     cueRelativePositionElement = cueClusterPositionElement = nullptr;
                     for (EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild;
                          cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {

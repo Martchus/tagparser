@@ -88,7 +88,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
         unordered_set<EbmlElement::IdentifierType> ids;
         bool cueTimeFound = false, cueTrackPositionsFound = false;
         unique_ptr<EbmlElement> clusterElement;
-        std::uint64_t pos, prevClusterSize = 0, currentOffset = 0;
+        auto pos = std::uint64_t(), prevClusterSize = std::uint64_t(), currentOffset = std::uint64_t();
         // iterate through all segments
         for (EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement;
              segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {

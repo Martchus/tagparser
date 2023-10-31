@@ -269,7 +269,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
     // find relevant atoms in original file
     Mp4Atom *fileTypeAtom, *progressiveDownloadInfoAtom, *movieAtom, *firstMediaDataAtom, *firstMovieFragmentAtom /*, *userDataAtom*/;
-    Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten;
+    Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten = nullptr;
     try {
         // file type atom (mandatory)
         if ((fileTypeAtom = firstElement()->siblingByIdIncludingThis(Mp4AtomIds::FileType, diag))) {
