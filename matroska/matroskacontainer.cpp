@@ -838,7 +838,7 @@ struct SegmentData {
     MatroskaCuePositionUpdater cuesUpdater;
     /// \brief size of the "SegmentInfo"-element
     std::uint64_t infoDataSize;
-    /// \brief cluster sizes
+    /// \brief cluster sizes, needed because cluster elements are not necessarily copied as-is so they're size might change
     std::vector<std::uint64_t> clusterSizes;
     /// \brief first "Cluster"-element (original file)
     EbmlElement *firstClusterElement;
@@ -1228,7 +1228,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     progress.updateStep("Calculating cluster offsets ...");
                 }
 
-                // decided whether it is necessary to rewrite the entire file (if not already rewriting)
+                // decide whether it is necessary to rewrite the entire file (if not already rewriting)
                 if (!rewriteRequired) {
                     // find first "Cluster"-element
                     if ((level1Element = segment.firstClusterElement)) {
@@ -1366,7 +1366,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                         goto calculateSegmentData;
                     }
                 } else {
-                    // if rewrite is required, pretend writing the remaining elements to compute total segment size
+                    // if rewrite is required, pretend writing the remaining elements to compute total segment size and cluster sizes
 
                     // pretend writing "Void"-element (only if there is at least one "Cluster"-element in the segment)
                     if (!segmentIndex && rewriteRequired && (level1Element = level0Element->childById(MatroskaIds::Cluster, diag))) {
