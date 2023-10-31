@@ -1172,7 +1172,7 @@ void Id3v2Frame::makeLegacyPicture(
     } else {
         imageFormat = "UND";
     }
-    std::strncpy(++offset, imageFormat, 3);
+    std::memcpy(++offset, imageFormat, 3);
 
     // write picture type
     *(offset += 3) = static_cast<char>(typeInfo);
