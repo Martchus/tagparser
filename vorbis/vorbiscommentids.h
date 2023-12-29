@@ -17,9 +17,17 @@ constexpr TAG_PARSER_EXPORT std::string_view trackNumber()
 {
     return "TRACKNUMBER";
 }
+constexpr TAG_PARSER_EXPORT std::string_view trackTotal()
+{
+    return "TRACKTOTAL";
+}
 constexpr TAG_PARSER_EXPORT std::string_view diskNumber()
 {
     return "DISCNUMBER";
+}
+constexpr TAG_PARSER_EXPORT std::string_view diskTotal()
+{
+    return "DISCTOTAL";
 }
 constexpr TAG_PARSER_EXPORT std::string_view part()
 {
@@ -28,6 +36,10 @@ constexpr TAG_PARSER_EXPORT std::string_view part()
 constexpr TAG_PARSER_EXPORT std::string_view partNumber()
 {
     return "PARTNUMBER";
+}
+constexpr TAG_PARSER_EXPORT std::string_view partTotal()
+{
+    return "PARTTOTAL";
 }
 constexpr TAG_PARSER_EXPORT std::string_view title()
 {
