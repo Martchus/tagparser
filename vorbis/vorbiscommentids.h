@@ -189,6 +189,10 @@ constexpr TAG_PARSER_EXPORT std::string_view bpm()
 {
     return "BPM";
 }
+constexpr TAG_PARSER_EXPORT std::string_view publisherWebpage()
+{
+    return "WWWPUBLISHER";
+}
 
 } // namespace VorbisCommentIds
 

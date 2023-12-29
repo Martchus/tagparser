@@ -109,6 +109,8 @@ VorbisComment::IdentifierType VorbisComment::internallyGetFieldId(KnownField fie
         return std::string(bpm());
     case KnownField::Publisher:
         return std::string(publisher());
+    case KnownField::PublisherWebpage:
+        return std::string(publisherWebpage());
     default:
         return std::string();
     }
@@ -149,6 +151,7 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
          { rating(), KnownField::Rating },
          { bpm(), KnownField::Bpm },
          { publisher(), KnownField::Publisher },
+         { publisherWebpage(), KnownField::PublisherWebpage },
     });
     // clang-format on
     const auto knownField(fieldMap.find(id));
