@@ -85,6 +85,10 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sRating;
     case lISRC:
         return sISRC;
+    case lPublisherWebpage:
+        return sPublisherWebpage;
+    case lUserDefinedURL:
+        return sUserDefinedURL;
     default:
         return 0;
     }
@@ -155,6 +159,10 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lRating;
     case sISRC:
         return lISRC;
+    case sPublisherWebpage:
+        return lPublisherWebpage;
+    case sUserDefinedURL:
+        return lUserDefinedURL;
     default:
         return 0;
     }

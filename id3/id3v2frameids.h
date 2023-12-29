@@ -49,6 +49,8 @@ enum KnownValue : std::uint32_t {
     lMood = 0x544D4F4F, /**< TMOO */
     lISRC = 0x54535243, /**< TSRC */
     lUserDefinedText = 0x54585858, /**< TXXX */
+    lPublisherWebpage = 0x57505542, /**< WPUB */
+    lUserDefinedURL = 0x57585858, /**< WXXX */
 
     sAlbum = 0x54414c, /**< ?TAL */
     sArtist = 0x545031, /**< ?TP1 */
@@ -82,6 +84,8 @@ enum KnownValue : std::uint32_t {
     sCopyright = 0x544352, /**< TCR */
     sISRC = 0x545243, /**< TRC */
     sUserDefinedText = 0x545858, /**< ?TXX */
+    sPublisherWebpage = 0x575042, /**< ?WPB */
+    sUserDefinedURL = 0x575858, /**< ?WXX */
 };
 
 TAG_PARSER_EXPORT std::uint32_t convertToShortId(std::uint32_t id);
@@ -115,6 +119,14 @@ constexpr bool isTextFrame(std::uint32_t id)
     } else {
         return (id & 0xFF000000u) == 0x54000000u && (id != Id3v2FrameIds::lUserDefinedText);
     }
+}
+
+/*!
+ * \brief Returns an indication whether the specified \a id is a URL frame id.
+ */
+constexpr bool isUrlFrame(std::uint32_t id)
+{
+    return (id & 0xFF000000u) == 0x57000000u && (id != Id3v2FrameIds::lUserDefinedURL);
 }
 
 } // namespace Id3v2FrameIds
