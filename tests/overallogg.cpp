@@ -4,6 +4,8 @@
 #include "../abstracttrack.h"
 #include "../tag.h"
 #include "../vorbis/vorbiscomment.h"
+#include "../vorbis/vorbiscommentfield.h"
+#include "../vorbis/vorbiscommentids.h"
 
 #include <c++utilities/io/misc.h>
 
@@ -249,4 +251,53 @@ void OverallTests::testOggMaking()
         makeFile(workingCopyPath("mtx-test-data/opus/v-opus.ogg"), modifyRoutine, &OverallTests::checkOggTestfile2);
         makeFile(workingCopyPath("ogg/noise-without-cover.opus"), modifyRoutineCover, &OverallTests::checkOggTestfile3);
     }
+}
+
+/*!
+ * \brief Tests the Vorbis Comment specifc handling of certain fields done in VorbisComment::convertTotalFields().
+ */
+void OverallTests::testVorbisCommentFieldHandling()
+{
+    const auto context = std::string();
+    const auto trackNumberFieldId = std::string(VorbisCommentIds::trackNumber());
+    const auto trackTotalFieldId = std::string(VorbisCommentIds::trackTotal());
+    const auto diskNumberFieldId = std::string(VorbisCommentIds::diskNumber());
+    const auto diskTotalFieldId = std::string(VorbisCommentIds::diskTotal());
+
+    auto diag = Diagnostics();
+    auto vc = VorbisComment();
+    auto trackNumber = VorbisCommentField(trackNumberFieldId, TagValue(5));
+    auto trackTotal = VorbisCommentField(trackTotalFieldId, TagValue(20));
+    auto &fields = vc.fields();
+    fields.insert(std::make_pair(trackNumberFieldId, std::move(trackNumber)));
+    fields.insert(std::make_pair(trackTotalFieldId, std::move(trackTotal)));
+    vc.convertTotalFields(context, diag);
+
+    const auto convertedValues = vc.values(trackNumberFieldId);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("the two fileds have been combined into one", 1_st, fields.size());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("there is exactly one track number value", 1_st, convertedValues.size());
+    const auto convertedTrackNumber = convertedValues.front()->toPositionInSet();
+    CPPUNIT_ASSERT_EQUAL(PositionInSet(5, 20), convertedTrackNumber);
+    CPPUNIT_ASSERT_EQUAL(0_st, diag.size());
+
+    auto diskNumber = VorbisCommentField(diskNumberFieldId, TagValue("invalid pos"));
+    auto diskTotal = VorbisCommentField(diskTotalFieldId, TagValue("invalid total"));
+    auto diskTotal2 = VorbisCommentField(diskTotalFieldId, TagValue(42));
+    fields.insert(std::make_pair(diskNumberFieldId, std::move(diskNumber)));
+    fields.insert(std::make_pair(diskTotalFieldId, std::move(diskTotal)));
+    fields.insert(std::make_pair(diskTotalFieldId, std::move(diskTotal2)));
+    vc.convertTotalFields(context, diag);
+
+    const auto newDiskNumberValues = vc.values(diskNumberFieldId);
+    const auto newDiskTotalValues = vc.values(diskTotalFieldId);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("invalid fields have not been combined", 4_st, fields.size());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("invalid disk position has been preserved and valid disk total converted", 2_st, newDiskNumberValues.size());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("invalid disk total has been preserved", 1_st, newDiskTotalValues.size());
+    const auto preservedDiskNumber = newDiskNumberValues[0]->toString();
+    const auto convertedDiskTotal = newDiskNumberValues[1]->toPositionInSet();
+    const auto preservedDiskTotal = newDiskTotalValues[0]->toString();
+    CPPUNIT_ASSERT_EQUAL("invalid pos"s, preservedDiskNumber);
+    CPPUNIT_ASSERT_EQUAL(PositionInSet(0, 42), convertedDiskTotal);
+    CPPUNIT_ASSERT_EQUAL("invalid total"s, preservedDiskTotal);
+    CPPUNIT_ASSERT_EQUAL(3_st, diag.size());
 }

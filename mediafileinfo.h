@@ -66,6 +66,9 @@ enum class MediaFileHandlingFlags : std::uint64_t {
     PreserveRawTimingValues = (1 << 8), /**< preverves raw timing values (so far only used when making MP4 tracks) */
     PreserveMuxingApplication = (1 << 9), /**< preverves the muxing application (so far only used when making Matroska container) */
     PreserveWritingApplication = (1 << 10), /**< preverves the writing application (so far only used when making Matroska container) */
+    ConvertTotalFields = (1 << 11), /**< ensures fields usually holding PositionInSet values such as KnownField::TrackPosition are actually
+        stored as such (and *not* as two separate fields for the position and total values); currently only relevant for Vorbis Comments
+        \sa VorbisCommentFlags::ConvertTotalFields  */
 };
 
 } // namespace TagParser

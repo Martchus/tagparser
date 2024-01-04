@@ -19,7 +19,8 @@ enum class VorbisCommentFlags : std::uint8_t {
     None = 0x0, /**< Regular parsing/making. */
     NoSignature = 0x1, /**< Skips the signature when parsing and making. */
     NoFramingByte = 0x2, /**< Doesn't expect the framing bit to be present when parsing; does not make the framing bit when making. */
-    NoCovers = 0x4 /**< Skips all covers when making. */
+    NoCovers = 0x4, /**< Skips all covers when making. */
+    ConvertTotalFields = 0x8, /**< Converts TRACKTOTAL/DISCTOTAL/PARTTOTAL to be included in the TRACKNUMBER/DISCNUMBER/PARTNUMBER fields. */
 };
 
 } // namespace TagParser

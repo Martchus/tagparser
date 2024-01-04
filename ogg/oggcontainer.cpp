@@ -280,6 +280,10 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
 {
     // tracks needs to be parsed before because tags are stored at stream level
     parseTracks(diag, progress);
+    auto flags = VorbisCommentFlags::None;
+    if (fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::ConvertTotalFields) {
+        flags += VorbisCommentFlags::ConvertTotalFields;
+    }
     for (auto &comment : m_tags) {
         OggParameter &params = comment->oggParams();
         m_iterator.setPageIndex(params.firstPageIndex);
@@ -287,16 +291,16 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
         m_iterator.setFilter(m_iterator.currentPage().streamSerialNumber());
         switch (params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
-            comment->parse(m_iterator, VorbisCommentFlags::None, diag);
+            comment->parse(m_iterator, flags, diag);
             break;
         case GeneralMediaFormat::Opus:
             // skip header (has already been detected by OggStream)
             m_iterator.ignore(8);
-            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
+            comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
             break;
         case GeneralMediaFormat::Flac:
             m_iterator.ignore(4);
-            comment->parse(m_iterator, VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
+            comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
             break;
         default:
             diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", "parsing tags from OGG streams");

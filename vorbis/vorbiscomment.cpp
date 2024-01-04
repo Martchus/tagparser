@@ -158,6 +158,67 @@ KnownField VorbisComment::internallyGetKnownField(const IdentifierType &id) cons
     return knownField != fieldMap.cend() ? knownField->second : KnownField::Invalid;
 }
 
+/// \cond
+void VorbisComment::extendPositionInSetField(std::string_view field, std::string_view totalField, const std::string &diagContext, Diagnostics &diag)
+{
+    auto totalValues = std::vector<std::int32_t>();
+    auto fieldsIter = fields().equal_range(std::string(totalField));
+    auto fieldsDist = std::distance(fieldsIter.first, fieldsIter.second);
+    if (!fieldsDist) {
+        return;
+    }
+    totalValues.reserve(static_cast<std::size_t>(fieldsDist));
+    for (; fieldsIter.first != fieldsIter.second;) {
+        try {
+            totalValues.emplace_back(fieldsIter.first->second.value().toInteger());
+            fields().erase(fieldsIter.first++);
+        } catch (const ConversionException &e) {
+            diag.emplace_back(DiagLevel::Warning, argsToString("Unable to parse \"", totalField, "\" as integer: ", e.what()), diagContext);
+            totalValues.emplace_back(0);
+            ++fieldsIter.first;
+        }
+    }
+
+    auto totalIter = totalValues.begin(), totalEnd = totalValues.end();
+    for (fieldsIter = fields().equal_range(std::string(field)); fieldsIter.first != fieldsIter.second && totalIter != totalEnd;
+         ++fieldsIter.first, ++totalIter) {
+        auto &v = fieldsIter.first->second.value();
+        try {
+            auto p = v.toPositionInSet();
+            if (p.total() && p.total() != *totalIter) {
+                diag.emplace_back(DiagLevel::Warning,
+                    argsToString("The \"", totalField, "\" field value (", *totalIter, ") does not match \"", field, "\" field value (", p.total(),
+                        "). Discarding the former in favor of the latter."),
+                    diagContext);
+            } else {
+                p.setTotal(*totalIter);
+                v.assignPosition(p);
+            }
+        } catch (const ConversionException &e) {
+            diag.emplace_back(DiagLevel::Warning,
+                argsToString("Unable to parse \"", field, "\" as position in set for incorporating \"", totalField, "\": ", e.what()), diagContext);
+        }
+    }
+    if (totalIter != totalEnd) {
+        diag.emplace_back(
+            DiagLevel::Warning, argsToString("Vorbis Comment contains more \"", totalField, "\" fields than \"", field, "\" fields."), diagContext);
+    }
+    for (; totalIter != totalEnd; ++totalIter) {
+        fields().insert(std::make_pair(field, VorbisCommentField(std::string(field), TagValue(PositionInSet(0, *totalIter)))));
+    }
+}
+/// \endcond
+
+/*!
+ * \brief Converts TRACKTOTAL/DISCTOTAL/PARTTOTAL to be included in the TRACKNUMBER/DISCNUMBER/PARTNUMBER fields instead.
+ */
+void VorbisComment::convertTotalFields(const std::string &diagContext, Diagnostics &diag)
+{
+    extendPositionInSetField(VorbisCommentIds::trackNumber(), VorbisCommentIds::trackTotal(), diagContext, diag);
+    extendPositionInSetField(VorbisCommentIds::diskNumber(), VorbisCommentIds::diskTotal(), diagContext, diag);
+    extendPositionInSetField(VorbisCommentIds::partNumber(), VorbisCommentIds::partTotal(), diagContext, diag);
+}
+
 /*!
  * \brief Internal implementation for parsing.
  */
@@ -248,6 +309,10 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
         if (bytesRemaining) {
             diag.emplace_back(DiagLevel::Warning, argsToString(bytesRemaining, " bytes left in last segment."), context);
         }
+    }
+
+    if (flags & VorbisCommentFlags::ConvertTotalFields) {
+        convertTotalFields(context, diag);
     }
 }
 

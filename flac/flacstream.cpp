@@ -115,7 +115,11 @@ void FlacStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedbac
                 m_vorbisComment = make_unique<VorbisComment>();
             }
             try {
-                m_vorbisComment->parse(*m_istream, header.dataSize(), VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
+                auto flags = VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte;
+                if (m_mediaFileInfo.fileHandlingFlags() & MediaFileHandlingFlags::ConvertTotalFields) {
+                    flags += VorbisCommentFlags::ConvertTotalFields;
+                }
+                m_vorbisComment->parse(*m_istream, header.dataSize(), flags, diag);
             } catch (const Failure &) {
                 // error is logged via notifications, just continue with the next metadata block
             }

@@ -7,6 +7,8 @@
 #include "../fieldbasedtag.h"
 #include "../mediaformat.h"
 
+class OverallTests;
+
 namespace TagParser {
 
 class OggIterator;
@@ -24,6 +26,7 @@ public:
 
 class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment> {
     friend class FieldMapBasedTag<VorbisComment>;
+    friend class ::OverallTests;
 
 public:
     VorbisComment();
@@ -52,6 +55,8 @@ protected:
 
 private:
     template <class StreamType> void internalParse(StreamType &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag);
+    void extendPositionInSetField(std::string_view field, std::string_view totalField, const std::string &diagContext, Diagnostics &diag);
+    void convertTotalFields(const std::string &diagContext, Diagnostics &diag);
 
 private:
     TagValue m_vendor;

@@ -50,6 +50,7 @@ class OverallTests : public TestFixture {
     CPPUNIT_TEST(testFlacMaking);
     CPPUNIT_TEST(testMkvMakingWithDifferentSettings);
     CPPUNIT_TEST(testMkvMakingNestedTags);
+    CPPUNIT_TEST(testVorbisCommentFieldHandling);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -122,6 +123,7 @@ public:
     void testMp3Making();
     void testOggMaking();
     void testFlacMaking();
+    void testVorbisCommentFieldHandling();
 
 private:
     MediaFileInfo m_fileInfo;
