@@ -67,7 +67,7 @@ The library is aware of different text encodings and can convert between differe
 
 ### Further documentation
 For more examples check out the command line interface of [Tag Editor](https://github.com/Martchus/tageditor).
-API documentation can be generated using Doxygen with `make tagparser_apidoc`.
+API documentation can be generated using Doxygen with `cmake --build … --target tagparser_apidoc`.
 
 ## Bugs, stability
 Bugs can be reported on GitHub.

@@ -42,12 +42,13 @@ void example()
     //   code.
     // - Parsing a file can be expensive if the file is big or the disk IO is slow. You might want to
     //   run it in a separate thread.
-    // - At this point the parser does not make much use of the progress object.
+    // - At this point the parser does not make much use of the progress object (in contrast to applyChanges()
+    //   shown below).
     fileInfo.parseContainerFormat(diag, progress);
     fileInfo.parseTags(diag, progress);
     fileInfo.parseAttachments(diag, progress);
     fileInfo.parseChapters(diag, progress);
-    fileInfo.parseEverything(diag, progress); // just use that one if you want all over the above
+    fileInfo.parseEverything(diag, progress); // just use that one if you want all of the above
 
     // get tag as an object derived from the Tag class
     // notes:
@@ -55,7 +56,7 @@ void example()
     //   fileInfo.createAppropriateTags(…) to create tags as needed.
     auto tag = fileInfo.tags().at(0);
 
-    // extract a field value and convert it to UTF-8 std::string (toString() might throw ConversionException)
+    // extract a field value and convert it to a UTF-8 std::string (toString() might throw ConversionException)
     auto title = tag->value(TagParser::KnownField::Title).toString(TagParser::TagTextEncoding::Utf8);
 
     // change a field value using an encoding suitable for the tag format
@@ -84,6 +85,5 @@ void example()
     // - Use progress.tryToAbort() from another thread or an interrupt handler to abort gracefully without leaving
     //   the file in an inconsistent state.
     // - Be sure everything has been parsed before as the library needs to be aware of the whole file structure.
-    fileInfo.parseEverything(diag, progress);
     fileInfo.applyChanges(diag, progress);
 }

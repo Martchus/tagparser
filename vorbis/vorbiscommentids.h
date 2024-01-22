@@ -9,7 +9,12 @@ namespace TagParser {
 
 /*!
  * \brief Encapsulates Vorbis comment field names.
- * \sa See https://xiph.org/vorbis/doc/v-comment.html for the upstream documentation of the field names.
+ * \sa
+ * - See https://xiph.org/vorbis/doc/v-comment.html for the upstream documentation of the field names.
+ * - See https://wiki.xiph.org/Field_names for an additional proposal that is most notably introducing
+ *   `DISCNUMBER` and `…TOTAL` fields.
+ * - See https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping for further conventions and a
+ *   comparision with other formats.
  */
 namespace VorbisCommentIds {
 
