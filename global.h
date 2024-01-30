@@ -4,6 +4,7 @@
 #ifndef TAG_PARSER_GLOBAL
 #define TAG_PARSER_GLOBAL
 
+#include "tagparser-devel-definitions.h"
 #include <c++utilities/application/global.h>
 
 #ifdef TAG_PARSER_STATIC
