@@ -1,5 +1,3 @@
-#define CHRONO_UTILITIES_TIMESPAN_INTEGER_SCALE_OVERLOADS
-
 #include "./mp4track.h"
 #include "./mp4atom.h"
 #include "./mp4container.h"

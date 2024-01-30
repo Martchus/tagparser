@@ -122,7 +122,7 @@ std::string_view matroskaIdName(std::uint32_t matroskaId)
         return "track number";
     case TrackUID:
         return "unique track id";
-    case TrackType:
+    case TrackEntryIds::TrackType:
         return "track type";
     case TrackAudio:
         return "audio track";
@@ -192,7 +192,7 @@ std::string_view matroskaIdName(std::uint32_t matroskaId)
         return "video display width";
     case DisplayHeight:
         return "video display height";
-    case DisplayUnit:
+    case TrackVideoIds::DisplayUnit:
         return "video display unit";
     case PixelWidth:
         return "video pixel width";
@@ -208,9 +208,9 @@ std::string_view matroskaIdName(std::uint32_t matroskaId)
         return "video pixel crop right";
     case FlagInterlaced:
         return "video flag interlaced";
-    case StereoMode:
+    case TrackVideoIds::StereoMode:
         return "video stereo mode";
-    case AspectRatioType:
+    case TrackVideoIds::AspectRatioType:
         return "video aspect ratio type";
     case ColorSpace:
         return "video color space";
@@ -276,7 +276,7 @@ std::string_view matroskaIdName(std::uint32_t matroskaId)
         return "content encryption signature hash algorithmus";
 
         // IDs in the Tags master
-    case Tag:
+    case TagsIds::Tag:
         return "tag";
 
         // IDs in the Tag master
@@ -569,7 +569,7 @@ MatroskaElementLevel matroskaIdLevel(std::uint32_t matroskaId)
     case CuePoint:
     case AttachedFile:
     case EditionEntry:
-    case Tag:
+    case TagsIds::Tag:
         return MatroskaElementLevel::Level2;
     case SeekID:
     case SeekPosition:
@@ -588,7 +588,7 @@ MatroskaElementLevel matroskaIdLevel(std::uint32_t matroskaId)
     case Slices:
     case TrackNumber:
     case TrackUID:
-    case TrackType:
+    case TrackEntryIds::TrackType:
     case TrackFlagEnabled:
     case TrackFlagDefault:
     case TrackFlagForced:

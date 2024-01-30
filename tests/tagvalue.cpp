@@ -157,7 +157,7 @@ void TagValueTests::testPositionInSet()
 
 void TagValueTests::testTimeSpan()
 {
-    const TimeSpan fiveMinutes(TimeSpan::fromMinutes(5));
+    const TimeSpan fiveMinutes(TimeSpan::fromMinutes(5.0));
     TagValue timeSpan;
     timeSpan.assignTimeSpan(fiveMinutes);
     CPPUNIT_ASSERT_EQUAL(timeSpan, TagValue(timeSpan));
