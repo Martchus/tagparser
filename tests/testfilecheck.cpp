@@ -82,6 +82,7 @@ struct TestFile {
     { "ogg/example-cover.png", { "897e1a2d0cfb79c1fe5068108bb34610c3758bd0b9a7e90c1702c4e6972e0801" } },
 };
 
+/// \cond
 struct EvpMdCtx {
     EvpMdCtx()
         : handle(EVP_MD_CTX_new())
@@ -95,6 +96,7 @@ struct EvpMdCtx {
     }
     EVP_MD_CTX *handle;
 };
+/// \endcond
 
 /*!
  * \brief Computes the SHA-256 checksums for the file using OpenSSL.
