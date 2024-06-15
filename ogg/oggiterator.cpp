@@ -75,7 +75,7 @@ void OggIterator::nextPage()
 }
 
 /*!
- * \brief Increases the current position by one segment.
+ * \brief Increases the current position by one segment. Enters the next page if the current segment is the last one in the current page.
  * \remarks The iterator must be valid. The iterator might be invalidated.
  */
 void OggIterator::nextSegment()
