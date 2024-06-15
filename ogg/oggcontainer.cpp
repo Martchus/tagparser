@@ -10,6 +10,7 @@
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/io/copy.h>
 
+#include <limits>
 #include <memory>
 
 using namespace std;
@@ -288,6 +289,8 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
         m_iterator.setPageIndex(params.firstPageIndex);
         m_iterator.setSegmentIndex(params.firstSegmentIndex);
         m_iterator.setFilter(m_iterator.currentPage().streamSerialNumber());
+        const auto startOffset = m_iterator.startOffset();
+        const auto absGranPos = m_iterator.currentPage().absoluteGranulePosition();
         switch (params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
             comment->parse(m_iterator, flags, diag);
@@ -302,10 +305,23 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
             comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
             break;
         default:
-            diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", "parsing tags from OGG streams");
+            diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", argsToString("parsing tag in OGG file at ", startOffset));
         }
         params.lastPageIndex = m_iterator.currentPageIndex();
         params.lastSegmentIndex = m_iterator.currentSegmentIndex();
+        if (params.firstPageIndex != params.lastPageIndex) {
+            static constexpr auto noPacketsFinishOnPage = std::numeric_limits<std::uint64_t>::max();
+            if (const auto absGraPos2 = m_iterator.currentPage().absoluteGranulePosition();
+                absGranPos != noPacketsFinishOnPage || absGraPos2 == noPacketsFinishOnPage) {
+                const auto pos1 = absGranPos == noPacketsFinishOnPage ? "-1" : argsToString(absGranPos);
+                const auto pos2 = absGraPos2 == noPacketsFinishOnPage ? "-1" : argsToString(absGraPos2);
+                diag.emplace_back(DiagLevel::Warning,
+                    argsToString("Tag spans over ", (params.lastPageIndex - params.firstPageIndex),
+                        " pages but absolute granule position is not incremented as expected between those pages. The position the first page is ",
+                        pos1, " (expected -1) and the position of the last page is ", pos2, " (must not be -1)\n"),
+                    argsToString("parsing tag in OGG file at ", startOffset));
+            }
+        }
     }
 }
 
