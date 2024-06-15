@@ -576,7 +576,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         copyHelper.copy(backupStream, stream(), 27); // just copy header from original file
                         // set continue flag
                         stream().seekp(-22, ios_base::cur);
-                        stream().put(static_cast<char>(currentPage.headerTypeFlag() & (continuePreviousSegment ? 0xFF : 0xFE)));
+                        stream().put(static_cast<char>((currentPage.headerTypeFlag() & 0xFE) | (continuePreviousSegment ? 0x01 : 0x00)));
                         continuePreviousSegment = true;
                         // update absolute granule position later (8 byte) and keep stream serial number (4 byte)
                         stream().seekp(12, ios_base::cur);
