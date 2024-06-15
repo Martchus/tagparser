@@ -340,6 +340,22 @@ void VorbisComment::parse(istream &stream, std::uint64_t maxSize, VorbisCommentF
     internalParse(stream, maxSize, flags, diag);
 }
 
+/// \cond
+static std::uint32_t makeField(VorbisCommentField &field, BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag)
+{
+    if (field.value().isEmpty()) {
+        return 0;
+    }
+    try {
+        if (field.make(writer, flags, diag)) {
+            return 1;
+        }
+    } catch (const Failure &) {
+    }
+    return 0;
+}
+/// \endcond
+
 /*!
  * \brief Writes tag information to the specified \a stream.
  *
@@ -371,16 +387,14 @@ void VorbisComment::make(std::ostream &stream, VorbisCommentFlags flags, Diagnos
     writer.writeUInt32LE(0);
     // write fields
     std::uint32_t fieldsWritten = 0;
+    static const auto coverId = std::string(VorbisCommentIds::cover());
     for (auto &i : fields()) {
-        VorbisCommentField &field = i.second;
-        if (!field.value().isEmpty()) {
-            try {
-                if (field.make(writer, flags, diag)) {
-                    ++fieldsWritten;
-                }
-            } catch (const Failure &) {
-            }
+        if (i.first != coverId) { // write cover at the end
+            fieldsWritten += makeField(i.second, writer, flags, diag);
         }
+    }
+    if (const auto cover = fields().find(coverId); cover != fields().end()) {
+        fieldsWritten += makeField(cover->second, writer, flags, diag);
     }
     // write field count
     const auto framingByteOffset = stream.tellp();
