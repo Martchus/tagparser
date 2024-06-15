@@ -575,13 +575,15 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         stream().seekp(-22, ios_base::cur);
                         stream().put(static_cast<char>(currentPage.headerTypeFlag() & (continuePreviousSegment ? 0xFF : 0xFE)));
                         continuePreviousSegment = true;
-                        // adjust page sequence number
+                        // update absolute granule position later (8 byte) and keep stream serial number (4 byte)
                         stream().seekp(12, ios_base::cur);
+                        // adjust page sequence number
                         writer().writeUInt32LE(pageSequenceNumber);
+                        // skip checksum (4 bytes) and number of page segments (1 byte); those are update later
                         stream().seekp(5, ios_base::cur);
-                        std::int16_t segmentSizesWritten = 0; // in the current page header only
                         // write segment sizes as long as there are segment sizes to be written and
                         // the max number of segment sizes (255) is not exceeded
+                        std::int16_t segmentSizesWritten = 0; // in the current page header only
                         std::uint32_t currentSize = 0;
                         while ((bytesLeft || needsZeroLacingValue) && segmentSizesWritten < 0xFF) {
                             while (bytesLeft > 0xFF && segmentSizesWritten < 0xFF) {
@@ -608,15 +610,31 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                             }
                         }
 
-                        // there are no bytes left in the current segment; remove continue flag
+                        // remove continue flag if there are no bytes left in the current segment
                         if (!bytesLeft && !needsZeroLacingValue) {
                             continuePreviousSegment = false;
+                        }
+
+                        // set the absolute granule postion
+                        if (newSegmentSizesIterator != newSegmentSizesEnd) {
+                            // set absolute granule position to special value "-1" if there are still bytes to be written in the current packet
+                            stream().seekp(-21 - segmentSizesWritten, ios_base::cur);
+                            writer().writeInt64LE(-1);
+                            stream().seekp(12, ios_base::cur);
+                        } else if (currentParams->lastPageIndex != currentParams->firstPageIndex) {
+                            // ensure the written absolute granule position matches the one from the last page of the existing file
+                            backupStream.seekg(static_cast<streamoff>(m_iterator.pages()[currentParams->lastPageIndex].startOffset() + 6));
+                            stream().seekp(-21 - segmentSizesWritten, ios_base::cur);
+                            copyHelper.copy(backupStream, stream(), 8);
+                            stream().seekp(12, ios_base::cur);
+                        } else {
+                            // leave the absolute granule position unchanged
+                            stream().seekp(-1 - segmentSizesWritten, ios_base::cur);
                         }
 
                         // page is full or all segment data has been covered
                         // -> write segment table size (segmentSizesWritten) and segment data
                         // -> seek back and write updated page segment number
-                        stream().seekp(-1 - segmentSizesWritten, ios_base::cur);
                         stream().put(static_cast<char>(segmentSizesWritten));
                         stream().seekp(segmentSizesWritten, ios_base::cur);
                         // -> write actual page data
