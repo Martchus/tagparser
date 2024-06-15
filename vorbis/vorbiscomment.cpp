@@ -307,7 +307,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
             }
         }
         if (bytesRemaining) {
-            diag.emplace_back(DiagLevel::Warning, argsToString(bytesRemaining, " bytes left in last segment."), context);
+            diag.emplace_back(DiagLevel::Information, argsToString(bytesRemaining, " bytes left in last segment."), context);
         }
     }
 
