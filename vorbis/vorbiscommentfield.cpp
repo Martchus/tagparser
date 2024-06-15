@@ -205,7 +205,7 @@ bool VorbisCommentField::make(BinaryWriter &writer, VorbisCommentFlags flags, Di
                 bufferStream.rdbuf()->pubsetbuf(buffer.get(), requiredSize);
 #endif
                 pictureBlock.make(bufferStream);
-#if defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+#if !(defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION))
                 bufferStream.read(buffer.get(), static_cast<std::streamsize>(requiredSize));
 #endif
                 valueString = encodeBase64(reinterpret_cast<std::uint8_t *>(buffer.get()), requiredSize);
