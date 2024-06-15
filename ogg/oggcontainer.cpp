@@ -402,6 +402,9 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
     }
     default:;
     }
+    for (auto padding = fileInfo().preferredPadding(); padding; --padding) {
+        buffer.put(0);
+    }
     newSegmentSizes.push_back(static_cast<std::uint32_t>(buffer.tellp() - offset));
 }
 
