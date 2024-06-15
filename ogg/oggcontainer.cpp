@@ -211,8 +211,7 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
             } else {
                 // new stream serial number recognized -> add new stream
                 m_streamsBySerialNo[page.streamSerialNumber()] = m_tracks.size();
-                m_tracks.emplace_back(make_unique<OggStream>(*this, m_iterator.currentPageIndex()));
-                stream = m_tracks.back().get();
+                stream = m_tracks.emplace_back(make_unique<OggStream>(*this, m_iterator.currentPageIndex())).get();
                 lastNewStreamOffset = page.startOffset();
             }
             if (!pagesSkipped) {
