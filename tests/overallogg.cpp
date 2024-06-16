@@ -141,7 +141,10 @@ void OverallTests::checkOggTestfile3()
         return startsWith(msg.message(), "3 bytes left in last segment");
     }) != m_diag.end());
     CPPUNIT_ASSERT(std::find_if(m_diag.begin(), m_diag.end(), [](const auto &msg) {
-        return startsWith(msg.message(), "Tag spans over 6 pages but absolute granule position is");
+        return startsWith(msg.message(), "Tag spans over 6 pages but absolute granule position of unfinished page at");
+    }) != m_diag.end());
+    CPPUNIT_ASSERT(std::find_if(m_diag.begin(), m_diag.end(), [](const auto &msg) {
+        return startsWith(msg.message(), "The tag is continued in Ogg page at");
     }) != m_diag.end());
 }
 

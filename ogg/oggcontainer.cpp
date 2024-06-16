@@ -290,7 +290,7 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
         m_iterator.setSegmentIndex(params.firstSegmentIndex);
         m_iterator.setFilter(m_iterator.currentPage().streamSerialNumber());
         const auto startOffset = m_iterator.startOffset();
-        const auto absGranPos = m_iterator.currentPage().absoluteGranulePosition();
+        const auto context = argsToString("parsing tag in Ogg page at ", startOffset);
         switch (params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
             comment->parse(m_iterator, flags, diag);
@@ -305,22 +305,34 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
             comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
             break;
         default:
-            diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", argsToString("parsing tag in OGG file at ", startOffset));
+            diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", context);
         }
         params.lastPageIndex = m_iterator.currentPageIndex();
         params.lastSegmentIndex = m_iterator.currentSegmentIndex();
+
+        // do a few sanity checks on the continued-flag and absolute granule position as some Ogg demuxers are picky about them
+        static constexpr auto noPacketsFinishOnPage = std::numeric_limits<std::uint64_t>::max();
         if (params.firstPageIndex != params.lastPageIndex) {
-            static constexpr auto noPacketsFinishOnPage = std::numeric_limits<std::uint64_t>::max();
-            if (const auto absGraPos2 = m_iterator.currentPage().absoluteGranulePosition();
-                absGranPos != noPacketsFinishOnPage || absGraPos2 == noPacketsFinishOnPage) {
-                const auto pos1 = absGranPos == noPacketsFinishOnPage ? "-1" : argsToString(absGranPos);
-                const auto pos2 = absGraPos2 == noPacketsFinishOnPage ? "-1" : argsToString(absGraPos2);
-                diag.emplace_back(DiagLevel::Warning,
-                    argsToString("Tag spans over ", (params.lastPageIndex - params.firstPageIndex),
-                        " pages but absolute granule position is not incremented as expected between those pages. The position the first page is ",
-                        pos1, " (expected -1) and the position of the last page is ", pos2, " (must not be -1)\n"),
-                    argsToString("parsing tag in OGG file at ", startOffset));
+            const auto pageCount = params.lastPageIndex - params.firstPageIndex;
+            for (auto i = params.firstPageIndex; i < params.lastPageIndex; ++i) {
+                if (const auto &page = m_iterator.pages()[i]; page.absoluteGranulePosition() != noPacketsFinishOnPage) {
+                    diag.emplace_back(DiagLevel::Warning,
+                        argsToString("Tag spans over ", pageCount, " pages but absolute granule position of unfinished page at ", page.startOffset(),
+                            " is not set to \"-1\" (it is ", page.absoluteGranulePosition(), ")."),
+                        context);
+                }
             }
+            for (auto i = params.firstPageIndex + 1; i <= params.lastPageIndex; ++i) {
+                if (const auto &page = m_iterator.pages()[i]; !page.isContinued()) {
+                    diag.emplace_back(DiagLevel::Warning,
+                        argsToString("The tag is continued in Ogg page at ", page.startOffset(), " but this page is not marked as continued packet."),
+                        context);
+                }
+            }
+        }
+        if (const auto &page = m_iterator.pages()[params.lastPageIndex]; page.absoluteGranulePosition() == noPacketsFinishOnPage) {
+            diag.emplace_back(
+                DiagLevel::Warning, argsToString("Absolute granule position of final page at ", page.startOffset(), " is set to \"-1\"."), context);
         }
     }
 }
