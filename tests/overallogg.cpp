@@ -9,7 +9,7 @@
 
 #include <c++utilities/io/misc.h>
 
-#include <functional>
+#include <algorithm>
 
 using namespace CppUtilities;
 
@@ -137,13 +137,12 @@ void OverallTests::checkOggTestfile3()
         return;
     }
     CPPUNIT_ASSERT_EQUAL_MESSAGE("warning present", DiagLevel::Warning, m_diag.level());
-    for (const auto &msg : m_diag) {
-        if (msg.level() == DiagLevel::Warning) {
-            CPPUNIT_ASSERT_EQUAL_MESSAGE("warning due to broken segment termination", "3 bytes left in last segment."s, msg.message());
-            CPPUNIT_ASSERT_EQUAL_MESSAGE("warning relates to Vorbis comment", "parsing Vorbis comment"s, msg.context());
-            break;
-        }
-    }
+    CPPUNIT_ASSERT(std::find_if(m_diag.begin(), m_diag.end(), [](const auto &msg) {
+        return startsWith(msg.message(), "3 bytes left in last segment");
+    }) != m_diag.end());
+    CPPUNIT_ASSERT(std::find_if(m_diag.begin(), m_diag.end(), [](const auto &msg) {
+        return startsWith(msg.message(), "Tag spans over 6 pages but absolute granule position is");
+    }) != m_diag.end());
 }
 
 /*!
