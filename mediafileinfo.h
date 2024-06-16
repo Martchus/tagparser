@@ -162,6 +162,7 @@ public:
     VorbisComment *createVorbisComment();
     bool removeVorbisComment();
     void clearParsingResults();
+    void reportPaddingSizeChanged(std::uint64_t newPaddingSize);
 
     // methods to get, set object behaviour
     const std::string &backupDirectory() const;
@@ -398,6 +399,15 @@ inline Id3v1Tag *MediaFileInfo::id3v1Tag() const
 inline const std::vector<std::unique_ptr<Id3v2Tag>> &MediaFileInfo::id3v2Tags() const
 {
     return m_id3v2Tags;
+}
+
+/*!
+ * \brief Sets the padding size.
+ * \remarks This is meant to be called from container implementations.
+ */
+inline void MediaFileInfo::reportPaddingSizeChanged(uint64_t newPaddingSize)
+{
+    m_paddingSize = newPaddingSize;
 }
 
 /*!

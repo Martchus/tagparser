@@ -291,24 +291,26 @@ void OggContainer::internalParseTags(Diagnostics &diag, AbortableProgressFeedbac
         m_iterator.setFilter(m_iterator.currentPage().streamSerialNumber());
         const auto startOffset = m_iterator.startOffset();
         const auto context = argsToString("parsing tag in Ogg page at ", startOffset);
+        auto padding = std::uint64_t();
         switch (params.streamFormat) {
         case GeneralMediaFormat::Vorbis:
-            comment->parse(m_iterator, flags, diag);
+            comment->parse(m_iterator, flags, padding, diag);
             break;
         case GeneralMediaFormat::Opus:
             // skip header (has already been detected by OggStream)
             m_iterator.ignore(8);
-            comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
+            comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, padding, diag);
             break;
         case GeneralMediaFormat::Flac:
             m_iterator.ignore(4);
-            comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, diag);
+            comment->parse(m_iterator, flags | VorbisCommentFlags::NoSignature | VorbisCommentFlags::NoFramingByte, padding, diag);
             break;
         default:
             diag.emplace_back(DiagLevel::Critical, "Stream format not supported.", context);
         }
         params.lastPageIndex = m_iterator.currentPageIndex();
         params.lastSegmentIndex = m_iterator.currentSegmentIndex();
+        fileInfo().reportPaddingSizeChanged(fileInfo().paddingSize() + padding);
 
         // do a few sanity checks on the continued-flag and absolute granule position as some Ogg demuxers are picky about them
         static constexpr auto noPacketsFinishOnPage = std::numeric_limits<std::uint64_t>::max();

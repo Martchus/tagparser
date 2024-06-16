@@ -222,7 +222,8 @@ void VorbisComment::convertTotalFields(const std::string &diagContext, Diagnosti
 /*!
  * \brief Internal implementation for parsing.
  */
-template <class StreamType> void VorbisComment::internalParse(StreamType &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag)
+template <class StreamType>
+void VorbisComment::internalParse(StreamType &stream, std::uint64_t maxSize, VorbisCommentFlags flags, std::uint64_t &padding, Diagnostics &diag)
 {
     // prepare parsing
     static const string context("parsing Vorbis comment");
@@ -308,6 +309,7 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
         }
         if (bytesRemaining) {
             diag.emplace_back(DiagLevel::Information, argsToString(bytesRemaining, " bytes left in last segment."), context);
+            padding += bytesRemaining;
         }
     }
 
@@ -325,7 +327,20 @@ template <class StreamType> void VorbisComment::internalParse(StreamType &stream
  */
 void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagnostics &diag)
 {
-    internalParse(iterator, iterator.streamSize(), flags, diag);
+    auto padding = std::uint64_t();
+    internalParse(iterator, iterator.streamSize(), flags, padding, diag);
+}
+
+/*!
+ * \brief Parses tag information using the specified OGG \a iterator.
+ *
+ * \throws Throws std::ios_base::failure when an IO error occurs.
+ * \throws Throws TagParser::Failure or a derived exception when a parsing
+ *         error occurs.
+ */
+void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, std::uint64_t &padding, Diagnostics &diag)
+{
+    internalParse(iterator, iterator.streamSize(), flags, padding, diag);
 }
 
 /*!
@@ -337,7 +352,8 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagn
  */
 void VorbisComment::parse(istream &stream, std::uint64_t maxSize, VorbisCommentFlags flags, Diagnostics &diag)
 {
-    internalParse(stream, maxSize, flags, diag);
+    auto padding = std::uint64_t();
+    internalParse(stream, maxSize, flags, padding, diag);
 }
 
 /// \cond
