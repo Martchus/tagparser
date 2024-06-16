@@ -108,7 +108,7 @@ inline std::uint8_t OggPage::headerTypeFlag() const
 }
 
 /*!
- * \brief Returns whether this page is a continued packed (true) or a fresh packed (false).
+ * \brief Returns whether this page is a continued packet (true) or a fresh packet (false).
  */
 inline bool OggPage::isContinued() const
 {
