@@ -521,11 +521,11 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 && m_iterator.currentPageIndex() <= currentParams->lastPageIndex && !currentPage.segmentSizes().empty()) {
                 // page needs to be rewritten (not just copied)
                 // -> write segments to a buffer first
-                stringstream buffer(ios_base::in | ios_base::out | ios_base::binary);
-                vector<std::uint32_t> newSegmentSizes;
+                auto buffer = std::stringstream(std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+                auto newSegmentSizes = std::vector<std::uint32_t>();
                 newSegmentSizes.reserve(currentPage.segmentSizes().size());
-                std::uint64_t segmentOffset = m_iterator.currentSegmentOffset();
-                vector<std::uint32_t>::size_type segmentIndex = 0;
+                auto segmentOffset = m_iterator.currentSegmentOffset();
+                auto segmentIndex = std::vector<std::uint32_t>::size_type();
                 for (const auto segmentSize : currentPage.segmentSizes()) {
                     if (!segmentSize) {
                         ++segmentIndex;
@@ -554,7 +554,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         }
                     } else {
                         // copy other segments unchanged
-                        backupStream.seekg(static_cast<streamoff>(segmentOffset));
+                        backupStream.seekg(static_cast<std::streamoff>(segmentOffset));
                         copyHelper.copy(backupStream, buffer, segmentSize);
                         newSegmentSizes.push_back(segmentSize);
 
