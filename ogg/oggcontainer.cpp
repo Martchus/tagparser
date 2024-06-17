@@ -121,9 +121,9 @@ OggVorbisComment *OggContainer::createTag(const TagTarget &target)
     return nullptr;
 }
 
-OggVorbisComment *OggContainer::tag(size_t index)
+OggVorbisComment *OggContainer::tag(std::size_t index)
 {
-    size_t i = 0;
+    auto i = std::size_t();
     for (const auto &tag : m_tags) {
         if (!tag->oggParams().removed) {
             if (index == i) {
@@ -137,7 +137,7 @@ OggVorbisComment *OggContainer::tag(size_t index)
 
 size_t OggContainer::tagCount() const
 {
-    size_t count = 0;
+    auto count = std::size_t();
     for (const auto &tag : m_tags) {
         if (!tag->oggParams().removed) {
             ++count;
@@ -189,8 +189,8 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
 {
     CPP_UTILITIES_UNUSED(progress)
 
-    static const string context("parsing OGG bitstream header");
-    bool pagesSkipped = false, continueFromHere = false;
+    static const auto context = std::string("parsing OGG bitstream header");
+    auto pagesSkipped = false, continueFromHere = false;
 
     // iterate through pages using OggIterator helper class
     try {
@@ -206,7 +206,7 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
                     context);
             }
             OggStream *stream;
-            std::uint64_t lastNewStreamOffset = 0;
+            auto lastNewStreamOffset = std::uint64_t();
             if (const auto streamIndex = m_streamsBySerialNo.find(page.streamSerialNumber()); streamIndex != m_streamsBySerialNo.end()) {
                 stream = m_tracks[streamIndex->second].get();
             } else {
@@ -424,11 +424,11 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
 
 void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    const string context("making OGG file");
+    const auto context = std::string("making OGG file");
     progress.nextStepOrStop("Prepare for rewriting OGG file ...");
     parseTags(diag, progress); // tags need to be parsed before the file can be rewritten
-    string originalPath = fileInfo().path(), backupPath;
-    NativeFileStream backupStream;
+    auto originalPath = fileInfo().path(), backupPath = std::string();
+    auto backupStream = NativeFileStream();
 
     if (fileInfo().saveFilePath().empty()) {
         // move current file to temp dir and reopen it as backupStream, recreate original file
@@ -514,7 +514,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 }
             }
             const auto pageSize = currentPage.totalSize();
-            std::uint32_t &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
+            auto &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
             lastPage = &currentPage;
             lastPageNewOffset = static_cast<std::uint64_t>(stream().tellp());
             nextPageOffset = currentPage.startOffset() + pageSize;
@@ -609,8 +609,8 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         stream().seekp(5, ios_base::cur);
                         // write segment sizes as long as there are segment sizes to be written and
                         // the max number of segment sizes (255) is not exceeded
-                        std::int16_t segmentSizesWritten = 0; // in the current page header only
-                        std::uint32_t currentSize = 0;
+                        auto segmentSizesWritten = std::int16_t(); // in the current page header only
+                        auto currentSize = std::uint32_t();
                         while ((bytesLeft || needsZeroLacingValue) && segmentSizesWritten < 0xFF) {
                             while (bytesLeft > 0xFF && segmentSizesWritten < 0xFF) {
                                 stream().put(static_cast<char>(0xFF));
