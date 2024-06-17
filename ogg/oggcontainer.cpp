@@ -472,6 +472,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
         // define misc variables
         const OggPage *lastPage = nullptr;
+        static constexpr auto oggPageHeaderSize = 27u;
         auto lastPageNewOffset = std::uint64_t();
         auto copyHelper = CopyHelper<65307>();
         auto updatedPageOffsets = std::vector<std::uint64_t>();
@@ -590,7 +591,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                         updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp()));
                         // copy page header from original file (except for the segment table)
                         backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
-                        copyHelper.copy(backupStream, stream(), 27);
+                        copyHelper.copy(backupStream, stream(), oggPageHeaderSize);
                         // use flags of original page as base and adjust "continued packet"-flag as needed
                         auto flags = (currentPage.headerTypeFlag() & 0xFE) | (continuePreviousSegment ? 0x01 : 0x00);
                         continuePreviousSegment = true;
@@ -674,11 +675,11 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                     // just update page sequence number
                     backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
                     updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp())); // memorize offset to update checksum later
-                    copyHelper.copy(backupStream, stream(), 27);
+                    copyHelper.copy(backupStream, stream(), oggPageHeaderSize);
                     stream().seekp(-9, ios_base::cur);
                     writer().writeUInt32LE(pageSequenceNumber);
                     stream().seekp(5, ios_base::cur);
-                    copyHelper.copy(backupStream, stream(), pageSize - 27);
+                    copyHelper.copy(backupStream, stream(), pageSize - oggPageHeaderSize);
                 } else {
                     // copy page unchanged
                     backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
