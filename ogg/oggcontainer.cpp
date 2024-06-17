@@ -472,6 +472,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
         // define misc variables
         const OggPage *lastPage = nullptr;
+        auto lastPageNewOffset = std::uint64_t();
         auto copyHelper = CopyHelper<65307>();
         auto updatedPageOffsets = std::vector<std::uint64_t>();
         auto nextPageOffset = std::uint64_t();
@@ -514,6 +515,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             const auto pageSize = currentPage.totalSize();
             std::uint32_t &pageSequenceNumber = pageSequenceNumberBySerialNo[currentPage.streamSerialNumber()];
             lastPage = &currentPage;
+            lastPageNewOffset = static_cast<std::uint64_t>(stream().tellp());
             nextPageOffset = currentPage.startOffset() + pageSize;
 
             // check whether the Vorbis Comment is present in this Ogg page
@@ -584,14 +586,20 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                     auto continuePreviousSegment = false, needsZeroLacingValue = false;
                     // write pages until all data in the buffer is written
                     while (newSegmentSizesIterator != newSegmentSizesEnd) {
-                        // write page header
+                        // memorize offset to update checksum later
+                        updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp()));
+                        // copy page header from original file (except for the segment table)
                         backupStream.seekg(static_cast<streamoff>(currentPage.startOffset()));
-                        updatedPageOffsets.push_back(static_cast<std::uint64_t>(stream().tellp())); // memorize offset to update checksum later
-                        copyHelper.copy(backupStream, stream(), 27); // just copy header from original file
-                        // set continue flag
-                        stream().seekp(-22, ios_base::cur);
-                        stream().put(static_cast<char>((currentPage.headerTypeFlag() & 0xFE) | (continuePreviousSegment ? 0x01 : 0x00)));
+                        copyHelper.copy(backupStream, stream(), 27);
+                        // use flags of original page as base and adjust "continued packet"-flag as needed
+                        auto flags = (currentPage.headerTypeFlag() & 0xFE) | (continuePreviousSegment ? 0x01 : 0x00);
                         continuePreviousSegment = true;
+                        // ensure "first page of logical bitstream"-flag is cleared for additional pages we need to insert
+                        // ensure "last page of logical bitstream"-flag is cleared for the first page
+                        flags = flags & (newSegmentSizesIterator != newSegmentSizes.cbegin() ? 0xFD : 0xF);
+                        // override flags copied from original file
+                        stream().seekp(-22, ios_base::cur);
+                        stream().put(static_cast<char>(flags));
                         // update absolute granule position later (8 byte) and keep stream serial number (4 byte)
                         stream().seekp(12, ios_base::cur);
                         // adjust page sequence number
@@ -691,9 +699,21 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
 
         // close backups stream; reopen new file as readable stream
+        auto &stream = fileInfo().stream();
         backupStream.close();
         fileInfo().close();
-        fileInfo().stream().open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
+        stream.open(BasicFileInfo::pathForOpen(fileInfo().path()).data(), ios_base::in | ios_base::out | ios_base::binary);
+
+        // ensure the "last page of logical bitstream"-flag is set on the last Ogg page (in case the last page was written/modified by us)
+        if (lastPage && lastPageNewOffset) {
+            const auto offset = static_cast<std::streamoff>(lastPageNewOffset + 5ul);
+            stream.seekg(offset);
+            if (const auto flag = stream.get(); !(flag & 0x04)) {
+                updatedPageOffsets.emplace_back(lastPageNewOffset);
+                stream.seekp(offset);
+                stream.put(static_cast<char>(flag | 0x04));
+            }
+        }
 
         // update checksums of modified pages
         progress.nextStepOrStop("Updating checksums ...");
@@ -703,15 +723,15 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 progress.updateStepPercentage(static_cast<std::uint8_t>(offset * 100ul / fileInfo().size()));
                 progress.stopIfAborted();
             }
-            OggPage::updateChecksum(fileInfo().stream(), offset);
+            OggPage::updateChecksum(stream, offset);
         }
 
         // prevent deferring final write operations (to catch and handle possible errors here)
-        fileInfo().stream().flush();
+        stream.flush();
         progress.updateStepPercentage(100);
 
         // clear iterator
-        m_iterator.clear(fileInfo().stream(), startOffset(), fileInfo().size());
+        m_iterator.clear(stream, startOffset(), fileInfo().size());
 
     } catch (...) {
         m_iterator.setStream(fileInfo().stream());
