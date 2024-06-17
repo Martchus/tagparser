@@ -25,7 +25,7 @@ namespace TagParser {
 
 /*!
  * \class TagParser::OggStream
- * \brief Implementation of TagParser::AbstractTrack for OGG streams.
+ * \brief Implementation of TagParser::AbstractTrack for Ogg streams.
  */
 
 /*!
@@ -50,7 +50,7 @@ void OggStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback
 {
     CPP_UTILITIES_UNUSED(progress)
 
-    static const string context("parsing OGG page header");
+    static const string context("parsing Ogg page header");
 
     // read basic information from first page
     OggIterator &iterator = m_container.m_iterator;
@@ -218,11 +218,11 @@ void OggStream::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback
                             hasCommentHeader = true;
                         } else {
                             diag.emplace_back(
-                                DiagLevel::Critical, "OGG page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment.", context);
+                                DiagLevel::Critical, "Ogg page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment.", context);
                         }
                     } else {
                         diag.emplace_back(
-                            DiagLevel::Critical, "No more OGG pages after FLAC-to-Ogg mapping header (Vorbis comment expected).", context);
+                            DiagLevel::Critical, "No more Ogg pages after FLAC-to-Ogg mapping header (Vorbis comment expected).", context);
                     }
                 }
 

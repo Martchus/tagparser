@@ -83,7 +83,7 @@ void OverallTests::checkFlacTestfile2()
         bool gotMessageAboutMissingVorbisComment = false;
         for (const auto &msg : m_diag) {
             if (msg.level() == DiagLevel::Critical) {
-                CPPUNIT_ASSERT_EQUAL("OGG page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment."s, msg.message());
+                CPPUNIT_ASSERT_EQUAL("Ogg page after FLAC-to-Ogg mapping header doesn't contain Vorbis comment."s, msg.message());
                 gotMessageAboutMissingVorbisComment = true;
                 continue;
             }

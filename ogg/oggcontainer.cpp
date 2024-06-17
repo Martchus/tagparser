@@ -20,7 +20,7 @@ namespace TagParser {
 
 /*!
  * \class TagParser::OggVorbisComment
- * \brief Specialization of TagParser::VorbisComment for Vorbis comments inside an OGG stream.
+ * \brief Specialization of TagParser::VorbisComment for Vorbis comments inside an Ogg stream.
  */
 
 std::string_view OggVorbisComment::typeName() const
@@ -39,7 +39,7 @@ std::string_view OggVorbisComment::typeName() const
 
 /*!
  * \class TagParser::OggContainer
- * \brief Implementation of TagParser::AbstractContainer for OGG files.
+ * \brief Implementation of TagParser::AbstractContainer for Ogg files.
  */
 
 /*!
@@ -150,7 +150,7 @@ size_t OggContainer::tagCount() const
  * \brief Actually just flags the specified \a tag as removed and clears all assigned fields.
  *
  * This specialization is necessary because removing the tag completely would also
- * remove the OGG parameter which are needed when applying changes.
+ * remove the Ogg parameter which are needed when applying changes.
  *
  * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
  *          So do NOT use this method to remove tags from Vorbis, just call Tag::removeAllFields() on \a tag.
@@ -171,7 +171,7 @@ bool OggContainer::removeTag(Tag *tag)
  * \brief Actually just flags all tags as removed and clears all assigned fields.
  *
  * This specialization is necessary because completeley removing the tag would also
- * remove the OGG parameter which are needed when applying the changes.
+ * remove the Ogg parameter which are needed when applying the changes.
  *
  * \remarks Seems like common players aren't able to play Vorbis when no comment is present.
  *          So do NOT use this method to remove tags from Vorbis, just call removeAllFields() on all tags.
@@ -189,7 +189,7 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
 {
     CPP_UTILITIES_UNUSED(progress)
 
-    static const auto context = std::string("parsing OGG bitstream header");
+    static const auto context = std::string("parsing Ogg bitstream header");
     auto pagesSkipped = false, continueFromHere = false;
 
     // iterate through pages using OggIterator helper class
@@ -202,7 +202,7 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
             if (m_validateChecksums && page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {
                 diag.emplace_back(DiagLevel::Warning,
                     argsToString(
-                        "The denoted checksum of the OGG page at ", m_iterator.currentSegmentOffset(), " does not match the computed checksum."),
+                        "The denoted checksum of the Ogg page at ", m_iterator.currentSegmentOffset(), " does not match the computed checksum."),
                     context);
             }
             OggStream *stream;
@@ -249,14 +249,14 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
                 } else {
                     // abort if skipping pages didn't work
                     diag.emplace_back(DiagLevel::Critical,
-                        "Unable to re-sync after skipping OGG pages in the middle of the file. Try forcing a full parse.", context);
+                        "Unable to re-sync after skipping Ogg pages in the middle of the file. Try forcing a full parse.", context);
                     return;
                 }
             }
         }
     } catch (const TruncatedDataException &) {
         // thrown when page exceeds max size
-        diag.emplace_back(DiagLevel::Critical, "The OGG file is truncated.", context);
+        diag.emplace_back(DiagLevel::Critical, "The Ogg file is truncated.", context);
     } catch (const InvalidDataException &) {
         // thrown when first 4 byte do not match capture pattern
         const auto expectedOffset = m_iterator.currentSegmentOffset();
@@ -359,7 +359,7 @@ void OggContainer::announceComment(std::size_t pageIndex, std::size_t segmentInd
 
 void OggContainer::internalParseTracks(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    static const string context("parsing OGG stream");
+    static const string context("parsing Ogg stream");
     for (auto &stream : m_tracks) {
         if (progress.isAborted()) {
             throw OperationAbortedException();
@@ -424,8 +424,8 @@ void OggContainer::makeVorbisCommentSegment(stringstream &buffer, CopyHelper<653
 
 void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback &progress)
 {
-    const auto context = std::string("making OGG file");
-    progress.nextStepOrStop("Prepare for rewriting OGG file ...");
+    const auto context = std::string("making Ogg file");
+    progress.nextStepOrStop("Prepare for rewriting Ogg file ...");
     parseTags(diag, progress); // tags need to be parsed before the file can be rewritten
     auto originalPath = fileInfo().path(), backupPath = std::string();
     auto backupStream = NativeFileStream();
@@ -457,7 +457,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
 
     const auto totalFileSize = fileInfo().size();
     try {
-        progress.nextStepOrStop("Writing OGG pages ...");
+        progress.nextStepOrStop("Writing Ogg pages ...");
 
         // prepare iterating comments
         OggVorbisComment *currentComment;
@@ -498,7 +498,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                     const auto actuallyNextPageOffset = m_iterator.currentPageOffset();
                     if (actuallyNextPageOffset != nextPageOffset) {
                         diag.emplace_back(DiagLevel::Critical,
-                            argsToString("Expected OGG page at offset ", nextPageOffset, " but found the next OGG page only at offset ",
+                            argsToString("Expected Ogg page at offset ", nextPageOffset, " but found the next Ogg page only at offset ",
                                 actuallyNextPageOffset, ". Skipped ", (actuallyNextPageOffset - nextPageOffset), " invalid bytes."),
                             context);
                         nextPageOffset = actuallyNextPageOffset;
@@ -508,7 +508,7 @@ void OggContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
                 } else {
                     diag.emplace_back(DiagLevel::Critical,
                         argsToString(
-                            "Expected OGG page at offset ", nextPageOffset, " but could not find any further pages. Skipped the rest of the file."),
+                            "Expected Ogg page at offset ", nextPageOffset, " but could not find any further pages. Skipped the rest of the file."),
                         context);
                     break;
                 }

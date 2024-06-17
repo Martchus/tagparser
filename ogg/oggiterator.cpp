@@ -14,7 +14,7 @@ namespace TagParser {
 
 /*!
  * \class TagParser::OggIterator
- * \brief The OggIterator class helps iterating through all segments of an OGG bitstream.
+ * \brief The OggIterator class helps iterating through all segments of an Ogg bitstream.
  *
  * If an OggIterator has just been constructed it is invalid. To fetch the first page from
  * the stream call the reset() method. The iterator will now point to the first segment of the
@@ -22,7 +22,7 @@ namespace TagParser {
  *
  * To go on call the appropriate methods. Parsing exceptions and IO exceptions might occur during iteration.
  *
- * The internal buffer of OGG pages might be accessed using the pages() method.
+ * The internal buffer of Ogg pages might be accessed using the pages() method.
  */
 
 /*!
@@ -121,7 +121,7 @@ void OggIterator::previousSegment()
 }
 
 /*!
- * \brief Reads \a count bytes from the OGG stream and writes it to the specified \a buffer.
+ * \brief Reads \a count bytes from the Ogg stream and writes it to the specified \a buffer.
  * \remarks
  *          - Might increase the current page index and/or the current segment index.
  *          - Page headers are skipped (this is the whole purpose of this method).
@@ -154,12 +154,12 @@ void OggIterator::read(char *buffer, std::size_t count)
 }
 
 /*!
- * \brief Reads all bytes from the OGG stream and writes it to the specified \a buffer.
+ * \brief Reads all bytes from the Ogg stream and writes it to the specified \a buffer.
  * \remarks
  *          - Might increase the current page index and/or the current segment index.
  *          - Page headers are skipped (this is the whole purpose of this method).
  *          - Does not write more than \a max bytes to the buffer.
- * \returns Returns the number of bytes read from the OGG stream. This might be less than \a max in
+ * \returns Returns the number of bytes read from the Ogg stream. This might be less than \a max in
  *          case not that many bytes were available.
  * \sa read()
  * \sa currentCharacterOffset()
@@ -187,7 +187,7 @@ std::size_t OggIterator::readAll(char *buffer, std::size_t max)
 }
 
 /*!
- * \brief Advances the position of the next character to be read from the OGG stream by \a count bytes.
+ * \brief Advances the position of the next character to be read from the Ogg stream by \a count bytes.
  * \remarks
  *          - Might increase the current page index and/or the current segment index.
  *          - Page headers are skipped (this is the whole purpose of this method).
@@ -223,7 +223,7 @@ void OggIterator::ignore(std::size_t count)
  * the last known page. Hence \a offset must be greater than OggPage::startOffset() + OggPage::totalSize() of the
  * last known page. This is checked by the method.
  *
- * If the OGG capture pattern is not present at \a offset, up to 65307 bytes (max. size of an OGG page) are
+ * If the Ogg capture pattern is not present at \a offset, up to 65307 bytes (max. size of an Ogg page) are
  * skipped. So in a valid stream, this method will always succeed if \a offset is less than the stream size minus
  * 65307.
  *
@@ -256,7 +256,7 @@ bool OggIterator::resyncAt(std::uint64_t offset)
             if (lettersFound == 3) {
                 // capture pattern found
                 const auto currentOffset = stream().tellg();
-                // -> try to parse an OGG page at this position
+                // -> try to parse an Ogg page at this position
                 try {
                     m_pages.emplace_back(stream(), static_cast<std::uint64_t>(stream().tellg()) - 4,
                         bytesAvailable > numeric_limits<std::int32_t>::max() ? numeric_limits<std::int32_t>::max()

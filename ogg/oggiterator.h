@@ -120,7 +120,7 @@ inline std::uint64_t OggIterator::streamSize() const
 }
 
 /*!
- * \brief Returns a vector of containing the OGG pages that have been fetched yet.
+ * \brief Returns a vector of containing the Ogg pages that have been fetched yet.
  */
 inline const std::vector<OggPage> &OggIterator::pages() const
 {
@@ -128,7 +128,7 @@ inline const std::vector<OggPage> &OggIterator::pages() const
 }
 
 /*!
- * \brief Returns a vector of containing the OGG pages that have been fetched yet.
+ * \brief Returns a vector of containing the Ogg pages that have been fetched yet.
  */
 inline std::vector<OggPage> &OggIterator::pages()
 {
@@ -136,7 +136,7 @@ inline std::vector<OggPage> &OggIterator::pages()
 }
 
 /*!
- * \brief Returns the current OGG page.
+ * \brief Returns the current Ogg page.
  * \remarks Calling this method when the iterator is invalid causes undefined behaviour.
  */
 inline const OggPage &OggIterator::currentPage() const
@@ -145,7 +145,7 @@ inline const OggPage &OggIterator::currentPage() const
 }
 
 /*!
- * \brief Returns the start offset of the current OGG page.
+ * \brief Returns the start offset of the current Ogg page.
  * \remarks Calling this method when the iterator is invalid causes undefined behaviour.
  */
 inline std::uint64_t OggIterator::currentPageOffset() const

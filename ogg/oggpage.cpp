@@ -14,7 +14,7 @@ namespace TagParser {
 
 /*!
  * \class TagParser::OggPage
- * \brief The OggPage class is used to parse OGG pages.
+ * \brief The OggPage class is used to parse Ogg pages.
  * \sa http://www.xiph.org/ogg/doc/framing.html
  * \todo Add field for additional flags in v11.
  */

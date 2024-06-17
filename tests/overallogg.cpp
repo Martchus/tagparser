@@ -149,7 +149,7 @@ void OverallTests::checkOggTestfile3()
 }
 
 /*!
- * \brief Checks whether test meta data for OGG files has been applied correctly.
+ * \brief Checks whether test meta data for Ogg files has been applied correctly.
  */
 void OverallTests::checkOggTestMetaData()
 {
@@ -210,7 +210,7 @@ void OverallTests::setOggTestMetaDataCover()
  */
 void OverallTests::testOggParsing()
 {
-    cerr << endl << "OGG parser" << endl;
+    cerr << endl << "Ogg parser" << endl;
     m_fileInfo.setForceFullParse(false);
     m_tagStatus = TagStatus::Original;
     parseFile(testFilePath("mtx-test-data/ogg/qt4dance_medium.ogg"), &OverallTests::checkOggTestfile1);
@@ -243,7 +243,7 @@ void OverallTests::testOggMaking()
         } else {
             testConditions.emplace_back("modifying tag");
         }
-        cerr << endl << "OGG maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
+        cerr << endl << "Ogg maker - testmode " << m_mode << ": " << joinStrings(testConditions, ", ") << endl;
 
         // do actual tests
         m_tagStatus = (m_mode & RemoveTag) ? TagStatus::Removed : TagStatus::TestMetaDataPresent;

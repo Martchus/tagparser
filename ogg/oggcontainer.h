@@ -24,7 +24,7 @@ class MediaFileInfo;
 class OggContainer;
 
 /*!
- * \brief The OggParameter struct holds the OGG parameter for a VorbisComment.
+ * \brief The OggParameter struct holds the Ogg parameter for a VorbisComment.
  */
 struct TAG_PARSER_EXPORT OggParameter {
     constexpr OggParameter();
@@ -73,7 +73,7 @@ public:
     OggVorbisComment();
 
     static constexpr TagType tagType = TagType::OggVorbisComment;
-    static constexpr std::string_view tagName = "OGG Vorbis comment";
+    static constexpr std::string_view tagName = "Ogg Vorbis comment";
     TagType type() const override;
     std::string_view typeName() const override;
     bool supportsTarget() const override;
@@ -86,7 +86,7 @@ private:
 };
 
 /*!
- * \brief Constructs a new OGG Vorbis comment.
+ * \brief Constructs a new Ogg Vorbis comment.
  */
 inline OggVorbisComment::OggVorbisComment()
 {
@@ -110,7 +110,7 @@ inline bool OggVorbisComment::supportsTarget() const
 }
 
 /*!
- * \brief Returns the OGG parameter for the comment.
+ * \brief Returns the Ogg parameter for the comment.
  *
  * Consists of first page index, first segment index, last page index, last segment index and tag index (in this order).
  * These values are used and managed by the OggContainer class and do not affect the behavior of the VorbisComment instance.
@@ -121,7 +121,7 @@ inline OggParameter &OggVorbisComment::oggParams()
 }
 
 /*!
- * \brief Returns the OGG parameter for the comment.
+ * \brief Returns the Ogg parameter for the comment.
  *
  * Consists of first page index, first segment index, last page index, last segment index and tag index (in this order).
  * These values are used and managed by the OggContainer class and do not affect the behavior of the VorbisComment instance.
@@ -169,7 +169,7 @@ private:
 /*!
  * \brief Returns whether checksum validation is enabled.
  *
- * If checksum validation is enabled, the parser will validate the OGG pages by
+ * If checksum validation is enabled, the parser will validate the Ogg pages by
  * checking the CRC32 checksum.
  *
  * \sa setChecksumValidationEnabled()

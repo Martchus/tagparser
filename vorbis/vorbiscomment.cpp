@@ -319,7 +319,7 @@ void VorbisComment::internalParse(StreamType &stream, std::uint64_t maxSize, Vor
 }
 
 /*!
- * \brief Parses tag information using the specified OGG \a iterator.
+ * \brief Parses tag information using the specified Ogg \a iterator.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws TagParser::Failure or a derived exception when a parsing
@@ -332,7 +332,7 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, Diagn
 }
 
 /*!
- * \brief Parses tag information using the specified OGG \a iterator.
+ * \brief Parses tag information using the specified Ogg \a iterator.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws TagParser::Failure or a derived exception when a parsing
@@ -344,7 +344,7 @@ void VorbisComment::parse(OggIterator &iterator, VorbisCommentFlags flags, std::
 }
 
 /*!
- * \brief Parses tag information using the specified OGG \a iterator.
+ * \brief Parses tag information using the specified Ogg \a iterator.
  *
  * \throws Throws std::ios_base::failure when an IO error occurs.
  * \throws Throws TagParser::Failure or a derived exception when a parsing

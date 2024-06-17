@@ -53,7 +53,7 @@ private:
 };
 
 /*!
- * \brief Constructs a new OGG page.
+ * \brief Constructs a new Ogg page.
  */
 inline OggPage::OggPage()
     : m_startOffset(0)
