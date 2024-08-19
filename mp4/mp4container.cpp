@@ -264,8 +264,10 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     std::uint64_t movieAtomSize, userDataAtomSize;
     // -> track count of original file
     const auto trackCount = this->trackCount();
+    // -> media size of original file
+    auto mediaSize = std::uint64_t();
 
-    // find relevant atoms in original file
+    // find relevant atoms in original file and determine media size
     Mp4Atom *fileTypeAtom, *progressiveDownloadInfoAtom, *movieAtom, *firstMediaDataAtom, *firstMovieFragmentAtom /*, *userDataAtom*/;
     Mp4Atom *level0Atom, *level1Atom, *level2Atom, *lastAtomToBeWritten = nullptr;
     try {
@@ -316,9 +318,11 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
             case Mp4AtomIds::Skip:
                 continue;
             default:
-                firstMediaDataAtom = level0Atom;
+                if (!firstMediaDataAtom) {
+                    firstMediaDataAtom = level0Atom;
+                }
+                mediaSize += level0Atom->totalSize();
             }
-            break;
         }
 
         // determine current tag position
@@ -451,28 +455,27 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
         }
     }
 
+    // calculate offset of padding
+    // -> file type atom
+    currentOffset = fileTypeAtom->totalSize();
+    // -> progressive download information atom
+    if (progressiveDownloadInfoAtom) {
+        currentOffset += progressiveDownloadInfoAtom->totalSize();
+    }
+    // -> if writing tags before data: movie atom (contains tag)
+    switch (newTagPos) {
+    case ElementPosition::BeforeData:
+    case ElementPosition::Keep:
+        currentOffset += movieAtomSize;
+        break;
+    default:;
+    }
+
     // calculate padding if no rewrite is required; otherwise use the preferred padding
 calculatePadding:
     if (rewriteRequired) {
         newPadding = (fileInfo().preferredPadding() && fileInfo().preferredPadding() < 8 ? 8 : fileInfo().preferredPadding());
     } else {
-        // file type atom
-        currentOffset = fileTypeAtom->totalSize();
-
-        // progressive download information atom
-        if (progressiveDownloadInfoAtom) {
-            currentOffset += progressiveDownloadInfoAtom->totalSize();
-        }
-
-        // if writing tags before data: movie atom (contains tag)
-        switch (newTagPos) {
-        case ElementPosition::BeforeData:
-        case ElementPosition::Keep:
-            currentOffset += movieAtomSize;
-            break;
-        default:;
-        }
-
         // check whether there is sufficiant space before the next atom
         if (!(rewriteRequired = firstMediaDataAtom && currentOffset > firstMediaDataAtom->startOffset())) {
             // there is sufficiant space
@@ -506,6 +509,24 @@ calculatePadding:
             if (newTagPos == ElementPosition::Keep) {
                 newTagPos = ElementPosition::BeforeData;
             }
+        }
+    }
+
+    // calculate end offset of media data and check if any of the chunk offset tables need to be converted
+    currentOffset += newPadding + mediaSize;
+    if (currentOffset > std::numeric_limits<std::uint32_t>::max()) {
+        auto hasProblematicTracks = false;
+        for (auto &track : tracks()) {
+            if (track->chunkOffsetSize() < 8) {
+                diag.emplace_back(DiagLevel::Critical,
+                    argsToString(
+                        "Chunk offset table of track ", track->id(), " will not fit new offsets (up to ", currentOffset, "). Unable to proceed."),
+                    context);
+                hasProblematicTracks = true;
+            }
+        }
+        if (hasProblematicTracks) {
+            throw NotImplementedException();
         }
     }
 
