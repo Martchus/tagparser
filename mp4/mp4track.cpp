@@ -144,6 +144,11 @@ Mpeg4VideoSpecificConfig::Mpeg4VideoSpecificConfig()
  *
  * "trak"-atoms are stored in the top-level atom "move". Each "trak"-atom holds
  * header information for one track in the MP4 file.
+ *
+ * Note that the serializer functions of this class can only cope with "trak"-atoms
+ * that are within 32-bit limits. This should be ok because even for big files the
+ * header information should not grow that big. Even `movenc.c` from libavformat only
+ * implements 32-bit size fields when writing "trak"-atoms.
  */
 Mp4Track::Mp4Track(Mp4Atom &trakAtom)
     : AbstractTrack(trakAtom.stream(), trakAtom.startOffset())
