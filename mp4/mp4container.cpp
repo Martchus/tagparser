@@ -373,6 +373,7 @@ void Mp4Container::internalMakeFile(Diagnostics &diag, AbortableProgressFeedback
     }
 
     // -> size of movie atom (contains track and tag information)
+calculateMovieAtomSize:
     movieAtomSize = userDataAtomSize = 0;
     try {
         // add size of children
@@ -514,19 +515,19 @@ calculatePadding:
 
     // calculate end offset of media data and check if any of the chunk offset tables need to be converted
     currentOffset += newPadding + mediaSize;
-    if (currentOffset > std::numeric_limits<std::uint32_t>::max()) {
-        auto hasProblematicTracks = false;
+    if (auto changedChunkOffsetSize = false; currentOffset > std::numeric_limits<std::uint32_t>::max()) {
         for (auto &track : tracks()) {
             if (track->chunkOffsetSize() < 8) {
-                diag.emplace_back(DiagLevel::Critical,
-                    argsToString(
-                        "Chunk offset table of track ", track->id(), " will not fit new offsets (up to ", currentOffset, "). Unable to proceed."),
+                diag.emplace_back(DiagLevel::Information,
+                    argsToString("Chunk offset table of track ", track->id(), " will not fit new offsets (up to ", currentOffset,
+                        "). It will be converted to 64-bit."),
                     context);
-                hasProblematicTracks = true;
+                track->setChunkOffsetSize(8);
+                changedChunkOffsetSize = true;
             }
         }
-        if (hasProblematicTracks) {
-            throw NotImplementedException();
+        if (changedChunkOffsetSize) {
+            goto calculateMovieAtomSize;
         }
     }
 

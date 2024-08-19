@@ -196,34 +196,35 @@ TrackType Mp4Track::type() const
  */
 std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagnostics &diag)
 {
-    static const string context("reading chunk offset table of MP4 track");
+    static const auto context = std::string("reading chunk offset table of MP4 track");
     if (!isHeaderValid() || !m_istream) {
         diag.emplace_back(DiagLevel::Critical, "Track has not been parsed.", context);
         throw InvalidDataException();
     }
-    vector<std::uint64_t> offsets;
+    auto offsets = std::vector<std::uint64_t>();
     if (m_stcoAtom) {
         // verify integrity of the chunk offset table
-        std::uint64_t actualTableSize = m_stcoAtom->dataSize();
-        if (actualTableSize < (8 + chunkOffsetSize())) {
-            diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. There are no chunk offsets present.", context);
+        auto offsetSize = m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64 ? 8u : 4u;
+        auto actualTableSize = m_stcoAtom->dataSize();
+        if (actualTableSize < (8 + offsetSize)) {
+            diag.emplace_back(DiagLevel::Critical, "The stco/co64 atom is truncated. There are no chunk offsets present.", context);
             throw InvalidDataException();
         } else {
             actualTableSize -= 8;
         }
         std::uint32_t actualChunkCount = chunkCount();
-        std::uint64_t calculatedTableSize = chunkCount() * chunkOffsetSize();
+        std::uint64_t calculatedTableSize = chunkCount() * offsetSize;
         if (calculatedTableSize < actualTableSize) {
-            diag.emplace_back(
-                DiagLevel::Critical, "The stco atom stores more chunk offsets as denoted. The additional chunk offsets will be ignored.", context);
+            diag.emplace_back(DiagLevel::Critical,
+                "The stco/co64 atom stores more chunk offsets as denoted. The additional chunk offsets will be ignored.", context);
         } else if (calculatedTableSize > actualTableSize) {
-            diag.emplace_back(DiagLevel::Critical, "The stco atom is truncated. It stores less chunk offsets as denoted.", context);
-            actualChunkCount = static_cast<std::uint32_t>(floor(static_cast<double>(actualTableSize) / static_cast<double>(chunkOffsetSize())));
+            diag.emplace_back(DiagLevel::Critical, "The stco/co64 atom is truncated. It stores less chunk offsets as denoted.", context);
+            actualChunkCount = static_cast<std::uint32_t>(std::floor(static_cast<double>(actualTableSize) / static_cast<double>(offsetSize)));
         }
         // read the table
         offsets.reserve(actualChunkCount);
         m_istream->seekg(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8));
-        switch (chunkOffsetSize()) {
+        switch (offsetSize) {
         case 4:
             for (std::uint32_t i = 0; i < actualChunkCount; ++i) {
                 offsets.push_back(reader().readUInt32BE());
@@ -1051,12 +1052,13 @@ void Mp4Track::updateChunkOffset(std::uint32_t chunkIndex, std::uint64_t offset)
     if (!isHeaderValid() || !m_istream || !m_stcoAtom || chunkIndex >= m_chunkCount) {
         throw InvalidDataException();
     }
-    m_ostream->seekp(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8 + chunkOffsetSize() * chunkIndex));
-    switch (chunkOffsetSize()) {
-    case 4:
+    const auto offsetSize = m_stcoAtom->id() == Mp4AtomIds::ChunkOffset64 ? 8u : 4u;
+    m_ostream->seekp(static_cast<streamoff>(m_stcoAtom->dataOffset() + 8 + offsetSize * chunkIndex));
+    switch (m_stcoAtom->id()) {
+    case Mp4AtomIds::ChunkOffset:
         writer().writeUInt32BE(static_cast<std::uint32_t>(offset));
         break;
-    case 8:
+    case Mp4AtomIds::ChunkOffset64:
         writer().writeUInt64BE(offset);
         break;
     default:
@@ -1129,9 +1131,64 @@ void Mp4Track::bufferTrackAtoms(Diagnostics &diag)
     }
     if (m_minfAtom) {
         for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
+            if (childAtom->id() == Mp4AtomIds::SampleTable) {
+                continue;
+            }
             childAtom->makeBuffer();
         }
     }
+    if (m_stblAtom) {
+        for (Mp4Atom *childAtom = m_stblAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
+            childAtom->makeBuffer();
+        }
+    }
+}
+
+/*!
+ * \brief Returns the size of the stco/co64 atom for this track based on the parsed/assigned chunkOffsetSize() and chunkCount().
+ */
+std::uint64_t Mp4Track::chunkOffsetAtomSize(Diagnostics &diag) const
+{
+    CPP_UTILITIES_UNUSED(diag)
+    // version + flags + entry count (also 32-bit in case of co64) + entry size
+    auto size = 1u + 3u + 4ul + static_cast<std::uint64_t>(chunkOffsetSize()) * static_cast<std::uint64_t>(chunkCount());
+    Mp4Atom::addHeaderSize(size);
+    return size;
+}
+
+/*!
+ * \brief Returns the size of the stbl and the stco/co64 atom.
+ * \remarks The stco/co64 size is only returned if that atom needs to be written manually. Otherwise it is zero.
+ */
+std::tuple<std::uint64_t, std::uint64_t> Mp4Track::calculateSampleTableSize(Diagnostics &diag) const
+{
+    auto stblSize = std::uint64_t();
+    auto stcoSize = std::uint64_t();
+    auto writeChunkOffsetTableManually = false;
+    if (m_stblAtom) {
+        for (Mp4Atom *stblChildAtom = m_stblAtom->firstChild(); stblChildAtom; stblChildAtom = stblChildAtom->nextSibling()) {
+            switch (stblChildAtom->id()) {
+            case Mp4AtomIds::ChunkOffset:
+                if (m_chunkOffsetSize != 4) {
+                    writeChunkOffsetTableManually = true;
+                    continue;
+                }
+                break;
+            case Mp4AtomIds::ChunkOffset64:
+                if (m_chunkOffsetSize != 8) {
+                    writeChunkOffsetTableManually = true;
+                    continue;
+                }
+                break;
+            }
+            stblSize += stblChildAtom->totalSize();
+        }
+    }
+    if (writeChunkOffsetTableManually) {
+        stblSize += (stcoSize = chunkOffsetAtomSize(diag));
+    }
+    Mp4Atom::addHeaderSize(stblSize);
+    return std::make_tuple(stblSize, stcoSize);
 }
 
 /*!
@@ -1165,11 +1222,17 @@ std::uint64_t Mp4Track::requiredSize(Diagnostics &diag) const
     // ... mdia header + hdlr total size + minf header
     size += 8 + (33 + m_name.size()) + 8;
     // ... minf children
-    bool dinfAtomWritten = false;
+    auto dinfAtomWritten = false;
     if (m_minfAtom) {
         for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
-            if (childAtom->id() == Mp4AtomIds::DataInformation) {
+            switch (childAtom->id()) {
+            case Mp4AtomIds::SampleTable: {
+                size += std::get<0>(calculateSampleTableSize(diag));
+                continue;
+            }
+            case Mp4AtomIds::DataInformation:
                 dinfAtomWritten = true;
+                break;
             }
             size += childAtom->totalSize();
         }
@@ -1411,15 +1474,17 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
     ostream::pos_type minfStartOffset = outputStream().tellp();
     writer().writeUInt32BE(0); // write size later
     writer().writeUInt32BE(Mp4AtomIds::MediaInformation);
-    bool dinfAtomWritten = false;
+    auto dinfAtomWritten = false;
     if (m_minfAtom) {
-        // copy existing atoms except sample table which is handled separately
+        // copy existing atoms as-is except sample table which is handled by makeSampleTable()
         for (Mp4Atom *childAtom = m_minfAtom->firstChild(); childAtom; childAtom = childAtom->nextSibling()) {
-            if (childAtom->id() == Mp4AtomIds::SampleTable) {
+            switch (childAtom->id()) {
+            case Mp4AtomIds::SampleTable:
+                makeSampleTable(diag);
                 continue;
-            }
-            if (childAtom->id() == Mp4AtomIds::DataInformation) {
+            case Mp4AtomIds::DataInformation:
                 dinfAtomWritten = true;
+                break;
             }
             childAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
         }
@@ -1439,19 +1504,6 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
         writer().writeByte(0); // version
         writer().writeUInt24BE(0x000001); // flags (media data is in the same file as the movie box)
     }
-    // write stbl atom
-    // -> just copy existing stbl atom because makeSampleTable() is not fully implemented (yet)
-    bool stblAtomWritten = false;
-    if (m_minfAtom) {
-        if (Mp4Atom *const stblAtom = m_minfAtom->childById(Mp4AtomIds::SampleTable, diag)) {
-            stblAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
-            stblAtomWritten = true;
-        }
-    }
-    if (!stblAtomWritten) {
-        diag.emplace_back(DiagLevel::Critical,
-            "Source track does not contain mandatory stbl atom and the tagparser lib is unable to make one from scratch.", "making stbl atom");
-    }
     // write size (of minf atom)
     Mp4Atom::seekBackAndWriteAtomSize(outputStream(), minfStartOffset, diag);
 }
@@ -1459,66 +1511,53 @@ void Mp4Track::makeMediaInfo(Diagnostics &diag)
 /*!
  * \brief Makes the sample table (stbl atom) for the track. The data is written to the assigned output stream
  *        at the current position.
- * \remarks Not fully implemented yet.
  */
 void Mp4Track::makeSampleTable(Diagnostics &diag)
 {
-    // ostream::pos_type stblStartOffset = outputStream().tellp(); (enable when function is fully implemented)
-
-    writer().writeUInt32BE(0); // write size later
-    writer().writeUInt32BE(Mp4AtomIds::SampleTable);
-    Mp4Atom *const stblAtom = m_minfAtom ? m_minfAtom->childById(Mp4AtomIds::SampleTable, diag) : nullptr;
-    // write stsd atom
-    if (m_stsdAtom) {
-        // copy existing stsd atom
-        m_stsdAtom->copyEntirely(outputStream(), diag, nullptr);
-    } else {
-        diag.emplace_back(DiagLevel::Critical, "Unable to make stsd atom from scratch.", "making stsd atom");
-        throw NotImplementedException();
+    // find existing stbl atom
+    if (!m_stblAtom) {
+        diag.emplace_back(DiagLevel::Critical,
+            "Source track does not contain mandatory stbl atom and the tagparser lib is unable to make one from scratch.", "making stbl atom");
+        return;
     }
-    // write stts and ctts atoms
-    Mp4Atom *const sttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::DecodingTimeToSample, diag) : nullptr;
-    if (sttsAtom) {
-        // copy existing stts atom
-        sttsAtom->copyEntirely(outputStream(), diag, nullptr);
-    } else {
-        diag.emplace_back(DiagLevel::Critical, "Unable to make stts atom from scratch.", "making stts atom");
-        throw NotImplementedException();
+
+    // compute size and write header
+    auto [stblSize, stcoSize] = calculateSampleTableSize(diag);
+    Mp4Atom::makeHeader(stblSize, Mp4AtomIds::SampleTable, writer());
+
+    // write children
+    for (auto *stblChildAtom = m_stblAtom->firstChild(); stblChildAtom; stblChildAtom = stblChildAtom->nextSibling()) {
+        switch (stblChildAtom->id()) {
+        case Mp4AtomIds::ChunkOffset:
+        case Mp4AtomIds::ChunkOffset64:
+            if (stcoSize) {
+                continue;
+            }
+        }
+        stblChildAtom->copyPreferablyFromBuffer(outputStream(), diag, nullptr);
     }
-    Mp4Atom *const cttsAtom = stblAtom ? stblAtom->childById(Mp4AtomIds::CompositionTimeToSample, diag) : nullptr;
-    if (cttsAtom) {
-        // copy existing ctts atom
-        cttsAtom->copyEntirely(outputStream(), diag, nullptr);
+
+    // write chunk offset table
+    if (!stcoSize) {
+        return;
     }
-    // write stsc atom (sample-to-chunk table)
-    throw NotImplementedException();
-
-    // write stsz atom (sample sizes)
-
-    // write stz2 atom (compact sample sizes)
-
-    // write stco/co64 atom (chunk offset table)
-
-    // write stss atom (sync sample table)
-
-    // write stsh atom (shadow sync sample table)
-
-    // write padb atom (sample padding bits)
-
-    // write stdp atom (sample degradation priority)
-
-    // write sdtp atom (independent and disposable samples)
-
-    // write sbgp atom (sample group description)
-
-    // write sbgp atom (sample-to-group)
-
-    // write sgpd atom (sample group description)
-
-    // write subs atom (sub-sample information)
-
-    // write size of stbl atom (enable when function is fully implemented)
-    // Mp4Atom::seekBackAndWriteAtomSize(outputStream(), stblStartOffset, diag);
+    const auto chunkOffsets = readChunkOffsets(false, diag);
+    const auto atomId = chunkOffsetSize() == 8 ? Mp4AtomIds::ChunkOffset64 : Mp4AtomIds::ChunkOffset;
+    Mp4Atom::makeHeader(stcoSize, atomId, writer());
+    writer().writeUInt32BE(0); // version + flags
+    writer().writeUInt32BE(static_cast<std::uint32_t>(chunkOffsets.size()));
+    switch (chunkOffsetSize()) {
+    case 4:
+        for (const auto chunk : chunkOffsets) {
+            writer().writeUInt32BE(static_cast<std::uint32_t>(chunk));
+        }
+        break;
+    case 8:
+        for (const auto chunk : chunkOffsets) {
+            writer().writeUInt64BE(chunk);
+        }
+        break;
+    }
 }
 
 void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress)

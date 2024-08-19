@@ -4,6 +4,7 @@
 #include "../abstracttrack.h"
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 namespace TagParser {
@@ -126,6 +127,7 @@ public:
     Mp4Atom &trakAtom();
     const std::vector<std::uint32_t> &sampleSizes() const;
     unsigned int chunkOffsetSize() const;
+    void setChunkOffsetSize(unsigned int chunkOffsetSize);
     std::uint32_t chunkCount() const;
     std::uint32_t sampleToChunkEntryCount() const;
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
@@ -147,6 +149,7 @@ public:
 
     // methods to make the track header
     void bufferTrackAtoms(Diagnostics &diag);
+    std::uint64_t chunkOffsetAtomSize(Diagnostics &diag) const;
     std::uint64_t requiredSize(Diagnostics &diag) const;
     void makeTrack(Diagnostics &diag);
     void makeTrackHeader(Diagnostics &diag);
@@ -172,6 +175,7 @@ private:
         std::vector<std::uint64_t> &chunkSizeTable, std::size_t count, std::size_t &sampleIndex, std::uint32_t sampleCount, Diagnostics &diag);
     const TrackHeaderInfo &verifyPresentTrackHeader() const;
     Mp4Timings computeTimings() const;
+    std::tuple<std::uint64_t, std::uint64_t> calculateSampleTableSize(Diagnostics &diag) const;
 
     Mp4Atom *m_trakAtom;
     Mp4Atom *m_tkhdAtom;
@@ -223,9 +227,12 @@ inline const std::vector<std::uint32_t> &Mp4Track::sampleSizes() const
 }
 
 /*!
- * \brief Returns the size of a single chunk offset denotation within the stco atom.
- *
- * Valid values are 4 and 8 bytes.
+ * \brief Returns the size of a single chunk offset denotation within the stco/co64 atom.
+ * \remarks
+ * - Valid values are 4 and 8 bytes.
+ * - This value is set when parsing the track header depending on whether an stco or a co64 atom is present.
+ * - When changing the value via setChunkOffsetSize(), the function Mp4Track::makeMediaInfo() will write an
+ *   stco or co64 atom depending on the specified size.
  */
 inline unsigned int Mp4Track::chunkOffsetSize() const
 {
@@ -233,7 +240,16 @@ inline unsigned int Mp4Track::chunkOffsetSize() const
 }
 
 /*!
- * \brief Returns the number of chunks denoted by the stco atom.
+ * \brief Sets the size of a single chunk offset denotation within the stco/co64 atom.
+ * \sa Checkout chunkOffsetSize() for details.
+ */
+inline void Mp4Track::setChunkOffsetSize(unsigned int chunkOffsetSize)
+{
+    m_chunkOffsetSize = chunkOffsetSize;
+}
+
+/*!
+ * \brief Returns the number of chunks denoted by the stco/co64 atom.
  */
 inline std::uint32_t Mp4Track::chunkCount() const
 {
