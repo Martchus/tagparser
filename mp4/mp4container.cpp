@@ -476,6 +476,7 @@ calculatePadding:
         // check whether there is sufficiant space before the next atom
         if (!(rewriteRequired = firstMediaDataAtom && currentOffset > firstMediaDataAtom->startOffset())) {
             // there is sufficiant space
+            // -> check whether the padding is not between 1 and 7 bytes because that size range cannot be padded
             // -> check whether the padding matches specifications
             //    min padding: says "at least ... byte should be reserved to prepend further tag info", so the padding at the end
             //                 shouldn't be tanken into account (it can't be used to prepend further tag info)
