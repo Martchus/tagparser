@@ -240,9 +240,6 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
                 offsets.push_back(reader().readUInt64BE());
             }
             break;
-        default:
-            diag.emplace_back(DiagLevel::Critical, "The determined chunk offset size is invalid.", context);
-            throw InvalidDataException();
         }
     }
     // read sample offsets of fragments
