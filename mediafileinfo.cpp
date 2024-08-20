@@ -1394,6 +1394,19 @@ void MediaFileInfo::clearParsingResults()
 }
 
 /*!
+ * \brief Writes the specified number of zeroes to \a outputStream.
+ */
+void MediaFileInfo::writePadding(std::ostream &outputStream, std::uint64_t size)
+{
+    static constexpr auto bufferSize = static_cast<std::uint64_t>(1024 * 8);
+    for (constexpr char buffer[bufferSize] = {}; size;) {
+        const auto count = std::min(bufferSize, size);
+        outputStream.write(buffer, static_cast<std::streamsize>(count));
+        size -= count;
+    }
+}
+
+/*!
  * \brief Merges the assigned ID3v2 tags into a single ID3v2 tag.
  *
  * Some files I've got contain multiple successive ID3v2 tags. If the tags of
@@ -1846,10 +1859,7 @@ void MediaFileInfo::makeMp3File(Diagnostics &diag, AbortableProgressFeedback &pr
         }
 
         if (makers.empty() && !flacStream) {
-            // just write padding (however, padding should be set to 0 in this case?)
-            for (; padding; --padding) {
-                outputStream.put(0);
-            }
+            writePadding(outputStream, padding);
         }
 
         // copy / skip actual stream data

@@ -3,6 +3,7 @@
 
 #include "../diagnostics.h"
 #include "../exceptions.h"
+#include "../mediafileinfo.h"
 
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/conversion/stringconversion.h>
@@ -846,10 +847,7 @@ void Id3v2TagMaker::make(std::ostream &stream, std::uint32_t padding, Diagnostic
         maker.make(writer);
     }
 
-    // write padding
-    for (; padding; --padding) {
-        stream.put(0);
-    }
+    MediaFileInfo::writePadding(stream, padding);
 }
 
 } // namespace TagParser

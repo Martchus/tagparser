@@ -709,11 +709,7 @@ calculatePadding:
                         outputWriter.writeUInt64BE(newPadding);
                         newPadding -= 16;
                     }
-
-                    // write zeroes
-                    for (; newPadding; --newPadding) {
-                        outputStream.put(0);
-                    }
+                    MediaFileInfo::writePadding(outputStream, newPadding);
                 }
 
                 // write media data

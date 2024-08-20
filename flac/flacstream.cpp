@@ -312,9 +312,7 @@ void FlacStream::makePadding(ostream &stream, std::uint32_t size, bool isLast, D
     header.makeHeader(stream);
 
     // write zeroes
-    for (; size; --size) {
-        stream.put(0);
-    }
+    MediaFileInfo::writePadding(stream, size);
 }
 
 } // namespace TagParser

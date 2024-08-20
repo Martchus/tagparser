@@ -1709,9 +1709,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                     outputWriter.writeByte(EbmlIds::Void);
                     outputStream.write(buff, sizeLength);
                     // write zeroes
-                    for (; voidLength; --voidLength) {
-                        outputStream.put(0);
-                    }
+                    MediaFileInfo::writePadding(outputStream, voidLength);
                 }
 
                 // write media data / "Cluster"-elements

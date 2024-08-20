@@ -196,6 +196,9 @@ public:
     std::uint64_t maxFullParseSize() const;
     void setMaxFullParseSize(std::uint64_t maxFullParseSize);
 
+    // helper functions
+    static void writePadding(std::ostream &outputStream, uint64_t size);
+
 protected:
     void invalidated() override;
 
