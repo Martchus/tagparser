@@ -127,6 +127,7 @@ enum class KnownField : unsigned int {
     License, /** license */
     TermsOfUse, /** terms of use */
     PublisherWebpage, /** the publisher's official webpage */
+    StoreDescription, /** store description */
 };
 
 /*!
@@ -137,7 +138,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the TagParser::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::PublisherWebpage;
+constexpr KnownField lastKnownField = KnownField::StoreDescription;
 
 /*!
  * \brief The number of valid entries in the TagParser::KnownField enum.

@@ -95,6 +95,7 @@ enum KnownValue : std::uint32_t {
     Description = 0x64657363, /**< desc */
     DiskPosition = 0x6469736b, /**< disk */
     Encoder = 0xA9746f6f, /**< ©too */
+    EncodedBy = 0xA9656E63, /**< ©enc */
     EpisodeGlobalUniqueId = 0x65676964, /**< egid */
     Extended = 0x2d2d2d2d, /**< ---- */
     GaplessPlayback = 0x70676170, /**< pgap */
@@ -133,6 +134,7 @@ enum KnownValue : std::uint32_t {
     Author = 0xA9617574, /** ©aut */
     OriginalArtist = 0xA96F7065, /** ©ope */
     Year2 = 0x79727263, /** yrrc (could be mapped to release date but likely not well supported elsewhere (e.g. Kodi uses ©day) */
+    StoreDescription = 0x73646573, /** sdes */
 };
 }
 

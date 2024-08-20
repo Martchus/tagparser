@@ -140,6 +140,8 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return Composer;
     case KnownField::Encoder:
         return Encoder;
+    case KnownField::EncodedBy:
+        return EncodedBy;
     case KnownField::Bpm:
         return Bpm;
     case KnownField::Cover:
@@ -178,6 +180,8 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return ArtDirector;
     case KnownField::Arranger:
         return Arranger;
+    case KnownField::StoreDescription:
+        return StoreDescription;
     default:
         return 0;
     }
@@ -209,6 +213,8 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Composer;
     case Encoder:
         return KnownField::Encoder;
+    case EncodedBy:
+        return KnownField::EncodedBy;
     case Bpm:
         return KnownField::Bpm;
     case Cover:
@@ -247,6 +253,8 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::ArtDirector;
     case Arranger:
         return KnownField::Arranger;
+    case StoreDescription:
+        return KnownField::StoreDescription;
     default:
         return KnownField::Invalid;
     }
