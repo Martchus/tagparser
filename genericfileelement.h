@@ -95,10 +95,11 @@ public:
     const ImplementationType *firstChild() const;
     ImplementationType *lastChild();
     const ImplementationType *lastChild() const;
-    ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item);
-    ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...);
-    const ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item) const;
-    const ImplementationType *subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const;
+    template <class IdType> ImplementationType *subelementByPath(Diagnostics &diag, IdType item);
+    template <class IdType, class... IdTypes> ImplementationType *subelementByPath(Diagnostics &diag, IdType item, IdTypes... remainingPath);
+    template <class IdType> const ImplementationType *subelementByPath(Diagnostics &diag, IdType item) const;
+    template <class IdType, class... IdTypes>
+    const ImplementationType *subelementByPath(Diagnostics &diag, IdType item, IdTypes... remainingPath) const;
     ImplementationType *childById(const IdentifierType &id, Diagnostics &diag);
     const ImplementationType *childById(const IdentifierType &id, Diagnostics &diag) const;
     ImplementationType *siblingById(const IdentifierType &id, Diagnostics &diag);
@@ -520,7 +521,8 @@ template <class ImplementationType> inline const ImplementationType *GenericFile
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item)
+template <class IdType>
+ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdType item)
 {
     // ensure element is parsed
     parse(diag);
@@ -545,7 +547,8 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Dia
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...)
+template <class IdType, class... IdTypes>
+ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdType item, IdTypes... remainingPath)
 {
     // ensure element is parsed
     parse(diag);
@@ -554,11 +557,11 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Dia
         if (!firstChild()) {
             return nullptr;
         }
-        return firstChild()->subelementByPath(diag, remainingPath);
+        return firstChild()->subelementByPath(diag, remainingPath...);
     }
     // check whether a sibling matches the current item
     if (nextSibling()) {
-        return nextSibling()->subelementByPath(diag, item, remainingPath);
+        return nextSibling()->subelementByPath(diag, item, remainingPath...);
     }
     return nullptr;
 }
@@ -573,7 +576,8 @@ ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Dia
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdentifierType item) const
+template <class IdType>
+const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdType item) const
 {
     return const_cast<GenericFileElement<ImplementationType> *>(this)->subelementByPath(diag, item);
 }
@@ -588,10 +592,10 @@ const ImplementationType *GenericFileElement<ImplementationType>::subelementByPa
  * \throws Throws std::ios_base::failure when an IO error occurs.
  */
 template <class ImplementationType>
-const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(
-    Diagnostics &diag, IdentifierType item, IdentifierType remainingPath...) const
+template <class IdType, class... IdTypes>
+const ImplementationType *GenericFileElement<ImplementationType>::subelementByPath(Diagnostics &diag, IdType item, IdTypes... remainingPath) const
 {
-    return const_cast<GenericFileElement<ImplementationType> *>(this)->subelementByPath(diag, item, remainingPath);
+    return const_cast<GenericFileElement<ImplementationType> *>(this)->subelementByPath(diag, item, remainingPath...);
 }
 
 /*!
