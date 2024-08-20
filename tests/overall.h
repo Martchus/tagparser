@@ -45,6 +45,7 @@ class OverallTests : public TestFixture {
     CPPUNIT_TEST(testFlacParsing);
     CPPUNIT_TEST(testMkvParsing);
     CPPUNIT_TEST(testMp4Making);
+    CPPUNIT_TEST(testMp4MakingWith64BitOffsets);
     CPPUNIT_TEST(testMp3Making);
     CPPUNIT_TEST(testOggMaking);
     CPPUNIT_TEST(testFlacMaking);
@@ -120,6 +121,7 @@ public:
     void testMkvMakingWithDifferentSettings();
     void testMkvMakingNestedTags();
     void testMp4Making();
+    void testMp4MakingWith64BitOffsets();
     void testMp3Making();
     void testOggMaking();
     void testFlacMaking();

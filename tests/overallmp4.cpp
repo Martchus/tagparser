@@ -2,9 +2,16 @@
 #include "./overall.h"
 
 #include "../abstracttrack.h"
+#include "../mp4/mp4atom.h"
 #include "../mp4/mp4container.h"
 #include "../mp4/mp4ids.h"
 #include "../mp4/mp4tag.h"
+
+#include <c++utilities/application/commandlineutils.h>
+
+#include <limits>
+
+#include "resources/config.h"
 
 using namespace CppUtilities;
 
@@ -601,4 +608,75 @@ void OverallTests::testMp4Making()
         m_fileInfo.setTagPosition(ElementPosition::Keep);
         makeFile(workingCopyPath("mtx-test-data/mp4/1080p-DTS-HD-7.1.mp4"), modifyRoutine, &OverallTests::checkMp4Testfile6);
     }
+}
+
+/*!
+ * \brief Tests the MP4 maker via MediaFileInfo with a big padding to require 64-bit chunk offsets.
+ * \remarks Relies on the parser to check results.
+ */
+void OverallTests::testMp4MakingWith64BitOffsets()
+{
+    static constexpr auto hugePadding = static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max()) + 1;
+    static constexpr auto expectedChunkCount = std::uint32_t{ 435 };
+
+    std::cerr << "\nMaking MP4 file with 64-bit offsets\n";
+    if (std::numeric_limits<std::size_t>::max() <= std::numeric_limits<std::uint32_t>::max()) {
+        std::cerr << " - skipping test with 64-bit offsets, std::size_t is not big enough\n";
+        return;
+    }
+    if (!CppUtilities::isEnvVariableSet(PROJECT_VARNAME_UPPER "_TEST_WITH_BIG_FILES").value_or(false)) {
+        std::cerr << " - skipping test with 64-bit offsets, set " PROJECT_VARNAME_UPPER "_TEST_WITH_BIG_FILES=1 to enable\n";
+        return;
+    }
+
+    m_diag.clear();
+    m_fileInfo.setForceFullParse(true);
+    m_fileInfo.setPath(workingCopyPath("mtx-test-data/mp4/10-DanseMacabreOp.40.m4a"));
+    std::cerr << " - testing with file " << m_fileInfo.path() << "\n";
+
+    m_fileInfo.open();
+    m_fileInfo.parseEverything(m_diag, m_progress);
+
+    auto *container = dynamic_cast<Mp4Container *>(m_fileInfo.container());
+    CPPUNIT_ASSERT(container);
+    auto *firstElement = container->firstElement();
+    CPPUNIT_ASSERT(firstElement);
+    auto *sampleTable = firstElement->subelementByPath(
+        m_diag, Mp4AtomIds::Movie, Mp4AtomIds::Track, Mp4AtomIds::Media, Mp4AtomIds::MediaInformation, Mp4AtomIds::SampleTable);
+    CPPUNIT_ASSERT(sampleTable);
+    auto *chunkOffsetTable = sampleTable->childById(Mp4AtomIds::ChunkOffset, m_diag);
+    auto *chunkOffsetTable64 = sampleTable->childById(Mp4AtomIds::ChunkOffset64, m_diag);
+    CPPUNIT_ASSERT_MESSAGE("file has initially a 32-bit chunk offset table", chunkOffsetTable);
+    CPPUNIT_ASSERT_MESSAGE("file has initially no 64-bit chunk offset table", !chunkOffsetTable64);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("initially no padding present", 3724_st, m_fileInfo.paddingSize());
+    auto *track = container->track(0);
+    CPPUNIT_ASSERT(track);
+    CPPUNIT_ASSERT_EQUAL(expectedChunkCount, track->chunkCount());
+    CPPUNIT_ASSERT_EQUAL(4u, track->chunkOffsetSize());
+
+    m_fileInfo.setForceTagPosition(true);
+    m_fileInfo.setTagPosition(ElementPosition::BeforeData);
+    m_fileInfo.setMinPadding(hugePadding);
+    m_fileInfo.setPreferredPadding(hugePadding);
+    m_fileInfo.applyChanges(m_diag, m_progress);
+    m_fileInfo.clearParsingResults();
+    m_fileInfo.parseEverything(m_diag, m_progress);
+
+    container = dynamic_cast<Mp4Container *>(m_fileInfo.container());
+    CPPUNIT_ASSERT(container);
+    firstElement = container->firstElement();
+    CPPUNIT_ASSERT(firstElement);
+    sampleTable = firstElement->subelementByPath(
+        m_diag, Mp4AtomIds::Movie, Mp4AtomIds::Track, Mp4AtomIds::Media, Mp4AtomIds::MediaInformation, Mp4AtomIds::SampleTable);
+    CPPUNIT_ASSERT(sampleTable);
+    chunkOffsetTable = sampleTable->childById(Mp4AtomIds::ChunkOffset, m_diag);
+    chunkOffsetTable64 = sampleTable->childById(Mp4AtomIds::ChunkOffset64, m_diag);
+    CPPUNIT_ASSERT_MESSAGE("the 32-bit chunk offset table is no longer present", !chunkOffsetTable);
+    CPPUNIT_ASSERT_MESSAGE("the chunk offset table has  been converted to 64-bit", chunkOffsetTable64);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("padding present", hugePadding, m_fileInfo.paddingSize());
+    track = container->track(0);
+    CPPUNIT_ASSERT(track);
+    CPPUNIT_ASSERT_EQUAL(expectedChunkCount, track->chunkCount());
+    CPPUNIT_ASSERT_EQUAL(8u, track->chunkOffsetSize());
+    CPPUNIT_ASSERT(m_diag.level() <= DiagLevel::Information);
 }
