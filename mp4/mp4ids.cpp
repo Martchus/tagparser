@@ -60,6 +60,8 @@ MediaFormat fourccToMediaFormat(std::uint32_t fourccId)
     case Hevc1:
     case Hevc2:
         return GeneralMediaFormat::Hevc;
+    case Vvc1:
+        return GeneralMediaFormat::Vcc;
     case Avc1:
     case Avc2:
     case Avc3:

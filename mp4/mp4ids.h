@@ -305,6 +305,7 @@ enum KnownValue : std::uint32_t {
     Hdv3 = 0x68647633, /**< hdv3 */
     Hevc1 = 0x68766331, /**< hvc1: H.265/High Efficiency Video Coding */
     Hevc2 = 0x68657631, /**< hev1: H.265/High Efficiency Video Coding */
+    Vvc1 = 0x76766331, /**< vvc1: H.266/Versatile Video Coding */
     HslBalance = 0x68736C62, /**< hslb */
     Ima4 = 0x696D6134, /**< ima4 */
     Ima41 = 0x696D6134, /**< ima4 */
