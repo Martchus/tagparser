@@ -374,9 +374,10 @@ std::uint8_t EbmlElement::makeSizeDenotation(std::uint64_t size, char *buff)
  * \brief Makes the size denotation for the specified \a size and stores it to \a buff.
  * \param size Specifies the size to be denoted.
  * \param buff Specifies the buffer to store the denotation. Must be at least 8 bytes long.
- * \param minBytes Specifies the minimum number of bytes to use. Might be use allow subsequent element growth.
+ * \param minBytes Specifies the minimum number of bytes to use.
  * \returns Returns the number of bytes written to \a buff. Always in the range of \a minBytes and 8.
  * \throws Throws InvalidDataException() if \a size can not be represented.
+
  */
 std::uint8_t EbmlElement::makeSizeDenotation(std::uint64_t size, char *buff, std::uint8_t minBytes)
 {
