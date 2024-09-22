@@ -952,14 +952,15 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
     const auto muxingAppName = (fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::PreserveMuxingApplication && !muxingApps.empty())
         ? std::string_view(muxingApps.front())
         : std::string_view(APP_NAME " v" APP_VERSION);
-    const auto muxingAppElementTotalSize = std::uint64_t(2 + 1 + muxingAppName.size());
+    const auto muxingAppElementTotalSize = std::uint64_t(2 + EbmlElement::calculateSizeDenotationLength(muxingAppName.size()) + muxingAppName.size());
 
     // calculate size of "WritingApp"-element
     const auto writingApps = const_cast<const MatroskaContainer *>(this)->writingApplications();
     const auto writingAppName = (fileInfo().fileHandlingFlags() & MediaFileHandlingFlags::PreserveWritingApplication && !writingApps.empty())
         ? std::string_view(writingApps.front())
         : std::string_view(fileInfo().writingApplication().empty() ? muxingAppName : std::string_view(fileInfo().writingApplication()));
-    const auto writingAppElementTotalSize = std::uint64_t(2 + 1 + writingAppName.size());
+    const auto writingAppElementTotalSize
+        = std::uint64_t(2 + EbmlElement::calculateSizeDenotationLength(writingAppName.size()) + writingAppName.size());
 
     try {
         // calculate size of "Tags"-element
