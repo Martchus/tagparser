@@ -60,6 +60,28 @@ Mp4TagField::Mp4TagField(std::string_view mean, std::string_view name, const Tag
     m_mean = mean;
 }
 
+/// \cond
+static bool assignSpecialInteger(const Mp4Atom &ilstChild, int source, TagValue &dest)
+{
+    switch (ilstChild.id()) {
+    case Mp4TagAtomIds::PreDefinedGenre: // consider number as standard genre index
+        dest.assignStandardGenreIndex(source - 1);
+        return true;
+    case Mp4TagAtomIds::MediaType:
+        using Limits = std::numeric_limits<Mp4TagMediaTypeId>;
+        if (source >= static_cast<int>(Limits::min()) && source <= static_cast<int>(Limits::max())) {
+            if (const auto mediaTypeName = mp4TagMediaTypeName(static_cast<Mp4TagMediaTypeId>(source)); !mediaTypeName.empty()) {
+                dest.assignText(mediaTypeName);
+                return true;
+            }
+        }
+    default:
+        ;
+    }
+    return false;
+}
+/// \endcond
+
 /*!
  * \brief Parses field information from the specified Mp4Atom.
  *
@@ -157,9 +179,9 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     break;
                 }
                 case RawDataType::BeSignedInt: {
-                    int number = 0;
+                    auto number = int();
                     if (dataAtom->dataSize() > (8 + 4)) {
-                        diag.emplace_back(DiagLevel::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
+                        diag.emplace_back(DiagLevel::Warning, "Data atom stores integer of invalid size. Trying to read data anyway.", context);
                     }
                     if (dataAtom->dataSize() >= (8 + 4)) {
                         number = reader.readInt32BE();
@@ -168,33 +190,27 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     } else if (dataAtom->dataSize() == (8 + 1)) {
                         number = reader.readChar();
                     }
-                    switch (ilstChild.id()) {
-                    case PreDefinedGenre: // consider number as standard genre index
-                        val->assignStandardGenreIndex(number);
-                        break;
-                    default:
+                    if (!assignSpecialInteger(ilstChild, number, *val)) {
                         val->assignInteger(number);
                     }
                     break;
                 }
                 case RawDataType::BeUnsignedInt: {
-                    int number = 0;
-                    if (dataAtom->dataSize() > (8 + 4)) {
-                        diag.emplace_back(DiagLevel::Warning, "Data atom stores integer of invalid size. Trying to read data anyways.", context);
+                    auto number = std::uint64_t();
+                    if (dataAtom->dataSize() > (8 + 8)) {
+                        diag.emplace_back(DiagLevel::Warning, "Data atom stores integer of invalid size. Trying to read data anyway.", context);
                     }
-                    if (dataAtom->dataSize() >= (8 + 4)) {
-                        number = static_cast<int>(reader.readUInt32BE());
+                    if (dataAtom->dataSize() >= (8 + 8)) {
+                        number = reader.readUInt64BE();
+                    } else if (dataAtom->dataSize() >= (8 + 4)) {
+                        number = reader.readUInt32BE();
                     } else if (dataAtom->dataSize() == (8 + 2)) {
-                        number = static_cast<int>(reader.readUInt16BE());
+                        number = reader.readUInt16BE();
                     } else if (dataAtom->dataSize() == (8 + 1)) {
-                        number = static_cast<int>(reader.readByte());
+                        number = reader.readByte();
                     }
-                    switch (ilstChild.id()) {
-                    case PreDefinedGenre: // consider number as standard genre index
-                        val->assignStandardGenreIndex(number - 1);
-                        break;
-                    default:
-                        val->assignInteger(number);
+                    if (number <= static_cast<std::uint64_t>(std::numeric_limits<int>::max()) && !assignSpecialInteger(ilstChild, static_cast<int>(number), *val)) {
+                        val->assignUnsignedInteger(number);
                     }
                     break;
                 }
@@ -347,6 +363,7 @@ std::vector<std::uint32_t> Mp4TagField::expectedRawDataTypes() const
         res.push_back(RawDataType::Reserved);
         break;
     case Bpm:
+    case Mp4TagAtomIds::MediaType:
     case Rating: // 0 = None, 1 = Explicit, 2 = Clean
         res.push_back(RawDataType::BeSignedInt);
         res.push_back(RawDataType::BeUnsignedInt);
@@ -432,6 +449,7 @@ std::uint32_t Mp4TagField::appropriateRawDataTypeForValue(const TagValue &value)
     case PreDefinedGenre:
     case Bpm:
     case Rating:
+    case Mp4TagAtomIds::MediaType:
         return RawDataType::BeSignedInt;
     case Cover: {
         const string &mimeType = value.mimeType();
@@ -532,6 +550,25 @@ Mp4TagFieldMaker::Mp4TagFieldMaker(Mp4TagField &field, Diagnostics &diag)
     }
 }
 
+/// \cond
+static bool writeSpecialInteger(std::underlying_type_t<Mp4TagAtomIds::KnownValue> fieldId, const TagValue &value, CppUtilities::BinaryWriter &writer)
+{
+    switch (fieldId) {
+    case Mp4TagAtomIds::MediaType:
+        if (value.type() == TagDataType::Text) {
+            if (const auto id = mp4TagMediaTypeId(value.toString(TagTextEncoding::Utf8)); id.has_value()) {
+                writer.writeByte(static_cast<Mp4TagMediaTypeId>(id.value()));
+                return true;
+            }
+        }
+        break;
+    default:
+        ;
+    }
+    return false;
+}
+/// \endcond
+
 /*!
  * \brief Prepares making a data atom for the specified \a value.
  */
@@ -579,7 +616,10 @@ std::uint64_t Mp4TagFieldMaker::prepareDataAtom(
                 }
                 break;
             case RawDataType::BeSignedInt: {
-                int number = value.toInteger();
+                if (writeSpecialInteger(m_field.id(), value, m_writer)) {
+                    break;
+                }
+                const auto number = value.toInteger();
                 if (number <= numeric_limits<std::int16_t>::max() && number >= numeric_limits<std::int16_t>::min()) {
                     m_writer.writeInt16BE(static_cast<std::int16_t>(number));
                 } else {
@@ -588,15 +628,16 @@ std::uint64_t Mp4TagFieldMaker::prepareDataAtom(
                 break;
             }
             case RawDataType::BeUnsignedInt: {
-                int number = value.toInteger();
-                if (number <= numeric_limits<std::uint16_t>::max() && number >= numeric_limits<std::uint16_t>::min()) {
+                if (writeSpecialInteger(m_field.id(), value, m_writer)) {
+                    break;
+                }
+                const auto number = value.toUnsignedInteger();
+                if (number <= numeric_limits<std::uint16_t>::max()) {
                     m_writer.writeUInt16BE(static_cast<std::uint16_t>(number));
-                } else if (number > 0) {
+                } else if (number <= numeric_limits<std::uint32_t>::max()) {
                     m_writer.writeUInt32BE(static_cast<std::uint32_t>(number));
                 } else {
-                    throw ConversionException(
-                        "Negative integer can not be assigned to the field with the ID \"" % interpretIntegerAsString<std::uint32_t>(m_field.id())
-                        + "\".");
+                    m_writer.writeUInt64BE(number);
                 }
                 break;
             }
@@ -625,13 +666,17 @@ std::uint64_t Mp4TagFieldMaker::prepareDataAtom(
                 case Mp4TagAtomIds::PreDefinedGenre:
                     m_writer.writeUInt16BE(static_cast<std::uint16_t>(value.toStandardGenreIndex()));
                     break;
-                default:; // leave converted data empty to write original data later
+                default:
+                    if (writeSpecialInteger(m_field.id(), value, m_writer)) {
+                        break;
+                    }
+                    // leave converted data empty to write original data later
                 }
             }
         }
     } catch (const ConversionException &e) {
         // it was not possible to perform required conversions
-        if (char_traits<char>::length(e.what())) {
+        if (const auto what = std::string_view(e.what()); !what.empty()) {
             diag.emplace_back(DiagLevel::Critical, e.what(), context);
         } else {
             diag.emplace_back(DiagLevel::Critical, "The assigned tag value can not be converted to be written appropriately.", context);
