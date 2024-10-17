@@ -130,7 +130,11 @@ constexpr bool isTextFrame(std::uint32_t id)
  */
 constexpr bool isUrlFrame(std::uint32_t id)
 {
-    return (id & 0xFF000000u) == 0x57000000u && (id != Id3v2FrameIds::lUserDefinedURL);
+    if (isShortId(id)) {
+        return ((id & 0x00FF0000u) == 0x00570000u) && (id != Id3v2FrameIds::sUserDefinedURL);
+    } else {
+        return (id & 0xFF000000u) == 0x57000000u && (id != Id3v2FrameIds::lUserDefinedURL);
+    }
 }
 
 } // namespace Id3v2FrameIds
