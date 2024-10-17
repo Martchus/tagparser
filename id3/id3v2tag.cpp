@@ -193,6 +193,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lEncodingTime;
         case KnownField::OriginalReleaseDate:
             return lOriginalReleaseTime;
+        case KnownField::OriginalMediaType:
+            return lOriginalMediaType;
         case KnownField::Mood:
             return lMood;
         default:;
@@ -249,6 +251,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sRemixedBy;
         case KnownField::Copyright:
             return sCopyright;
+        case KnownField::OriginalMediaType:
+            return sOriginalMediaType;
         default:;
         }
     }
@@ -310,6 +314,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::EncodingDate;
     case lOriginalReleaseTime:
         return KnownField::OriginalReleaseDate;
+    case lOriginalMediaType:
+        return KnownField::OriginalMediaType;
     case lMood:
         return KnownField::Mood;
     case lPlayCounter:
@@ -364,6 +370,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Rating;
     case sISRC:
         return KnownField::ISRC;
+    case sOriginalMediaType:
+        return KnownField::OriginalMediaType;
     default:
         return KnownField::Invalid;
     }

@@ -22,6 +22,7 @@ enum KnownValue : std::uint32_t {
     lRecordingTime = 0x54445243, /**< TDRC */
     lReleaseTime = 0x5444524C, /**< TDRL */
     lOriginalReleaseTime = 0x54444F52, /**< TDOR */
+    lOriginalMediaType = 0x544D4544, /**< TMED */
     lTaggingTime = 0x54445447, /**< TDTG */
     lTitle = 0x54495432, /**< TIT2 */
     lGenre = 0x54434f4e, /**< TCON */
@@ -57,6 +58,7 @@ enum KnownValue : std::uint32_t {
     sComment = 0x434f4d, /**< ?COM */
     sYear = 0x545945, /**< ?TYE */
     sOriginalYear = 0x544F52, /**< ?TOR */
+    sOriginalMediaType = 0x544D54, /**< ?TMT */
     sRecordingDates = 0x545244, /**< ?TRD */
     sDate = 0x544441, /**< ?TDA */
     sTime = 0x54494D, /**< ?TIM */

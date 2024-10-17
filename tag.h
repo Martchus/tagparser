@@ -90,7 +90,7 @@ enum class KnownField : unsigned int {
     ThanksTo, /** thanks to */
     Publisher, /** publisher */
     Mood, /** mood */
-    OriginalMediaType, /** original media type */
+    OriginalMediaType, /** original media type, e.g. DVD, CD, drawing, ... */
     ContentType, /** content type, e.g. documentary vs. cartoon vs. music video (only used by Matroska so far) */
     Subject, /** subject */
     Keywords, /** keywords */
