@@ -613,7 +613,7 @@ std::uint64_t TagValue::toUnsignedInteger() const
         }
         throw ConversionException("Can not convert assigned data to unsigned integer because the data size is not appropriate.");
     default:
-        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to integer."));
+        throw ConversionException(argsToString("Can not convert ", tagDataTypeString(m_type), " to unsigned integer."));
     }
 }
 
