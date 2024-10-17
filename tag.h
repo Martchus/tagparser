@@ -24,6 +24,10 @@ namespace TagParser {
  *
  * Mapping proposed by HAK: https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping
  *
+ * There is a great overlap between KnownField::ContentType found in Matroska tags and KnownField::MediaType
+ * found in MP4/iTunes tags. They don't seem to be quite identical especially since KnownField::MediaType is
+ * just a (quite format specific enumeration). So these fields are treated distinctly.
+ *
  * \sa Tag::type()
  */
 enum class KnownField : unsigned int {
@@ -87,7 +91,7 @@ enum class KnownField : unsigned int {
     Publisher, /** publisher */
     Mood, /** mood */
     OriginalMediaType, /** original media type */
-    ContentType, /** content type */
+    ContentType, /** content type, e.g. documentary vs. cartoon vs. music video (only used by Matroska so far) */
     Subject, /** subject */
     Keywords, /** keywords */
     Summary, /** summary */
