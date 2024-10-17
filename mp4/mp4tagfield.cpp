@@ -75,6 +75,16 @@ static bool assignSpecialInteger(const Mp4Atom &ilstChild, int source, TagValue 
                 return true;
             }
         }
+        break;
+    case Mp4TagAtomIds::Rating:
+        using Limits = std::numeric_limits<Mp4TagContentRatingId>;
+        if (source >= static_cast<int>(Limits::min()) && source <= static_cast<int>(Limits::max())) {
+            if (const auto mediaTypeName = mp4TagContentRatingName(static_cast<Mp4TagContentRatingId>(source)); !mediaTypeName.empty()) {
+                dest.assignText(mediaTypeName);
+                return true;
+            }
+        }
+        break;
     default:
         ;
     }
@@ -558,6 +568,14 @@ static bool writeSpecialInteger(std::underlying_type_t<Mp4TagAtomIds::KnownValue
         if (value.type() == TagDataType::Text) {
             if (const auto id = mp4TagMediaTypeId(value.toString(TagTextEncoding::Utf8)); id.has_value()) {
                 writer.writeByte(static_cast<Mp4TagMediaTypeId>(id.value()));
+                return true;
+            }
+        }
+        break;
+    case Mp4TagAtomIds::Rating:
+        if (value.type() == TagDataType::Text) {
+            if (const auto id = mp4TagContentRatingId(value.toString(TagTextEncoding::Utf8)); id.has_value()) {
+                writer.writeByte(static_cast<Mp4TagContentRatingId>(id.value()));
                 return true;
             }
         }

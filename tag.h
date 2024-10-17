@@ -28,6 +28,10 @@ namespace TagParser {
  * found in MP4/iTunes tags. They don't seem to be quite identical especially since KnownField::MediaType is
  * just a (quite format specific enumeration). So these fields are treated distinctly.
  *
+ * There is an overlap between KnownField::LawRating found in Matroska tags and KnownField::ContentRating
+ * found in MP4/iTunes tags. They don't seem to be quite identical especially since KnownField::ContentRating
+ * is just a (quite format specific enumeration). So these fields are treated distinctly.
+ *
  * \sa Tag::type()
  */
 enum class KnownField : unsigned int {
@@ -98,7 +102,7 @@ enum class KnownField : unsigned int {
     Synopsis, /** synopsis */
     InitialKey, /** initial key */
     Period, /** period */
-    LawRating, /** law rating */
+    LawRating, /** law rating, e.g. P, R, X in the USA or an age in other countries or a URI defining a logo */
     EncodingDate, /** encoding date */
     TaggingDate, /** tagging date */
     OriginalReleaseDate, /** original release date */
@@ -134,6 +138,7 @@ enum class KnownField : unsigned int {
     StoreDescription, /** store description */
     MediaType, /** the media type, e.g. movie vs. music vs. audiobook (only used by MP4 so far) */
     Website, /** the URL to a website related to the tagged file */
+    ContentRating, /** whether the content is rated "clean" or "explicit" (only used by MP4 so far) */
 };
 
 /*!
@@ -144,7 +149,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the TagParser::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::Website;
+constexpr KnownField lastKnownField = KnownField::ContentRating;
 
 /*!
  * \brief The number of valid entries in the TagParser::KnownField enum.

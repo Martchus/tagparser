@@ -146,8 +146,6 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return Bpm;
     case KnownField::Cover:
         return Cover;
-    case KnownField::LawRating:
-        return Rating;
     case KnownField::Grouping:
         return Grouping;
     case KnownField::Description:
@@ -184,6 +182,8 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return StoreDescription;
     case KnownField::MediaType:
         return Mp4TagAtomIds::MediaType;
+    case KnownField::ContentRating:
+        return Rating;
     default:
         return 0;
     }
@@ -221,8 +221,6 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Bpm;
     case Cover:
         return KnownField::Cover;
-    case Rating:
-        return KnownField::LawRating;
     case Grouping:
         return KnownField::Grouping;
     case Description:
@@ -259,6 +257,8 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::StoreDescription;
     case Mp4TagAtomIds::MediaType:
         return KnownField::MediaType;
+    case Rating:
+        return KnownField::ContentRating;
     default:
         return KnownField::Invalid;
     }
