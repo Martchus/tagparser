@@ -129,6 +129,7 @@ enum class KnownField : unsigned int {
     PublisherWebpage, /** the publisher's official webpage */
     StoreDescription, /** store description */
     MediaType, /** the media type, e.g. movie vs. music vs. audiobook (only used by MP4 so far) */
+    Website, /** the URL to a website related to the tagged file */
 };
 
 /*!
@@ -139,7 +140,7 @@ constexpr KnownField firstKnownField = KnownField::Title;
 /*!
  * \brief The last valid entry in the TagParser::KnownField enum.
  */
-constexpr KnownField lastKnownField = KnownField::MediaType;
+constexpr KnownField lastKnownField = KnownField::Website;
 
 /*!
  * \brief The number of valid entries in the TagParser::KnownField enum.

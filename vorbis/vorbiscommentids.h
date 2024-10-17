@@ -210,6 +210,10 @@ constexpr TAG_PARSER_EXPORT std::string_view publisherWebpage()
 {
     return "WWWPUBLISHER";
 }
+constexpr TAG_PARSER_EXPORT std::string_view website()
+{
+    return "WEBSITE";
+}
 
 } // namespace VorbisCommentIds
 
