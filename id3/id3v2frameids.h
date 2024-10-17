@@ -49,6 +49,7 @@ enum KnownValue : std::uint32_t {
     lEncodingTime = 0x5444454E, /**< TDEN */
     lMood = 0x544D4F4F, /**< TMOO */
     lISRC = 0x54535243, /**< TSRC */
+    lKey = 0x544B4559, /**< TKEY */
     lUserDefinedText = 0x54585858, /**< TXXX */
     lPublisherWebpage = 0x57505542, /**< WPUB */
     lUserDefinedURL = 0x57585858, /**< WXXX */
@@ -85,6 +86,7 @@ enum KnownValue : std::uint32_t {
     sRemixedBy = 0x545034, /**< TP4 */
     sCopyright = 0x544352, /**< TCR */
     sISRC = 0x545243, /**< TRC */
+    sKey = 0x544B45, /**< TKE */
     sUserDefinedText = 0x545858, /**< ?TXX */
     sPublisherWebpage = 0x575042, /**< ?WPB */
     sUserDefinedURL = 0x575858, /**< ?WXX */

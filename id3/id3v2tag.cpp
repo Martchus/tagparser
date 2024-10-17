@@ -197,6 +197,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lOriginalMediaType;
         case KnownField::Mood:
             return lMood;
+        case KnownField::InitialKey:
+            return lKey;
         default:;
         }
     } else {
@@ -253,6 +255,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sCopyright;
         case KnownField::OriginalMediaType:
             return sOriginalMediaType;
+        case KnownField::InitialKey:
+            return sKey;
         default:;
         }
     }
@@ -324,6 +328,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Rating;
     case lISRC:
         return KnownField::ISRC;
+    case lKey:
+        return KnownField::InitialKey;
     case sAlbum:
         return KnownField::Album;
     case sArtist:
@@ -372,6 +378,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::ISRC;
     case sOriginalMediaType:
         return KnownField::OriginalMediaType;
+    case sKey:
+        return KnownField::InitialKey;
     default:
         return KnownField::Invalid;
     }
