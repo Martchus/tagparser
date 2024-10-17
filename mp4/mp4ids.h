@@ -4,6 +4,7 @@
 #include "../global.h"
 
 #include <cstdint>
+#include <optional>
 #include <string_view>
 
 namespace TagParser {
@@ -672,33 +673,52 @@ namespace Mpeg2VideoCodes {
 enum KnownValue : std::uint8_t { Pic = 0x00, Seq = 0xB3, Ext = 0xB5, Gop = 0xB8 };
 }
 
+using Mp4TagMediaTypeId = std::uint8_t;
+
 /*!
  * \brief Specifies the tag type.
+ * \sa https://github.com/MediaArea/MediaInfoLib/blob/master/Source/MediaInfo/Multiple/File_Mpeg4_Elements.cpp
  */
-enum class Mp4TagMediaType : std::uint8_t {
+enum class Mp4TagMediaType : Mp4TagMediaTypeId {
     Movie = 0, /**< Movie */
     Music = 1, /**< Music */
     Audiobook = 2, /**< Audiobook */
-    MusicVideo = 6, /**< MusicVideo */
-    Movie2 = 9, /**< Movie */
-    TvShow = 10, /**< TvShow */
+    WhackedBookmark = 5, /**< Whacked Bookmark */
+    MusicVideo = 6, /**< Music Video */
+    Movie2 = 9, /**< Short Film \todo v13 rename to ShortFilm */
+    TvShow = 10, /**< TV Show */
     Booklet = 11, /**< Booklet */
-    Ringtone = 14 /**< Ringtone */
+    Ringtone = 14, /**< Ringtone */
+    Podcast = 21, /**< Podcast */
 };
+
+TAG_PARSER_EXPORT std::string_view mp4TagMediaTypeName(Mp4TagMediaTypeId tagMediaTypeId);
+TAG_PARSER_EXPORT std::optional<Mp4TagMediaType> mp4TagMediaTypeId(std::string_view tagMediaTypeName);
+
+using Mp4TagContentRatingId = std::uint8_t;
 
 /*!
  * \brief Specifies the tag content rating.
  */
-enum class Mp4TagContentRating : std::uint8_t {
+enum class Mp4TagContentRating : Mp4TagContentRatingId {
     None = 0, /**< None */
     Clean = 2, /**< Clean */
     Explicit = 4 /**< Explicit */
 };
 
+TAG_PARSER_EXPORT std::string_view mp4TagContentRatingName(Mp4TagContentRatingId tagContentRatingId);
+TAG_PARSER_EXPORT std::optional<Mp4TagContentRating> mp4TagContentRatingId(std::string_view tagContentRatingName);
+
+using Mp4TagAccountTypeId = std::uint8_t;
+
 /*!
  * \brief Specifies the account type.
+ * \todo v13 rename to Mp4TagAccountType
  */
-enum class AccountType : std::uint8_t { Itunes = 0, Aol = 1, Undefined = 255 };
+enum class AccountType : Mp4TagAccountTypeId { Itunes = 0, Aol = 1, Undefined = 255 };
+
+TAG_PARSER_EXPORT std::string_view mp4TagAccountTypeName(Mp4TagAccountTypeId tagContentRatingId);
+TAG_PARSER_EXPORT std::optional<AccountType> mp4TagAccountTypeId(std::string_view tagContentRatingName);
 
 /*!
  * \brief Specifies the country.

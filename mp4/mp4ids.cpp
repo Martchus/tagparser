@@ -1,6 +1,9 @@
 #include "./mp4ids.h"
 
+#include "../caseinsensitivecomparer.h"
 #include "../mediaformat.h"
+
+#include <map>
 
 namespace TagParser {
 
@@ -494,6 +497,104 @@ namespace Mpeg4VideoCodes {
  * \brief Encapsulates MPEG-2 video codes.
  */
 namespace Mpeg2VideoCodes {
+}
+
+std::string_view mp4TagMediaTypeName(Mp4TagMediaTypeId tagMediaTypeId)
+{
+    switch (static_cast<Mp4TagMediaType>(tagMediaTypeId)) {
+    case Mp4TagMediaType::Movie:
+        return "Movie";
+    case Mp4TagMediaType::Music:
+        return "Music";
+    case Mp4TagMediaType::Audiobook:
+        return "Audiobook";
+    case Mp4TagMediaType::WhackedBookmark:
+        return "Whacked Bookmark";
+    case Mp4TagMediaType::MusicVideo:
+        return "Music Video";
+    case Mp4TagMediaType::Movie2:
+        return "Short Film";
+    case Mp4TagMediaType::TvShow:
+        return "TV Show";
+    case Mp4TagMediaType::Booklet:
+        return "Booklet";
+    case Mp4TagMediaType::Ringtone:
+        return "Ringtone";
+    case Mp4TagMediaType::Podcast:
+        return "Podcast";
+    default:
+        return std::string_view();
+    }
+}
+
+std::optional<Mp4TagMediaType> mp4TagMediaTypeId(std::string_view tagMediaTypeName)
+{
+    static const auto m = std::map<std::string_view, Mp4TagMediaType, CaseInsensitiveStringComparer>{
+        { "Movie", Mp4TagMediaType::Movie },
+        { "Music", Mp4TagMediaType::Music },
+        { "Audiobook", Mp4TagMediaType::Audiobook },
+        { "WhackedBookmark", Mp4TagMediaType::WhackedBookmark },
+        { "Whacked Bookmark", Mp4TagMediaType::WhackedBookmark },
+        { "MusicVideo", Mp4TagMediaType::MusicVideo },
+        { "Music Video", Mp4TagMediaType::MusicVideo },
+        { "ShortFilm", Mp4TagMediaType::Movie2 },
+        { "Short Film", Mp4TagMediaType::Movie2 },
+        { "TvShow", Mp4TagMediaType::TvShow },
+        { "TV Show", Mp4TagMediaType::TvShow },
+        { "Booklet", Mp4TagMediaType::Booklet },
+        { "Ringtone", Mp4TagMediaType::Ringtone },
+        { "Podcast", Mp4TagMediaType::Podcast },
+    };
+    const auto i = m.find(tagMediaTypeName);
+    return i != m.cend() ? std::make_optional(i->second) : std::nullopt;
+}
+
+std::string_view mp4TagContentRatingName(Mp4TagContentRatingId tagContentRatingId)
+{
+    switch (static_cast<Mp4TagContentRating>(tagContentRatingId)) {
+    case Mp4TagContentRating::None:
+        return "None";
+    case Mp4TagContentRating::Clean:
+        return "Clean";
+    default:
+        return "Explicit";
+    }
+}
+
+std::optional<Mp4TagContentRating> mp4TagContentRatingId(std::string_view tagContentRatingName)
+{
+    static const auto m = std::map<std::string_view, Mp4TagContentRating, CaseInsensitiveStringComparer>{
+        { "None", Mp4TagContentRating::None },
+        { "Clean", Mp4TagContentRating::Clean },
+        { "Explicit", Mp4TagContentRating::Explicit },
+    };
+    const auto i = m.find(tagContentRatingName);
+    return i != m.cend() ? std::make_optional(i->second) : std::nullopt;
+}
+
+std::string_view mp4TagAccountTypeName(Mp4TagAccountTypeId tagContentRatingId)
+{
+    switch (static_cast<AccountType>(tagContentRatingId)) {
+    case AccountType::Itunes:
+        return "iTunes";
+    case AccountType::Aol:
+        return "AOL";
+    case AccountType::Undefined:
+        return "Undefined";
+    default:
+        return std::string_view();
+    }
+}
+
+std::optional<AccountType> mp4TagAccountTypeId(std::string_view tagAccountTypeName)
+{
+    static const auto m = std::map<std::string_view, AccountType, CaseInsensitiveStringComparer>{
+        { "iTunes", AccountType::Itunes },
+        { "AOL", AccountType::Aol },
+        { "Undefined", AccountType::Undefined },
+    };
+    const auto i = m.find(tagAccountTypeName);
+    return i != m.cend() ? std::make_optional(i->second) : std::nullopt;
 }
 
 } // namespace TagParser
