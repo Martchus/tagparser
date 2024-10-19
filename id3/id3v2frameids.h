@@ -51,7 +51,14 @@ enum KnownValue : std::uint32_t {
     lISRC = 0x54535243, /**< TSRC */
     lKey = 0x544B4559, /**< TKEY */
     lUserDefinedText = 0x54585858, /**< TXXX */
+    lCommericalInfoWebpage = 0x57434F4D, /**< WCOM */
+    lCopyrightInfoWebpage = 0x57434F50, /**< WCOP */
+    lAudioFileWebpage = 0x574F4146, /**< WOAF */
+    lAudioSourceWebpage = 0x574F4153, /**< WOAS */
+    lInternetRadioStationWebpage = 0x574F5253, /**< WORS */
+    lPaymentWebpage = 0x57504159, /**< WPAY */
     lPublisherWebpage = 0x57505542, /**< WPUB */
+    lPerformerWebpage = 0x574F4152, /**< WOAR */
     lUserDefinedURL = 0x57585858, /**< WXXX */
 
     sAlbum = 0x54414c, /**< ?TAL */
@@ -88,7 +95,12 @@ enum KnownValue : std::uint32_t {
     sISRC = 0x545243, /**< TRC */
     sKey = 0x544B45, /**< TKE */
     sUserDefinedText = 0x545858, /**< ?TXX */
+    sCommericalInfoWebpage = 0x57434D, /**< ?WCM */
+    sCopyrightInfoWebpage = 0x574350, /**< ?WCP */
+    sAudioFileWebpage = 0x574146, /**< ?WAF*/
+    sAudioSourceWebpage = 0x574153, /**< ?WAS */
     sPublisherWebpage = 0x575042, /**< ?WPB */
+    sPerformerWebpage = 0x574152, /**< ?WAR */
     sUserDefinedURL = 0x575858, /**< ?WXX */
 };
 

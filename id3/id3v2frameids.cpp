@@ -91,6 +91,16 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sKey;
     case lPublisherWebpage:
         return sPublisherWebpage;
+    case lCommericalInfoWebpage:
+        return sCommericalInfoWebpage;
+    case lCopyrightInfoWebpage:
+        return sCopyrightInfoWebpage;
+    case lAudioFileWebpage:
+        return sAudioFileWebpage;
+    case lAudioSourceWebpage:
+        return sAudioSourceWebpage;
+    case lPerformerWebpage:
+        return sPerformerWebpage;
     case lUserDefinedURL:
         return sUserDefinedURL;
     default:
@@ -169,6 +179,16 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lKey;
     case sPublisherWebpage:
         return lPublisherWebpage;
+    case sCommericalInfoWebpage:
+        return lCommericalInfoWebpage;
+    case sCopyrightInfoWebpage:
+        return lCopyrightInfoWebpage;
+    case sAudioFileWebpage:
+        return lAudioFileWebpage;
+    case sAudioSourceWebpage:
+        return lAudioSourceWebpage;
+    case sPerformerWebpage:
+        return lPerformerWebpage;
     case sUserDefinedURL:
         return lUserDefinedURL;
     default:
