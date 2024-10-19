@@ -13,6 +13,8 @@
 #include "../size.h"
 #include "../tagtarget.h"
 
+#include "../id3/id3v2tag.h"
+
 #include <c++utilities/conversion/stringbuilder.h>
 #include <c++utilities/tests/testutils.h>
 using namespace CppUtilities;
@@ -45,6 +47,7 @@ class UtilitiesTests : public TestFixture {
     CPPUNIT_TEST(testAbortableProgressFeedback);
     CPPUNIT_TEST(testDiagnostics);
     CPPUNIT_TEST(testBackupFile);
+    CPPUNIT_TEST(testFieldConversions);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -63,6 +66,7 @@ public:
     void testAbortableProgressFeedback();
     void testDiagnostics();
     void testBackupFile();
+    void testFieldConversions();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UtilitiesTests);
@@ -389,4 +393,24 @@ void UtilitiesTests::testBackupFile()
     }
 
     CPPUNIT_ASSERT_EQUAL(0, remove(file.path().data()));
+}
+
+/*!
+ * \brief Tests whether field mappings are consistent. So far only implemented for Id3v2Tag.
+ */
+void UtilitiesTests::testFieldConversions()
+{
+    auto tag = Id3v2Tag();
+    tag.setVersion(4, 0);
+    for (auto knownField = firstKnownField; knownField != KnownField::Invalid; knownField = nextKnownField(knownField)) {
+        if (const auto fieldId = tag.fieldId(knownField)) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("reverse mapping for known field exists", knownField, tag.knownField(fieldId));
+        }
+    }
+    tag.setVersion(2, 0);
+    for (auto knownField = firstKnownField; knownField != KnownField::Invalid; knownField = nextKnownField(knownField)) {
+        if (const auto fieldId = tag.fieldId(knownField)) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE("reverse mapping for known field exists", knownField, tag.knownField(fieldId));
+        }
+    }
 }

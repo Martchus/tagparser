@@ -90,6 +90,7 @@ public:
     bool supportsDescription(KnownField field) const override;
     bool supportsMimeType(KnownField field) const override;
     bool supportsMultipleValues(KnownField field) const override;
+    bool supportsMultipleValues(IdentifierType id) const;
     void ensureTextValuesAreProperlyEncoded() override;
 
     void parse(std::istream &sourceStream, const std::uint64_t maximalSize, Diagnostics &diag);

@@ -22,35 +22,40 @@ namespace TagParser {
 
 /*!
  * \brief Allows multiple values for some fields.
- * \remarks The standard defines no general rule applicable to all fields.
  */
 bool Id3v2Tag::supportsMultipleValues(KnownField field) const
 {
-    switch (field) {
-    case KnownField::Album:
-    case KnownField::Artist:
-    case KnownField::RecordDate:
-    case KnownField::ReleaseDate:
-    case KnownField::Title:
-    case KnownField::Genre:
-    case KnownField::TrackPosition:
-    case KnownField::DiskPosition:
-    case KnownField::Encoder:
-    case KnownField::Bpm:
-    case KnownField::Lyricist:
-    case KnownField::Length:
-    case KnownField::Language:
-    case KnownField::EncoderSettings:
-    case KnownField::Grouping:
-    case KnownField::RecordLabel:
-    case KnownField::Composer:
-    case KnownField::AlbumArtist:
+    return supportsMultipleValues(fieldId(field));
+}
+
+/*!
+ * \brief Allows multiple values for some fields.
+ * \remarks
+ * The standard defines no general rule applicable to all fields except that that all text allow multiple values as
+ * of ID3v2.4.0.
+ */
+bool Id3v2Tag::supportsMultipleValues(IdentifierType id) const
+{
+    if (Id3v2FrameIds::isTextFrame(id)) {
         return m_majorVersion > 3;
-    case KnownField::Rating:
-    case KnownField::Comment:
-    case KnownField::Cover:
-    case KnownField::Lyrics:
-    case KnownField::SynchronizedLyrics:
+    }
+    using namespace Id3v2FrameIds;
+    switch (id) {
+    case sUserDefinedText:
+    case lUserDefinedText:
+    case sUserDefinedURL:
+    case lUserDefinedURL:
+    case sRating:
+    case lRating:
+    case sComment:
+    case lComment:
+    case sCover:
+    case lCover:
+    case sUnsynchronizedLyrics:
+    case lUnsynchronizedLyrics:
+    case sSynchronizedLyrics:
+    case lSynchronizedLyrics:
+    case lPublisherWebpage:
         return true;
     default:
         return false;
@@ -316,6 +321,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::TaggingDate;
     case lEncodingTime:
         return KnownField::EncodingDate;
+    case lReleaseTime:
+        return KnownField::ReleaseDate;
     case lOriginalReleaseTime:
         return KnownField::OriginalReleaseDate;
     case lOriginalMediaType:
@@ -330,6 +337,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::ISRC;
     case lKey:
         return KnownField::InitialKey;
+    case lComposer:
+        return KnownField::Composer;
     case sAlbum:
         return KnownField::Album;
     case sArtist:
@@ -344,6 +353,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Genre;
     case sTrackPosition:
         return KnownField::TrackPosition;
+    case sDiskPosition:
+        return KnownField::DiskPosition;
     case sEncoder:
         return KnownField::Encoder;
     case sBpm:
@@ -363,7 +374,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case sSynchronizedLyrics:
         return KnownField::SynchronizedLyrics;
     case sAlbumArtist:
-        return KnownField::Grouping;
+        return KnownField::AlbumArtist;
     case sRecordLabel:
         return KnownField::Publisher;
     case sRemixedBy:
@@ -380,6 +391,10 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::OriginalMediaType;
     case sKey:
         return KnownField::InitialKey;
+    case sComposer:
+        return KnownField::Composer;
+    case sContentGroupDescription:
+        return KnownField::Grouping;
     default:
         return KnownField::Invalid;
     }
