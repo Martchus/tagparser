@@ -529,7 +529,7 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
     }
 
     // get non-empty, assigned values
-    vector<const TagValue *> values;
+    auto values = std::vector<const TagValue *>();
     values.reserve(1 + frame.additionalValues().size());
     if (!frame.value().isEmpty()) {
         values.emplace_back(&frame.value());
@@ -596,11 +596,11 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
 
     // make actual data depending on the frame ID
     try {
-        if (isTextFrame) {
+        if (isTextFrame || isUrlFrame) {
             // make text frame
-            vector<string> substrings;
+            auto substrings = std::vector<std::string>();
             substrings.reserve(1 + frame.additionalValues().size());
-            TagTextEncoding encoding = TagTextEncoding::Unspecified;
+            auto encoding = TagTextEncoding::Unspecified;
 
             if ((version >= 3 && (m_frameId == Id3v2FrameIds::lTrackPosition || m_frameId == Id3v2FrameIds::lDiskPosition))
                 || (version < 3 && (m_frameId == Id3v2FrameIds::sTrackPosition || m_frameId == Id3v2FrameIds::sDiskPosition))) {
@@ -687,14 +687,14 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
             const auto byteOrderMark = [&] {
                 switch (encoding) {
                 case TagTextEncoding::Utf16LittleEndian:
-                    return string({ '\xFF', '\xFE' });
+                    return std::string({ '\xFF', '\xFE' });
                 case TagTextEncoding::Utf16BigEndian:
-                    return string({ '\xFE', '\xFF' });
+                    return std::string({ '\xFE', '\xFF' });
                 default:
-                    return string();
+                    return std::string();
                 }
             }();
-            const auto concatenatedSubstrings = joinStrings(substrings, string(), false, byteOrderMark, string(terminationLength, '\0'));
+            const auto concatenatedSubstrings = joinStrings(substrings, std::string(), false, byteOrderMark, std::string(terminationLength, '\0'));
 
             // write text encoding byte and concatenated strings to data buffer
             if (isTextFrame) {
