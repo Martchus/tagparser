@@ -137,7 +137,7 @@ enum class KnownField : unsigned int {
     PublisherWebpage, /** the publisher's official webpage */
     StoreDescription, /** store description */
     MediaType, /** the media type, e.g. movie vs. music vs. audiobook (only used by MP4 so far) */
-    Website, /** the URL to a website related to the tagged file */
+    PerformerWebpage, /** the URL to the performer's website or a website generally related to the tagged file */
     ContentRating, /** whether the content is rated "clean" or "explicit" (only used by MP4 so far) */
 };
 

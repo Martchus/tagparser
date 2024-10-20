@@ -206,7 +206,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lKey;
         case KnownField::PublisherWebpage:
             return lPublisherWebpage;
-        case KnownField::Website:
+        case KnownField::PerformerWebpage:
             return lPerformerWebpage;
         case KnownField::PurchaseItem:
             return lPaymentWebpage;
@@ -270,7 +270,7 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sKey;
         case KnownField::PublisherWebpage:
             return sPublisherWebpage;
-        case KnownField::Website:
+        case KnownField::PerformerWebpage:
             return sPerformerWebpage;
         default:;
         }
@@ -352,7 +352,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case lPublisherWebpage:
         return KnownField::PublisherWebpage;
     case lPerformerWebpage:
-        return KnownField::Website;
+        return KnownField::PerformerWebpage;
     case lPaymentWebpage:
         return KnownField::PurchaseItem;
     case sAlbum:
@@ -414,7 +414,7 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
     case sPublisherWebpage:
         return KnownField::PublisherWebpage;
     case sPerformerWebpage:
-        return KnownField::Website;
+        return KnownField::PerformerWebpage;
     default:
         return KnownField::Invalid;
     }
