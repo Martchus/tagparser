@@ -204,6 +204,12 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lMood;
         case KnownField::InitialKey:
             return lKey;
+        case KnownField::PublisherWebpage:
+            return lPublisherWebpage;
+        case KnownField::Website:
+            return lPerformerWebpage;
+        case KnownField::PurchaseItem:
+            return lPaymentWebpage;
         default:;
         }
     } else {
@@ -262,6 +268,10 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sOriginalMediaType;
         case KnownField::InitialKey:
             return sKey;
+        case KnownField::PublisherWebpage:
+            return sPublisherWebpage;
+        case KnownField::Website:
+            return sPerformerWebpage;
         default:;
         }
     }
@@ -339,6 +349,12 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::InitialKey;
     case lComposer:
         return KnownField::Composer;
+    case lPublisherWebpage:
+        return KnownField::PublisherWebpage;
+    case lPerformerWebpage:
+        return KnownField::Website;
+    case lPaymentWebpage:
+        return KnownField::PurchaseItem;
     case sAlbum:
         return KnownField::Album;
     case sArtist:
@@ -395,6 +411,10 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Composer;
     case sContentGroupDescription:
         return KnownField::Grouping;
+    case sPublisherWebpage:
+        return KnownField::PublisherWebpage;
+    case sPerformerWebpage:
+        return KnownField::Website;
     default:
         return KnownField::Invalid;
     }
