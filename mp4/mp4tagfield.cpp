@@ -85,8 +85,7 @@ static bool assignSpecialInteger(const Mp4Atom &ilstChild, int source, TagValue 
             }
         }
         break;
-    default:
-        ;
+    default:;
     }
     return false;
 }
@@ -219,7 +218,8 @@ void Mp4TagField::reparse(Mp4Atom &ilstChild, Diagnostics &diag)
                     } else if (dataAtom->dataSize() == (8 + 1)) {
                         number = reader.readByte();
                     }
-                    if (number <= static_cast<std::uint64_t>(std::numeric_limits<int>::max()) && !assignSpecialInteger(ilstChild, static_cast<int>(number), *val)) {
+                    if (number <= static_cast<std::uint64_t>(std::numeric_limits<int>::max())
+                        && !assignSpecialInteger(ilstChild, static_cast<int>(number), *val)) {
                         val->assignUnsignedInteger(number);
                     }
                     break;
@@ -580,8 +580,7 @@ static bool writeSpecialInteger(std::underlying_type_t<Mp4TagAtomIds::KnownValue
             }
         }
         break;
-    default:
-        ;
+    default:;
     }
     return false;
 }
