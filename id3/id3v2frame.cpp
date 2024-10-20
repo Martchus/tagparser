@@ -269,13 +269,15 @@ void Id3v2Frame::parse(BinaryReader &reader, std::uint32_t version, std::uint32_
         reader.read(buffer.get(), m_dataSize);
     }
 
+    const auto isTextFrame = Id3v2FrameIds::isTextFrame(id());
+    const auto isUrlFrame = Id3v2FrameIds::isUrlFrame(id());
     // read tag value depending on frame ID/type
-    if (Id3v2FrameIds::isTextFrame(id())) {
+    if (isTextFrame || isUrlFrame) {
         // parse text encoding byte
-        TagTextEncoding dataEncoding = parseTextEncodingByte(static_cast<std::uint8_t>(*buffer.get()), diag);
+        const char *currentOffset = buffer.get();
+        auto dataEncoding = isTextFrame ? parseTextEncodingByte(static_cast<std::uint8_t>(*(currentOffset++)), diag) : TagTextEncoding::Latin1;
 
         // parse string values (since ID3v2.4 a text frame may contain multiple strings)
-        const char *currentOffset = buffer.get() + 1;
         for (size_t currentIndex = 1; currentIndex < m_dataSize;) {
             // determine the next substring
             const auto substr(parseSubstring(currentOffset, m_dataSize - currentIndex, dataEncoding, false, diag));
@@ -544,7 +546,8 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
         // note: This is not really an issue because in the case we're not provided with any value here just means that the field
         //       is supposed to be removed. So don't add any diagnostic messages here.
     }
-    const bool isTextFrame = Id3v2FrameIds::isTextFrame(m_frameId);
+    const auto isTextFrame = Id3v2FrameIds::isTextFrame(m_frameId);
+    const auto isUrlFrame = Id3v2FrameIds::isUrlFrame(m_frameId);
     if (values.size() != 1) {
         if (!isTextFrame) {
             diag.emplace_back(DiagLevel::Critical, "Multiple values are not supported for non-text-frames.", context);
@@ -630,6 +633,13 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
                     substrings.emplace_back(numberToString(static_cast<std::uint64_t>(duration.totalMilliseconds())));
                 }
 
+            } else if (isUrlFrame) {
+                // make URL link frame
+                encoding = TagTextEncoding::Latin1;
+                for (const auto *const value : values) {
+                    substrings.emplace_back(value->toString(encoding));
+                }
+
             } else {
                 // make standard genre index and other text frames
                 // -> find text encoding suitable for all assigned values
@@ -687,9 +697,14 @@ Id3v2FrameMaker::Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagno
             const auto concatenatedSubstrings = joinStrings(substrings, string(), false, byteOrderMark, string(terminationLength, '\0'));
 
             // write text encoding byte and concatenated strings to data buffer
-            m_data = make_unique<char[]>(m_decompressedSize = static_cast<std::uint32_t>(1 + concatenatedSubstrings.size()));
-            m_data[0] = static_cast<char>(Id3v2Frame::makeTextEncodingByte(encoding));
-            concatenatedSubstrings.copy(&m_data[1], concatenatedSubstrings.size());
+            if (isTextFrame) {
+                m_data = make_unique<char[]>(m_decompressedSize = static_cast<std::uint32_t>(1 + concatenatedSubstrings.size()));
+                m_data[0] = static_cast<char>(Id3v2Frame::makeTextEncodingByte(encoding));
+                concatenatedSubstrings.copy(&m_data[1], concatenatedSubstrings.size());
+            } else {
+                m_data = make_unique<char[]>(m_decompressedSize = static_cast<std::uint32_t>(concatenatedSubstrings.size()));
+                concatenatedSubstrings.copy(m_data.get(), concatenatedSubstrings.size());
+            }
 
         } else if ((version >= 3 && m_frameId == Id3v2FrameIds::lCover) || (version < 3 && m_frameId == Id3v2FrameIds::sCover)) {
             // make picture frame
