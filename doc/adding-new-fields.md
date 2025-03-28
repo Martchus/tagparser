@@ -4,8 +4,17 @@ This document describes how to add support for a new field. From these instructi
 one can also deduce what places need to be adjusted when amending support for a field.
 
 ## Support new field in tagparser library
-1. Check whether https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping contains
-   a recommendation for the specific field to be added.
+1. Check whether one of the following pages contains a mentioning/recommendation for the
+   specific field to be added:
+    * https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping
+    * https://docs.mp3tag.de/mapping
+    * https://www.matroska.org/technical/tagging.html
+    * https://github.com/id3/ID3v2.3/blob/master/id3v2.3.0.txt
+    * https://wiki.xiph.org/VorbisComment
+    * https://github.com/FFmpeg/FFmpeg/blob/master/libavformat/movenc.c
+    * https://github.com/get-iplayer/get_iplayer/wiki/tagging
+    * https://github.com/taglib/taglib/tree/master
+    * https://github.com/wez/atomicparsley
 2. Add the field to the enum `KnownField`.
 3. Adjust `TagParser::lastKnownField` accordingly.
 4. Adjust `TagParser::Tag::proposedDataType()` if it is not a text field.
