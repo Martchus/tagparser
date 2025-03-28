@@ -180,6 +180,8 @@ Mp4Tag::IdentifierType Mp4Tag::internallyGetFieldId(KnownField field) const
         return Arranger;
     case KnownField::StoreDescription:
         return StoreDescription;
+    case KnownField::Synopsis:
+        return LongDescription;
     case KnownField::MediaType:
         return Mp4TagAtomIds::MediaType;
     case KnownField::ContentRating:
@@ -255,6 +257,8 @@ KnownField Mp4Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::Arranger;
     case StoreDescription:
         return KnownField::StoreDescription;
+    case LongDescription:
+        return KnownField::Synopsis;
     case Mp4TagAtomIds::MediaType:
         return KnownField::MediaType;
     case Rating:

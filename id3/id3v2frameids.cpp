@@ -103,6 +103,8 @@ std::uint32_t convertToShortId(std::uint32_t id)
         return sPerformerWebpage;
     case lUserDefinedURL:
         return sUserDefinedURL;
+    case lSubtitleOrDescriptionRefinement:
+        return sSubtitleOrDescriptionRefinement;
     default:
         return 0;
     }
@@ -191,6 +193,8 @@ std::uint32_t convertToLongId(std::uint32_t id)
         return lPerformerWebpage;
     case sUserDefinedURL:
         return lUserDefinedURL;
+    case sSubtitleOrDescriptionRefinement:
+        return lSubtitleOrDescriptionRefinement;
     default:
         return 0;
     }

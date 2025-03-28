@@ -136,6 +136,7 @@ enum KnownValue : std::uint32_t {
     OriginalArtist = 0xA96F7065, /** ©ope */
     Year2 = 0x79727263, /** yrrc (could be mapped to release date but likely not well supported elsewhere (e.g. Kodi uses ©day) */
     StoreDescription = 0x73646573, /** sdes */
+    LongDescription = 0x6C646573, /** ldes */
 };
 }
 

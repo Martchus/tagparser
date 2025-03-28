@@ -210,6 +210,10 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return lPerformerWebpage;
         case KnownField::PurchaseItem:
             return lPaymentWebpage;
+        case KnownField::Subtitle:
+            return lSubtitleOrDescriptionRefinement;
+        case KnownField::Synopsis:
+            return lLongDescription;
         default:;
         }
     } else {
@@ -272,6 +276,8 @@ Id3v2Tag::IdentifierType Id3v2Tag::internallyGetFieldId(KnownField field) const
             return sPublisherWebpage;
         case KnownField::PerformerWebpage:
             return sPerformerWebpage;
+        case KnownField::Subtitle:
+            return sSubtitleOrDescriptionRefinement;
         default:;
         }
     }
@@ -355,6 +361,10 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::PerformerWebpage;
     case lPaymentWebpage:
         return KnownField::PurchaseItem;
+    case lSubtitleOrDescriptionRefinement:
+        return KnownField::Subtitle;
+    case lLongDescription:
+        return KnownField::Synopsis;
     case sAlbum:
         return KnownField::Album;
     case sArtist:
@@ -415,6 +425,8 @@ KnownField Id3v2Tag::internallyGetKnownField(const IdentifierType &id) const
         return KnownField::PublisherWebpage;
     case sPerformerWebpage:
         return KnownField::PerformerWebpage;
+    case sSubtitleOrDescriptionRefinement:
+        return KnownField::Subtitle;
     default:
         return KnownField::Invalid;
     }

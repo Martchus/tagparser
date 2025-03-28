@@ -99,7 +99,7 @@ enum class KnownField : unsigned int {
     Subject, /** subject */
     Keywords, /** keywords */
     Summary, /** summary */
-    Synopsis, /** synopsis */
+    Synopsis, /** synopsis or "long description", e.g. podcast description or episode description */
     InitialKey, /** initial key */
     Period, /** period */
     LawRating, /** law rating, e.g. P, R, X in the USA or an age in other countries or a URI defining a logo */

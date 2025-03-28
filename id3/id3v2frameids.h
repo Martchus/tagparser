@@ -24,7 +24,6 @@ enum KnownValue : std::uint32_t {
     lOriginalReleaseTime = 0x54444F52, /**< TDOR */
     lOriginalMediaType = 0x544D4544, /**< TMED */
     lTaggingTime = 0x54445447, /**< TDTG */
-    lTitle = 0x54495432, /**< TIT2 */
     lGenre = 0x54434f4e, /**< TCON */
     lTrackPosition = 0x5452434b, /**< TRCK */
     lDiskPosition = 0x54504f53, /**< TPOS */
@@ -39,6 +38,9 @@ enum KnownValue : std::uint32_t {
     lSynchronizedLyrics = 0x53594C54, /**< SYLT */
     lAlbumArtist = 0x54504532, /**< TPE2 */
     lContentGroupDescription = 0x54495431, /**< TIT1 */
+    lTitle = 0x54495432, /**< TIT2 */
+    lSubtitleOrDescriptionRefinement = 0x54495433, /**< TIT3 */
+    lLongDescription = 0x54444553, /**< TDES */
     lRecordLabel = 0x54505542, /**< TPUB \todo rename to lPublisher in v12 */
     lUniqueFileId = 0x55464944, /**< UFID */
     lComposer = 0x54434f4d, /**< TCOM */
@@ -70,7 +72,6 @@ enum KnownValue : std::uint32_t {
     sRecordingDates = 0x545244, /**< ?TRD */
     sDate = 0x544441, /**< ?TDA */
     sTime = 0x54494D, /**< ?TIM */
-    sTitle = 0x545432, /**< ?TT2 */
     sGenre = 0x54434f, /**< ?TCO */
     sTrackPosition = 0x54524b, /**< ?TRK */
     sDiskPosition = 0x545041, /**< ?TPA */
@@ -85,6 +86,8 @@ enum KnownValue : std::uint32_t {
     sSynchronizedLyrics = 0x534C54, /**< ?SLT */
     sAlbumArtist = 0x545032, /**< ?TP2 */
     sContentGroupDescription = 0x545431, /**< ?TT1 */
+    sTitle = 0x545432, /**< ?TT2 */
+    sSubtitleOrDescriptionRefinement = 0x545433, /**< ?TT3 */
     sRecordLabel = 0x545042, /**< ?TPB \todo rename to sPublisher in v12 */
     sUniqueFileId = 0x554649, /**< ?UFI */
     sComposer = 0x54434d, /**< ?TCM */
