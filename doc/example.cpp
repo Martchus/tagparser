@@ -20,7 +20,7 @@ void example()
     // create container for errors, warnings, etc.
     auto diag = Diagnostics();
 
-    // create handle to abort gracefully and get feedback during during long operations
+    // create handle to abort gracefully and get feedback during long operations
     auto progress = AbortableProgressFeedback(
         [](AbortableProgressFeedback &feedback) {
             // callback for status update
