@@ -640,7 +640,7 @@ calculatePadding:
                     bool metaAtomWritten = false;
                     for (level0Atom = movieAtom; level0Atom; level0Atom = level0Atom->siblingById(Mp4AtomIds::Movie, diag)) {
                         for (level1Atom = level0Atom->childById(Mp4AtomIds::UserData, diag); level1Atom;
-                             level1Atom = level1Atom->siblingById(Mp4AtomIds::UserData, diag)) {
+                            level1Atom = level1Atom->siblingById(Mp4AtomIds::UserData, diag)) {
                             for (level2Atom = level1Atom->firstChild(); level2Atom; level2Atom = level2Atom->nextSibling()) {
                                 switch (level2Atom->id()) {
                                 case Mp4AtomIds::Meta:
@@ -945,15 +945,15 @@ void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets
     // update "base-data-offset-present" of "tfhd"-atom (NOT tested properly)
     try {
         for (Mp4Atom *moofAtom = firstElement()->siblingById(Mp4AtomIds::MovieFragment, diag); moofAtom;
-             moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
+            moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
             try {
                 for (Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom;
-                     trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
+                    trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
                     trafAtom->parse(diag);
                     int tfhdAtomCount = 0;
                     for (Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom;
-                         tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
+                        tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                         tfhdAtom->parse(diag);
                         ++tfhdAtomCount;
                         if (tfhdAtom->dataSize() < 8) {
@@ -972,7 +972,7 @@ void Mp4Container::updateOffsets(const std::vector<std::int64_t> &oldMdatOffsets
                         stream().seekg(4, ios_base::cur); // skip track ID
                         std::uint64_t off = reader().readUInt64BE();
                         for (auto iOld = oldMdatOffsets.cbegin(), iNew = newMdatOffsets.cbegin(), end = oldMdatOffsets.cend(); iOld != end;
-                             ++iOld, ++iNew) {
+                            ++iOld, ++iNew) {
                             if (off < static_cast<std::uint64_t>(*iOld)) {
                                 continue;
                             }

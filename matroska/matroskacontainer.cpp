@@ -91,11 +91,11 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
         auto pos = std::uint64_t(), prevClusterSize = std::uint64_t(), currentOffset = std::uint64_t();
         // iterate through all segments
         for (EbmlElement *segmentElement = m_firstElement->siblingById(MatroskaIds::Segment, diag); segmentElement;
-             segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {
+            segmentElement = segmentElement->siblingById(MatroskaIds::Segment, diag)) {
             segmentElement->parse(diag);
             // iterate through all child elements of the segment (only "Cues"- and "Cluster"-elements are relevant for this method)
             for (EbmlElement *segmentChildElement = segmentElement->firstChild(); segmentChildElement;
-                 segmentChildElement = segmentChildElement->nextSibling()) {
+                segmentChildElement = segmentChildElement->nextSibling()) {
                 progress.stopIfAborted();
                 segmentChildElement->parse(diag);
                 switch (segmentChildElement->id()) {
@@ -106,7 +106,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
                     cuesElementsFound = true;
                     // parse children of "Cues"-element ("CuePoint"-elements)
                     for (EbmlElement *cuePointElement = segmentChildElement->firstChild(); cuePointElement;
-                         cuePointElement = cuePointElement->nextSibling()) {
+                        cuePointElement = cuePointElement->nextSibling()) {
                         progress.stopIfAborted();
                         cuePointElement->parse(diag);
                         cueTimeFound = cueTrackPositionsFound = false; // to validate quantity of these elements
@@ -117,7 +117,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
                         case MatroskaIds::CuePoint:
                             // parse children of "CuePoint"-element
                             for (EbmlElement *cuePointChildElement = cuePointElement->firstChild(); cuePointChildElement;
-                                 cuePointChildElement = cuePointChildElement->nextSibling()) {
+                                cuePointChildElement = cuePointChildElement->nextSibling()) {
                                 cuePointChildElement->parse(diag);
                                 switch (cuePointChildElement->id()) {
                                 case MatroskaIds::CueTime:
@@ -134,7 +134,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
                                     ids.clear();
                                     clusterElement.reset();
                                     for (EbmlElement *subElement = cuePointChildElement->firstChild(); subElement;
-                                         subElement = subElement->nextSibling()) {
+                                        subElement = subElement->nextSibling()) {
                                         subElement->parse(diag);
                                         switch (subElement->id()) {
                                         case MatroskaIds::CueTrack:
@@ -252,7 +252,7 @@ void MatroskaContainer::validateIndex(Diagnostics &diag, AbortableProgressFeedba
                 case MatroskaIds::Cluster:
                     // parse children of "Cluster"-element
                     for (EbmlElement *clusterElementChild = segmentChildElement->firstChild(); clusterElementChild;
-                         clusterElementChild = clusterElementChild->nextSibling()) {
+                        clusterElementChild = clusterElementChild->nextSibling()) {
                         clusterElementChild->parse(diag);
                         switch (clusterElementChild->id()) {
                         case EbmlIds::Void:
@@ -1016,7 +1016,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
                 case MatroskaIds::Segment:
                     ++lastSegmentIndex;
                     for (level1Element = level0Element->firstChild(); level1Element && !firstClusterFound && !firstTagFound;
-                         level1Element = level1Element->nextSibling()) {
+                        level1Element = level1Element->nextSibling()) {
                         level1Element->parse(diag);
                         switch (level1Element->id()) {
                         case MatroskaIds::Tags:
@@ -1074,7 +1074,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
         // calculate sizes and other information required to make segments
         for (level0Element = firstElement(), currentPosition = newPadding = segmentIndex = 0; level0Element;
-             level0Element = level0Element->nextSibling()) {
+            level0Element = level0Element->nextSibling()) {
             switch (level0Element->id()) {
             case EbmlIds::Header:
                 // header size has already been calculated
@@ -1127,7 +1127,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
                 // pretend writing "SegmentInfo"-element
                 for (level1Element = level0Element->childById(MatroskaIds::SegmentInfo, diag), index = 0; level1Element;
-                     level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag), ++index) {
+                    level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag), ++index) {
                     // update offset in "SeekHead"-element
                     if (segment.seekInfo.push(index, MatroskaIds::SegmentInfo, currentPosition + segment.totalDataSize)) {
                         goto calculateSegmentSize;
@@ -1175,7 +1175,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
                 // pretend writing "Chapters"-element
                 for (level1Element = level0Element->childById(MatroskaIds::Chapters, diag), index = 0; level1Element;
-                     level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag), ++index) {
+                    level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag), ++index) {
                     // update offset in "SeekHead"-element
                     if (segment.seekInfo.push(index, MatroskaIds::Chapters, currentPosition + segment.totalDataSize)) {
                         goto calculateSegmentSize;
@@ -1621,7 +1621,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
                 // write "SegmentInfo"-element
                 for (level1Element = level0Element->childById(MatroskaIds::SegmentInfo, diag); level1Element;
-                     level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag)) {
+                    level1Element = level1Element->siblingById(MatroskaIds::SegmentInfo, diag)) {
                     // -> write ID and size
                     outputWriter.writeUInt32BE(MatroskaIds::SegmentInfo);
                     sizeLength = EbmlElement::makeSizeDenotation(segment.infoDataSize, buff);
@@ -1664,7 +1664,7 @@ void MatroskaContainer::internalMakeFile(Diagnostics &diag, AbortableProgressFee
 
                 // write "Chapters"-element
                 for (level1Element = level0Element->childById(MatroskaIds::Chapters, diag); level1Element;
-                     level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag)) {
+                    level1Element = level1Element->siblingById(MatroskaIds::Chapters, diag)) {
                     level1Element->copyBuffer(outputStream);
                     level1Element->discardBuffer();
                 }

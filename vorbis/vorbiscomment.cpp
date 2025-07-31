@@ -187,7 +187,7 @@ void VorbisComment::extendPositionInSetField(std::string_view field, std::string
 
     auto totalIter = totalValues.begin(), totalEnd = totalValues.end();
     for (fieldsIter = fields().equal_range(std::string(field)); fieldsIter.first != fieldsIter.second && totalIter != totalEnd;
-         ++fieldsIter.first, ++totalIter) {
+        ++fieldsIter.first, ++totalIter) {
         auto &v = fieldsIter.first->second.value();
         try {
             auto p = v.toPositionInSet();

@@ -196,7 +196,7 @@ void OggContainer::internalParseHeader(Diagnostics &diag, AbortableProgressFeedb
     try {
         // ensure iterator is setup properly
         for (m_iterator.removeFilter(), m_iterator.reset(); m_iterator;
-             continueFromHere ? [&] { continueFromHere = false; }() : m_iterator.nextPage()) {
+            continueFromHere ? [&] { continueFromHere = false; }() : m_iterator.nextPage()) {
             progress.stopIfAborted();
             const OggPage &page = m_iterator.currentPage();
             if (m_validateChecksums && page.checksum() != OggPage::computeChecksum(stream(), page.startOffset())) {

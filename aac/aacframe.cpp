@@ -854,7 +854,7 @@ void AacFrameElementParser::parseSpectralData(AacIcsInfo &ics, std::int16_t *spe
                 break;
             default:
                 for (std::uint16_t k = ics.sectionSfbOffset[group][ics.sectionStart[group][section]];
-                     k < ics.sectionSfbOffset[group][ics.sectionEnd[group][section]]; k += increment) {
+                    k < ics.sectionSfbOffset[group][ics.sectionEnd[group][section]]; k += increment) {
                     parseHuffmanSpectralData(sectionCb, specData);
                     //p += increment;
                 }

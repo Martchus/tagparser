@@ -55,7 +55,7 @@ void MatroskaSeekInfo::parse(EbmlElement *seekHeadElement, Diagnostics &diag, si
     m_seekHeadElements.emplace_back(seekHeadElement);
 
     for (EbmlElement *seekElement = seekHeadElement->firstChild(), *seekIdElement, *seekPositionElement; seekElement;
-         seekElement = seekElement->nextSibling()) {
+        seekElement = seekElement->nextSibling()) {
         seekElement->parse(diag);
         switch (seekElement->id()) {
         case MatroskaIds::Seek:

@@ -81,7 +81,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                     cueTrackPositionsElementSize = relPos = 0;
                     cueRelativePositionElement = cueClusterPositionElement = nullptr;
                     for (EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild;
-                         cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
+                        cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
                         // parse children of "CueTrackPositions"-element
                         cueTrackPositionsChild->parse(diag);
                         switch (cueTrackPositionsChild->id()) {
@@ -109,7 +109,7 @@ void MatroskaCuePositionUpdater::parse(EbmlElement *cuesElement, Diagnostics &di
                         case MatroskaIds::CueReference:
                             cueReferenceElementSize = 0;
                             for (EbmlElement *cueReferenceChild = cueTrackPositionsChild->firstChild(); cueReferenceChild;
-                                 cueReferenceChild = cueReferenceChild->nextSibling()) {
+                                cueReferenceChild = cueReferenceChild->nextSibling()) {
                                 // parse children of "CueReference"-element
                                 cueReferenceChild->parse(diag);
                                 switch (cueReferenceChild->id()) {
@@ -181,7 +181,7 @@ bool MatroskaCuePositionUpdater::updateOffsets(std::uint64_t originalOffset, std
     auto updated = false;
     const auto newOffsetLength = static_cast<int>(EbmlElement::calculateUIntegerLength(newOffset));
     for (auto cueElementRange = m_cueElementByOriginalOffset.equal_range(originalOffset); cueElementRange.first != cueElementRange.second;
-         ++cueElementRange.first) {
+        ++cueElementRange.first) {
         auto *const cueElement = cueElementRange.first->second;
         const auto offsetIterator = m_offsets.find(cueElement);
         if (offsetIterator == m_offsets.end()) {
@@ -208,7 +208,7 @@ bool MatroskaCuePositionUpdater::updateRelativeOffsets(
     auto updated = false;
     const auto newRelativeOffsetLength = static_cast<int>(EbmlElement::calculateUIntegerLength(newRelativeOffset));
     for (auto cueElementRange = m_cueRelativePositionElementByOriginalOffsets.equal_range(std::make_pair(referenceOffset, originalRelativeOffset));
-         cueElementRange.first != cueElementRange.second; ++cueElementRange.first) {
+        cueElementRange.first != cueElementRange.second; ++cueElementRange.first) {
         auto *const cueRelativePositionElement = cueElementRange.first->second;
         const auto offsetIterator = m_relativeOffsets.find(cueRelativePositionElement);
         if (offsetIterator == m_relativeOffsets.end()) {
@@ -304,7 +304,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                         len = EbmlElement::makeSizeDenotation(m_sizes[cuePointChild], buff);
                         stream.write(buff, len);
                         for (EbmlElement *cueTrackPositionsChild = cuePointChild->firstChild(); cueTrackPositionsChild;
-                             cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
+                            cueTrackPositionsChild = cueTrackPositionsChild->nextSibling()) {
                             cueTrackPositionsChild->parse(diag);
                             switch (cueTrackPositionsChild->id()) {
                             case MatroskaIds::CueTrack:
@@ -334,7 +334,7 @@ void MatroskaCuePositionUpdater::make(ostream &stream, Diagnostics &diag)
                                 len = EbmlElement::makeSizeDenotation(m_sizes[cueTrackPositionsChild], buff);
                                 stream.write(buff, len);
                                 for (EbmlElement *cueReferenceChild = cueTrackPositionsChild->firstChild(); cueReferenceChild;
-                                     cueReferenceChild = cueReferenceChild->nextSibling()) {
+                                    cueReferenceChild = cueReferenceChild->nextSibling()) {
                                     cueReferenceChild->parse(diag);
                                     switch (cueReferenceChild->id()) {
                                     case EbmlIds::Void:

@@ -73,7 +73,7 @@ void MatroskaChapter::internalParse(Diagnostics &diag, AbortableProgressFeedback
             break;
         case MatroskaIds::ChapterTrack:
             for (EbmlElement *chapterTrackElement = chapterAtomChild->firstChild(); chapterTrackElement;
-                 chapterTrackElement = chapterTrackElement->nextSibling()) {
+                chapterTrackElement = chapterTrackElement->nextSibling()) {
                 chapterTrackElement->parse(diag);
                 switch (chapterTrackElement->id()) {
                 case MatroskaIds::ChapterTrack:
@@ -89,7 +89,7 @@ void MatroskaChapter::internalParse(Diagnostics &diag, AbortableProgressFeedback
         case MatroskaIds::ChapterDisplay:
             m_names.emplace_back();
             for (EbmlElement *chapterDisplayElement = chapterAtomChild->firstChild(); chapterDisplayElement;
-                 chapterDisplayElement = chapterDisplayElement->nextSibling()) {
+                chapterDisplayElement = chapterDisplayElement->nextSibling()) {
                 chapterDisplayElement->parse(diag);
                 switch (chapterDisplayElement->id()) {
                 case MatroskaIds::ChapString:

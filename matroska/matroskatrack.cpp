@@ -298,7 +298,7 @@ void MatroskaTrack::internalParseHeader(Diagnostics &diag, AbortableProgressFeed
     auto hasIsoLanguage = false;
     m_flags = TrackFlags::Default | TrackFlags::Enabled;
     for (EbmlElement *trackInfoElement = m_trackElement->firstChild(), *subElement = nullptr; trackInfoElement;
-         trackInfoElement = trackInfoElement->nextSibling()) {
+        trackInfoElement = trackInfoElement->nextSibling()) {
         try {
             trackInfoElement->parse(diag);
         } catch (const Failure &) {

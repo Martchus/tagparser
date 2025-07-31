@@ -246,13 +246,13 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
     if (parseFragments) {
         //std::uint64_t totalDuration = 0;
         for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(Mp4AtomIds::MovieFragment, diag); moofAtom;
-             moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
+            moofAtom = moofAtom->siblingById(Mp4AtomIds::MovieFragment, diag)) {
             moofAtom->parse(diag);
             for (Mp4Atom *trafAtom = moofAtom->childById(Mp4AtomIds::TrackFragment, diag); trafAtom;
-                 trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
+                trafAtom = trafAtom->siblingById(Mp4AtomIds::TrackFragment, diag)) {
                 trafAtom->parse(diag);
                 for (Mp4Atom *tfhdAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentHeader, diag); tfhdAtom;
-                     tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
+                    tfhdAtom = tfhdAtom->siblingById(Mp4AtomIds::TrackFragmentHeader, diag)) {
                     tfhdAtom->parse(diag);
                     std::uint32_t calculatedDataSize = 0;
                     if (tfhdAtom->dataSize() < calculatedDataSize) {
@@ -306,7 +306,7 @@ std::vector<std::uint64_t> Mp4Track::readChunkOffsets(bool parseFragments, Diagn
                                 }
                             }
                             for (Mp4Atom *trunAtom = trafAtom->childById(Mp4AtomIds::TrackFragmentRun, diag); trunAtom;
-                                 trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag)) {
+                                trunAtom = trunAtom->siblingById(Mp4AtomIds::TrackFragmentRun, diag)) {
                                 std::uint32_t trunCalculatedDataSize = 8;
                                 if (trunAtom->dataSize() < trunCalculatedDataSize) {
                                     diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
@@ -647,8 +647,8 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                 esInfo->ocrId = reader.readUInt16BE();
             }
             for (Mpeg4Descriptor *esDescChild
-                 = esDesc.denoteFirstChild(static_cast<std::uint32_t>(static_cast<std::uint64_t>(reader.stream()->tellg()) - esDesc.startOffset()));
-                 esDescChild; esDescChild = esDescChild->nextSibling()) {
+                = esDesc.denoteFirstChild(static_cast<std::uint32_t>(static_cast<std::uint64_t>(reader.stream()->tellg()) - esDesc.startOffset()));
+                esDescChild; esDescChild = esDescChild->nextSibling()) {
                 esDescChild->parse(diag);
                 switch (esDescChild->id()) {
                 case Mpeg4DescriptorIds::DecoderConfigDescr:
@@ -660,7 +660,7 @@ std::unique_ptr<Mpeg4ElementaryStreamInfo> Mp4Track::parseMpeg4ElementaryStreamI
                     esInfo->maxBitrate = reader.readUInt32BE();
                     esInfo->averageBitrate = reader.readUInt32BE();
                     for (Mpeg4Descriptor *decCfgDescChild = esDescChild->denoteFirstChild(esDescChild->headerSize() + 13); decCfgDescChild;
-                         decCfgDescChild = decCfgDescChild->nextSibling()) {
+                        decCfgDescChild = decCfgDescChild->nextSibling()) {
                         decCfgDescChild->parse(diag);
                         switch (decCfgDescChild->id()) {
                         case Mpeg4DescriptorIds::DecoderSpecificInfo:
@@ -1742,7 +1742,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
     if (entryCount) {
         try {
             for (Mp4Atom *codecConfigContainerAtom = m_stsdAtom->firstChild(); codecConfigContainerAtom;
-                 codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
+                codecConfigContainerAtom = codecConfigContainerAtom->nextSibling()) {
                 codecConfigContainerAtom->parse(diag);
 
                 // parse FOURCC
@@ -2022,12 +2022,12 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
     // no sample sizes found, search for trun atoms
     std::uint64_t totalDuration = 0;
     for (Mp4Atom *moofAtom = m_trakAtom->container().firstElement()->siblingByIdIncludingThis(MovieFragment, diag); moofAtom;
-         moofAtom = moofAtom->siblingById(MovieFragment, diag)) {
+        moofAtom = moofAtom->siblingById(MovieFragment, diag)) {
         moofAtom->parse(diag);
         for (Mp4Atom *trafAtom = moofAtom->childById(TrackFragment, diag); trafAtom; trafAtom = trafAtom->siblingById(TrackFragment, diag)) {
             trafAtom->parse(diag);
             for (Mp4Atom *tfhdAtom = trafAtom->childById(TrackFragmentHeader, diag); tfhdAtom;
-                 tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag)) {
+                tfhdAtom = tfhdAtom->siblingById(TrackFragmentHeader, diag)) {
                 tfhdAtom->parse(diag);
                 std::uint32_t calculatedDataSize = 0;
                 if (tfhdAtom->dataSize() < calculatedDataSize) {
@@ -2080,7 +2080,7 @@ void Mp4Track::internalParseHeader(Diagnostics &diag, AbortableProgressFeedback 
                             }
                         }
                         for (Mp4Atom *trunAtom = trafAtom->childById(TrackFragmentRun, diag); trunAtom;
-                             trunAtom = trunAtom->siblingById(TrackFragmentRun, diag)) {
+                            trunAtom = trunAtom->siblingById(TrackFragmentRun, diag)) {
                             std::uint32_t trunCalculatedDataSize = 8;
                             if (trunAtom->dataSize() < trunCalculatedDataSize) {
                                 diag.emplace_back(DiagLevel::Critical, "trun atom is truncated.", context);
