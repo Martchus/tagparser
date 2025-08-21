@@ -469,7 +469,7 @@ TagDataType Id3v2Tag::internallyGetProposedDataType(const std::uint32_t &id) con
  * \brief Converts the lYear/lRecordingDates/lDate/lTime/sYear/sRecordingDates/sDate/sTime fields found in v2.3.0 to lRecordingTime.
  * \remarks
  * - Do not get rid of the "old" fields after the conversion so the raw fields can still be checked.
- * - The make function converts back if necassary and deletes unsupported fields.
+ * - The make function converts back if necessary and deletes unsupported fields.
  */
 void Id3v2Tag::convertOldRecordDateFields(const std::string &diagContext, Diagnostics &diag)
 {
