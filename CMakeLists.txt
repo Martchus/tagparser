@@ -185,7 +185,13 @@ set(RES_FILES "${LANGUAGE_HEADER_ISO_639_2}")
 set(CONFIGURATION_PACKAGE_SUFFIX
     ""
     CACHE STRING "sets the suffix for find_package() calls to packages configured via c++utilities")
-find_package(c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.21.0 REQUIRED)
+set(PACKAGE_NAMESPACE
+    ""
+    CACHE STRING "sets the prefix for find_package() calls to packages configured via c++utilities")
+if (PACKAGE_NAMESPACE)
+    set(PACKAGE_NAMESPACE_PREFIX "${PACKAGE_NAMESPACE}-")
+endif ()
+find_package(${PACKAGE_NAMESPACE_PREFIX}c++utilities${CONFIGURATION_PACKAGE_SUFFIX} 5.21.0 REQUIRED)
 use_cpp_utilities(VISIBILITY PUBLIC)
 list(APPEND META_PRIVATE_COMPILE_DEFINITIONS CHRONO_UTILITIES_TIMESPAN_INTEGER_SCALE_OVERLOADS)
 
