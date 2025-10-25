@@ -7,7 +7,7 @@
 
 /*!
  * \brief An example for reading and writing tags in a format-independent way.
- * \sa Checkout the README's "Usage" section for further explanations.
+ * \sa see the README's "Usage" section for further explanations.
  */
 void example()
 {
@@ -38,9 +38,9 @@ void example()
     // parse container format, tags, attachments and/or chapters as needed
     // notes:
     // - These functions might throw exceptions derived from ios_base::failure for IO errors and
-    //   populate diag with possibly critical parsing messages you definitely want to check in production
+    //   populate diag with potentially critical parsing messages you definitely want to check in production
     //   code.
-    // - Parsing a file can be expensive if the file is big or the disk IO is slow. You might want to
+    // - Parsing a file can be expensive if the file is large or the disk IO is slow. You might want to
     //   run it in a separate thread.
     // - At this point the parser does not make much use of the progress object (in contrast to applyChanges()
     //   shown below).
@@ -53,7 +53,7 @@ void example()
     // get tag as an object derived from the Tag class
     // notes:
     // - In real code you might want to check how many tags are assigned or use
-    //   fileInfo.createAppropriateTags(…) to create tags as needed.
+    //   fileInfo.createAppropriateTags(...) to create tags as needed.
     auto tag = fileInfo.tags().at(0);
 
     // extract a field value and convert it to a UTF-8 std::string (toString() might throw ConversionException)
@@ -78,12 +78,12 @@ void example()
 
     // apply changes to the file on disk
     // notes:
-    // - Might throw exception derived from TagParser::Failure for fatal processing error or ios_base::failure
+    // - Might throw exception derived from TagParser::Failure for a fatal processing error or ios_base::failure
     //   for IO errors.
-    // - Applying changes can be expensive if the file is big or the disk IO is slow. You might want to
+    // - Applying changes can be expensive if the file is large or the disk IO is slow. You might want to
     //   run it in a separate thread.
     // - Use progress.tryToAbort() from another thread or an interrupt handler to abort gracefully without leaving
     //   the file in an inconsistent state.
-    // - Be sure everything has been parsed before as the library needs to be aware of the whole file structure.
+    // - Ensure everything has been parsed before as the library needs to be aware of the whole file structure.
     fileInfo.applyChanges(diag, progress);
 }
