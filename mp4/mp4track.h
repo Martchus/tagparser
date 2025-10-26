@@ -241,7 +241,7 @@ inline unsigned int Mp4Track::chunkOffsetSize() const
 
 /*!
  * \brief Sets the size of a single chunk offset denotation within the stco/co64 atom.
- * \sa check out chunkOffsetSize() for details.
+ * \sa Check out chunkOffsetSize() for details.
  */
 inline void Mp4Track::setChunkOffsetSize(unsigned int chunkOffsetSize)
 {
