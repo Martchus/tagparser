@@ -10,9 +10,8 @@ using namespace SubFormats;
  */
 
 /*!
- * \brief Returns the name of the media format as C-style string.
- *
- * Returns an empty string if no name is available.
+ * \brief Returns the name of the media format.
+ * \remarks Returns an empty string if no name is available.
  */
 std::string_view MediaFormat::name() const
 {
@@ -441,9 +440,8 @@ std::string_view MediaFormat::name() const
 }
 
 /*!
- * \brief Returns the abbreviation of the media format as C-style string.
- *
- * Returns an empty string if no abbreviation is available.
+ * \brief Returns the abbreviation of the media format.
+ * \remarks Returns an empty string if no abbreviation is available.
  */
 std::string_view MediaFormat::abbreviation() const
 {
@@ -758,9 +756,8 @@ std::string_view MediaFormat::abbreviation() const
 }
 
 /*!
- * \brief Returns a short abbreviation of the media format as C-style string.
- *
- * Returns an empty string if no abbreviation is available.
+ * \brief Returns a short abbreviation of the media format.
+ * \remarks Returns an empty string if no abbreviation is available.
  */
 std::string_view MediaFormat::shortAbbreviation() const
 {
@@ -1035,9 +1032,8 @@ std::string_view MediaFormat::shortAbbreviation() const
 }
 
 /*!
- * \brief Returns the abbreviation of the media format as C-style string.
- *
- * Returns an empty string if no abbreviation is available.
+ * \brief Returns the abbreviation of the media format.
+ * \remarks Returns an empty string if no abbreviation is available.
  */
 std::string_view MediaFormat::extensionName() const
 {

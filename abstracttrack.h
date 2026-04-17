@@ -344,10 +344,9 @@ inline double AbstractTrack::version() const
 }
 
 /*!
- * \brief Returns the format of the track as C-style string if known; otherwise
- *        returns the format abbreviation or an empty string.
- * \remarks
- *  - The string might get invalidated when the track is (re)parsed.
+ * \brief Returns the format of the track if known; otherwise returns the format
+ *        abbreviation or an empty string.
+ * \remarks The string view is invalidated when the track is (re)parsed.
  */
 inline std::string_view AbstractTrack::formatName() const
 {

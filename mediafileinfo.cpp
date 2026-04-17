@@ -795,7 +795,7 @@ void MediaFileInfo::applyChanges(Diagnostics &diag, AbortableProgressFeedback &p
 }
 
 /*!
- * \brief Returns the abbreviation of the container format as C-style string.
+ * \brief Returns the abbreviation of the container format.
  *
  * This abbreviation might be used as file extension.
  *
@@ -851,7 +851,7 @@ string_view MediaFileInfo::containerFormatAbbreviation() const
 }
 
 /*!
- * \brief Returns the MIME-type of the container format as C-style string.
+ * \brief Returns the MIME-type of the container format.
  *
  * parseContainerFormat() needs to be called before. Otherwise
  * always an empty string will be returned.

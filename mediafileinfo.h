@@ -265,7 +265,7 @@ inline ContainerFormat MediaFileInfo::containerFormat() const
 }
 
 /*!
- * \brief Returns the name of the container format as C-style string.
+ * \brief Returns the name of the container format.
  *
  * parseContainerFormat() needs to be called before. Otherwise
  * always the name "Unknown" will be returned.
@@ -280,7 +280,7 @@ inline std::string_view MediaFileInfo::containerFormatName() const
 }
 
 /*!
- * \brief Returns the subversion of the container format as C-style string.
+ * \brief Returns the subversion of the container format.
  *
  * parseContainerFormat() needs to be called before. Otherwise
  * always an empty string will be returned.

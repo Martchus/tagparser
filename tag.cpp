@@ -112,16 +112,14 @@ std::size_t Tag::insertValues(const Tag &from, bool overwrite)
 
 /*!
  * \fn Tag::typeName()
- * \brief Returns the type name of the tag as C-style string.
- *
- * This is "unspecified" by default and might be overwritten
- * when subclassing.
+ * \brief Returns the type name of the tag.
+ * \remarks This is "unspecified" by default and might be overwritten when subclassing.
  */
 
 /*!
  * \fn Tag::version()
- * \brief Returns the version of the tag as std::string.
- * The version denotation depends on the tag type.
+ * \brief Returns the version of the tag.
+ * \remarks The version denotation depends on the tag type.
  */
 
 /*!

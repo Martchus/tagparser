@@ -22,7 +22,7 @@ private:
 };
 
 /*!
- * \brief Returns the genre name for the specified numerical denotation as C-style string.
+ * \brief Returns the genre name for the specified numerical denotation.
  */
 inline std::string_view Id3Genres::stringFromIndex(int index)
 {

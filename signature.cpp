@@ -261,8 +261,7 @@ ContainerFormat parseSignature(std::string_view buffer)
 }
 
 /*!
- * \brief Returns the abbreviation of the container format as C-style string considering
- *        the specified media type and version.
+ * \brief Returns the abbreviation of the container format considering the specified media type and version.
  * \remarks The abbreviation might be used as file extension.
  * \returns Returns an empty string if no abbreviation is available.
  */
@@ -388,9 +387,8 @@ std::string_view containerFormatAbbreviation(ContainerFormat containerFormat, Me
 }
 
 /*!
- * \brief Returns the name of the specified container format as C-style string.
- *
- * Returns "unknown" if no name is available.
+ * \brief Returns the name of the specified container format.
+ * \remarks Returns "unknown" if no name is available.
  */
 std::string_view containerFormatName(ContainerFormat containerFormat)
 {
@@ -501,9 +499,8 @@ std::string_view containerFormatName(ContainerFormat containerFormat)
 }
 
 /*!
- * \brief Returns the subversion of the container format as C-style string.
- *
- * Returns an empty string if there is no subversion available.
+ * \brief Returns the subversion of the container format.
+ * \remarks Returns an empty string if there is no subversion available.
  */
 std::string_view containerFormatSubversion(ContainerFormat containerFormat)
 {
@@ -522,9 +519,8 @@ std::string_view containerFormatSubversion(ContainerFormat containerFormat)
 }
 
 /*!
- * \brief Returns the MIME-type of the container format as C-style string.
- *
- * Returns an empty string if there is no MIME-type available.
+ * \brief Returns the MIME-type of the container format.
+ * \remarks Returns an empty string if there is no MIME-type available.
  */
 std::string_view containerMimeType(ContainerFormat containerFormat, MediaType mediaType)
 {
