@@ -1471,7 +1471,7 @@ void AacFrameElementParser::huffmanSignBits(std::int16_t *sp, std::uint8_t len)
     for (std::int16_t *end = sp + len; sp < end; ++sp) {
         if (*sp) {
             if (m_reader.readBit()) {
-                *sp = -(*sp);
+                *sp = static_cast<std::int16_t>(-(*sp));
             }
         }
     }
