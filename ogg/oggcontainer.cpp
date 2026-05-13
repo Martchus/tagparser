@@ -101,9 +101,8 @@ OggVorbisComment *OggContainer::createTag(const TagTarget &target)
     // -> just use the first Vorbis/Opus track
     for (const auto &track : m_tracks) {
         if (target.tracks().empty() || target.tracks().front() == track->id()) {
-            switch (track->format().general) {
-            case GeneralMediaFormat::Vorbis:
-            case GeneralMediaFormat::Opus:
+            const auto format = track->format().general;
+            if (format == GeneralMediaFormat::Vorbis || format == GeneralMediaFormat::Opus) {
                 // check whether start page has a valid value
                 if (track->startPage() < m_iterator.pages().size()) {
                     announceComment(track->startPage(), numeric_limits<size_t>::max(), false, track->format().general);
@@ -112,8 +111,6 @@ OggVorbisComment *OggContainer::createTag(const TagTarget &target)
                 } else {
                     // TODO: error handling?
                 }
-                break;
-            default:;
             }
             // TODO: allow adding tags to FLAC tracks (not really important, because a tag should always be present)
         }
