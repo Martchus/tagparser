@@ -142,7 +142,7 @@ public:
     void setChecksumValidationEnabled(bool enabled);
     void reset() override;
 
-    OggVorbisComment *createTag(const TagTarget &target) override;
+    OggVorbisComment *createTag(const TagTarget &target = TagTarget()) override;
     OggVorbisComment *tag(std::size_t index) override;
     std::size_t tagCount() const override;
     bool removeTag(Tag *tag) override;
