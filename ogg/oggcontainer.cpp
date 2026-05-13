@@ -67,9 +67,9 @@ void OggContainer::reset()
  * \remarks
  *  - Tracks must be parsed before because tags are stored on track level!
  *  - The track can be specified via the \a target argument. However, only the first track of tracks() array of \a target is considered.
- *  - If tracks() array of \a target is empty, the first track/tag is picked.
- *  - Vorbis streams should always have a tag assigned; this method allows creation of a tag for Vorbis streams if none is present though.
- *  - FLAC streams should always have a tag assigned; this method does *not* allow creation of a tag for FLAC streams if none is present though.
+ *  - If the tracks() array of \a target is empty, the first track/tag is picked.
+ *  - Vorbis streams should always have a tag assigned; this method allows the creation of a tag for Vorbis streams if none is present.
+ *  - FLAC streams should always have a tag assigned; this method does *not* allow creation of a tag for FLAC streams if none is present.
  */
 OggVorbisComment *OggContainer::createTag(const TagTarget &target)
 {
