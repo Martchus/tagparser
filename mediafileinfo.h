@@ -103,27 +103,27 @@ public:
 
     // methods to get parsed information regarding ...
     // ... the container
-    ContainerFormat containerFormat() const;
-    std::string_view containerFormatName() const;
+    inline ContainerFormat containerFormat() const;
+    inline std::string_view containerFormatName() const;
     std::string_view containerFormatAbbreviation() const;
-    std::string_view containerFormatSubversion() const;
+    inline std::string_view containerFormatSubversion() const;
     std::string_view mimeType() const;
-    std::uint64_t containerOffset() const;
-    std::uint64_t paddingSize() const;
-    std::uint64_t effectiveSize() const;
+    inline std::uint64_t containerOffset() const;
+    inline std::uint64_t paddingSize() const;
+    inline std::uint64_t effectiveSize() const;
     AbstractContainer *container() const;
-    ParsingStatus containerParsingStatus() const;
+    inline ParsingStatus containerParsingStatus() const;
     // ... the chapters
-    ParsingStatus chaptersParsingStatus() const;
+    inline ParsingStatus chaptersParsingStatus() const;
     std::vector<AbstractChapter *> chapters() const;
     bool areChaptersSupported() const;
     // ... the attachments
-    ParsingStatus attachmentsParsingStatus() const;
+    inline ParsingStatus attachmentsParsingStatus() const;
     std::vector<AbstractAttachment *> attachments() const;
     bool areAttachmentsSupported() const;
     // ... the tracks
-    ParsingStatus tracksParsingStatus() const;
-    std::size_t trackCount() const;
+    inline ParsingStatus tracksParsingStatus() const;
+    inline std::size_t trackCount() const;
     std::vector<AbstractTrack *> tracks() const;
     bool hasTracksOfType(TagParser::MediaType type) const;
     CppUtilities::TimeSpan duration() const;
@@ -132,9 +132,9 @@ public:
     std::string technicalSummary() const;
     bool areTracksSupported() const;
     // ... the tags
-    ParsingStatus tagsParsingStatus() const;
-    bool hasId3v1Tag() const;
-    bool hasId3v2Tag() const;
+    inline ParsingStatus tagsParsingStatus() const;
+    inline bool hasId3v1Tag() const;
+    inline bool hasId3v2Tag() const;
     bool hasAnyTag() const;
     Id3v1Tag *id3v1Tag() const;
     const std::vector<std::unique_ptr<Id3v2Tag>> &id3v2Tags() const;
@@ -166,35 +166,35 @@ public:
 
     // methods to get, set object behaviour
     const std::string &backupDirectory() const;
-    void setBackupDirectory(std::string_view backupDirectory);
-    void setBackupDirectory(std::string &&backupDirectory);
+    inline void setBackupDirectory(std::string_view backupDirectory);
+    inline void setBackupDirectory(std::string &&backupDirectory);
     const std::string &saveFilePath() const;
-    void setSaveFilePath(std::string_view saveFilePath);
-    void setSaveFilePath(std::string &&saveFilePath);
+    inline void setSaveFilePath(std::string_view saveFilePath);
+    inline void setSaveFilePath(std::string &&saveFilePath);
     const std::string &writingApplication() const;
-    void setWritingApplication(std::string_view writingApplication);
-    MediaFileHandlingFlags fileHandlingFlags();
-    void setFileHandlingFlags(MediaFileHandlingFlags flags);
-    bool isForcingFullParse() const;
-    void setForceFullParse(bool forceFullParse);
-    bool isForcingRewrite() const;
-    void setForceRewrite(bool forceRewrite);
-    std::size_t minPadding() const;
-    void setMinPadding(std::size_t minPadding);
-    std::size_t maxPadding() const;
-    void setMaxPadding(std::size_t maxPadding);
-    std::size_t preferredPadding() const;
-    void setPreferredPadding(std::size_t preferredPadding);
-    ElementPosition tagPosition() const;
-    void setTagPosition(ElementPosition tagPosition);
-    bool forceTagPosition() const;
-    void setForceTagPosition(bool forceTagPosition);
-    ElementPosition indexPosition() const;
-    void setIndexPosition(ElementPosition indexPosition);
-    bool forceIndexPosition() const;
-    void setForceIndexPosition(bool forceTagPosition);
-    std::uint64_t maxFullParseSize() const;
-    void setMaxFullParseSize(std::uint64_t maxFullParseSize);
+    inline void setWritingApplication(std::string_view writingApplication);
+    inline MediaFileHandlingFlags fileHandlingFlags();
+    inline void setFileHandlingFlags(MediaFileHandlingFlags flags);
+    inline bool isForcingFullParse() const;
+    inline void setForceFullParse(bool forceFullParse);
+    inline bool isForcingRewrite() const;
+    inline void setForceRewrite(bool forceRewrite);
+    inline std::size_t minPadding() const;
+    inline void setMinPadding(std::size_t minPadding);
+    inline std::size_t maxPadding() const;
+    inline void setMaxPadding(std::size_t maxPadding);
+    inline std::size_t preferredPadding() const;
+    inline void setPreferredPadding(std::size_t preferredPadding);
+    inline ElementPosition tagPosition() const;
+    inline void setTagPosition(ElementPosition tagPosition);
+    inline bool forceTagPosition() const;
+    inline void setForceTagPosition(bool forceTagPosition);
+    inline ElementPosition indexPosition() const;
+    inline void setIndexPosition(ElementPosition indexPosition);
+    inline bool forceIndexPosition() const;
+    inline void setForceIndexPosition(bool forceTagPosition);
+    inline std::uint64_t maxFullParseSize() const;
+    inline void setMaxFullParseSize(std::uint64_t maxFullParseSize);
 
     // helper functions
     static void writePadding(std::ostream &outputStream, uint64_t size);

@@ -34,7 +34,7 @@ public:
     static constexpr TagType tagType = TagType::VorbisComment;
     static constexpr std::string_view tagName = "Vorbis comment";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
+    inline bool canEncodingBeUsed(TagTextEncoding encoding) const override;
 
     using FieldMapBasedTag<VorbisComment>::value;
     const TagValue &value(KnownField field) const override;
@@ -47,8 +47,8 @@ public:
     void make(std::ostream &stream, VorbisCommentFlags flags, Diagnostics &diag);
 
     const TagValue &vendor() const;
-    void setVendor(const TagValue &vendor);
-    bool supportsMultipleValues(KnownField) const override;
+    inline void setVendor(const TagValue &vendor);
+    inline bool supportsMultipleValues(KnownField) const override;
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;

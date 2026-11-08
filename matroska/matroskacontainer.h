@@ -27,8 +27,8 @@ public:
     ~MatroskaContainer() override;
 
     void validateIndex(Diagnostics &diag, AbortableProgressFeedback &progress);
-    std::uint64_t maxIdLength() const;
-    std::uint64_t maxSizeLength() const;
+    inline std::uint64_t maxIdLength() const;
+    inline std::uint64_t maxSizeLength() const;
     const std::vector<std::unique_ptr<MatroskaSeekInfo>> &seekInfos() const;
 
     const std::vector<std::unique_ptr<MatroskaEditionEntry>> &editionEntires() const;
@@ -36,13 +36,13 @@ public:
     std::size_t chapterCount() const override;
     MatroskaAttachment *createAttachment() override;
     MatroskaAttachment *attachment(std::size_t index) override;
-    std::size_t attachmentCount() const override;
+    inline std::size_t attachmentCount() const override;
     ElementPosition determineElementPosition(std::uint64_t elementId, Diagnostics &diag) const;
     ElementPosition determineTagPosition(Diagnostics &diag) const override;
     ElementPosition determineIndexPosition(Diagnostics &diag) const override;
 
-    virtual bool supportsTitle() const override;
-    virtual std::size_t segmentCount() const override;
+    inline virtual bool supportsTitle() const override;
+    inline virtual std::size_t segmentCount() const override;
 
     void reset() override;
 

@@ -35,10 +35,10 @@ class TAG_PARSER_EXPORT EbmlElement : public GenericFileElement<EbmlElement> {
 public:
     EbmlElement(MatroskaContainer &container, std::uint64_t startOffset);
 
-    std::string idToString() const;
-    bool isParent() const;
-    bool isPadding() const;
-    std::uint64_t firstChildOffset() const;
+    inline std::string idToString() const;
+    inline bool isParent() const;
+    inline bool isPadding() const;
+    inline std::uint64_t firstChildOffset() const;
     std::string readString();
     std::uint64_t readUInteger();
     double readFloat();

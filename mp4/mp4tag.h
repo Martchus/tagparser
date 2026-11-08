@@ -15,7 +15,7 @@ struct TAG_PARSER_EXPORT Mp4ExtendedFieldId {
     Mp4ExtendedFieldId(KnownField field);
 
     operator bool() const;
-    bool matches(const Mp4TagField &field) const;
+    inline bool matches(const Mp4TagField &field) const;
 
     /// \brief mean parameter, usually Mp4TagExtendedMeanIds::iTunes
     std::string_view mean;
@@ -57,7 +57,7 @@ class TAG_PARSER_EXPORT Mp4TagMaker {
 public:
     void make(std::ostream &stream, Diagnostics &diag);
     const Mp4Tag &tag() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
 
 private:
     Mp4TagMaker(Mp4Tag &tag, Diagnostics &diag);
@@ -98,14 +98,14 @@ class TAG_PARSER_EXPORT Mp4Tag final : public FieldMapBasedTag<Mp4Tag> {
     friend class FieldMapBasedTag<Mp4Tag>;
 
 public:
-    Mp4Tag();
+    inline Mp4Tag();
 
     static constexpr TagType tagType = TagType::Mp4Tag;
     static constexpr std::string_view tagName = "MP4/iTunes tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
     bool canEncodingBeUsed(TagTextEncoding encoding) const override;
 
-    bool supportsField(KnownField field) const override;
+    inline bool supportsField(KnownField field) const override;
     using FieldMapBasedTag<Mp4Tag>::value;
     const TagValue &value(KnownField value) const override;
     using FieldMapBasedTag<Mp4Tag>::values;
@@ -118,7 +118,7 @@ public:
     bool setValue(std::string_view mean, std::string_view name, const TagValue &value);
     using FieldMapBasedTag<Mp4Tag>::hasField;
     bool hasField(KnownField value) const override;
-    bool supportsMultipleValues(KnownField) const override;
+    inline bool supportsMultipleValues(KnownField) const override;
 
     void parse(Mp4Atom &metaAtom, Diagnostics &diag);
     Mp4TagMaker prepareMaking(Diagnostics &diag);

@@ -13,30 +13,30 @@ namespace TagParser {
 class TAG_PARSER_EXPORT OggPage {
 public:
     OggPage();
-    OggPage(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);
+    inline OggPage(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);
 
     void parseHeader(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);
     static std::uint32_t computeChecksum(std::istream &stream, std::uint64_t startOffset);
     static void updateChecksum(std::iostream &stream, std::uint64_t startOffset);
 
-    std::uint64_t startOffset() const;
-    std::uint8_t streamStructureVersion() const;
-    std::uint8_t headerTypeFlag() const;
-    bool isContinued() const;
-    bool isFirstpage() const;
-    bool isLastPage() const;
-    bool isLastSegmentUnconcluded() const;
-    std::uint64_t absoluteGranulePosition() const;
-    std::uint32_t streamSerialNumber() const;
-    bool matchesStreamSerialNumber(std::uint32_t streamSerialNumber) const;
-    std::uint32_t sequenceNumber() const;
-    std::uint32_t checksum() const;
-    std::uint8_t segmentTableSize() const;
+    inline std::uint64_t startOffset() const;
+    inline std::uint8_t streamStructureVersion() const;
+    inline std::uint8_t headerTypeFlag() const;
+    inline bool isContinued() const;
+    inline bool isFirstpage() const;
+    inline bool isLastPage() const;
+    inline bool isLastSegmentUnconcluded() const;
+    inline std::uint64_t absoluteGranulePosition() const;
+    inline std::uint32_t streamSerialNumber() const;
+    inline bool matchesStreamSerialNumber(std::uint32_t streamSerialNumber) const;
+    inline std::uint32_t sequenceNumber() const;
+    inline std::uint32_t checksum() const;
+    inline std::uint8_t segmentTableSize() const;
     const std::vector<std::uint32_t> &segmentSizes() const;
-    std::uint32_t headerSize() const;
-    std::uint32_t dataSize() const;
-    std::uint32_t totalSize() const;
-    std::uint64_t dataOffset(std::vector<std::uint32_t>::size_type segmentIndex = 0) const;
+    inline std::uint32_t headerSize() const;
+    inline std::uint32_t dataSize() const;
+    inline std::uint32_t totalSize() const;
+    inline std::uint64_t dataOffset(std::vector<std::uint32_t>::size_type segmentIndex = 0) const;
     static std::uint32_t makeSegmentSizeDenotation(std::ostream &stream, std::uint32_t size);
 
 private:

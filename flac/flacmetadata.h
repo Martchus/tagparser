@@ -33,11 +33,11 @@ public:
     void makeHeader(std::ostream &outputStream);
 
     constexpr std::uint8_t isLast() const;
-    void setLast(std::uint8_t last);
+    inline void setLast(std::uint8_t last);
     constexpr std::uint8_t type() const;
-    void setType(FlacMetaDataBlockType type);
+    inline void setType(FlacMetaDataBlockType type);
     constexpr std::uint32_t dataSize() const;
-    void setDataSize(std::uint32_t dataSize);
+    inline void setDataSize(std::uint32_t dataSize);
 
 private:
     std::uint8_t m_last;
@@ -108,7 +108,7 @@ inline void FlacMetaDataBlockHeader::setDataSize(std::uint32_t dataSize)
 
 class TAG_PARSER_EXPORT FlacMetaDataBlockStreamInfo {
 public:
-    constexpr FlacMetaDataBlockStreamInfo();
+    inline constexpr FlacMetaDataBlockStreamInfo();
 
     void parse(std::string_view buffer);
 
@@ -247,14 +247,14 @@ constexpr const char *FlacMetaDataBlockStreamInfo::md5Sum() const
 
 class TAG_PARSER_EXPORT FlacMetaDataBlockPicture {
 public:
-    FlacMetaDataBlockPicture(TagValue &tagValue);
+    inline FlacMetaDataBlockPicture(TagValue &tagValue);
 
     void parse(std::istream &inputStream, std::uint32_t maxSize);
     std::uint32_t requiredSize() const;
     void make(std::ostream &outputStream);
 
-    std::uint32_t pictureType() const;
-    void setPictureType(std::uint32_t pictureType);
+    inline std::uint32_t pictureType() const;
+    inline void setPictureType(std::uint32_t pictureType);
     TagValue &value();
 
 private:

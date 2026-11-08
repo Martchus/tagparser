@@ -14,7 +14,7 @@ public:
     MpegAudioFrameStream(std::iostream &stream, std::uint64_t startOffset);
     ~MpegAudioFrameStream() override;
 
-    TrackType type() const override;
+    inline TrackType type() const override;
 
     static void addInfo(const MpegAudioFrame &frame, AbstractTrack &track);
 

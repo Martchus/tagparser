@@ -24,8 +24,8 @@ public:
     // methods to control associated file stream
     void open(bool readOnly = false);
     void reopen(bool readOnly = false);
-    bool isOpen() const;
-    bool isReadOnly() const;
+    inline bool isOpen() const;
+    inline bool isReadOnly() const;
     void close();
     void invalidate();
     CppUtilities::NativeFileStream &stream();
@@ -43,13 +43,13 @@ public:
     std::string pathWithoutExtension() const;
     static std::string containingDirectory(std::string_view path);
     std::string containingDirectory() const;
-    static std::string_view pathForOpen(std::string_view url);
+    inline static std::string_view pathForOpen(std::string_view url);
 
     // methods to get, set the file size
-    std::uint64_t size() const;
-    void reportSizeChanged(std::uint64_t newSize);
-    void reportPathChanged(std::string_view newPath);
-    void reportPathChanged(std::string &&newPath);
+    inline std::uint64_t size() const;
+    inline void reportSizeChanged(std::uint64_t newSize);
+    inline void reportPathChanged(std::string_view newPath);
+    inline void reportPathChanged(std::string &&newPath);
 
 protected:
     virtual void invalidated();

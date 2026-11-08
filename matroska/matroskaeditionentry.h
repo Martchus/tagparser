@@ -13,10 +13,10 @@ public:
     ~MatroskaEditionEntry();
 
     EbmlElement *editionEntryElement() const;
-    std::uint64_t id() const;
-    bool isHidden() const;
-    bool isDefault() const;
-    bool isOrdered() const;
+    inline std::uint64_t id() const;
+    inline bool isHidden() const;
+    inline bool isDefault() const;
+    inline bool isOrdered() const;
     std::string label() const;
     const std::vector<std::unique_ptr<MatroskaChapter>> &chapters() const;
 

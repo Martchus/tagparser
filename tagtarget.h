@@ -25,10 +25,10 @@ public:
     explicit TagTarget(std::uint64_t level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
         IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());
 
-    std::uint64_t level() const;
-    void setLevel(std::uint64_t level);
+    inline std::uint64_t level() const;
+    inline void setLevel(std::uint64_t level);
     const std::string &levelName() const;
-    void setLevelName(const std::string &levelName);
+    inline void setLevelName(const std::string &levelName);
     const IdContainerType &tracks() const;
     IdContainerType &tracks();
     const IdContainerType &chapters() const;
@@ -37,12 +37,12 @@ public:
     IdContainerType &editions();
     const IdContainerType &attachments() const;
     IdContainerType &attachments();
-    bool isEmpty() const;
-    void clear();
-    std::string toString(const std::function<TagTargetLevel(std::uint64_t)> &tagTargetMapping) const;
+    inline bool isEmpty() const;
+    inline void clear();
+    inline std::string toString(const std::function<TagTargetLevel(std::uint64_t)> &tagTargetMapping) const;
     std::string toString(TagTargetLevel tagTargetLevel) const;
     bool operator==(const TagTarget &other) const;
-    bool matches(const TagTarget &other) const;
+    inline bool matches(const TagTarget &other) const;
 
 private:
     std::uint64_t m_level;

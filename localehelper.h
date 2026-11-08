@@ -25,8 +25,8 @@ enum class LocaleFormat : std::uint64_t {
 /// \brief The LocaleDetail struct specifies a language and/or country.
 struct TAG_PARSER_EXPORT LocaleDetail : public std::string {
     explicit LocaleDetail();
-    explicit LocaleDetail(std::string_view value, LocaleFormat format);
-    explicit LocaleDetail(std::string &&value, LocaleFormat format);
+    inline explicit LocaleDetail(std::string_view value, LocaleFormat format);
+    inline explicit LocaleDetail(std::string &&value, LocaleFormat format);
     LocaleFormat format = LocaleFormat::Unknown;
     static const LocaleDetail &getEmpty();
 };
@@ -60,9 +60,9 @@ inline LocaleDetail::LocaleDetail(std::string &&value, LocaleFormat format)
 /// \brief The Locale struct specifies a language and/or a country using one or more LocaleDetail objects.
 struct TAG_PARSER_EXPORT Locale : public std::vector<LocaleDetail> {
     explicit Locale() = default;
-    explicit Locale(std::initializer_list<LocaleDetail> details);
+    inline explicit Locale(std::initializer_list<LocaleDetail> details);
     explicit Locale(std::string &&value, LocaleFormat format);
-    explicit Locale(std::string_view value, LocaleFormat format);
+    inline explicit Locale(std::string_view value, LocaleFormat format);
     const LocaleDetail &abbreviatedName(LocaleFormat format) const;
     template <typename LocaleFormat, typename... LocaleFormats>
     const LocaleDetail &abbreviatedName(LocaleFormat format, LocaleFormats... moreFormats) const;

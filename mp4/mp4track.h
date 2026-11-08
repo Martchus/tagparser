@@ -53,12 +53,12 @@ class TAG_PARSER_EXPORT Mpeg4ElementaryStreamInfo {
 public:
     Mpeg4ElementaryStreamInfo();
 
-    bool dependencyFlag() const;
-    bool urlFlag() const;
-    bool ocrFlag() const;
-    std::uint8_t priority() const;
-    std::uint8_t streamTypeId() const;
-    bool upstream() const;
+    inline bool dependencyFlag() const;
+    inline bool urlFlag() const;
+    inline bool ocrFlag() const;
+    inline std::uint8_t priority() const;
+    inline std::uint8_t streamTypeId() const;
+    inline bool upstream() const;
 
     std::uint16_t id;
     std::uint8_t esDescFlags;
@@ -126,10 +126,10 @@ public:
     // getter methods specific for MP4 tracks
     Mp4Atom &trakAtom();
     const std::vector<std::uint32_t> &sampleSizes() const;
-    unsigned int chunkOffsetSize() const;
-    void setChunkOffsetSize(unsigned int chunkOffsetSize);
-    std::uint32_t chunkCount() const;
-    std::uint32_t sampleToChunkEntryCount() const;
+    inline unsigned int chunkOffsetSize() const;
+    inline void setChunkOffsetSize(unsigned int chunkOffsetSize);
+    inline std::uint32_t chunkCount() const;
+    inline std::uint32_t sampleToChunkEntryCount() const;
     const Mpeg4ElementaryStreamInfo *mpeg4ElementaryStreamInfo() const;
     const AvcConfiguration *avcConfiguration() const;
     const Av1Configuration *av1Configuration() const;

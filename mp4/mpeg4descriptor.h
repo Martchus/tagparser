@@ -35,9 +35,9 @@ public:
     Mpeg4Descriptor(ContainerType &container, std::uint64_t startOffset, std::uint64_t maxSize);
 
     std::string idToString() const;
-    bool isParent() const;
-    bool isPadding() const;
-    std::uint64_t firstChildOffset() const;
+    inline bool isParent() const;
+    inline bool isPadding() const;
+    inline std::uint64_t firstChildOffset() const;
 
 protected:
     Mpeg4Descriptor(Mpeg4Descriptor &parent, std::uint64_t startOffset);

@@ -425,7 +425,7 @@ private:
     void parseSideInfo(AacIcsInfo &ics, bool scaleFlag);
     std::uint8_t parseExcludedChannels();
     std::uint8_t parseDynamicRange();
-    static std::int8_t sbrLog2(const std::int8_t val);
+    inline static std::int8_t sbrLog2(const std::int8_t val);
     std::int16_t sbrHuffmanDec(SbrHuffTab table);
     void parseSbrGrid(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel);
     void parseSbrDtdf(std::shared_ptr<AacSbrInfo> &sbr, std::uint8_t channel);

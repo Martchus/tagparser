@@ -38,7 +38,7 @@ class TAG_PARSER_EXPORT Id3v2TagMaker {
 public:
     void make(std::ostream &stream, std::uint32_t padding, Diagnostics &diag);
     const Id3v2Tag &tag() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
 
 private:
     Id3v2TagMaker(Id3v2Tag &tag, Diagnostics &diag);
@@ -80,15 +80,15 @@ class TAG_PARSER_EXPORT Id3v2Tag final : public FieldMapBasedTag<Id3v2Tag> {
     friend class Id3v2TagMaker;
 
 public:
-    Id3v2Tag();
+    inline Id3v2Tag();
 
     static constexpr TagType tagType = TagType::Id3v2Tag;
     static constexpr std::string_view tagName = "ID3v2 tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf16LittleEndian;
-    TagTextEncoding proposedTextEncoding() const override;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
-    bool supportsDescription(KnownField field) const override;
-    bool supportsMimeType(KnownField field) const override;
+    inline TagTextEncoding proposedTextEncoding() const override;
+    inline bool canEncodingBeUsed(TagTextEncoding encoding) const override;
+    inline bool supportsDescription(KnownField field) const override;
+    inline bool supportsMimeType(KnownField field) const override;
     bool supportsMultipleValues(KnownField field) const override;
     bool supportsMultipleValues(IdentifierType id) const;
     void ensureTextValuesAreProperlyEncoded() override;
@@ -96,20 +96,20 @@ public:
     void parse(std::istream &sourceStream, const std::uint64_t maximalSize, Diagnostics &diag);
     Id3v2TagMaker prepareMaking(Diagnostics &diag);
     void make(std::ostream &targetStream, std::uint32_t padding, Diagnostics &diag);
-    Id3v2HandlingFlags handlingFlags() const;
-    void setHandlingFlags(Id3v2HandlingFlags flags);
+    inline Id3v2HandlingFlags handlingFlags() const;
+    inline void setHandlingFlags(Id3v2HandlingFlags flags);
 
-    std::uint8_t majorVersion() const;
-    std::uint8_t revisionVersion() const;
+    inline std::uint8_t majorVersion() const;
+    inline std::uint8_t revisionVersion() const;
     void setVersion(std::uint8_t majorVersion, std::uint8_t revisionVersion);
-    bool isVersionSupported() const;
-    std::uint8_t flags() const;
-    bool isUnsynchronisationUsed() const;
-    bool hasExtendedHeader() const;
-    bool isExperimental() const;
-    bool hasFooter() const;
-    std::uint32_t extendedHeaderSize() const;
-    std::uint64_t paddingSize() const;
+    inline bool isVersionSupported() const;
+    inline std::uint8_t flags() const;
+    inline bool isUnsynchronisationUsed() const;
+    inline bool hasExtendedHeader() const;
+    inline bool isExperimental() const;
+    inline bool hasFooter() const;
+    inline std::uint32_t extendedHeaderSize() const;
+    inline std::uint64_t paddingSize() const;
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;

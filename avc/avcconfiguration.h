@@ -11,7 +11,7 @@ class MediaFormat;
 class Diagnostics;
 
 struct TAG_PARSER_EXPORT AvcConfiguration {
-    AvcConfiguration();
+    inline AvcConfiguration();
     std::uint8_t profileIndication;
     std::uint8_t profileCompat;
     std::uint8_t levelIndication;

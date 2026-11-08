@@ -16,12 +16,12 @@ public:
     FlacStream(MediaFileInfo &mediaFileInfo, std::uint64_t startOffset);
     ~FlacStream() override;
 
-    TrackType type() const override;
+    inline TrackType type() const override;
     VorbisComment *vorbisComment() const;
     VorbisComment *createVorbisComment();
     bool removeVorbisComment();
-    std::uint32_t paddingSize() const;
-    std::uint32_t streamOffset() const;
+    inline std::uint32_t paddingSize() const;
+    inline std::uint32_t streamOffset() const;
 
     std::streamoff makeHeader(std::ostream &stream, Diagnostics &diag);
     static void makePadding(std::ostream &stream, std::uint32_t size, bool isLast, Diagnostics &diag);

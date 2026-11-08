@@ -28,7 +28,7 @@ class OggContainer;
  */
 struct TAG_PARSER_EXPORT OggParameter {
     constexpr OggParameter();
-    void set(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
+    inline void set(std::size_t pageIndex, std::size_t segmentIndex, bool lastMetaDataBlock, GeneralMediaFormat streamFormat = GeneralMediaFormat::Vorbis);
 
     std::size_t firstPageIndex;
     std::size_t firstSegmentIndex;
@@ -70,13 +70,13 @@ class TAG_PARSER_EXPORT OggVorbisComment final : public VorbisComment {
     friend class OggContainer;
 
 public:
-    OggVorbisComment();
+    inline OggVorbisComment();
 
     static constexpr TagType tagType = TagType::OggVorbisComment;
     static constexpr std::string_view tagName = "Ogg Vorbis comment";
-    TagType type() const override;
+    inline TagType type() const override;
     std::string_view typeName() const override;
-    bool supportsTarget() const override;
+    inline bool supportsTarget() const override;
 
     OggParameter &oggParams();
     const OggParameter &oggParams() const;
@@ -138,8 +138,8 @@ public:
     OggContainer(MediaFileInfo &fileInfo, std::uint64_t startOffset);
     ~OggContainer() override;
 
-    bool isChecksumValidationEnabled() const;
-    void setChecksumValidationEnabled(bool enabled);
+    inline bool isChecksumValidationEnabled() const;
+    inline void setChecksumValidationEnabled(bool enabled);
     void reset() override;
 
     OggVorbisComment *createTag(const TagTarget &target = TagTarget()) override;

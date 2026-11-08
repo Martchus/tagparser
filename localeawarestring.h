@@ -14,7 +14,7 @@ namespace TagParser {
 class TAG_PARSER_EXPORT LocaleAwareString : public std::string {
 public:
     explicit LocaleAwareString(const std::string &value = std::string());
-    explicit LocaleAwareString(std::string &&value);
+    inline explicit LocaleAwareString(std::string &&value);
     ~LocaleAwareString();
 
     const Locale &locale() const;

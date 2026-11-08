@@ -31,7 +31,7 @@ class TAG_PARSER_EXPORT MatroskaTagMaker {
 public:
     void make(std::ostream &stream) const;
     const MatroskaTag &tag() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
 
 private:
     MatroskaTagMaker(MatroskaTag &tag, Diagnostics &diag);
@@ -73,20 +73,20 @@ class TAG_PARSER_EXPORT MatroskaTag final : public FieldMapBasedTag<MatroskaTag>
     friend class FieldMapBasedTag<MatroskaTag>;
 
 public:
-    MatroskaTag();
+    inline MatroskaTag();
 
     static constexpr TagType tagType = TagType::MatroskaTag;
     static constexpr std::string_view tagName = "Matroska tag";
     static constexpr TagTextEncoding defaultTextEncoding = TagTextEncoding::Utf8;
-    bool canEncodingBeUsed(TagTextEncoding encoding) const override;
-    bool supportsTarget() const override;
-    bool supportsMultipleValues(KnownField field) const override;
-    TagTargetLevel targetLevel() const override;
+    inline bool canEncodingBeUsed(TagTextEncoding encoding) const override;
+    inline bool supportsTarget() const override;
+    inline bool supportsMultipleValues(KnownField field) const override;
+    inline TagTargetLevel targetLevel() const override;
 
     void parse(EbmlElement &tagElement, Diagnostics &diag);
     void parse2(EbmlElement &tagElement, MatroskaTagFlags flags, Diagnostics &diag);
-    MatroskaTagMaker prepareMaking(Diagnostics &diag);
-    void make(std::ostream &stream, Diagnostics &diag);
+    inline MatroskaTagMaker prepareMaking(Diagnostics &diag);
+    inline void make(std::ostream &stream, Diagnostics &diag);
 
 protected:
     IdentifierType internallyGetFieldId(KnownField field) const;

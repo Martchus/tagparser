@@ -12,7 +12,7 @@ public:
     AdtsStream(std::iostream &stream, std::uint64_t startOffset);
     ~AdtsStream() override;
 
-    TrackType type() const override;
+    inline TrackType type() const override;
 
 protected:
     void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;

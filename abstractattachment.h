@@ -20,12 +20,12 @@ public:
     virtual ~StreamDataBlock();
 
     std::istream &stream() const;
-    std::uint64_t startOffset() const;
-    std::uint64_t endOffset() const;
-    std::uint64_t size() const;
+    inline std::uint64_t startOffset() const;
+    inline std::uint64_t endOffset() const;
+    inline std::uint64_t size() const;
     const std::unique_ptr<char[]> &buffer() const;
     void makeBuffer() const;
-    void discardBuffer();
+    inline void discardBuffer();
     void copyTo(std::ostream &stream) const;
 
 protected:
@@ -107,22 +107,22 @@ struct AbstractAttachmentPrivate;
 class TAG_PARSER_EXPORT AbstractAttachment {
 public:
     const std::string &description() const;
-    void setDescription(std::string_view description);
+    inline void setDescription(std::string_view description);
     const std::string &name() const;
-    void setName(std::string_view name);
+    inline void setName(std::string_view name);
     const std::string &mimeType() const;
-    void setMimeType(std::string_view mimeType);
-    std::uint64_t id() const;
+    inline void setMimeType(std::string_view mimeType);
+    inline std::uint64_t id() const;
     void setId(std::uint64_t id);
     const StreamDataBlock *data() const;
-    void setData(std::unique_ptr<StreamDataBlock> &&data);
+    inline void setData(std::unique_ptr<StreamDataBlock> &&data);
     void setFile(std::string_view path, Diagnostics &diag, AbortableProgressFeedback &progress);
-    bool isDataFromFile() const;
+    inline bool isDataFromFile() const;
     std::string label() const;
     void clear();
-    bool isIgnored() const;
-    void setIgnored(bool ignored);
-    bool isEmpty() const;
+    inline bool isIgnored() const;
+    inline void setIgnored(bool ignored);
+    inline bool isEmpty() const;
 
 protected:
     explicit AbstractAttachment();

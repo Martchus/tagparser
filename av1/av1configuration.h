@@ -15,7 +15,7 @@ class MediaFormat;
 class Diagnostics;
 
 struct TAG_PARSER_EXPORT Av1Configuration {
-    Av1Configuration();
+    inline Av1Configuration();
     std::uint64_t markerAndVersion;
     std::uint64_t profileAndLevel;
     std::uint8_t tier;

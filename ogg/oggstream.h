@@ -17,8 +17,8 @@ public:
     OggStream(OggContainer &container, std::vector<OggPage>::size_type startPage);
     ~OggStream() override;
 
-    TrackType type() const override;
-    std::size_t startPage() const;
+    inline TrackType type() const override;
+    inline std::size_t startPage() const;
 
 protected:
     void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;

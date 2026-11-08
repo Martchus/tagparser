@@ -44,7 +44,7 @@ public:
     double mpegVersion() const;
     int layer() const;
     constexpr bool isProtectedByCrc() const;
-    std::uint16_t bitrate() const;
+    inline std::uint16_t bitrate() const;
     std::uint32_t samplingFrequency() const;
     constexpr std::uint32_t paddingSize() const;
     MpegChannelMode channelMode() const;

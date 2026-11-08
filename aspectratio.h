@@ -16,7 +16,7 @@ struct TAG_PARSER_EXPORT AspectRatio {
     constexpr explicit AspectRatio(std::uint16_t numerator, std::uint16_t denominator);
     constexpr bool isValid() const;
     constexpr bool isExtended() const;
-    std::string toString() const;
+    inline std::string toString() const;
 
     std::uint8_t type;
     std::uint16_t numerator;

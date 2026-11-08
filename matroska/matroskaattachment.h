@@ -14,7 +14,7 @@ class TAG_PARSER_EXPORT MatroskaAttachmentMaker {
 public:
     void make(std::ostream &stream, Diagnostics &diag) const;
     const MatroskaAttachment &attachment() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
     void bufferCurrentAttachments(Diagnostics &diag);
 
 private:
@@ -43,10 +43,10 @@ inline std::uint64_t MatroskaAttachmentMaker::requiredSize() const
 
 class TAG_PARSER_EXPORT MatroskaAttachment final : public AbstractAttachment {
 public:
-    MatroskaAttachment();
+    inline MatroskaAttachment();
 
     void parse(EbmlElement *attachedFileElement, Diagnostics &diag);
-    MatroskaAttachmentMaker prepareMaking(Diagnostics &diag);
+    inline MatroskaAttachmentMaker prepareMaking(Diagnostics &diag);
     void make(std::ostream &stream, Diagnostics &diag);
 
     EbmlElement *attachedFileElement() const;

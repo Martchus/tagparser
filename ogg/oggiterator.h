@@ -14,9 +14,9 @@ public:
 
     void clear(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize);
     std::istream &stream();
-    void setStream(std::istream &stream);
-    std::uint64_t startOffset() const;
-    std::uint64_t streamSize() const;
+    inline void setStream(std::istream &stream);
+    inline std::uint64_t startOffset() const;
+    inline std::uint64_t streamSize() const;
     void reset();
     void nextPage();
     void nextSegment();
@@ -25,20 +25,20 @@ public:
     const std::vector<OggPage> &pages() const;
     std::vector<OggPage> &pages();
     const OggPage &currentPage() const;
-    std::uint64_t currentPageOffset() const;
-    std::vector<OggPage>::size_type currentPageIndex() const;
-    void setPageIndex(std::vector<OggPage>::size_type index);
-    void setSegmentIndex(std::vector<std::uint32_t>::size_type index);
-    std::vector<std::uint32_t>::size_type currentSegmentIndex() const;
-    std::uint64_t currentSegmentOffset() const;
-    std::uint64_t currentCharacterOffset() const;
-    std::uint64_t tellg() const;
-    std::uint32_t currentSegmentSize() const;
-    std::uint64_t remainingBytesInCurrentSegment() const;
-    std::uint64_t bytesReadFromCurrentSegment() const;
-    void setFilter(std::uint32_t streamSerialId);
-    void removeFilter();
-    bool isLastPageFetched() const;
+    inline std::uint64_t currentPageOffset() const;
+    inline std::vector<OggPage>::size_type currentPageIndex() const;
+    inline void setPageIndex(std::vector<OggPage>::size_type index);
+    inline void setSegmentIndex(std::vector<std::uint32_t>::size_type index);
+    inline std::vector<std::uint32_t>::size_type currentSegmentIndex() const;
+    inline std::uint64_t currentSegmentOffset() const;
+    inline std::uint64_t currentCharacterOffset() const;
+    inline std::uint64_t tellg() const;
+    inline std::uint32_t currentSegmentSize() const;
+    inline std::uint64_t remainingBytesInCurrentSegment() const;
+    inline std::uint64_t bytesReadFromCurrentSegment() const;
+    inline void setFilter(std::uint32_t streamSerialId);
+    inline void removeFilter();
+    inline bool isLastPageFetched() const;
     void read(char *buffer, std::size_t count);
     std::size_t readAll(char *buffer, std::size_t max);
     void ignore(std::size_t count = 1);
@@ -53,7 +53,7 @@ public:
 
 private:
     bool fetchNextPage();
-    bool matchesFilter(const OggPage &page);
+    inline bool matchesFilter(const OggPage &page);
 
     std::istream *m_stream;
     std::uint64_t m_startOffset;

@@ -180,11 +180,11 @@ class TAG_PARSER_EXPORT Tag {
 public:
     virtual ~Tag();
 
-    virtual TagType type() const;
-    virtual std::string_view typeName() const;
+    inline virtual TagType type() const;
+    inline virtual std::string_view typeName() const;
     std::string toString() const;
-    virtual TagTextEncoding proposedTextEncoding() const;
-    virtual bool canEncodingBeUsed(TagTextEncoding encoding) const;
+    inline virtual TagTextEncoding proposedTextEncoding() const;
+    inline virtual bool canEncodingBeUsed(TagTextEncoding encoding) const;
     virtual const TagValue &value(KnownField field) const = 0;
     virtual std::vector<const TagValue *> values(KnownField field) const;
     virtual bool setValue(KnownField field, const TagValue &value) = 0;
@@ -192,21 +192,21 @@ public:
     virtual bool hasField(KnownField field) const = 0;
     virtual void removeAllFields() = 0;
     const std::string &version() const;
-    std::uint64_t size() const;
-    virtual bool supportsTarget() const;
+    inline std::uint64_t size() const;
+    inline virtual bool supportsTarget() const;
     const TagTarget &target() const;
     TagTarget &target();
-    void setTarget(const TagTarget &target);
-    virtual TagTargetLevel targetLevel() const;
-    std::string_view targetLevelName() const;
-    bool isTargetingLevel(TagTargetLevel tagTargetLevel) const;
-    std::string targetString() const;
+    inline void setTarget(const TagTarget &target);
+    inline virtual TagTargetLevel targetLevel() const;
+    inline std::string_view targetLevelName() const;
+    inline bool isTargetingLevel(TagTargetLevel tagTargetLevel) const;
+    inline std::string targetString() const;
     virtual std::size_t fieldCount() const = 0;
     virtual bool supportsField(KnownField field) const = 0;
-    virtual TagDataType proposedDataType(KnownField field) const;
-    virtual bool supportsDescription(KnownField field) const;
-    virtual bool supportsMimeType(KnownField field) const;
-    virtual bool supportsMultipleValues(KnownField field) const;
+    inline virtual TagDataType proposedDataType(KnownField field) const;
+    inline virtual bool supportsDescription(KnownField field) const;
+    inline virtual bool supportsMimeType(KnownField field) const;
+    inline virtual bool supportsMultipleValues(KnownField field) const;
     virtual std::size_t insertValues(const Tag &from, bool overwrite);
     virtual void ensureTextValuesAreProperlyEncoded() = 0;
 

@@ -33,7 +33,7 @@ class TAG_PARSER_EXPORT MatroskaTagFieldMaker {
 public:
     void make(std::ostream &stream) const;
     const MatroskaTagField &field() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
 
 private:
     MatroskaTagFieldMaker(MatroskaTagField &field, Diagnostics &diag);
@@ -74,11 +74,11 @@ public:
     void reparse(EbmlElement &simpleTagElement, Diagnostics &diag, bool parseNestedFields = true);
     MatroskaTagFieldMaker prepareMaking(Diagnostics &diag);
     void make(std::ostream &stream, Diagnostics &diag);
-    bool isAdditionalTypeInfoUsed() const;
-    bool supportsNestedFields() const;
+    inline bool isAdditionalTypeInfoUsed() const;
+    inline bool supportsNestedFields() const;
 
-    static typename std::string fieldIdFromString(std::string_view idString);
-    static std::string fieldIdToString(const std::string &id);
+    inline static typename std::string fieldIdFromString(std::string_view idString);
+    inline static std::string fieldIdToString(const std::string &id);
     static void normalizeId(std::string &id);
 };
 

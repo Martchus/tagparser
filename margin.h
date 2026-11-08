@@ -17,15 +17,15 @@ class TAG_PARSER_EXPORT Margin {
 public:
     constexpr explicit Margin(std::uint32_t top = 0, std::uint32_t left = 0, std::uint32_t bottom = 0, std::uint32_t right = 0);
     constexpr std::uint32_t top() const;
-    void setTop(std::uint32_t top);
+    inline void setTop(std::uint32_t top);
     constexpr std::uint32_t left() const;
-    void setLeft(std::uint32_t left);
+    inline void setLeft(std::uint32_t left);
     constexpr std::uint32_t bottom() const;
-    void setBottom(std::uint32_t bottom);
+    inline void setBottom(std::uint32_t bottom);
     constexpr std::uint32_t right() const;
-    void setRight(std::uint32_t right);
+    inline void setRight(std::uint32_t right);
     constexpr bool isNull() const;
-    std::string toString() const;
+    inline std::string toString() const;
 
 private:
     std::uint32_t m_top;

@@ -82,7 +82,7 @@ struct TAG_PARSER_EXPORT Popularity {
     TagType scale = TagType::Unspecified;
 
     bool scaleTo(TagType targetScale);
-    Popularity scaled(TagType targetScale) const;
+    inline Popularity scaled(TagType targetScale) const;
     std::string toString() const;
     static Popularity fromString(std::string_view str);
     static Popularity fromString(std::string_view str, TagType scale);
@@ -166,7 +166,7 @@ public:
     explicit TagValue(CppUtilities::DateTime value);
     explicit TagValue(const CppUtilities::DateTimeExpression &value);
     explicit TagValue(CppUtilities::TimeSpan value);
-    explicit TagValue(const Popularity &value);
+    inline explicit TagValue(const Popularity &value);
     TagValue(const TagValue &other);
     TagValue(TagValue &&other);
     ~TagValue();
@@ -174,21 +174,21 @@ public:
     // operators
     TagValue &operator=(const TagValue &other);
     TagValue &operator=(TagValue &&other);
-    bool operator==(const TagValue &other) const;
-    bool operator!=(const TagValue &other) const;
-    operator bool() const;
+    inline bool operator==(const TagValue &other) const;
+    inline bool operator!=(const TagValue &other) const;
+    inline operator bool() const;
 
     // methods
-    bool isNull() const;
-    bool isEmpty() const;
-    void clearData();
+    inline bool isNull() const;
+    inline bool isEmpty() const;
+    inline void clearData();
     void clearMetadata();
-    void clearDataAndMetadata();
-    TagDataType type() const;
-    std::string toString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
+    inline void clearDataAndMetadata();
+    inline TagDataType type() const;
+    inline std::string toString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     std::string toDisplayString() const;
     void toString(std::string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
-    std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
+    inline std::u16string toWString(TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     void toWString(std::u16string &result, TagTextEncoding encoding = TagTextEncoding::Unspecified) const;
     std::int32_t toInteger() const;
     std::uint64_t toUnsignedInteger() const;
@@ -199,46 +199,46 @@ public:
     CppUtilities::DateTimeExpression toDateTimeExpression() const;
     Popularity toPopularity() const;
     Popularity toScaledPopularity(TagType scale = TagType::Unspecified) const;
-    std::size_t dataSize() const;
+    inline std::size_t dataSize() const;
     char *dataPointer();
     const char *dataPointer() const;
-    std::string_view data() const;
-    const std::string &description() const;
-    void setDescription(std::string_view value, TagTextEncoding encoding = TagTextEncoding::Latin1);
-    const std::string &mimeType() const;
-    void setMimeType(std::string_view mimeType);
-    const Locale &locale() const;
-    Locale &locale();
-    void setLocale(const Locale &locale);
-    TagValueFlags flags() const;
-    void setFlags(TagValueFlags flags);
-    bool isLabeledAsReadonly() const;
-    void setReadonly(bool readOnly);
-    const std::unordered_map<std::string, std::string> &nativeData() const;
-    std::unordered_map<std::string, std::string> &nativeData();
-    TagTextEncoding dataEncoding() const;
+    inline std::string_view data() const;
+    inline const std::string &description() const;
+    inline void setDescription(std::string_view value, TagTextEncoding encoding = TagTextEncoding::Latin1);
+    inline const std::string &mimeType() const;
+    inline void setMimeType(std::string_view mimeType);
+    inline const Locale &locale() const;
+    inline Locale &locale();
+    inline void setLocale(const Locale &locale);
+    inline TagValueFlags flags() const;
+    inline void setFlags(TagValueFlags flags);
+    inline bool isLabeledAsReadonly() const;
+    inline void setReadonly(bool readOnly);
+    inline const std::unordered_map<std::string, std::string> &nativeData() const;
+    inline std::unordered_map<std::string, std::string> &nativeData();
+    inline TagTextEncoding dataEncoding() const;
     void convertDataEncoding(TagTextEncoding encoding);
     void convertDataEncodingForTag(const Tag *tag);
-    TagTextEncoding descriptionEncoding() const;
+    inline TagTextEncoding descriptionEncoding() const;
     void convertDescriptionEncoding(TagTextEncoding encoding);
     static const TagValue &empty();
 
     void assignText(const char *text, std::size_t textSize, TagTextEncoding textEncoding = TagTextEncoding::Latin1,
         TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    void assignText(
+    inline void assignText(
         const std::string &text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
-    void assignText(
+    inline void assignText(
         std::string_view text, TagTextEncoding textEncoding = TagTextEncoding::Latin1, TagTextEncoding convertTo = TagTextEncoding::Unspecified);
     void assignInteger(int value);
     void assignUnsignedInteger(std::uint64_t value);
-    void assignStandardGenreIndex(int index);
+    inline void assignStandardGenreIndex(int index);
     void assignData(const char *data, std::size_t length, TagDataType type = TagDataType::Binary, TagTextEncoding encoding = TagTextEncoding::Latin1);
     void assignData(std::unique_ptr<char[]> &&data, std::size_t length, TagDataType type = TagDataType::Binary,
         TagTextEncoding encoding = TagTextEncoding::Latin1);
-    void assignPosition(PositionInSet value);
-    void assignTimeSpan(CppUtilities::TimeSpan value);
-    void assignDateTime(CppUtilities::DateTime value);
-    void assignDateTimeExpression(const CppUtilities::DateTimeExpression &value);
+    inline void assignPosition(PositionInSet value);
+    inline void assignTimeSpan(CppUtilities::TimeSpan value);
+    inline void assignDateTime(CppUtilities::DateTime value);
+    inline void assignDateTimeExpression(const CppUtilities::DateTimeExpression &value);
     void assignPopularity(const Popularity &value);
 
     static void stripBom(const char *&text, std::size_t &length, TagTextEncoding encoding);
@@ -249,8 +249,8 @@ public:
             * = nullptr>
     static std::vector<std::string> toStrings(const ContainerType &values, TagTextEncoding encoding = TagTextEncoding::Utf8);
     bool compareTo(const TagValue &other, TagValueComparisionFlags options = TagValueComparisionFlags::None) const;
-    bool compareData(const TagValue &other, bool ignoreCase = false) const;
-    static bool compareData(const std::string &data1, const std::string &data2, bool ignoreCase = false);
+    inline bool compareData(const TagValue &other, bool ignoreCase = false) const;
+    inline static bool compareData(const std::string &data1, const std::string &data2, bool ignoreCase = false);
     static bool compareData(const char *data1, std::size_t size1, const char *data2, std::size_t size2, bool ignoreCase = false);
 
 private:

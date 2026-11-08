@@ -19,17 +19,17 @@ class TAG_PARSER_EXPORT AbstractChapter {
 public:
     virtual ~AbstractChapter();
 
-    std::uint64_t id() const;
+    inline std::uint64_t id() const;
     const std::vector<LocaleAwareString> &names() const;
-    CppUtilities::TimeSpan startTime() const;
-    CppUtilities::TimeSpan endTime() const;
+    inline CppUtilities::TimeSpan startTime() const;
+    inline CppUtilities::TimeSpan endTime() const;
     const std::vector<std::uint64_t> &tracks() const;
-    bool isHidden() const;
-    bool isEnabled() const;
+    inline bool isHidden() const;
+    inline bool isEnabled() const;
     std::string label() const;
     virtual AbstractChapter *nestedChapter(std::size_t index);
     virtual const AbstractChapter *nestedChapter(std::size_t index) const;
-    virtual std::size_t nestedChapterCount() const;
+    inline virtual std::size_t nestedChapterCount() const;
     virtual void clear();
     void parse(Diagnostics &diag, AbortableProgressFeedback &progress);
     void parseNested(Diagnostics &diag, AbortableProgressFeedback &progress);

@@ -156,7 +156,7 @@ inline bool DiagMessage::operator==(const DiagMessage &other) const
 class TAG_PARSER_EXPORT Diagnostics : public std::vector<DiagMessage> {
 public:
     Diagnostics() = default;
-    Diagnostics(std::initializer_list<DiagMessage> list);
+    inline Diagnostics(std::initializer_list<DiagMessage> list);
 
     bool has(DiagLevel level) const;
     DiagLevel level() const;

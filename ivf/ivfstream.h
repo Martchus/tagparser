@@ -12,7 +12,7 @@ public:
     IvfStream(std::iostream &stream, std::uint64_t startOffset);
     ~IvfStream() override;
 
-    TrackType type() const override;
+    inline TrackType type() const override;
 
     void readFrame(Diagnostics &diag);
 

@@ -11,7 +11,7 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT MatroskaSeekInfo {
 public:
-    MatroskaSeekInfo();
+    inline MatroskaSeekInfo();
 
     const std::vector<EbmlElement *> &seekHeadElements() const;
     const std::vector<std::pair<EbmlElement::IdentifierType, std::uint64_t>> &info() const;

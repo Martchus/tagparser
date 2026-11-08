@@ -41,7 +41,7 @@ class TAG_PARSER_EXPORT Mp4Atom : public GenericFileElement<Mp4Atom> {
 public:
     Mp4Atom(ContainerType &container, std::uint64_t startOffset);
 
-    std::string idToString() const;
+    inline std::string idToString() const;
     bool isParent() const;
     bool isPadding() const;
     std::uint64_t firstChildOffset() const;

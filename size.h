@@ -21,15 +21,15 @@ public:
 
     constexpr std::uint32_t width() const;
     constexpr std::uint32_t height() const;
-    void setWidth(std::uint32_t value);
-    void setHeight(std::uint32_t value);
+    inline void setWidth(std::uint32_t value);
+    inline void setHeight(std::uint32_t value);
     constexpr std::uint32_t resolution() const;
     std::string_view abbreviation() const;
 
     bool constexpr isNull() const;
     bool constexpr operator==(const Size &other) const;
     bool constexpr operator>=(const Size &other) const;
-    std::string toString() const;
+    inline std::string toString() const;
 
 private:
     std::uint32_t m_width;

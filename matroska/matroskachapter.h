@@ -16,7 +16,7 @@ public:
 
     MatroskaChapter *nestedChapter(std::size_t index) override;
     const MatroskaChapter *nestedChapter(std::size_t index) const override;
-    std::size_t nestedChapterCount() const override;
+    inline std::size_t nestedChapterCount() const override;
     void clear() override;
 
 protected:

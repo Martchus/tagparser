@@ -26,8 +26,8 @@ public:
     void make(CppUtilities::BinaryWriter &writer);
     const Id3v2Frame &field() const;
     const std::unique_ptr<char[]> &data() const;
-    std::uint32_t dataSize() const;
-    std::uint32_t requiredSize() const;
+    inline std::uint32_t dataSize() const;
+    inline std::uint32_t requiredSize() const;
 
 private:
     Id3v2FrameMaker(Id3v2Frame &frame, std::uint8_t version, Diagnostics &diag);
@@ -99,25 +99,25 @@ public:
     // member access
     const std::vector<TagValue> &additionalValues() const;
     std::vector<TagValue> &additionalValues();
-    bool isAdditionalTypeInfoUsed() const;
-    bool isValid() const;
-    bool hasPaddingReached() const;
-    std::uint16_t flag() const;
-    void setFlag(std::uint16_t value);
-    std::uint32_t totalSize() const;
-    std::uint32_t dataSize() const;
-    bool toDiscardWhenUnknownAndTagIsAltered() const;
-    bool toDiscardWhenUnknownAndFileIsAltered() const;
-    bool isReadOnly() const;
-    bool isCompressed() const;
-    bool isEncrypted() const;
-    bool hasGroupInformation() const;
-    bool isUnsynchronized() const;
-    bool hasDataLengthIndicator() const;
-    std::uint8_t group() const;
-    void setGroup(std::uint8_t value);
-    std::uint32_t parsedVersion() const;
-    bool supportsNestedFields() const;
+    inline bool isAdditionalTypeInfoUsed() const;
+    inline bool isValid() const;
+    inline bool hasPaddingReached() const;
+    inline std::uint16_t flag() const;
+    inline void setFlag(std::uint16_t value);
+    inline std::uint32_t totalSize() const;
+    inline std::uint32_t dataSize() const;
+    inline bool toDiscardWhenUnknownAndTagIsAltered() const;
+    inline bool toDiscardWhenUnknownAndFileIsAltered() const;
+    inline bool isReadOnly() const;
+    inline bool isCompressed() const;
+    inline bool isEncrypted() const;
+    inline bool hasGroupInformation() const;
+    inline bool isUnsynchronized() const;
+    inline bool hasDataLengthIndicator() const;
+    inline std::uint8_t group() const;
+    inline void setGroup(std::uint8_t value);
+    inline std::uint32_t parsedVersion() const;
+    inline bool supportsNestedFields() const;
 
     // parsing helper
     TagTextEncoding parseTextEncodingByte(std::uint8_t textEncodingByte, Diagnostics &diag);
@@ -140,7 +140,7 @@ public:
     static void makeComment(
         std::unique_ptr<char[]> &buffer, std::uint32_t &bufferSize, const TagValue &comment, std::uint8_t version, Diagnostics &diag);
 
-    static IdentifierType fieldIdFromString(std::string_view idString);
+    inline static IdentifierType fieldIdFromString(std::string_view idString);
     static std::string fieldIdToString(IdentifierType id);
 
 private:

@@ -67,7 +67,7 @@ public:
     Mp4TagFieldMaker(Mp4TagFieldMaker &&) = default;
     void make(std::ostream &stream);
     const Mp4TagField &field() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
 
 private:
     /// \cond
@@ -130,20 +130,20 @@ public:
 
     const std::vector<AdditionalData> &additionalData() const;
     std::vector<AdditionalData> &additionalData();
-    bool isAdditionalTypeInfoUsed() const;
+    inline bool isAdditionalTypeInfoUsed() const;
     const std::string &name() const;
-    void setName(const std::string &name);
+    inline void setName(const std::string &name);
     const std::string &mean() const;
-    void setMean(const std::string &mean);
-    std::uint32_t parsedRawDataType() const;
-    std::uint16_t countryIndicator() const;
-    std::uint16_t languageIndicator() const;
-    bool supportsNestedFields() const;
+    inline void setMean(const std::string &mean);
+    inline std::uint32_t parsedRawDataType() const;
+    inline std::uint16_t countryIndicator() const;
+    inline std::uint16_t languageIndicator() const;
+    inline bool supportsNestedFields() const;
     std::vector<std::uint32_t> expectedRawDataTypes() const;
     std::uint32_t appropriateRawDataType() const;
     std::uint32_t appropriateRawDataTypeForValue(const TagValue &value) const;
 
-    static IdentifierType fieldIdFromString(std::string_view idString);
+    inline static IdentifierType fieldIdFromString(std::string_view idString);
     static std::string fieldIdToString(IdentifierType id);
 
 private:

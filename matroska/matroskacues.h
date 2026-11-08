@@ -12,7 +12,7 @@ class TAG_PARSER_EXPORT MatroskaOffsetStates {
 public:
     constexpr MatroskaOffsetStates(std::uint64_t initialValue);
     constexpr std::uint64_t currentValue() const;
-    void update(std::uint64_t newValue);
+    inline void update(std::uint64_t newValue);
     constexpr std::uint64_t initialValue() const;
 
 private:
@@ -43,7 +43,7 @@ constexpr std::uint64_t MatroskaOffsetStates::initialValue() const
 
 class TAG_PARSER_EXPORT MatroskaReferenceOffsetPair : public MatroskaOffsetStates {
 public:
-    constexpr MatroskaReferenceOffsetPair(std::uint64_t referenceOffset, std::uint64_t initialValue);
+    inline constexpr MatroskaReferenceOffsetPair(std::uint64_t referenceOffset, std::uint64_t initialValue);
     constexpr std::uint64_t referenceOffset() const;
 
 private:
@@ -63,7 +63,7 @@ constexpr std::uint64_t MatroskaReferenceOffsetPair::referenceOffset() const
 
 class TAG_PARSER_EXPORT MatroskaCuePositionUpdater {
 public:
-    MatroskaCuePositionUpdater();
+    inline MatroskaCuePositionUpdater();
 
     EbmlElement *cuesElement() const;
     std::uint64_t totalSize() const;
@@ -72,7 +72,7 @@ public:
     bool updateOffsets(std::uint64_t originalOffset, std::uint64_t newOffset);
     bool updateRelativeOffsets(std::uint64_t referenceOffset, std::uint64_t originalRelativeOffset, std::uint64_t newRelativeOffset);
     void make(std::ostream &stream, Diagnostics &diag);
-    void clear();
+    inline void clear();
 
 private:
     struct PairHash {

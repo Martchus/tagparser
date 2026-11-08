@@ -33,8 +33,8 @@ public:
     virtual ~AbstractContainer();
 
     std::iostream &stream();
-    void setStream(std::iostream &stream);
-    std::uint64_t startOffset() const;
+    inline void setStream(std::iostream &stream);
+    inline std::uint64_t startOffset() const;
     CppUtilities::BinaryReader &reader();
     CppUtilities::BinaryWriter &writer();
 
@@ -45,11 +45,11 @@ public:
     void parseAttachments(Diagnostics &diag, AbortableProgressFeedback &progress);
     void makeFile(Diagnostics &diag, AbortableProgressFeedback &progress);
 
-    bool isHeaderParsed() const;
-    bool areTagsParsed() const;
-    bool areTracksParsed() const;
-    bool areChaptersParsed() const;
-    bool areAttachmentsParsed() const;
+    inline bool isHeaderParsed() const;
+    inline bool areTagsParsed() const;
+    inline bool areTracksParsed() const;
+    inline bool areChaptersParsed() const;
+    inline bool areAttachmentsParsed() const;
 
     virtual Tag *createTag(const TagTarget &target = TagTarget());
     virtual Tag *tag(std::size_t index);
@@ -72,21 +72,21 @@ public:
     virtual AbstractAttachment *attachment(std::size_t index);
     virtual std::size_t attachmentCount() const;
 
-    std::uint64_t version() const;
-    std::uint64_t readVersion() const;
+    inline std::uint64_t version() const;
+    inline std::uint64_t readVersion() const;
     const std::string &documentType() const;
-    std::uint64_t doctypeVersion() const;
-    std::uint64_t doctypeReadVersion() const;
+    inline std::uint64_t doctypeVersion() const;
+    inline std::uint64_t doctypeReadVersion() const;
     const std::vector<std::string> &titles() const;
-    void setTitle(std::string_view title, std::size_t segmentIndex = 0);
+    inline void setTitle(std::string_view title, std::size_t segmentIndex = 0);
     virtual bool supportsTitle() const;
     const std::vector<std::string> &muxingApplications() const;
     const std::vector<std::string> &writingApplications() const;
     virtual std::size_t segmentCount() const;
-    CppUtilities::TimeSpan duration() const;
-    CppUtilities::DateTime creationTime() const;
-    CppUtilities::DateTime modificationTime() const;
-    std::uint32_t timeScale() const;
+    inline CppUtilities::TimeSpan duration() const;
+    inline CppUtilities::DateTime creationTime() const;
+    inline CppUtilities::DateTime modificationTime() const;
+    inline std::uint32_t timeScale() const;
 
     virtual void reset();
 

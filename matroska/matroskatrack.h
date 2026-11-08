@@ -16,7 +16,7 @@ class TAG_PARSER_EXPORT MatroskaTrackHeaderMaker {
 public:
     void make(std::ostream &stream) const;
     const MatroskaTrack &track() const;
-    std::uint64_t requiredSize() const;
+    inline std::uint64_t requiredSize() const;
 
 private:
     MatroskaTrackHeaderMaker(const MatroskaTrack &track, Diagnostics &diag);
@@ -57,8 +57,8 @@ public:
 
     static MediaFormat codecIdToMediaFormat(const std::string &codecId);
     void readStatisticsFromTags(const std::vector<std::unique_ptr<MatroskaTag>> &tags, Diagnostics &diag);
-    MatroskaTrackHeaderMaker prepareMakingHeader(Diagnostics &diag) const;
-    void makeHeader(std::ostream &stream, Diagnostics &diag) const;
+    inline MatroskaTrackHeaderMaker prepareMakingHeader(Diagnostics &diag) const;
+    inline void makeHeader(std::ostream &stream, Diagnostics &diag) const;
 
 protected:
     void internalParseHeader(Diagnostics &diag, AbortableProgressFeedback &progress) override;

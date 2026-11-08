@@ -20,8 +20,8 @@ public:
     Mp4Container(MediaFileInfo &fileInfo, std::uint64_t startOffset);
     ~Mp4Container() override;
 
-    bool supportsTrackModifications() const override;
-    bool isFragmented() const;
+    inline bool supportsTrackModifications() const override;
+    inline bool isFragmented() const;
     void reset() override;
     ElementPosition determineTagPosition(Diagnostics &diag) const override;
     ElementPosition determineIndexPosition(Diagnostics &diag) const override;

@@ -54,11 +54,11 @@ public:
     void parse(OggIterator &iterator, std::uint64_t &maxSize, Diagnostics &diag);
     void parse(std::istream &stream, std::uint64_t &maxSize, Diagnostics &diag);
     bool make(CppUtilities::BinaryWriter &writer, VorbisCommentFlags flags, Diagnostics &diag);
-    bool isAdditionalTypeInfoUsed() const;
-    bool supportsNestedFields() const;
+    inline bool isAdditionalTypeInfoUsed() const;
+    inline bool supportsNestedFields() const;
 
-    static typename std::string fieldIdFromString(std::string_view idString);
-    static std::string fieldIdToString(const std::string &id);
+    inline static typename std::string fieldIdFromString(std::string_view idString);
+    inline static std::string fieldIdToString(const std::string &id);
 
 private:
     template <class StreamType> void internalParse(StreamType &stream, std::uint64_t &maxSize, Diagnostics &diag);
