@@ -9,8 +9,8 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT AdtsStream final : public AbstractTrack {
 public:
-    AdtsStream(std::iostream &stream, std::uint64_t startOffset);
-    ~AdtsStream() override;
+    inline AdtsStream(std::iostream &stream, std::uint64_t startOffset);
+    inline ~AdtsStream() override;
 
     inline TrackType type() const override;
 

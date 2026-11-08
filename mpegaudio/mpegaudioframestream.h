@@ -11,8 +11,8 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT MpegAudioFrameStream final : public AbstractTrack {
 public:
-    MpegAudioFrameStream(std::iostream &stream, std::uint64_t startOffset);
-    ~MpegAudioFrameStream() override;
+    inline MpegAudioFrameStream(std::iostream &stream, std::uint64_t startOffset);
+    inline ~MpegAudioFrameStream() override;
 
     inline TrackType type() const override;
 

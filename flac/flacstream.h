@@ -14,7 +14,7 @@ class VorbisComment;
 class TAG_PARSER_EXPORT FlacStream final : public AbstractTrack {
 public:
     FlacStream(MediaFileInfo &mediaFileInfo, std::uint64_t startOffset);
-    ~FlacStream() override;
+    inline ~FlacStream() override;
 
     inline TrackType type() const override;
     VorbisComment *vorbisComment() const;

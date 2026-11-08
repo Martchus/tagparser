@@ -22,7 +22,7 @@ public:
     using IdType = std::uint64_t;
     using IdContainerType = std::vector<IdType>;
 
-    explicit TagTarget(std::uint64_t level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
+    inline explicit TagTarget(std::uint64_t level = 0, IdContainerType tracks = IdContainerType(), IdContainerType chapters = IdContainerType(),
         IdContainerType editions = IdContainerType(), IdContainerType attachments = IdContainerType());
 
     inline std::uint64_t level() const;
@@ -41,7 +41,7 @@ public:
     inline void clear();
     inline std::string toString(const std::function<TagTargetLevel(std::uint64_t)> &tagTargetMapping) const;
     std::string toString(TagTargetLevel tagTargetLevel) const;
-    bool operator==(const TagTarget &other) const;
+    inline bool operator==(const TagTarget &other) const;
     inline bool matches(const TagTarget &other) const;
 
 private:

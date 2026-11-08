@@ -9,8 +9,8 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT IvfStream final : public AbstractTrack {
 public:
-    IvfStream(std::iostream &stream, std::uint64_t startOffset);
-    ~IvfStream() override;
+    inline IvfStream(std::iostream &stream, std::uint64_t startOffset);
+    inline ~IvfStream() override;
 
     inline TrackType type() const override;
 

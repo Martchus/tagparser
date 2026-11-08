@@ -11,10 +11,10 @@ class Mp4Atom;
 class Mp4Tag;
 
 struct TAG_PARSER_EXPORT Mp4ExtendedFieldId {
-    Mp4ExtendedFieldId(std::string_view mean, std::string_view name, bool updateOnly = false);
+    inline Mp4ExtendedFieldId(std::string_view mean, std::string_view name, bool updateOnly = false);
     Mp4ExtendedFieldId(KnownField field);
 
-    operator bool() const;
+    inline operator bool() const;
     inline bool matches(const Mp4TagField &field) const;
 
     /// \brief mean parameter, usually Mp4TagExtendedMeanIds::iTunes

@@ -51,7 +51,7 @@ public:
 
 class TAG_PARSER_EXPORT Mpeg4ElementaryStreamInfo {
 public:
-    Mpeg4ElementaryStreamInfo();
+    inline Mpeg4ElementaryStreamInfo();
 
     inline bool dependencyFlag() const;
     inline bool urlFlag() const;

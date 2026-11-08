@@ -10,7 +10,7 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT OggIterator {
 public:
-    OggIterator(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize);
+    inline OggIterator(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize);
 
     void clear(std::istream &stream, std::uint64_t startOffset, std::uint64_t streamSize);
     std::istream &stream();
@@ -45,11 +45,11 @@ public:
     bool bytesRemaining(std::size_t atLeast) const;
     bool resyncAt(std::uint64_t offset);
 
-    operator bool() const;
+    inline operator bool() const;
     OggIterator &operator++();
-    OggIterator operator++(int);
+    inline OggIterator operator++(int);
     OggIterator &operator--();
-    OggIterator operator--(int);
+    inline OggIterator operator--(int);
 
 private:
     bool fetchNextPage();

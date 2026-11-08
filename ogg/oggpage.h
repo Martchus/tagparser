@@ -12,7 +12,7 @@ namespace TagParser {
 
 class TAG_PARSER_EXPORT OggPage {
 public:
-    OggPage();
+    inline OggPage();
     inline OggPage(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);
 
     void parseHeader(std::istream &stream, std::uint64_t startOffset, std::int32_t maxSize);

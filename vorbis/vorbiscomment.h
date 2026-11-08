@@ -29,7 +29,7 @@ class TAG_PARSER_EXPORT VorbisComment : public FieldMapBasedTag<VorbisComment> {
     friend class ::OverallTests;
 
 public:
-    VorbisComment();
+    inline VorbisComment();
 
     static constexpr TagType tagType = TagType::VorbisComment;
     static constexpr std::string_view tagName = "Vorbis comment";

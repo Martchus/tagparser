@@ -405,7 +405,7 @@ struct TAG_PARSER_EXPORT AacIcsInfo {
 
 class TAG_PARSER_EXPORT AacFrameElementParser {
 public:
-    AacFrameElementParser(std::uint8_t audioObjectId, std::uint8_t samplingFrequencyIndex, std::uint8_t extensionSamplingFrequencyIndex,
+    inline AacFrameElementParser(std::uint8_t audioObjectId, std::uint8_t samplingFrequencyIndex, std::uint8_t extensionSamplingFrequencyIndex,
         std::uint8_t channelConfig, std::uint16_t frameLength = 1024);
 
     void parse(const AdtsFrame &adtsFrame, std::unique_ptr<char[]> &data, std::size_t dataSize);
